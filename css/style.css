@@ -1,0 +1,212 @@
+:root {
+    --main-bg-color: #0f172a;
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --primary-color: #3b82f6;
+    --accent-color: #8b5cf6;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --sidebar-width: 280px;
+}
+
+body {
+    background-color: var(--main-bg-color);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    overflow-x: hidden;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 20%);
+    background-attachment: fixed;
+}
+
+/* Glassmorphism Utility */
+.bg-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+}
+
+#wrapper {
+    overflow-x: hidden;
+}
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    margin-left: -15rem;
+    transition: margin 0.25s ease-out;
+    width: var(--sidebar-width);
+    position: fixed;
+    z-index: 1000;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 0.875rem 1.25rem;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+#sidebar-wrapper .list-group {
+    width: var(--sidebar-width);
+}
+
+#page-content-wrapper {
+    width: 100%;
+    margin-left: 0;
+    padding-left: 0;
+    transition: padding-left 0.25s ease-out;
+}
+
+/* Toggled State */
+body.sb-sidenav-toggled #sidebar-wrapper {
+    margin-left: 0;
+}
+
+body.sb-sidenav-toggled #page-content-wrapper {
+    padding-left: var(--sidebar-width);
+}
+
+/* Sidebar Links */
+.list-group-item {
+    border: none;
+    padding: 12px 25px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.list-group-item:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    transform: translateX(5px);
+}
+
+.list-group-item.active {
+    color: var(--primary-color);
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-right: 4px solid var(--primary-color);
+}
+
+.sidebar-header {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+/* Utilities */
+.primary-text {
+    color: var(--primary-color);
+}
+
+.second-text {
+    color: var(--text-secondary);
+}
+
+.hover-lift {
+    transition: transform 0.2s;
+}
+
+.hover-lift:hover {
+    transform: translateY(-3px);
+}
+
+/* Code Blocks */
+pre {
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--glass-border);
+    color: #e2e8f0;
+}
+
+code {
+    color: #f472b6;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+
+    #page-content-wrapper {
+        min-width: 0;
+        width: 100%;
+        padding-left: var(--sidebar-width);
+    }
+
+    body.sb-sidenav-toggled #sidebar-wrapper {
+        margin-left: -15rem;
+    }
+}
+
+/* Animations for Interactive Demo */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    80% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-pop {
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Table Collapse Animation */
+.animate-collapse tbody tr {
+    animation: collapseRow 0.3s ease-in-out;
+}
+
+@keyframes collapseRow {
+    0% {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scaleY(0.5);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scaleY(0);
+    }
+}
+
+/* Badge and specific styles for demo */
+#groupby-interactive-demo .badge {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#groupby-interactive-demo .badge:hover {
+    transform: scale(1.1);
+}

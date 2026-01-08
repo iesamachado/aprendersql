@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprender SQL - MariaDB Tutorial</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-glass border-end" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4 primary-text fs-4 fw-bold text-uppercase border-bottom">
+                <i class="fas fa-database me-2"></i>Aprender SQL
+            </div>
+            <div class="list-group list-group-flush my-3">
+                <a href="#intro" class="list-group-item list-group-item-action bg-transparent second-text active">
+                    <i class="fas fa-home me-2"></i>Introducción
+                </a>
+
+                <div class="sidebar-header mt-3 px-3 text-muted text-uppercase fs-7 fw-bold">1. DDL</div>
+                <a href="#ddl-create" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-plus-circle me-2"></i>Crear BBDD y Tablas
+                </a>
+                <a href="#ddl-modify" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-edit me-2"></i>Modificar Tablas
+                </a>
+                <a href="#ddl-drop" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-trash me-2"></i>Borrar (Drop)
+                </a>
+
+                <div class="sidebar-header mt-3 px-3 text-muted text-uppercase fs-7 fw-bold">2. DML Consultas</div>
+                <a href="#dml-select" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-search me-2"></i>Select & Where
+                </a>
+                <a href="#dml-aggregates" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-calculator me-2"></i>Funciones Agregado
+                </a>
+                <a href="#dml-groupby"
+                    class="list-group-item list-group-item-action bg-transparent second-text fw-bold text-warning">
+                    <i class="fas fa-layer-group me-2"></i>Group By (Interactivo)
+                </a>
+                <a href="#dml-joins" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-project-diagram me-2"></i>Joins
+                </a>
+                <a href="#dml-subqueries" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-level-down-alt me-2"></i>Subconsultas
+                </a>
+
+                <div class="sidebar-header mt-3 px-3 text-muted text-uppercase fs-7 fw-bold">2. DML Modificación</div>
+                <a href="#dml-insert" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-file-import me-2"></i>Inserts
+                </a>
+                <a href="#dml-update" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-pen me-2"></i>Updates
+                </a>
+                <a href="#dml-delete" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="fas fa-eraser me-2"></i>Deletes
+                </a>
+            </div>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-glass border-bottom py-3 px-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-bars primary-text fs-4 me-3" id="menu-toggle" role="button"></i>
+                    <h2 class="fs-4 m-0" id="section-title">Bienvenido a SQL Master</h2>
+                </div>
+            </nav>
+
+            <div class="container-fluid px-4 py-5" id="main-content">
+                <!-- Content will be dynamically loaded or simply scrolled to here -->
+                <div class="row g-4 intro-section">
+                    <div class="col-md-8">
+                        <div class="card p-4 bg-glass border-0 shadow-sm h-100">
+                            <h3 class="mb-4">Empieza a dominar MariaDB</h3>
+                            <p class="lead text-light">
+                                Este tutorial te guiará desde la creación de tu primera base de datos hasta consultas
+                                complejas y manipulaciones de datos.
+                            </p>
+                            <p>
+                                Usaremos ejemplos reales de bases de datos como <strong>"Arepazo"</strong> (Gestión de
+                                Restaurante) y <strong>"NBA"</strong> (Estadísticas deportivas) para que aprendas
+                                practicando.
+                            </p>
+                            <div class="mt-4">
+                                <a href="#ddl-create"
+                                    class="btn btn-primary btn-lg rounded-pill px-5 hover-lift">Comenzar Tutorial <i
+                                        class="fas fa-arrow-right ms-2"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div
+                            class="card p-4 bg-glass border-0 shadow-sm h-100 d-flex align-items-center justify-content-center text-center">
+                            <i class="fas fa-database fa-5x text-primary mb-3"></i>
+                            <h5>Base de Datos SQL</h5>
+                            <p class="text-muted small">Aprende la estructura y lógica detrás de los datos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placeholder for dynamic content blocks -->
+                <div id="tutorial-content" class="mt-5">
+
+                    <!-- DDL SECTION -->
+                    <section id="ddl-section" class="mb-5">
+                        <h2 class="display-5 fw-bold text-primary mb-4 border-bottom pb-2">1. DDL: Definición de Datos
+                        </h2>
+
+                        <!-- 1.1 Create DB & Tables -->
+                        <article id="ddl-create" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h3 class="text-white"><i class="fas fa-plus-circle me-2 text-success"></i>1.1 Creación de
+                                Base de Datos y Tablas</h3>
+                            <p>El DDL (Data Definition Language) nos permite crear la estructura donde se almacenarán
+                                nuestros datos.</p>
+
+                            <h5 class="mt-4 text-info">Crear la Base de Datos</h5>
+                            <p>Primero, necesitamos un contenedor para nuestras tablas.</p>
+                            <div class="code-block-wrapper">
+                                <pre><code class="language-sql">-- Crear la base de datos si no existe
+CREATE DATABASE IF NOT EXISTS arepazo;
+
+-- Seleccionar la base de datos para usarla
+USE arepazo;</code></pre>
+                            </div>
+
+                            <h5 class="mt-4 text-info">Crear Tablas</h5>
+                            <p>Vamos a crear las tablas para nuestro sistema de restaurante. Fíjate en los tipos de
+                                datos (INT, VARCHAR, DECIMAL) y las restricciones (PRIMARY KEY, NOT NULL).</p>
+
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6>Tabla de Platos</h6>
+                                    <pre><code class="language-sql">CREATE TABLE Platos (
+    plato_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_plato VARCHAR(100) NOT NULL UNIQUE,
+    descripcion TEXT,
+    precio_venta DECIMAL(10, 2) NOT NULL,
+    categoria VARCHAR(50) NOT NULL,
+    disponible BOOLEAN DEFAULT TRUE
+);</code></pre>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h6>Tabla de Clientes</h6>
+                                    <pre><code class="language-sql">CREATE TABLE Clientes (
+    cliente_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    telefono VARCHAR(20) UNIQUE,
+    email VARCHAR(100) UNIQUE,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mt-3 bg-opacity-10">
+                                <i class="fas fa-info-circle me-2"></i><strong>Foreign Keys:</strong> Para relacionar
+                                tablas (ej. Pedidos de un Cliente), usamos claves foráneas.
+                            </div>
+
+                            <pre><code class="language-sql">CREATE TABLE Pedidos (
+    pedido_id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    fecha_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_pedido DECIMAL(10, 2) DEFAULT 0.00, 
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(cliente_id)
+);</code></pre>
+
+                            <!-- Exercises DDL 1 -->
+                            <div class="mt-4 p-3 border border-secondary rounded bg-dark bg-opacity-25">
+                                <h5 class="text-warning"><i class="fas fa-pencil-alt me-2"></i>Ejercicio 1: Crea tu
+                                    propia tabla</h5>
+                                <p>Basándote en el modelo anterior, escribe el código SQL para crear una tabla llamada
+                                    <strong>Proveedores</strong> con los siguientes campos:
+                                </p>
+                                <ul>
+                                    <li><strong>id</strong>: Entero, autoincremental y clave primaria.</li>
+                                    <li><strong>empresa</strong>: Texto (100 caracteres), obligatorio.</li>
+                                    <li><strong>telefono</strong>: Texto (20 caracteres).</li>
+                                    <li><strong>direccion</strong>: Texto largo.</li>
+                                </ul>
+                                <details>
+                                    <summary class="btn btn-sm btn-outline-light">Ver Solución</summary>
+                                    <pre class="mt-2"><code class="language-sql">CREATE TABLE Proveedores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa VARCHAR(100) NOT NULL,
+    telefono VARCHAR(20),
+    direccion TEXT
+);</code></pre>
+                                </details>
+                            </div>
+                        </article>
+
+                        <!-- 1.2 Modify Tables -->
+                        <article id="ddl-modify" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h3 class="text-white"><i class="fas fa-edit me-2 text-warning"></i>1.2 Modificación de
+                                Tablas (ALTER)</h3>
+                            <p>¿Olvidaste una columna? ¿Necesitas cambiar un tipo de dato? Usamos
+                                <code>ALTER TABLE</code>.
+                            </p>
+
+                            <pre><code class="language-sql">-- Agregar una columna nueva
+ALTER TABLE Clientes ADD COLUMN direccion VARCHAR(255);
+
+-- Modificar una columna existente (cambiar tipo de dato)
+ALTER TABLE Platos MODIFY COLUMN descripcion VARCHAR(500);
+
+-- Renombrar una columna
+ALTER TABLE Ingredientes CHANGE COLUMN precio_kg precio_unitario DECIMAL(10, 2);
+
+-- Eliminar una columna
+ALTER TABLE Clientes DROP COLUMN direccion;</code></pre>
+
+                            <!-- Exercises DDL 2 -->
+                            <div class="mt-4 p-3 border border-secondary rounded bg-dark bg-opacity-25">
+                                <h5 class="text-warning"><i class="fas fa-pencil-alt me-2"></i>Ejercicio 2: Modificando
+                                    la estructura</h5>
+                                <p>Supón que en la tabla <strong>Proveedores</strong> que creaste antes, necesitas
+                                    agregar un campo para el <strong>email</strong> (texto de 100).</p>
+                                <details>
+                                    <summary class="btn btn-sm btn-outline-light">Ver Solución</summary>
+                                    <pre
+                                        class="mt-2"><code class="language-sql">ALTER TABLE Proveedores ADD COLUMN email VARCHAR(100);</code></pre>
+                                </details>
+                            </div>
+                        </article>
+
+                        <!-- 1.3 Drop Tables -->
+                        <article id="ddl-drop" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h3 class="text-white"><i class="fas fa-trash me-2 text-danger"></i>1.3 Borrado de Tablas y
+                                Bases de Datos</h3>
+                            <p class="text-danger fw-bold">¡Cuidado! Estas acciones son irreversibles y eliminan todos
+                                los datos.</p>
+
+                            <pre><code class="language-sql">-- Eliminar una tabla
+DROP TABLE IF EXISTS Proveedores;
+
+-- Eliminar una base de datos completa
+DROP DATABASE IF EXISTS arepazo_test;</code></pre>
+                        </article>
+
+                    </section>
+
+                    <!-- DML SECTION -->
+                    <div id="dml-placeholder">
+                        <section id="dml-section" class="mb-5">
+                            <h2 class="display-5 fw-bold text-primary mb-4 border-bottom pb-2">2. DML: Manipulación de
+                                Datos</h2>
+
+                            <!-- 2.1 Select & Where -->
+                            <article id="dml-select" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                <h3 class="text-white"><i class="fas fa-search me-2 text-info"></i>2.1 Consultas Básicas
+                                    (SELECT, WHERE)</h3>
+                                <p>La instrucción <code>SELECT</code> es la más usada. Nos permite recuperar datos de
+                                    una o varias tablas.</p>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Seleccionar todo</h6>
+                                        <pre><code class="language-sql">SELECT * FROM Platos;</code></pre>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Seleccionar campos específicos</h6>
+                                        <pre><code class="language-sql">SELECT nombre_plato, precio_venta 
+FROM Platos;</code></pre>
+                                    </div>
+                                </div>
+
+                                <h5 class="mt-3 text-info">Filtrado con WHERE</h5>
+                                <p>Usamos <code>WHERE</code> para filtrar registros que cumplan una condición.</p>
+                                <pre><code class="language-sql">-- Platos que cuestan más de 10 euros
+SELECT * FROM Platos WHERE precio_venta > 10.00;
+
+-- Platos de la categoría 'Arepas' Y que estén disponibles
+SELECT * FROM Platos 
+WHERE categoria = 'Arepas' AND disponible = TRUE;</code></pre>
+
+                                <!-- Exercise DML 1 -->
+                                <div class="mt-4 p-3 border border-secondary rounded bg-dark bg-opacity-25">
+                                    <h5 class="text-warning"><i class="fas fa-pencil-alt me-2"></i>Ejercicio 3: Filtros
+                                        combinados</h5>
+                                    <p>Escribe una consulta para obtener el nombre y apellido de los clientes que tengan
+                                        un email registrado (no nulo) y cuyo nombre empiece por 'A'.</p>
+                                    <details>
+                                        <summary class="btn btn-sm btn-outline-light">Ver Solución</summary>
+                                        <pre class="mt-2"><code class="language-sql">SELECT nombre, apellido FROM Clientes 
+WHERE email IS NOT NULL AND nombre LIKE 'A%';</code></pre>
+                                    </details>
+                                </div>
+                            </article>
+
+                            <!-- 2.2 Aggregates & Group By (Interactive) -->
+                            <article id="dml-groupby"
+                                class="card bg-glass border-0 shadow-sm p-4 mb-4 position-relative overflow-hidden">
+                                <h3 class="text-white"><i class="fas fa-layer-group me-2 text-warning"></i>2.2
+                                    Agregación y Group By</h3>
+                                <p>Las funciones de agregado (<code>COUNT</code>, <code>SUM</code>, <code>AVG</code>,
+                                    <code>MAX</code>, <code>MIN</code>) realizan cálculos sobre un conjunto de filas.
+                                </p>
+
+                                <div class="alert alert-warning bg-opacity-10 border-warning text-warning">
+                                    <i class="fas fa-lightbulb me-2"></i><strong>Concepto Clave:</strong> Cuando
+                                    agrupamos, las filas individuales se "colapsan". Solo podemos ver el campo por el
+                                    que agrupamos y el resultado de una función matemática sobre los demás.
+                                </div>
+
+                                <!-- Interactive Demo Container -->
+                                <div class="card bg-dark border-light mb-4 text-white" id="groupby-interactive-demo">
+                                    <div
+                                        class="card-header bg-transparent border-bottom border-secondary d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0"><i class="fas fa-hand-pointer me-2"></i>Demo Interactiva: NBA
+                                            Player Stats</h5>
+                                        <button class="btn btn-sm btn-outline-info"
+                                            onclick="resetGroupByDemo()">Resetear Tabla</button>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="small text-muted mb-2">Haz clic en el encabezado
+                                            <strong>"Equipo"</strong> para agrupar por equipo. Observa cómo desaparecen
+                                            los nombres de los jugadores.</p>
+
+                                        <!-- The Table -->
+                                        <div class="table-responsive">
+                                            <table class="table table-dark table-hover table-bordered" id="demo-table">
+                                                <thead>
+                                                    <tr id="demo-header-row">
+                                                        <!-- Headers injected by JS -->
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="demo-body-row">
+                                                    <!-- Rows injected by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Aggregation Controls (Hidden initially) -->
+                                        <div id="aggregation-controls" class="d-none mt-3 animate-fade-in">
+                                            <label class="form-label text-info">¿Qué quieres saber de los
+                                                Puntos?</label>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-sm btn-outline-light"
+                                                    onclick="applyAggregation('SUM')">SUM (Total)</button>
+                                                <button class="btn btn-sm btn-outline-light"
+                                                    onclick="applyAggregation('AVG')">AVG (Promedio)</button>
+                                                <button class="btn btn-sm btn-outline-light"
+                                                    onclick="applyAggregation('MAX')">MAX (Máximo)</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Explanation Box -->
+                                        <div id="demo-explanation"
+                                            class="mt-3 p-3 bg-primary bg-opacity-25 rounded d-none">
+                                            <!-- JS updates this -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <pre><code class="language-sql">-- SQL equivalente al resultado agrupado
+SELECT Equipo, SUM(Puntos) as Puntos_Totales
+FROM Jugadores
+GROUP BY Equipo;</code></pre>
+                            </article>
+
+                            <!-- 2.3 Joins -->
+                            <article id="dml-joins" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                <h3 class="text-white"><i class="fas fa-project-diagram me-2 text-primary"></i>2.3 Joins
+                                    (Unir tablas)</h3>
+                                <p>Para combinar datos de dos tablas, usamos <code>JOIN</code>.</p>
+
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <h6 class="text-success">INNER JOIN</h6>
+                                        <p class="small text-muted">Muestra solo los registros que coinciden en ambas
+                                            tablas.</p>
+                                        <pre><code class="language-sql">SELECT Jugadores.nombre, Equipos.ciudad
+FROM Jugadores
+INNER JOIN Equipos 
+ON Jugadores.id_equipo = Equipos.id;</code></pre>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <h6 class="text-warning">LEFT JOIN</h6>
+                                        <p class="small text-muted">Muestra todos los registros de la tabla izquierda,
+                                            aunque no tengan coincidencia.</p>
+                                        <pre><code class="language-sql">SELECT Clientes.nombre, Pedidos.total
+FROM Clientes
+LEFT JOIN Pedidos 
+ON Clientes.cliente_id = Pedidos.cliente_id;</code></pre>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <!-- 2.4 Subqueries -->
+                            <article id="dml-subqueries" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                <h3 class="text-white"><i class="fas fa-level-down-alt me-2 text-secondary"></i>2.4
+                                    Subconsultas</h3>
+                                <p>Una consulta dentro de otra. Se ejecuta primero la interna.</p>
+                                <div class="alert alert-secondary bg-opacity-10">
+                                    <strong>Objetivo:</strong> Encontrar jugadores que ganan más que el promedio.
+                                </div>
+                                <pre><code class="language-sql">SELECT nombre, salario 
+FROM Jugadores
+WHERE salario > (SELECT AVG(salario) FROM Jugadores);</code></pre>
+                            </article>
+
+                            <!-- 2.5 Modifications (Insert, Update, Delete) -->
+                            <section id="dml-modification" class="">
+                                <h2 class="display-6 fw-bold text-white mb-4 border-bottom pb-2 mt-5">Modificación de
+                                    Datos</h2>
+
+                                <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                    <h4 class="text-success">INSERT</h4>
+                                    <pre><code class="language-sql">-- Simple
+INSERT INTO Platos (nombre, precio) VALUES ('Arepa Nueva', 5.50);
+
+-- Desde consulta (Copia de seguridad)
+INSERT INTO Clientes_Backup SELECT * FROM Clientes;</code></pre>
+                                </article>
+
+                                <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                    <h4 class="text-warning">UPDATE</h4>
+                                    <pre><code class="language-sql">-- Simple
+UPDATE Platos SET precio = precio + 1 WHERE categoria = 'Arepas';
+
+-- Con Subconsulta (A subir precio a los platos más baratos que el promedio)
+UPDATE Platos SET precio = precio * 1.10
+WHERE precio < (SELECT AVG(precio) FROM Platos);</code></pre>
+                                </article>
+
+                                <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                    <h4 class="text-danger">DELETE</h4>
+                                    <pre><code class="language-sql">-- Borrar pedidos cancelados
+DELETE FROM Pedidos WHERE estado = 'Cancelado';</code></pre>
+                                </article>
+                            </section>
+
+                        </section>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- /#page-content-wrapper -->
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
