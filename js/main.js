@@ -2,11 +2,34 @@ document.addEventListener('DOMContentLoaded', function () {
     // Sidebar Toggle
     var el = document.getElementById("wrapper");
     var toggleButton = document.getElementById("menu-toggle");
+    var closeButton = document.getElementById("menu-close");
+    var overlay = document.getElementById("sidebar-overlay");
 
-    toggleButton.onclick = function () {
+    function toggleMenu() {
         el.classList.toggle("sb-sidenav-toggled");
         document.body.classList.toggle("sb-sidenav-toggled");
-    };
+
+        // Handle Overlay on Mobile
+        if (document.body.classList.contains("sb-sidenav-toggled") && window.innerWidth < 768) {
+            overlay.classList.remove("d-none");
+        } else {
+            overlay.classList.add("d-none");
+        }
+    }
+
+    toggleButton.onclick = toggleMenu;
+
+    if (closeButton) {
+        closeButton.onclick = function () {
+            toggleMenu(); // Closes it because it's open
+        };
+    }
+
+    if (overlay) {
+        overlay.onclick = function () {
+            toggleMenu(); // Click outside to close
+        };
+    }
 
     console.log("SQL Learning App Initialized 🚀");
 
