@@ -59,9 +59,18 @@
                     <a href="#dml-select" class="list-group-item list-group-item-action bg-transparent second-text">
                         <i class="fas fa-search me-2"></i>Select & Where
                     </a>
+                    <!-- Sub-items for 2.1 -->
+                    <a href="#dml-orderby"
+                        class="list-group-item list-group-item-action bg-transparent second-text ms-3 small">
+                        Order By
+                    </a>
+                    <a href="#dml-manipulation"
+                        class="list-group-item list-group-item-action bg-transparent second-text ms-3 small">
+                        Funciones
+                    </a>
                     <a href="#dml-limit"
                         class="list-group-item list-group-item-action bg-transparent second-text ms-3 small">
-                        <i class="fas fa-list-ol me-2"></i>Limit
+                        Limit
                     </a>
                     <a href="#dml-aggregates" class="list-group-item list-group-item-action bg-transparent second-text">
                         <i class="fas fa-calculator me-2"></i>Funciones Agregado
@@ -653,14 +662,139 @@ DROP DATABASE IF EXISTS arepazo_test;</code></pre>
 
                                 <h5 class="text-info">Concepto: Orden de Ejecución</h5>
                                 <p>Aunque escribimos <code>SELECT ... FROM ... WHERE</code>, el motor de base de datos
-                                    lo procesa en este orden:</p>
-                                <ol class="small text-muted">
-                                    <li><strong>FROM</strong>: ¿De dónde saco los datos? (Tablas)</li>
-                                    <li><strong>WHERE</strong>: ¿Qué filas me interesan? (Filtro)</li>
-                                    <li><strong>SELECT</strong>: ¿Qué columnas quiero mostrar? (Proyección)</li>
-                                    <li><strong>ORDER BY</strong>: ¿Cómo los ordeno?</li>
-                                    <li><strong>LIMIT</strong>: ¿Cuántos muestro?</li>
-                                </ol>
+                                    lo procesa en este orden: <strong>FROM -> WHERE -> SELECT</strong>.</p>
+
+                                <!-- Animation: SELECT (Projection) -->
+                                <div class="card bg-dark border-info mb-4 overflow-hidden" id="select-sim-container">
+                                    <div
+                                        class="card-header bg-info bg-opacity-10 border-bottom border-info d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white"><i
+                                                class="fas fa-columns me-2 text-info"></i>Simulación 1: SELECT (Que
+                                            columnas veo)</h5>
+                                        <div class="code-badge bg-black border border-info rounded px-3 py-1 font-monospace text-info small shadow-sm"
+                                            id="select-query-display">
+                                            SELECT * FROM Productos
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-4">
+
+                                        <div class="d-flex justify-content-center gap-3 mb-4">
+                                            <button class="btn btn-sm btn-outline-light"
+                                                onclick="runSelectSim('ALL')">SELECT * (Todo)</button>
+                                            <button class="btn btn-sm btn-outline-light"
+                                                onclick="runSelectSim('SPECIFIC')">SELECT nombre, precio</button>
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-dark table-sm table-bordered mb-0"
+                                                id="select-sim-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="col-id">id</th>
+                                                        <th class="col-name text-info">nombre</th>
+                                                        <th class="col-cat">categoria</th>
+                                                        <th class="col-price text-info">precio</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>1</td>
+                                                        <td>Arepa</td>
+                                                        <td>Comida</td>
+                                                        <td>5.00</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2</td>
+                                                        <td>Jugo</td>
+                                                        <td>Bebida</td>
+                                                        <td>2.00</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>3</td>
+                                                        <td>Café</td>
+                                                        <td>Bebida</td>
+                                                        <td>1.50</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="small text-muted mt-2 text-center" id="select-feedback">
+                                            El asterisco (*) trae TODAS las columnas.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Animation: WHERE (Filtering) -->
+                                <div class="card bg-dark border-warning mb-4 overflow-hidden" id="where-sim-container">
+                                    <div
+                                        class="card-header bg-warning bg-opacity-10 border-bottom border-warning d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white"><i
+                                                class="fas fa-filter me-2 text-warning"></i>Simulación 2: WHERE (Que
+                                            filas veo)</h5>
+                                        <div class="code-badge bg-black border border-warning rounded px-3 py-1 font-monospace text-warning small shadow-sm"
+                                            id="where-query-display">
+                                            SELECT * FROM Productos
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-4">
+
+                                        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                                            <button class="btn btn-sm btn-outline-light"
+                                                onclick="runWhereSim('NONE')">Sin Filtro</button>
+                                            <button class="btn btn-sm btn-outline-light"
+                                                onclick="runWhereSim('PRICE')">precio < 3</button>
+                                                    <button class="btn btn-sm btn-outline-light"
+                                                        onclick="runWhereSim('AND')">cat='Bebida' AND precio <
+                                                            2</button>
+                                                            <button class="btn btn-sm btn-outline-light"
+                                                                onclick="runWhereSim('OR')">cat='Comida' OR precio <
+                                                                    2</button>
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-dark table-sm table-bordered mb-0"
+                                                id="where-sim-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>id</th>
+                                                        <th>nombre</th>
+                                                        <th>categoria</th>
+                                                        <th>precio</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr data-cat="Comida" data-price="5.00">
+                                                        <td>1</td>
+                                                        <td>Arepa</td>
+                                                        <td>Comida</td>
+                                                        <td>5.00</td>
+                                                    </tr>
+                                                    <tr data-cat="Bebida" data-price="2.00">
+                                                        <td>2</td>
+                                                        <td>Jugo</td>
+                                                        <td>Bebida</td>
+                                                        <td>2.00</td>
+                                                    </tr>
+                                                    <tr data-cat="Bebida" data-price="1.50">
+                                                        <td>3</td>
+                                                        <td>Café</td>
+                                                        <td>Bebida</td>
+                                                        <td>1.50</td>
+                                                    </tr>
+                                                    <tr data-cat="Postre" data-price="3.50">
+                                                        <td>4</td>
+                                                        <td>Torta</td>
+                                                        <td>Postre</td>
+                                                        <td>3.50</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="small text-muted mt-2 text-center" id="where-feedback">
+                                            Mostrando todos los registros.
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div class="row mt-4">
                                     <div class="col-md-6">
@@ -690,15 +824,7 @@ SELECT * FROM Pedidos
 WHERE (estado = 'Pagado' AND total_pedido > 20) 
    OR (tipo_pedido = 'Delivery');</code></pre>
 
-                                <h5 class="mt-4 text-info" id="dml-limit">Límite de Resultados (LIMIT)</h5>
-                                <p>A veces no quieres todos los registros, solo los primeros. Esto es muy útil para
-                                    paginación o para ver "Top X". Se coloca <strong>al final</strong> de la consulta.
-                                </p>
-                                <pre><code class="language-sql">-- Traer solo los primeros 5 empleados
-SELECT * FROM Empleados LIMIT 5;
 
--- Traer los 3 productos más caros (Combinado con ORDER BY)
-SELECT nombre, precio FROM Productos ORDER BY precio DESC LIMIT 3;</code></pre>
 
                                 <!-- Exercise DML 1 -->
                                 <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de Consultas
@@ -941,10 +1067,84 @@ AND precio_venta < 4.00;</pre>
                                 </div>
                             </article>
 
+                            <!-- 2.1a ORDER BY -->
+                            <article id="dml-orderby" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                <h4 class="text-white"><i class="fas fa-sort-amount-down me-2 text-success"></i>2.1a
+                                    Ordenamiento (ORDER BY)</h4>
+                                <p>Por defecto, el orden de los datos no está garantizado. Si quieres un orden
+                                    específico, ¡pídelo!</p>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                            <h6 class="text-info">ASC (Ascendente)</h6>
+                                            <p class="small text-muted">De menor a mayor (A-Z, 0-9). Es el valor por
+                                                defecto.</p>
+                                            <pre
+                                                class="mb-0"><code class="language-sql">ORDER BY precio ASC</code></pre>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                            <h6 class="text-warning">DESC (Descendente)</h6>
+                                            <p class="small text-muted">De mayor a menor (Z-A, 9-0).</p>
+                                            <pre
+                                                class="mb-0"><code class="language-sql">ORDER BY precio DESC</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Animation: ORDER BY -->
+                                <div class="card bg-dark border-success mb-4 overflow-hidden"
+                                    id="orderby-sim-container">
+                                    <div
+                                        class="card-header bg-success bg-opacity-10 border-bottom border-success d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white"><i
+                                                class="fas fa-sort me-2 text-success"></i>Simulación: Ordenando Datos
+                                        </h5>
+                                        <div class="code-badge bg-black border border-success rounded px-3 py-1 font-monospace text-success small shadow-sm"
+                                            id="orderby-query-display">
+                                            SELECT * FROM Productos ORDER BY ...
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-4">
+
+                                        <div class="d-flex justify-content-center gap-3 mb-4">
+                                            <button class="btn btn-sm btn-outline-light" onclick="runOrderBySim('ASC')">
+                                                <i class="fas fa-sort-amount-down-alt me-1"></i> Precio ASC (Barato a
+                                                Caro)
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-light"
+                                                onclick="runOrderBySim('DESC')">
+                                                <i class="fas fa-sort-amount-down me-1"></i> Precio DESC (Caro a Barato)
+                                            </button>
+                                        </div>
+
+                                        <div class="table-responsive" style="max-width: 400px; margin: 0 auto;">
+                                            <table class="table table-dark table-sm table-bordered mb-0 text-center"
+                                                id="orderby-sim-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th class="text-warning">Precio</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="position-relative">
+                                                    <!-- Filled by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="small text-muted mt-3 text-center" id="orderby-feedback">
+                                            Selecciona un orden para ver la magia.
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+
                             <!-- 2.1b String & Number Manipulation -->
                             <article id="dml-manipulation" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                                <h3 class="text-white"><i class="fas fa-magic me-2 text-warning"></i>2.1.b Manipulación
-                                    de Datos (Funciones)</h3>
+                                <h4 class="text-white"><i class="fas fa-magic me-2 text-warning"></i>2.1.b Manipulación
+                                    de Datos (Funciones)</h4>
                                 <p>En el mismo <code>SELECT</code> puedes transformar los datos "al vuelo" usando
                                     funciones.</p>
 
@@ -966,6 +1166,185 @@ FROM Platos;
 
 -- Redondeo
 SELECT ROUND(precio_kg * 4.567, 2) as Coste_Calc FROM Ingredientes;</code></pre>
+
+                                <!-- Simulation: String Machine -->
+                                <div class="card bg-dark border-info mb-4 overflow-hidden" id="string-sim-container">
+                                    <div class="card-header bg-info bg-opacity-10 border-bottom border-info text-white">
+                                        <h5 class="mb-0"><i class="fas fa-font me-2 text-info"></i>Simulación: Funciones
+                                            de Texto</h5>
+                                    </div>
+                                    <div class="card-body p-4 text-center">
+                                        <h6 class="text-secondary mb-3">Valor Original (Columna 'Nombre')</h6>
+                                        <div class="display-5 text-white fw-bold mb-4" id="str-input">LeBron James</div>
+
+                                        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                                            <button class="btn btn-outline-info"
+                                                onclick="runStrFunc('UPPER')">UPPER()</button>
+                                            <button class="btn btn-outline-info"
+                                                onclick="runStrFunc('LOWER')">LOWER()</button>
+                                            <button class="btn btn-outline-info"
+                                                onclick="runStrFunc('LENGTH')">LENGTH()</button>
+                                            <button class="btn btn-outline-info"
+                                                onclick="runStrFunc('REVERSE')">REVERSE()</button>
+                                            <button class="btn btn-outline-info" onclick="runStrFunc('LEFT')">LEFT(x,
+                                                3)</button>
+                                            <button class="btn btn-outline-info" onclick="runStrFunc('RIGHT')">RIGHT(x,
+                                                3)</button>
+                                            <button class="btn btn-outline-info"
+                                                onclick="runStrFunc('SUBSTRING')">SUBSTRING(x, 1, 3)</button>
+                                            <button class="btn btn-outline-info"
+                                                onclick="runStrFunc('REPLACE')">REPLACE('e', 'X')</button>
+                                            <button class="btn btn-outline-warning"
+                                                onclick="resetStrFunc()">Reset</button>
+                                        </div>
+
+                                        <div class="card bg-black border-secondary p-3 position-relative">
+                                            <small class="text-muted d-block text-start font-monospace mb-2">RESULTADO
+                                                SQL:</small>
+                                            <div class="font-monospace text-info fs-4" id="str-output">LeBron James
+                                            </div>
+                                            <div class="text-muted small mt-2" id="str-query-display">SELECT nombre FROM
+                                                Jugadores;</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Simulation: Number Machine -->
+                                <div class="card bg-dark border-success mb-4 overflow-hidden" id="num-sim-container">
+                                    <div
+                                        class="card-header bg-success bg-opacity-10 border-bottom border-success text-white">
+                                        <h5 class="mb-0"><i class="fas fa-calculator me-2 text-success"></i>Simulación:
+                                            Funciones Numéricas</h5>
+                                    </div>
+                                    <div class="card-body p-4 text-center">
+                                        <h6 class="text-secondary mb-3">Valor Original (Columna 'Precio')</h6>
+                                        <div class="display-5 text-white fw-bold mb-4" id="num-input">15.6789</div>
+
+                                        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                                            <button class="btn btn-outline-success"
+                                                onclick="runNumFunc('ROUND')">ROUND(x, 2)</button>
+                                            <button class="btn btn-outline-success"
+                                                onclick="runNumFunc('FLOOR')">FLOOR()</button>
+                                            <button class="btn btn-outline-success"
+                                                onclick="runNumFunc('CEIL')">CEIL()</button>
+                                            <button class="btn btn-outline-success" onclick="runNumFunc('MOD')">MOD(x,
+                                                2)</button>
+                                            <button class="btn btn-outline-warning"
+                                                onclick="resetNumFunc()">Reset</button>
+                                        </div>
+
+                                        <div class="card bg-black border-secondary p-3 position-relative">
+                                            <small class="text-muted d-block text-start font-monospace mb-2">RESULTADO
+                                                SQL:</small>
+                                            <div class="font-monospace text-success fs-4" id="num-output">15.6789</div>
+                                            <div class="text-muted small mt-2" id="num-query-display">SELECT precio FROM
+                                                Productos;</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Simulation: Plus Operator vs CONCAT -->
+                                <div class="card bg-dark border-light mb-4 overflow-hidden"
+                                    id="plus-concat-sim-container">
+                                    <div
+                                        class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white"><i
+                                                class="fas fa-plus-minus me-2 text-white"></i>Suma (+) vs Concatenación
+                                        </h5>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-light active" id="sim-mode-num"
+                                                onclick="setPolyMode('NUM')">123 Números</button>
+                                            <button class="btn btn-outline-light" id="sim-mode-txt"
+                                                onclick="setPolyMode('TXT')">ABC Texto</button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-4">
+
+                                        <div class="d-flex justify-content-center align-items-center gap-3 mb-4">
+                                            <!-- Col A -->
+                                            <div class="text-center">
+                                                <small class="text-muted d-block mb-1">Columna A</small>
+                                                <div class="bg-black border border-secondary rounded p-3 fs-5 font-monospace text-white"
+                                                    id="poly-val-a">100</div>
+                                            </div>
+
+                                            <div class="display-6 text-warning" id="poly-operator">+</div>
+
+                                            <!-- Col B -->
+                                            <div class="text-center">
+                                                <small class="text-muted d-block mb-1">Columna B</small>
+                                                <div class="bg-black border border-secondary rounded p-3 fs-5 font-monospace text-white"
+                                                    id="poly-val-b">50</div>
+                                            </div>
+
+                                            <div class="display-6 text-muted">=</div>
+
+                                            <!-- Result -->
+                                            <div class="text-center position-relative">
+                                                <small class="text-muted d-block mb-1">Resultado</small>
+                                                <div class="bg-black border border-secondary rounded p-3 fs-4 font-monospace fw-bold"
+                                                    id="poly-result">150</div>
+                                                <div id="poly-badge"
+                                                    class="position-absolute top-100 start-50 translate-middle-x badge bg-success mt-2">
+                                                    Matemática</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card bg-black border-secondary p-3 text-center">
+                                            <div class="font-monospace text-warning mb-2" id="poly-query">SELECT col_a +
+                                                col_b ...</div>
+                                            <div class="small text-muted" id="poly-explanation">
+                                                MariaDB suma los valores matemáticamente.
+                                            </div>
+                                        </div>
+
+                                        <!-- Special Control for Text Mode -->
+                                        <div class="d-none mt-3 text-center animate-fade-in" id="poly-txt-controls">
+                                            <button class="btn btn-sm btn-info" onclick="useConcatFunction()">
+                                                <i class="fas fa-magic me-1"></i>¡Usar CONCAT()!
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <!-- Simulation: Date Machine -->
+                                <div class="card bg-dark border-danger mb-4 overflow-hidden" id="date-sim-container">
+                                    <div
+                                        class="card-header bg-danger bg-opacity-10 border-bottom border-danger text-white">
+                                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-danger"></i>Simulación:
+                                            Funciones de Fecha</h5>
+                                    </div>
+                                    <div class="card-body p-4 text-center">
+                                        <h6 class="text-secondary mb-3">Fecha Original (Columna 'Fecha_Pedido')</h6>
+                                        <div class="display-5 text-white fw-bold mb-4" id="date-input">2023-12-25
+                                            14:30:00</div>
+
+                                        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                                            <button class="btn btn-outline-danger"
+                                                onclick="runDateFunc('YEAR')">YEAR()</button>
+                                            <button class="btn btn-outline-danger"
+                                                onclick="runDateFunc('MONTH')">MONTH()</button>
+                                            <button class="btn btn-outline-danger"
+                                                onclick="runDateFunc('DAY')">DAY()</button>
+                                            <button class="btn btn-outline-danger"
+                                                onclick="runDateFunc('DATE_ADD')">DATE_ADD(x, INTERVAL 1 DAY)</button>
+                                            <button class="btn btn-outline-danger"
+                                                onclick="runDateFunc('NOW')">NOW()</button>
+                                            <button class="btn btn-outline-warning"
+                                                onclick="resetDateFunc()">Reset</button>
+                                        </div>
+
+                                        <div class="card bg-black border-secondary p-3 position-relative">
+                                            <small class="text-muted d-block text-start font-monospace mb-2">RESULTADO
+                                                SQL:</small>
+                                            <div class="font-monospace text-danger fs-4" id="date-output">2023-12-25
+                                                14:30:00</div>
+                                            <div class="text-muted small mt-2" id="date-query-display">SELECT
+                                                fecha_pedido FROM Pedidos;</div>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <!-- Exercise Manipulation -->
                                 <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de
@@ -1081,6 +1460,114 @@ SELECT ROUND(precio_kg * 4.567, 2) as Coste_Calc FROM Ingredientes;</code></pre>
                                             </div>
                                         </div>
                             </article>
+                            <!-- 2.1c LIMIT y Paginación -->
+                            <article id="dml-limit" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                <h4 class="text-white"><i class="fas fa-list-ol me-2 text-primary"></i>2.1c Control de
+                                    Filas (LIMIT y OFFSET)</h4>
+                                <p>Cuando tienes miles de filas, no quieres traerlas todas. <code>LIMIT</code> te dice
+                                    "cuántas" y <code>OFFSET</code> te dice "desde dónde".</p>
+
+                                <!-- Animation: Limit & Pagination -->
+                                <div class="card bg-dark border-primary mb-4 overflow-hidden position-relative"
+                                    id="limit-animation-container">
+                                    <div
+                                        class="card-header bg-primary bg-opacity-10 border-bottom border-primary d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white"><i
+                                                class="fas fa-layer-group me-2 text-primary"></i>Simulación: Paginación
+                                        </h5>
+                                        <div
+                                            class="code-badge bg-black border border-primary rounded px-3 py-1 font-monospace text-info small d-none d-md-block shadow-sm">
+                                            SELECT * FROM Posts <span id="limit-query-text" class="text-warning">LIMIT
+                                                3</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-0 position-relative"
+                                        style="height: 400px; background: #0f1215;">
+
+                                        <div class="d-flex justify-content-center h-100 p-3 gap-4">
+
+                                            <!-- Database Rows (Source) -->
+                                            <div class="d-flex flex-column align-items-center" style="width: 40%;">
+                                                <h6 class="text-muted text-center mb-2 small uppercase">BASE DE DATOS
+                                                    (10 Posts)</h6>
+                                                <div class="d-flex flex-column gap-1 w-100 position-relative"
+                                                    id="limit-source-rows">
+                                                    <!-- Generated by JS -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Controls -->
+                                            <div class="d-flex flex-column justify-content-center align-items-center gap-3"
+                                                style="width: 30%;">
+
+                                                <div class="text-center">
+                                                    <h6 class="text-white mb-2">Paginador</h6>
+                                                    <div class="btn-group w-100">
+                                                        <button class="btn btn-sm btn-outline-light"
+                                                            onclick="prevPage()"><i
+                                                                class="fas fa-chevron-left"></i></button>
+                                                        <span class="btn btn-sm btn-dark text-white border-secondary"
+                                                            style="width: 100px;" id="page-indicator">Página 1</span>
+                                                        <button class="btn btn-sm btn-outline-light"
+                                                            onclick="nextPage()"><i
+                                                                class="fas fa-chevron-right"></i></button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card bg-black border-secondary p-2 w-100">
+                                                    <small class="text-muted d-block mb-1">LIMIT (Tamaño pág):</small>
+                                                    <select
+                                                        class="form-select form-select-sm bg-dark text-white border-secondary"
+                                                        id="limit-select" onchange="updateLimitSimulation()">
+                                                        <option value="3">3 filas</option>
+                                                        <option value="5">5 filas</option>
+                                                        <option value="2">2 filas</option>
+                                                    </select>
+                                                </div>
+
+                                                <div
+                                                    class="alert alert-dark border-secondary p-2 small text-center text-muted mb-0">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    <span id="offset-explanation">OFFSET = (Pag - 1) * Limit</span>
+                                                </div>
+
+                                            </div>
+
+                                            <!-- Visual Result (User view) -->
+                                            <div class="d-flex flex-column align-items-center" style="width: 30%;">
+                                                <h6 class="text-info text-center mb-2 small uppercase">LO QUE VES</h6>
+                                                <div
+                                                    class="card bg-black border-secondary w-100 h-100 p-2 overflow-hidden position-relative">
+                                                    <div class="d-flex flex-column gap-2" id="limit-result-view">
+                                                        <!-- Result items -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info bg-opacity-10 border-info">
+                                    <i class="fas fa-lightbulb me-2 text-info"></i><strong>¿Sabías que...?</strong>
+                                    Puedes escribir la paginación más rápido usando una sola coma:
+                                    <br>
+                                    <code>LIMIT 10 OFFSET 5</code> es igual a <code>LIMIT 5, 10</code>.
+                                    <br>
+                                    <small class="text-muted">¡Cuidado! En la sintaxis corta, el primer número es el
+                                        <strong>SALTO</strong> (Offset) y el segundo es la <strong>CANTIDAD</strong>
+                                        (Limit).</small>
+                                </div>
+
+                                <h5 class="mt-4 text-info">Ejemplos Prácticos</h5>
+                                <pre><code class="language-sql">-- Traer solo los primeros 5 empleados
+SELECT * FROM Empleados LIMIT 5;
+
+-- Traer los 3 productos más caros (Combinado con ORDER BY)
+SELECT nombre, precio FROM Productos ORDER BY precio DESC LIMIT 3;</code></pre>
+                            </article>
+
                             <!-- 2.2 Aggregate Functions (Split) -->
                             <article id="dml-aggregates" class="card bg-glass border-0 shadow-sm p-4 mb-4">
                                 <h3 class="text-white"><i class="fas fa-calculator me-2 text-warning"></i>2.2 Funciones
@@ -1109,6 +1596,70 @@ SELECT ROUND(precio_kg * 4.567, 2) as Coste_Calc FROM Ingredientes;</code></pre>
                                     <div class="col">
                                         <div class="p-2 border border-secondary rounded bg-dark"><strong
                                                 class="text-danger d-block">MIN()</strong>Mínimo</div>
+                                    </div>
+                                </div>
+
+                                <!-- Animation: SUM vs COUNT (Curry) -->
+                                <div class="card bg-dark border-warning mb-4 overflow-hidden position-relative"
+                                    id="sum-count-animation-container">
+                                    <div
+                                        class="card-header bg-warning bg-opacity-10 border-bottom border-warning d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white"><i
+                                                class="fas fa-basketball-ball me-2 text-warning"></i>Simulación: SUM vs
+                                            COUNT</h5>
+                                        <div
+                                            class="code-badge bg-black border border-warning rounded px-3 py-1 font-monospace text-warning small d-none d-md-block shadow-sm">
+                                            SELECT <span id="sc-func-name" class="fw-bold">...</span>(Puntos) FROM
+                                            Partidos WHERE Jugador = 'Curry'
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-0 position-relative"
+                                        style="height: 350px; background: #1a1a1a;">
+
+                                        <div class="d-flex justify-content-center align-items-center h-100 p-3 gap-5">
+
+                                            <!-- Table Data -->
+                                            <div class="position-relative p-2 border border-secondary rounded bg-dark"
+                                                id="sc-table">
+                                                <h6 class="text-info text-center mb-2">Tabla Partidos</h6>
+                                                <div class="d-flex flex-column gap-1 font-monospace small" id="sc-rows">
+                                                    <!-- Dynamic Rows -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Controls & Result -->
+                                            <div class="d-flex flex-column align-items-center gap-3"
+                                                style="width: 250px;">
+                                                <h6 class="text-white text-center">¿Cuántos puntos ha metido Curry?</h6>
+
+                                                <div class="d-flex gap-2 w-100">
+                                                    <button class="btn btn-outline-danger flex-grow-1"
+                                                        onclick="startCurryAnimation('COUNT')">
+                                                        <i class="fas fa-calculator me-1"></i>COUNT
+                                                    </button>
+                                                    <button class="btn btn-outline-success flex-grow-1"
+                                                        onclick="startCurryAnimation('SUM')">
+                                                        <i class="fas fa-plus-circle me-1"></i>SUM
+                                                    </button>
+                                                </div>
+
+                                                <div
+                                                    class="card bg-black border-secondary w-100 p-3 text-center position-relative overflow-hidden">
+                                                    <small class="text-muted d-block uppercase mb-1">RESULTADO</small>
+                                                    <div class="display-4 fw-bold text-white" id="sc-result">?</div>
+                                                    <div id="sc-feedback" class="small mt-2 text-muted"
+                                                        style="min-height: 2.4em; line-height: 1.2;">Selecciona una
+                                                        función para calcular.</div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Highlight Overlay for Animation -->
+                                        <div id="sc-highlight"
+                                            class="position-absolute bg-warning bg-opacity-25 border border-warning d-none"
+                                            style="transition: all 0.3s ease; pointer-events: none; z-index: 50;"></div>
+
                                     </div>
                                 </div>
                                 <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios Básicos de
@@ -1448,15 +1999,161 @@ SELECT Equipo, SUM(Puntos) as Puntos_Totales FROM Jugadores GROUP BY Equipo;</co
                                     </div>
                                 </div>
 
-                                <i class="fas fa-link me-2"></i><strong>El "ON" es la clave:</strong> Debes decir
-                                <code>ON tabla1.id = tabla2.fk_id</code> para que el motor sepa cómo pegar las
-                                filas.
-                    </div>
+                                <!-- Animation: Inner Join -->
+                                <div class="card bg-dark border-secondary mb-4 overflow-hidden position-relative"
+                                    id="join-animation-container">
+                                    <div
+                                        class="card-header bg-transparent border-bottom border-secondary d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white"><i
+                                                class="fas fa-play-circle me-2 text-primary"></i>Animación: Inner Join
+                                        </h5>
+                                        <div
+                                            class="code-badge bg-black border border-secondary rounded px-3 py-1 font-monospace text-info small d-none d-md-block shadow-sm">
+                                            SELECT * FROM Clientes C <strong>INNER JOIN</strong> Pedidos P
+                                            <strong>ON</strong> C.id = P.cliente_id
+                                        </div>
+                                        <button class="btn btn-sm btn-primary" onclick="startJoinAnimation()">
+                                            <i class="fas fa-play me-1"></i> Iniciar
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-0 position-relative"
+                                        style="height: 400px; background: #111;">
 
-                    <h5 class="text-info mt-4">Patrón de Exclusión (Encontrar lo que NO está)</h5>
-                    <p>Una de las utilidades más potentes del <code>LEFT JOIN</code> es encontrar datos que faltan. Por
-                        ejemplo: <em>"Usuarios que NO han comprado nada"</em>.</p>
-                    <pre><code class="language-sql">-- 1. Traemos TODOS los usuarios (LEFT JOIN)
+                                        <!-- Visualization Area -->
+                                        <div class="d-flex justify-content-between h-100 p-3 position-relative">
+
+                                            <!-- Table A (Left) -->
+                                            <div class="join-table-container text-center" style="width: 25%;">
+                                                <h6 class="text-info fw-bold mb-3">Tabla Clientes (A)</h6>
+                                                <div id="table-a-rows" class="d-flex flex-column gap-2">
+                                                    <!-- Dynamic Content -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Result Area (Center) -->
+                                            <div class="join-result-container text-center d-flex flex-column justify-content-start pt-5"
+                                                style="width: 40%;">
+                                                <h6 class="text-success fw-bold mb-3 opacity-0" id="result-title">
+                                                    RESULTADO (MATCH)</h6>
+                                                <div id="join-result-rows"
+                                                    class="d-flex flex-column gap-2 align-items-center w-100">
+                                                    <!-- Results will drop here -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Table B (Right) -->
+                                            <div class="join-table-container text-center" style="width: 25%;">
+                                                <h6 class="text-warning fw-bold mb-3">Tabla Pedidos (B)</h6>
+                                                <div id="table-b-rows" class="d-flex flex-column gap-2">
+                                                    <!-- Dynamic Content -->
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Explanation Overlay -->
+                                        <div id="join-explanation"
+                                            class="position-absolute bottom-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small"
+                                            style="border-top: 1px solid #333;">
+                                            Dale a "Iniciar" para ver cómo el Inner Join busca coincidencias.
+                                        </div>
+                                    </div>
+
+                                    <!-- Animation: Ambiguous Column Error -->
+                                    <div class="card bg-dark border-danger mb-4 overflow-hidden position-relative"
+                                        id="ambiguous-animation-container">
+                                        <div
+                                            class="card-header bg-danger bg-opacity-25 border-bottom border-danger d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0 text-white"><i
+                                                    class="fas fa-exclamation-triangle me-2 text-danger"></i>Error:
+                                                Columna Ambigua</h5>
+                                            <div class="code-badge bg-black border border-danger rounded px-3 py-1 font-monospace text-danger small d-none d-md-block shadow-sm"
+                                                id="ambiguous-query-display">
+                                                SELECT <span class="text-decoration-underline fw-bold">id</span>,
+                                                nombre, item FROM Clientes JOIN Pedidos...
+                                            </div>
+                                            <button class="btn btn-sm btn-danger" onclick="startAmbiguousAnimation()">
+                                                <i class="fas fa-play me-1"></i> Simular Error
+                                            </button>
+                                        </div>
+                                        <div class="card-body p-0 position-relative"
+                                            style="height: 350px; background: #2c0b0e;">
+
+                                            <div
+                                                class="d-flex justify-content-center align-items-center h-100 p-3 gap-4">
+
+                                                <!-- Table A -->
+                                                <div class="position-relative p-2 border border-secondary rounded bg-dark"
+                                                    id="ambiguous-table-a">
+                                                    <h6 class="text-info text-center mb-2">Tabla Clientes</h6>
+                                                    <div class="d-flex flex-column gap-1 font-monospace small">
+                                                        <div
+                                                            class="bg-secondary bg-opacity-25 p-1 px-2 rounded d-flex justify-content-between">
+                                                            <span class="text-danger fw-bold column-id">id</span>
+                                                            <span>nombre</span>
+                                                        </div>
+                                                        <div class="text-muted p-1">1, Ana...</div>
+                                                        <div class="text-muted p-1">2, Bob...</div>
+                                                    </div>
+                                                    <!-- Arrow -->
+                                                    <div class="position-absolute top-0 start-50 translate-middle mt-n3 d-none text-white fs-4 glitch-arrow"
+                                                        style="z-index:10; top: -10px;">?</div>
+                                                </div>
+
+                                                <div class="text-center text-white display-6">
+                                                    <i class="fas fa-times-circle text-danger opacity-50"
+                                                        id="ambiguous-error-icon" style="font-size: 3rem;"></i>
+                                                </div>
+
+                                                <!-- Table B -->
+                                                <div class="position-relative p-2 border border-secondary rounded bg-dark"
+                                                    id="ambiguous-table-b">
+                                                    <h6 class="text-warning text-center mb-2">Tabla Pedidos</h6>
+                                                    <div class="d-flex flex-column gap-1 font-monospace small">
+                                                        <div
+                                                            class="bg-secondary bg-opacity-25 p-1 px-2 rounded d-flex justify-content-between">
+                                                            <span class="text-danger fw-bold column-id">id</span>
+                                                            <span>item</span>
+                                                        </div>
+                                                        <div class="text-muted p-1">10, Pizza...</div>
+                                                        <div class="text-muted p-1">11, Sushi...</div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <!-- Error Overlay -->
+                                            <div id="ambiguous-overlay"
+                                                class="position-absolute top-50 start-50 translate-middle w-75 p-3 bg-black border border-danger rounded shadow text-center d-none"
+                                                style="z-index: 20;">
+                                                <h5 class="text-danger"><i class="fas fa-bug"></i> Error SQL: 1052</h5>
+                                                <p class="text-white mb-2">Column 'id' in field list is ambiguous</p>
+                                                <small class="text-muted d-block mb-3">SQL no sabe si te refieres al
+                                                    'id' de Clientes o al 'id' de Pedidos.</small>
+                                                <button class="btn btn-outline-success btn-sm pulse-button"
+                                                    onclick="fixAmbiguousError()">
+                                                    <i class="fas fa-magic me-2"></i>Aplicar Solución: Alias
+                                                </button>
+                                            </div>
+
+                                            <!-- Explanation Bar -->
+                                            <div class="position-absolute bottom-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small"
+                                                style="border-top: 1px solid #500;" id="ambiguous-explanation">
+                                                Intenta seleccionar 'id' sin decir de qué tabla es.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <i class="fas fa-link me-2"></i><strong>El "ON" es la clave:</strong> Debes decir
+                                    <code>ON tabla1.id = tabla2.fk_id</code> para que el motor sepa cómo pegar las
+                                    filas.
+                                </div>
+
+                                <h5 class="text-info mt-4">Patrón de Exclusión (Encontrar lo que NO está)</h5>
+                                <p>Una de las utilidades más potentes del <code>LEFT JOIN</code> es encontrar datos que
+                                    faltan. Por
+                                    ejemplo: <em>"Usuarios que NO han comprado nada"</em>.</p>
+                                <pre><code class="language-sql">-- 1. Traemos TODOS los usuarios (LEFT JOIN)
 -- 2. Si no tienen pedido, el campo pedido_id será NULL
 -- 3. Filtramos esos NULLs
 SELECT Usuarios.nombre 
@@ -1464,524 +2161,630 @@ FROM Usuarios
 LEFT JOIN Pedidos ON Usuarios.id = Pedidos.usuario_id
 WHERE Pedidos.id IS NULL;</code></pre>
 
-                    <!-- Exercises Joins -->
-                    <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de Joins
-                        (1-10)</h5>
-                    <div class="accordion accordion-flush bg-transparent" id="accordionDML-Joins">
+                                <!-- Animation: Exclusion Pattern -->
+                                <div class="card bg-dark border-warning mb-4 overflow-hidden position-relative"
+                                    id="exclusion-animation-container">
+                                    <div
+                                        class="card-header bg-warning bg-opacity-10 border-bottom border-warning d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white"><i
+                                                class="fas fa-search-minus me-2 text-warning"></i>Simulación: Encontrar
+                                            sin pareja</h5>
+                                        <div class="code-badge bg-black border border-warning rounded px-3 py-1 font-monospace text-warning small d-none d-md-block shadow-sm"
+                                            id="exclusion-query-display">
+                                            SELECT U.nombre FROM Usuarios U <strong>LEFT JOIN</strong> Pedidos P...
+                                            <strong>WHERE P.id IS NULL</strong>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-0 position-relative"
+                                        style="height: 420px; background: #1a1a1a;">
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-1">1.
-                                    Pedidos y sus Clientes (Inner)</button></h2>
-                            <div id="ex-join-1" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Muestra el ID del pedido, la fecha y el nombre del
-                                        cliente que lo
-                                        hizo. Solo nos interesan los pedidos que tienen un cliente válido.<br>
-                                        <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT Pedidos.pedido_id, Pedidos.fecha_hora, Clientes.nombre 
+                                        <div class="d-flex justify-content-center h-100 p-3 gap-4">
+
+                                            <!-- Table Users (Left) -->
+                                            <div class="d-flex flex-column align-items-center" style="width: 30%;">
+                                                <h6 class="text-info text-center mb-2 small uppercase">USUARIOS (Left)
+                                                </h6>
+                                                <div class="d-flex flex-column gap-2 w-100 position-relative"
+                                                    id="excl-users-rows">
+                                                    <!-- Init via JS -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Connection Zone -->
+                                            <div class="d-flex flex-column justify-content-center align-items-center"
+                                                style="width: 10%;">
+                                                <i class="fas fa-exchange-alt text-muted fa-2x opacity-50"></i>
+                                            </div>
+
+                                            <!-- Table Orders (Right) -->
+                                            <div class="d-flex flex-column align-items-center" style="width: 30%;">
+                                                <h6 class="text-warning text-center mb-2 small uppercase">PEDIDOS
+                                                    (Right)</h6>
+                                                <div class="d-flex flex-column gap-2 w-100 position-relative"
+                                                    id="excl-orders-rows">
+                                                    <!-- Init via JS -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Result Bucket -->
+                                            <div class="d-flex flex-column align-items-center justify-content-start border-start border-secondary ps-3"
+                                                style="width: 25%;">
+                                                <h6 class="text-light text-center mb-2 small uppercase">RESULTADO (IS
+                                                    NULL)</h6>
+                                                <div class="card bg-black border-secondary w-100 h-100 p-2 overflow-auto"
+                                                    id="excl-result-area">
+                                                    <div class="text-muted small text-center mt-4 fst-italic">Aquí
+                                                        caerán
+                                                        los "solteros"...</div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Controls Overlay -->
+                                        <div
+                                            class="position-absolute bottom-0 w-100 p-3 d-flex justify-content-center gap-3 bg-dark bg-opacity-90 border-top border-secondary">
+                                            <button class="btn btn-warning btn-sm fw-bold" onclick="runExclusionSim()">
+                                                <i class="fas fa-play me-1"></i> Simular Exclusión
+                                            </button>
+                                            <button class="btn btn-outline-light btn-sm" onclick="resetExclusionSim()">
+                                                <i class="fas fa-undo me-1"></i> Reiniciar
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <!-- Exercises Joins -->
+                                <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de Joins
+                                    (1-10)</h5>
+                                <div class="accordion accordion-flush bg-transparent" id="accordionDML-Joins">
+
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-1">1.
+                                                Pedidos y sus Clientes (Inner)</button></h2>
+                                        <div id="ex-join-1" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra el ID del pedido, la fecha y el
+                                                    nombre del
+                                                    cliente que lo
+                                                    hizo. Solo nos interesan los pedidos que tienen un cliente
+                                                    válido.<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT Pedidos.pedido_id, Pedidos.fecha_hora, Clientes.nombre 
 FROM Pedidos 
 INNER JOIN Clientes ON Pedidos.cliente_id = Clientes.cliente_id;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-2">2.
-                                    Todos los Clientes (Left)</button></h2>
-                            <div id="ex-join-2" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Muestra TODOS los clientes y el ID de sus pedidos (si
-                                        tienen). Queremos ver incluso a los clientes que no han comprado nada
-                                        (aparecerán con NULL).<br>
-                                        <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT Clientes.nombre, Pedidos.pedido_id 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-2">2.
+                                                Todos los Clientes (Left)</button></h2>
+                                        <div id="ex-join-2" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra TODOS los clientes y el ID de sus
+                                                    pedidos (si
+                                                    tienen). Queremos ver incluso a los clientes que no han comprado
+                                                    nada
+                                                    (aparecerán con NULL).<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT Clientes.nombre, Pedidos.pedido_id 
 FROM Clientes 
 LEFT JOIN Pedidos ON Clientes.cliente_id = Pedidos.cliente_id;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-3">3.
-                                    Platos e Ingredientes (Tabla Puente)</button></h2>
-                            <div id="ex-join-3" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> En bases de datos N:M, unimos 3 tablas. Muestra el
-                                        nombre del Plato, el ingrediente que lleva y la cantidad necesaria. (Platos ->
-                                        Recetas -> Ingredientes).<br>
-                                        <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT Platos.nombre_plato, Ingredientes.nombre_ing, Recetas.cantidad
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-3">3.
+                                                Platos e Ingredientes (Tabla Puente)</button></h2>
+                                        <div id="ex-join-3" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> En bases de datos N:M, unimos 3 tablas.
+                                                    Muestra el
+                                                    nombre del Plato, el ingrediente que lleva y la cantidad necesaria.
+                                                    (Platos ->
+                                                    Recetas -> Ingredientes).<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT Platos.nombre_plato, Ingredientes.nombre_ing, Recetas.cantidad
 FROM Platos
 INNER JOIN Recetas ON Platos.plato_id = Recetas.plato_id
 INNER JOIN Ingredientes ON Recetas.ingrediente_id = Ingredientes.ingrediente_id;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-4">4.
-                                    Clientes SIN pedidos (Is Null)</button></h2>
-                            <div id="ex-join-4" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Encuentra a los clientes que NUNCA han comprado nada.
-                                        (Pista: Usa LEFT JOIN y busca el NULL).<br>
-                                        <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT Clientes.nombre 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-4">4.
+                                                Clientes SIN pedidos (Is Null)</button></h2>
+                                        <div id="ex-join-4" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Encuentra a los clientes que NUNCA han
+                                                    comprado nada.
+                                                    (Pista: Usa LEFT JOIN y busca el NULL).<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT Clientes.nombre 
 FROM Clientes 
 LEFT JOIN Pedidos ON Clientes.cliente_id = Pedidos.cliente_id 
 WHERE Pedidos.pedido_id IS NULL;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-5">5.
-                                    Jugadores y sus Equipos (NBA)</button></h2>
-                            <div id="ex-join-5" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Muestra el nombre del jugador, su apellido y la
-                                        ciudad del equipo donde juega.<br>
-                                        <span class="badge bg-warning text-dark mb-2">Contexto: NBA</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT jugadores.nombre, jugadores.apellido1, equipos.ciudad 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-5">5.
+                                                Jugadores y sus Equipos (NBA)</button></h2>
+                                        <div id="ex-join-5" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra el nombre del jugador, su
+                                                    apellido y la
+                                                    ciudad del equipo donde juega.<br>
+                                                    <span class="badge bg-warning text-dark mb-2">Contexto: NBA</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT jugadores.nombre, jugadores.apellido1, equipos.ciudad 
 FROM jugadores 
 INNER JOIN equipos ON jugadores.id_equipo = equipos.id;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-6">6.
-                                    Equipos Locales en Partidos</button></h2>
-                            <div id="ex-join-6" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Muestra la fecha del partido y el nombre del equipo
-                                        local.<br>
-                                        <span class="badge bg-warning text-dark mb-2">Contexto: NBA</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT partidos.fecha, equipos.nombre 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-6">6.
+                                                Equipos Locales en Partidos</button></h2>
+                                        <div id="ex-join-6" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra la fecha del partido y el nombre
+                                                    del equipo
+                                                    local.<br>
+                                                    <span class="badge bg-warning text-dark mb-2">Contexto: NBA</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT partidos.fecha, equipos.nombre 
 FROM partidos 
 INNER JOIN equipos ON partidos.id_equipoLocal = equipos.id;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-7">7.
-                                    Alias de Tabla (AS)</button></h2>
-                            <div id="ex-join-7" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Reescribe la consulta anterior usando alias cortos
-                                        ('p' para partidos, 'e' para equipos) para hacerla más legible.<br>
-                                        <span class="badge bg-warning text-dark mb-2">Contexto: NBA</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT p.fecha, e.nombre 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-7">7.
+                                                Alias de Tabla (AS)</button></h2>
+                                        <div id="ex-join-7" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Reescribe la consulta anterior usando
+                                                    alias cortos
+                                                    ('p' para partidos, 'e' para equipos) para hacerla más legible.<br>
+                                                    <span class="badge bg-warning text-dark mb-2">Contexto: NBA</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT p.fecha, e.nombre 
 FROM partidos p 
 INNER JOIN equipos e ON p.id_equipoLocal = e.id;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-8">8.
-                                    Total gastado por Cliente</button></h2>
-                            <div id="ex-join-8" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Combina JOIN con SUM y GROUP BY. Muestra el nombre
-                                        del cliente y cuánto ha gastado en total.<br>
-                                        <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT c.nombre, SUM(p.total_pedido) 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-8">8.
+                                                Total gastado por Cliente</button></h2>
+                                        <div id="ex-join-8" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Combina JOIN con SUM y GROUP BY. Muestra
+                                                    el nombre
+                                                    del cliente y cuánto ha gastado en total.<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT c.nombre, SUM(p.total_pedido) 
 FROM Clientes c 
 INNER JOIN Pedidos p ON c.cliente_id = p.cliente_id 
 GROUP BY c.cliente_id;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-9">9.
-                                    Self Join (Jefe y Empleado)</button></h2>
-                            <div id="ex-join-9" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Si la tabla Empleados tiene un campo
-                                        <code>jefe_id</code>, únete a la misma tabla para ver el nombre del empleado y
-                                        el nombre de su jefe.<br>
-                                        <span class="badge bg-secondary mb-2">Contexto: General</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT e.nombre AS Empleado, j.nombre AS Jefe 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-9">9.
+                                                Self Join (Jefe y Empleado)</button></h2>
+                                        <div id="ex-join-9" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Si la tabla Empleados tiene un campo
+                                                    <code>jefe_id</code>, únete a la misma tabla para ver el nombre del
+                                                    empleado y
+                                                    el nombre de su jefe.<br>
+                                                    <span class="badge bg-secondary mb-2">Contexto: General</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT e.nombre AS Empleado, j.nombre AS Jefe 
 FROM Empleados e 
 LEFT JOIN Empleados j ON e.jefe_id = j.id;</pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="accordion-item bg-transparent border-secondary">
-                            <h2 class="accordion-header"><button
-                                    class="accordion-button collapsed bg-dark text-light bg-opacity-50" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#ex-join-10">10.
-                                    Productos y Categoría</button></h2>
-                            <div id="ex-join-10" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionDML-Joins">
-                                <div class="accordion-body text-secondary">
-                                    <p><strong>Enunciado:</strong> Muestra el nombre del producto y el nombre de su
-                                        categoría (Tabla Categorias).<br>
-                                        <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                    </p>
-                                    <details>
-                                        <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                        <pre class="bg-dark p-2 rounded text-success">SELECT p.nombre, c.nombre_cat 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-join-10">10.
+                                                Productos y Categoría</button></h2>
+                                        <div id="ex-join-10" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Joins">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra el nombre del producto y el
+                                                    nombre de su
+                                                    categoría (Tabla Categorias).<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT p.nombre, c.nombre_cat 
 FROM Productos p 
 INNER JOIN Categorias c ON p.cat_id = c.id;</pre>
-                                    </details>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
-                            </div>
-                        </div>
+                            </article>
 
-                    </div>
-                    </article>
+                            <!-- 2.4 Subqueries -->
+                            <article id="dml-subqueries" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                                <h3 class="text-white"><i class="fas fa-level-down-alt me-2 text-secondary"></i>2.5
+                                    Subconsultas</h3>
+                                <p>Una subconsulta es una consulta anidada dentro de otra. Se usa cuando necesitas un
+                                    valor que aún no conoces para filtrar tu consulta principal.</p>
 
-                    <!-- 2.4 Subqueries -->
-                    <article id="dml-subqueries" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                        <h3 class="text-white"><i class="fas fa-level-down-alt me-2 text-secondary"></i>2.5
-                            Subconsultas</h3>
-                        <p>Una subconsulta es una consulta anidada dentro de otra. Se usa cuando necesitas un
-                            valor que aún no conoces para filtrar tu consulta principal.</p>
-
-                        <div class="alert alert-secondary bg-opacity-10">
-                            <strong>Objetivo:</strong> Encontrar jugadores que ganan más que el promedio.
-                            <br>
-                            <small>1. Calculo el promedio. 2. Filtro quién gana más que eso.</small>
-                        </div>
-                        <pre><code class="language-sql">SELECT nombre, salario 
+                                <div class="alert alert-secondary bg-opacity-10">
+                                    <strong>Objetivo:</strong> Encontrar jugadores que ganan más que el promedio.
+                                    <br>
+                                    <small>1. Calculo el promedio. 2. Filtro quién gana más que eso.</small>
+                                </div>
+                                <pre><code class="language-sql">SELECT nombre, salario 
 FROM Jugadores
 WHERE salario > (SELECT AVG(salario) FROM Jugadores);</code></pre>
 
-                        <!-- Exercises Subqueries -->
-                        <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de
-                            Subconsultas (1-10)</h5>
-                        <div class="accordion accordion-flush bg-transparent" id="accordionDML-Sub">
+                                <!-- Exercises Subqueries -->
+                                <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de
+                                    Subconsultas (1-10)</h5>
+                                <div class="accordion accordion-flush bg-transparent" id="accordionDML-Sub">
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-1">1.
-                                        Arepas más caras que el promedio</button></h2>
-                                <div id="ex-sub-1" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra las arepas (platos) que cuestan más que
-                                            el precio promedio de todos los platos.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT nombre_plato, precio_venta 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-1">1.
+                                                Arepas más caras que el promedio</button></h2>
+                                        <div id="ex-sub-1" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra las arepas (platos) que cuestan
+                                                    más que
+                                                    el precio promedio de todos los platos.<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT nombre_plato, precio_venta 
 FROM Platos 
 WHERE precio_venta > (SELECT AVG(precio_venta) FROM Platos);</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-2">2.
-                                        Cliente con el pedido más caro</button></h2>
-                                <div id="ex-sub-2" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra el nombre del cliente que hizo el pedido
-                                            con el importe máximo histórico.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT nombre 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-2">2.
+                                                Cliente con el pedido más caro</button></h2>
+                                        <div id="ex-sub-2" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra el nombre del cliente que hizo el
+                                                    pedido
+                                                    con el importe máximo histórico.<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT nombre 
 FROM Clientes 
 WHERE cliente_id = (
     SELECT cliente_id FROM Pedidos 
     ORDER BY total_pedido DESC LIMIT 1
 );</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-3">3.
-                                        Platos nunca pedidos (NOT IN)</button></h2>
-                                <div id="ex-sub-3" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra los platos cuyo ID NO aparece en la tabla
-                                            de detalles de pedidos (Platos nunca vendidos).<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT nombre_plato 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-3">3.
+                                                Platos nunca pedidos (NOT IN)</button></h2>
+                                        <div id="ex-sub-3" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra los platos cuyo ID NO aparece en
+                                                    la tabla
+                                                    de detalles de pedidos (Platos nunca vendidos).<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT nombre_plato 
 FROM Platos 
 WHERE plato_id NOT IN (SELECT DISTINCT plato_id FROM Lineas_Pedido);</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-4">4.
-                                        Jugadores del equipo con más puntos</button></h2>
-                                <div id="ex-sub-4" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra los nombres de los jugadores que
-                                            pertenecen al equipo que ha anotado más puntos en total.<br>
-                                            <span class="badge bg-primary mb-2">Contexto: NBA</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT nombre 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-4">4.
+                                                Jugadores del equipo con más puntos</button></h2>
+                                        <div id="ex-sub-4" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra los nombres de los jugadores que
+                                                    pertenecen al equipo que ha anotado más puntos en total.<br>
+                                                    <span class="badge bg-primary mb-2">Contexto: NBA</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT nombre 
 FROM Jugadores 
 WHERE nombre_equipo = (
     SELECT Equipo FROM Jugadores GROUP BY Equipo ORDER BY SUM(Puntos) DESC LIMIT 1
 );</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-5">5.
-                                        Clientes que compraron 'Reina Pepiada'</button></h2>
-                                <div id="ex-sub-5" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Obtén los clientes que han pedido específicamente
-                                            el plato 'Reina Pepiada'. (Requiere unir
-                                            Clientes->Pedidos->Lineas->Platos).<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT nombre FROM Clientes WHERE cliente_id IN (
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-5">5.
+                                                Clientes que compraron 'Reina Pepiada'</button></h2>
+                                        <div id="ex-sub-5" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Obtén los clientes que han pedido
+                                                    específicamente
+                                                    el plato 'Reina Pepiada'. (Requiere unir
+                                                    Clientes->Pedidos->Lineas->Platos).<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT nombre FROM Clientes WHERE cliente_id IN (
     SELECT cliente_id FROM Pedidos WHERE pedido_id IN (
         SELECT pedido_id FROM Lineas_Pedido WHERE plato_id = (SELECT plato_id FROM Platos WHERE nombre_plato = 'Reina Pepiada')
     )
 );</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-6">6.
-                                        Precios superiores al de 'Juan'</button></h2>
-                                <div id="ex-sub-6" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra los pedidos cuyo total es superior al
-                                            total máximo gastado por el cliente con ID 1.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT * FROM Pedidos 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-6">6.
+                                                Precios superiores al de 'Juan'</button></h2>
+                                        <div id="ex-sub-6" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra los pedidos cuyo total es
+                                                    superior al
+                                                    total máximo gastado por el cliente con ID 1.<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT * FROM Pedidos 
 WHERE total_pedido > (SELECT MAX(total_pedido) FROM Pedidos WHERE cliente_id = 1);</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-7">7.
-                                        EXISTS (Correlacionada)</button></h2>
-                                <div id="ex-sub-7" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra los clientes que SÍ tienen pedidos
-                                            registrados. Usa EXISTS.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT nombre FROM Clientes c
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-7">7.
+                                                EXISTS (Correlacionada)</button></h2>
+                                        <div id="ex-sub-7" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra los clientes que SÍ tienen
+                                                    pedidos
+                                                    registrados. Usa EXISTS.<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT nombre FROM Clientes c
 WHERE EXISTS (SELECT 1 FROM Pedidos p WHERE p.cliente_id = c.cliente_id);</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-8">8.
-                                        Ingredientes en Recetas Caras</button></h2>
-                                <div id="ex-sub-8" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra los nombres de los ingredientes que se
-                                            usan en platos que cuestan más de 20.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT nombre_ing FROM Ingredientes WHERE ingrediente_id IN (
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-8">8.
+                                                Ingredientes en Recetas Caras</button></h2>
+                                        <div id="ex-sub-8" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra los nombres de los ingredientes
+                                                    que se
+                                                    usan en platos que cuestan más de 20.<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT nombre_ing FROM Ingredientes WHERE ingrediente_id IN (
     SELECT ingrediente_id FROM Recetas WHERE plato_id IN (
         SELECT plato_id FROM Platos WHERE precio_venta > 20
     )
 );</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-9">9.
-                                        Último pedido registrado</button></h2>
-                                <div id="ex-sub-9" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra todos los detalles del último pedido
-                                            insertado en la BD (Max ID).<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">SELECT * FROM Pedidos WHERE pedido_id = (SELECT MAX(pedido_id) FROM Pedidos);</pre>
-                                        </details>
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-9">9.
+                                                Último pedido registrado</button></h2>
+                                        <div id="ex-sub-9" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra todos los detalles del último
+                                                    pedido
+                                                    insertado en la BD (Max ID).<br>
+                                                    <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre
+                                                        class="bg-dark p-2 rounded text-success">SELECT * FROM Pedidos WHERE pedido_id = (SELECT MAX(pedido_id) FROM Pedidos);</pre>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-10">10.
-                                        Salario menor al mínimo de otro equipo</button></h2>
-                                <div id="ex-sub-10" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Sub">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Muestra los jugadores que ganan MENOS que el
-                                            jugador peor pagado del equipo 'Lakers'.<br>
-                                            <span class="badge bg-primary mb-2">Contexto: NBA</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">SELECT nombre FROM Jugadores 
+                                    <div class="accordion-item bg-transparent border-secondary">
+                                        <h2 class="accordion-header"><button
+                                                class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#ex-sub-10">10.
+                                                Salario menor al mínimo de otro equipo</button></h2>
+                                        <div id="ex-sub-10" class="accordion-collapse collapse"
+                                            data-bs-parent="#accordionDML-Sub">
+                                            <div class="accordion-body text-secondary">
+                                                <p><strong>Enunciado:</strong> Muestra los jugadores que ganan MENOS que
+                                                    el
+                                                    jugador peor pagado del equipo 'Lakers'.<br>
+                                                    <span class="badge bg-primary mb-2">Contexto: NBA</span>
+                                                </p>
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                    </summary>
+                                                    <pre class="bg-dark p-2 rounded text-success">SELECT nombre FROM Jugadores 
 WHERE salario < (SELECT MIN(salario) FROM Jugadores WHERE nombre_equipo = 'Lakers');</pre>
-                                        </details>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                    </div>
+                    </article>
+
+                    <!-- 2.6 Advanced Queries (Moved Here) -->
+                    <section id="advanced-queries" class="">
+                        <h2 class="display-6 fw-bold text-white mb-4 border-bottom pb-2 mt-5">Consultas Avanzadas</h2>
+
+                        <!-- EX 1: Arepazo Profitability -->
+                        <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-info"><i class="fas fa-chart-line me-2"></i>Rentabilidad Arepazo</h4>
+                            <p class="text-secondary"><strong>Enunciado:</strong> Calcula la ganancia bruta por plato
+                                restando
+                                el costo de los ingredientes al precio de venta. Ordena por mayor ganancia.<br>
+                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                            </p>
+
+                            <div class="alert alert-info bg-opacity-10 border-info text-info">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Lógica:</strong> Unir Platos, Recetas e Ingredientes. Calcular costo sumando
+                                (cantidad *
+                                costo_unitario).
                             </div>
-                        </div>
-                </div>
-                </article>
 
-                <!-- 2.6 Advanced Queries (Moved Here) -->
-                <section id="advanced-queries" class="">
-                    <h2 class="display-6 fw-bold text-white mb-4 border-bottom pb-2 mt-5">Consultas Avanzadas</h2>
-
-                    <!-- EX 1: Arepazo Profitability -->
-                    <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                        <h4 class="text-info"><i class="fas fa-chart-line me-2"></i>Rentabilidad Arepazo</h4>
-                        <p class="text-secondary"><strong>Enunciado:</strong> Calcula la ganancia bruta por plato
-                            restando
-                            el costo de los ingredientes al precio de venta. Ordena por mayor ganancia.<br>
-                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                        </p>
-
-                        <div class="alert alert-info bg-opacity-10 border-info text-info">
-                            <i class="fas fa-lightbulb me-2"></i>
-                            <strong>Lógica:</strong> Unir Platos, Recetas e Ingredientes. Calcular costo sumando
-                            (cantidad *
-                            costo_unitario).
-                        </div>
-
-                        <details>
-                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                            <pre><code class="language-sql">SELECT 
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
+                                <pre><code class="language-sql">SELECT 
     p.nombre_plato, 
     p.precio_venta, 
     SUM(r.cantidad_kg * i.precio_kg) AS costo_ingredientes,
@@ -1991,27 +2794,28 @@ JOIN Recetas r ON p.plato_id = r.plato_id
 JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id
 GROUP BY p.plato_id, p.nombre_plato, p.precio_venta
 ORDER BY ganancia_bruta DESC;</code></pre>
-                        </details>
-                    </article>
+                            </details>
+                        </article>
 
-                    <!-- EX 2: NBA Standings -->
-                    <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                        <h4 class="text-warning"><i class="fas fa-trophy me-2"></i>Clasificación NBA</h4>
-                        <p class="text-secondary"><strong>Enunciado:</strong> Calcula el número total de victorias por
-                            equipo, sumando las victorias como local y como visitante.<br>
-                            <span class="badge bg-primary mb-2">Contexto: NBA</span>
-                        </p>
+                        <!-- EX 2: NBA Standings -->
+                        <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-warning"><i class="fas fa-trophy me-2"></i>Clasificación NBA</h4>
+                            <p class="text-secondary"><strong>Enunciado:</strong> Calcula el número total de victorias
+                                por
+                                equipo, sumando las victorias como local y como visitante.<br>
+                                <span class="badge bg-primary mb-2">Contexto: NBA</span>
+                            </p>
 
-                        <div class="alert alert-warning bg-opacity-10 border-warning text-warning">
-                            <i class="fas fa-lightbulb me-2"></i>
-                            <strong>Lógica:</strong> Usar un CASE condicional para sumar 1 si el equipo ganó (ya sea
-                            local o
-                            visitante).
-                        </div>
+                            <div class="alert alert-warning bg-opacity-10 border-warning text-warning">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Lógica:</strong> Usar un CASE condicional para sumar 1 si el equipo ganó (ya sea
+                                local o
+                                visitante).
+                            </div>
 
-                        <details>
-                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                            <pre><code class="language-sql">SELECT 
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
+                                <pre><code class="language-sql">SELECT 
     e.nombre AS equipo,
     COUNT(CASE 
         WHEN (p.id_equipoLocal = e.id AND p.marcadorLocal > p.marcadorVisitante) OR 
@@ -2022,27 +2826,29 @@ FROM equipos e
 LEFT JOIN partidos p ON e.id = p.id_equipoLocal OR e.id = p.id_equipoVisitante
 GROUP BY e.id, e.nombre
 ORDER BY victorias DESC;</code></pre>
-                        </details>
-                    </article>
+                            </details>
+                        </article>
 
-                    <!-- EX 3 (NEW): Ingredient Consumption -->
-                    <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                        <h4 class="text-info"><i class="fas fa-utensils me-2"></i>Consumo Total de Ingredientes</h4>
-                        <p class="text-secondary"><strong>Enunciado:</strong> Muestra cuántos Kg de cada ingrediente se
-                            han
-                            consumido basándote en todos los pedidos realizados.<br>
-                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                        </p>
+                        <!-- EX 3 (NEW): Ingredient Consumption -->
+                        <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-info"><i class="fas fa-utensils me-2"></i>Consumo Total de Ingredientes</h4>
+                            <p class="text-secondary"><strong>Enunciado:</strong> Muestra cuántos Kg de cada ingrediente
+                                se
+                                han
+                                consumido basándote en todos los pedidos realizados.<br>
+                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                            </p>
 
-                        <div class="alert alert-info bg-opacity-10 border-info text-info">
-                            <i class="fas fa-lightbulb me-2"></i>
-                            <strong>Lógica:</strong> Lineas_Pedido (cantidad platos) * Recetas (cantidad ingrediente por
-                            plato). Agrupar por Ingrediente.
-                        </div>
+                            <div class="alert alert-info bg-opacity-10 border-info text-info">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Lógica:</strong> Lineas_Pedido (cantidad platos) * Recetas (cantidad ingrediente
+                                por
+                                plato). Agrupar por Ingrediente.
+                            </div>
 
-                        <details>
-                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                            <pre><code class="language-sql">SELECT 
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
+                                <pre><code class="language-sql">SELECT 
     i.nombre_ingrediente,
     SUM(lp.cantidad * r.cantidad_kg) AS total_consumido_kg
 FROM Lineas_Pedido lp
@@ -2050,27 +2856,29 @@ JOIN Recetas r ON lp.plato_id = r.plato_id
 JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id
 GROUP BY i.ingrediente_id, i.nombre_ingrediente
 ORDER BY total_consumido_kg DESC;</code></pre>
-                        </details>
-                    </article>
+                            </details>
+                        </article>
 
-                    <!-- EX 4 (NEW): Double-Doubles -->
-                    <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                        <h4 class="text-warning"><i class="fas fa-basketball-ball me-2"></i>Reyes del Doble-Doble</h4>
-                        <p class="text-secondary"><strong>Enunciado:</strong> Cuenta en cuántos partidos cada jugador ha
-                            conseguido un "Doble-Doble" (>= 10 en al menos 2 categorías: Puntos, Rebotes o
-                            Asistencias).<br>
-                            <span class="badge bg-primary mb-2">Contexto: NBA</span>
-                        </p>
+                        <!-- EX 4 (NEW): Double-Doubles -->
+                        <article class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-warning"><i class="fas fa-basketball-ball me-2"></i>Reyes del Doble-Doble
+                            </h4>
+                            <p class="text-secondary"><strong>Enunciado:</strong> Cuenta en cuántos partidos cada
+                                jugador ha
+                                conseguido un "Doble-Doble" (>= 10 en al menos 2 categorías: Puntos, Rebotes o
+                                Asistencias).<br>
+                                <span class="badge bg-primary mb-2">Contexto: NBA</span>
+                            </p>
 
-                        <div class="alert alert-warning bg-opacity-10 border-warning text-warning">
-                            <i class="fas fa-lightbulb me-2"></i>
-                            <strong>Lógica:</strong> Sumar flags (CASE) de cada categoría. Si la suma >= 2, es un
-                            Doble-Doble.
-                        </div>
+                            <div class="alert alert-warning bg-opacity-10 border-warning text-warning">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Lógica:</strong> Sumar flags (CASE) de cada categoría. Si la suma >= 2, es un
+                                Doble-Doble.
+                            </div>
 
-                        <details>
-                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                            <pre><code class="language-sql">SELECT 
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
+                                <pre><code class="language-sql">SELECT 
     j.nombre,
     COUNT(*) as total_doble_dobles
 FROM estadisticasPartido ep
@@ -2082,19 +2890,19 @@ WHERE (
 ) >= 2
 GROUP BY j.id, j.nombre
 ORDER BY total_doble_dobles DESC;</code></pre>
-                        </details>
-                    </article>
+                            </details>
+                        </article>
 
-                </section>
+                    </section>
 
-                <!-- 2.7 Modifications (Insert, Update, Delete) -->
-                <section id="dml-modification" class="">
-                    <h2 class="display-6 fw-bold text-white mb-4 border-bottom pb-2 mt-5">Modificación de
-                        Datos (DML)</h2>
+                    <!-- 2.7 Modifications (Insert, Update, Delete) -->
+                    <section id="dml-modification" class="">
+                        <h2 class="display-6 fw-bold text-white mb-4 border-bottom pb-2 mt-5">Modificación de
+                            Datos (DML)</h2>
 
-                    <article id="dml-insert" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                        <h4 class="text-success">INSERT (Insertar)</h4>
-                        <pre><code class="language-sql">-- Simple
+                        <article id="dml-insert" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-success">INSERT (Insertar)</h4>
+                            <pre><code class="language-sql">-- Simple
 INSERT INTO Platos (nombre, precio) VALUES ('Arepa Nueva', 5.50);
 
 -- Múltiple
@@ -2103,254 +2911,254 @@ INSERT INTO Ingredientes (nombre, unidad) VALUES
 ('Queso', 'kg'), 
 ('Agua', 'l');</code></pre>
 
-                        <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios INSERT
-                            (1-4)</h5>
-                        <div class="accordion accordion-flush bg-transparent" id="accordionDML-Ins">
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-ins-1">1. Nuevo
-                                        Cliente</button></h2>
-                                <div id="ex-ins-1" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Ins">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Inserta un nuevo cliente llamado "Pedro
-                                            Picapiedra" con email "pedro@roca.com".<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">INSERT INTO Clientes (nombre, apellido, email) VALUES ('Pedro', 'Picapiedra', 'pedro@roca.com');</pre>
-                                        </details>
+                            <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios INSERT
+                                (1-4)</h5>
+                            <div class="accordion accordion-flush bg-transparent" id="accordionDML-Ins">
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-ins-1">1. Nuevo
+                                            Cliente</button></h2>
+                                    <div id="ex-ins-1" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Ins">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Inserta un nuevo cliente llamado "Pedro
+                                                Picapiedra" con email "pedro@roca.com".<br>
+                                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">INSERT INTO Clientes (nombre, apellido, email) VALUES ('Pedro', 'Picapiedra', 'pedro@roca.com');</pre>
+                                            </details>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-ins-2">2. Nuevo
-                                        Plato Completo</button></h2>
-                                <div id="ex-ins-2" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Ins">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Inserta un nuevo plato "Cachapa con Queso" a
-                                            8.50, categoría "Platos Principales" y disponible.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre class="bg-dark p-2 rounded text-success">INSERT INTO Platos (nombre_plato, precio_venta, categoria, disponible) 
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-ins-2">2. Nuevo
+                                            Plato Completo</button></h2>
+                                    <div id="ex-ins-2" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Ins">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Inserta un nuevo plato "Cachapa con Queso" a
+                                                8.50, categoría "Platos Principales" y disponible.<br>
+                                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre class="bg-dark p-2 rounded text-success">INSERT INTO Platos (nombre_plato, precio_venta, categoria, disponible) 
 VALUES ('Cachapa con Queso', 8.50, 'Platos Principales', TRUE);</pre>
-                                        </details>
+                                            </details>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-ins-3">3.
+                                            Insertar solo obligatorios</button>
+                                    </h2>
+                                    <div id="ex-ins-3" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Ins">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Inserta un cliente solo con Nombre y Apellido
+                                                ('Solo', 'Nombre'), asumiendo que el email acepta NULL.<br>
+                                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">INSERT INTO Clientes (nombre, apellido) VALUES ('Solo', 'Nombre');</pre>
+                                            </details>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-ins-4">4.
+                                            Insertar desde Select</button></h2>
+                                    <div id="ex-ins-4" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Ins">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Copia los clientes con más de 100 puntos a la
+                                                tabla 'Clientes_VIP'.<br>
+                                                <span class="badge bg-secondary mb-2">Contexto: General</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">INSERT INTO Clientes_VIP (id, nombre) SELECT id, nombre FROM Clientes WHERE puntos > 100;</pre>
+                                            </details>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-ins-3">3.
-                                        Insertar solo obligatorios</button>
-                                </h2>
-                                <div id="ex-ins-3" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Ins">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Inserta un cliente solo con Nombre y Apellido
-                                            ('Solo', 'Nombre'), asumiendo que el email acepta NULL.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">INSERT INTO Clientes (nombre, apellido) VALUES ('Solo', 'Nombre');</pre>
-                                        </details>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-ins-4">4.
-                                        Insertar desde Select</button></h2>
-                                <div id="ex-ins-4" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Ins">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Copia los clientes con más de 100 puntos a la
-                                            tabla 'Clientes_VIP'.<br>
-                                            <span class="badge bg-secondary mb-2">Contexto: General</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">INSERT INTO Clientes_VIP (id, nombre) SELECT id, nombre FROM Clientes WHERE puntos > 100;</pre>
-                                        </details>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
+                        </article>
 
-                    <article id="dml-update" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                        <h4 class="text-warning">UPDATE (Actualizar)</h4>
-                        <pre><code class="language-sql">-- SIEMPRE USA WHERE (o actualizarás toda la tabla)
+                        <article id="dml-update" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-warning">UPDATE (Actualizar)</h4>
+                            <pre><code class="language-sql">-- SIEMPRE USA WHERE (o actualizarás toda la tabla)
 UPDATE Platos SET precio = precio + 1 WHERE categoria = 'Arepas';</code></pre>
 
-                        <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios UPDATE
-                            (5-7)</h5>
-                        <div class="accordion accordion-flush bg-transparent" id="accordionDML-Upd">
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-upd-5">5.
-                                        Corregir Email</button></h2>
-                                <div id="ex-upd-5" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Upd">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Actualiza el email del cliente con ID 5 a
-                                            'nuevo@email.com'.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">UPDATE Clientes SET email = 'nuevo@email.com' WHERE cliente_id = 5;</pre>
-                                        </details>
+                            <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios UPDATE
+                                (5-7)</h5>
+                            <div class="accordion accordion-flush bg-transparent" id="accordionDML-Upd">
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-upd-5">5.
+                                            Corregir Email</button></h2>
+                                    <div id="ex-upd-5" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Upd">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Actualiza el email del cliente con ID 5 a
+                                                'nuevo@email.com'.<br>
+                                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">UPDATE Clientes SET email = 'nuevo@email.com' WHERE cliente_id = 5;</pre>
+                                            </details>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-upd-6">6. Oferta
+                                            General</button></h2>
+                                    <div id="ex-upd-6" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Upd">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Aplica un descuento del 10% a todos los
+                                                platos de la categoría 'Postres'.<br>
+                                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">UPDATE Platos SET precio_venta = precio_venta * 0.90 WHERE categoria = 'Postres';</pre>
+                                            </details>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-upd-7">7. Marcar
+                                            como Agotado</button></h2>
+                                    <div id="ex-upd-7" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Upd">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Marca como NO disponible (FALSE) el plato
+                                                'Pabellón Criollo'.<br>
+                                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">UPDATE Platos SET disponible = FALSE WHERE nombre_plato = 'Pabellón Criollo';</pre>
+                                            </details>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-upd-6">6. Oferta
-                                        General</button></h2>
-                                <div id="ex-upd-6" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Upd">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Aplica un descuento del 10% a todos los
-                                            platos de la categoría 'Postres'.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">UPDATE Platos SET precio_venta = precio_venta * 0.90 WHERE categoria = 'Postres';</pre>
-                                        </details>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-upd-7">7. Marcar
-                                        como Agotado</button></h2>
-                                <div id="ex-upd-7" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Upd">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Marca como NO disponible (FALSE) el plato
-                                            'Pabellón Criollo'.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">UPDATE Platos SET disponible = FALSE WHERE nombre_plato = 'Pabellón Criollo';</pre>
-                                        </details>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
+                        </article>
 
-                    <article id="dml-delete" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                        <h4 class="text-danger">DELETE (Borrar)</h4>
-                        <pre><code class="language-sql">-- SIEMPRE USA WHERE
+                        <article id="dml-delete" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-danger">DELETE (Borrar)</h4>
+                            <pre><code class="language-sql">-- SIEMPRE USA WHERE
 DELETE FROM Pedidos WHERE estado = 'Cancelado';</code></pre>
 
-                        <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios DELETE
-                            (8-10)</h5>
-                        <div class="accordion accordion-flush bg-transparent" id="accordionDML-Del">
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-del-8">8. Borrar
-                                        Cliente</button></h2>
-                                <div id="ex-del-8" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Del">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Elimina al cliente con ID 99.<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">DELETE FROM Clientes WHERE cliente_id = 99;</pre>
-                                        </details>
+                            <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios DELETE
+                                (8-10)</h5>
+                            <div class="accordion accordion-flush bg-transparent" id="accordionDML-Del">
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-del-8">8. Borrar
+                                            Cliente</button></h2>
+                                    <div id="ex-del-8" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Del">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Elimina al cliente con ID 99.<br>
+                                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">DELETE FROM Clientes WHERE cliente_id = 99;</pre>
+                                            </details>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-del-9">9.
+                                            Limpiar Logs Antiguos</button></h2>
+                                    <div id="ex-del-9" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Del">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Borra todos los logs con fecha anterior al
+                                                '2020-01-01'.<br>
+                                                <span class="badge bg-secondary mb-2">Contexto: General</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">DELETE FROM Logs WHERE fecha < '2020-01-01';</pre>
+                                            </details>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-secondary">
+                                    <h2 class="accordion-header"><button
+                                            class="accordion-button collapsed bg-dark text-light bg-opacity-50"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#ex-del-10">10.
+                                            Borrado con Subconsulta</button>
+                                    </h2>
+                                    <div id="ex-del-10" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionDML-Del">
+                                        <div class="accordion-body text-secondary">
+                                            <p><strong>Enunciado:</strong> Borra todos los clientes que no tengan
+                                                direccion de email registrada (IS NULL).<br>
+                                                <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
+                                            </p>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
+                                                </summary>
+                                                <pre
+                                                    class="bg-dark p-2 rounded text-success">DELETE FROM Clientes WHERE email IS NULL;</pre>
+                                            </details>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-del-9">9.
-                                        Limpiar Logs Antiguos</button></h2>
-                                <div id="ex-del-9" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Del">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Borra todos los logs con fecha anterior al
-                                            '2020-01-01'.<br>
-                                            <span class="badge bg-secondary mb-2">Contexto: General</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">DELETE FROM Logs WHERE fecha < '2020-01-01';</pre>
-                                        </details>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item bg-transparent border-secondary">
-                                <h2 class="accordion-header"><button
-                                        class="accordion-button collapsed bg-dark text-light bg-opacity-50"
-                                        type="button" data-bs-toggle="collapse" data-bs-target="#ex-del-10">10.
-                                        Borrado con Subconsulta</button>
-                                </h2>
-                                <div id="ex-del-10" class="accordion-collapse collapse"
-                                    data-bs-parent="#accordionDML-Del">
-                                    <div class="accordion-body text-secondary">
-                                        <p><strong>Enunciado:</strong> Borra todos los clientes que no tengan
-                                            direccion de email registrada (IS NULL).<br>
-                                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span>
-                                        </p>
-                                        <details>
-                                            <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
-                                            </summary>
-                                            <pre
-                                                class="bg-dark p-2 rounded text-success">DELETE FROM Clientes WHERE email IS NULL;</pre>
-                                        </details>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
-                </section>
+                        </article>
+                    </section>
 
-                <!-- 2.7 Advanced Queries -->
-                </section>
+                    <!-- 2.7 Advanced Queries -->
+                    </section>
 
-                </section>
+                    </section>
+                </div>
             </div>
-        </div>
 
-    </div>
+        </div>
     </div>
     </div>
     <!-- /#page-content-wrapper -->

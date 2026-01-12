@@ -248,3 +248,77 @@ code {
     /* Below sidebar (1000) but above content */
     backdrop-filter: blur(2px);
 }
+/* --- JOIN ANIMATION STYLES --- */
+.join-row {
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 8px;
+    border-radius: 6px;
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    transition: all 0.5s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.join-row.active {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    background: #1e3a8a;
+    color: white;
+}
+
+.join-row.matched {
+    background: #064e3b; /* Dark Green */
+    border-color: #10b981;
+    color: #ecfdf5;
+}
+
+.join-row.faded {
+    opacity: 0.2;
+    transform: scale(0.9);
+}
+
+.join-row-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.badge-a { background: #0ea5e9; color: white; }
+.badge-b { background: #f59e0b; color: black; }
+
+/* Move animation classes */
+@keyframes moveToCenterLeft {
+    to { transform: translateX(120%) scale(0.9); opacity: 0; }
+}
+@keyframes moveToCenterRight {
+    to { transform: translateX(-120%) scale(0.9); opacity: 0; }
+}
+
+.anim-move-right {
+    animation: moveToCenterLeft 0.8s forwards;
+}
+
+.anim-move-left {
+    animation: moveToCenterRight 0.8s forwards;
+}
+
+.result-row {
+    background: linear-gradient(90deg, #1e3a8a 0%, #172554 100%);
+    border: 1px solid #60a5fa;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    width: 90%;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: appearUp 0.5s forwards;
+}
+
+@keyframes appearUp {
+    to { opacity: 1; transform: translateY(0); }
+}
