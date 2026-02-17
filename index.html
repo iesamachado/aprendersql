@@ -102,13 +102,52 @@
                 </button>
                 <div class="collapse show" id="menu-dml-mod">
                     <a href="#dml-insert" class="list-group-item list-group-item-action bg-transparent second-text">
-                        <i class="fas fa-file-import me-2"></i>Inserts
+                        <i class="fas fa-file-import me-2"></i>3.1 INSERT
                     </a>
                     <a href="#dml-update" class="list-group-item list-group-item-action bg-transparent second-text">
-                        <i class="fas fa-pen me-2"></i>Updates
+                        <i class="fas fa-pen me-2"></i>3.2 UPDATE
                     </a>
                     <a href="#dml-delete" class="list-group-item list-group-item-action bg-transparent second-text">
-                        <i class="fas fa-eraser me-2"></i>Deletes
+                        <i class="fas fa-eraser me-2"></i>3.3 DELETE
+                    </a>
+
+                    <!-- Advanced Modifications -->
+                    <div class="list-group-item bg-transparent second-text fw-bold mt-2 pb-0">
+                        <i class="fas fa-tools me-2"></i>3.4 Avanzado
+                    </div>
+                    <a href="#adv-insert"
+                        class="list-group-item list-group-item-action bg-transparent second-text ms-3 small">
+                        3.4.1 INSERT desde SELECT
+                    </a>
+                    <a href="#adv-update"
+                        class="list-group-item list-group-item-action bg-transparent second-text ms-3 small">
+                        3.4.2 UPDATE desde SELECT
+                    </a>
+                    <a href="#adv-delete"
+                        class="list-group-item list-group-item-action bg-transparent second-text ms-3 small">
+                        3.4.3 DELETE con Subconsulta
+                    </a>
+
+                    <!-- Real World Case -->
+                    <div class="list-group-item bg-transparent second-text fw-bold mt-2 pb-0">
+                        <i class="fas fa-store me-2"></i>3.5 Caso Real: Tienda
+                    </div>
+                    <a href="#adv-gdpr"
+                        class="list-group-item list-group-item-action bg-transparent second-text ms-3 small">
+                        3.5.1 GDPR (Borrado)
+                    </a>
+                    <a href="#adv-case"
+                        class="list-group-item list-group-item-action bg-transparent second-text ms-3 small">
+                        3.5.2 Un Pedido
+                    </a>
+
+                    <a href="#adv-safety"
+                        class="list-group-item list-group-item-action bg-transparent second-text fw-bold mt-2">
+                        <i class="fas fa-shield-alt me-2"></i>3.6 Seguridad
+                    </a>
+                    <a href="#adv-transactions"
+                        class="list-group-item list-group-item-action bg-transparent second-text ms-3 small text-warning">
+                        3.6.1 Transacciones (Humor)
                     </a>
                 </div>
             </div>
@@ -2901,15 +2940,26 @@ ORDER BY total_doble_dobles DESC;</code></pre>
                             Datos (DML)</h2>
 
                         <article id="dml-insert" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                            <h4 class="text-success">INSERT (Insertar)</h4>
-                            <pre><code class="language-sql">-- Simple
-INSERT INTO Platos (nombre, precio) VALUES ('Arepa Nueva', 5.50);
+                            <h3 class="text-success">3.1 INSERT (Crear)</h3>
+                            <p class="text-secondary mb-3">
+                                El comando <code>INSERT</code> permite añadir datos de dos formas principales:
+                                introduciendo los valores manualmente o copiándolos desde otra consulta.
+                            </p>
 
--- Múltiple
-INSERT INTO Ingredientes (nombre, unidad) VALUES 
-('Harina', 'kg'), 
-('Queso', 'kg'), 
-('Agua', 'l');</code></pre>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-white border-bottom border-success pb-1">1. Manual ("A pelo")</h6>
+                                    <p class="small text-muted">Añades valores estáticos que tú escribes.</p>
+                                    <pre><code class="language-sql">INSERT INTO Platos (nombre, precio) 
+VALUES ('Arepa Nueva', 5.50);</code></pre>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-white border-bottom border-info pb-1">2. Desde una Consulta</h6>
+                                    <p class="small text-muted">Los datos vienen de un <code>SELECT</code> previo.</p>
+                                    <pre><code class="language-sql">INSERT INTO Clientes_VIP (nombre) 
+SELECT nombre FROM Clientes WHERE puntos > 100;</code></pre>
+                                </div>
+                            </div>
 
                             <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios INSERT
                                 (1-4)</h5>
@@ -3003,9 +3053,14 @@ VALUES ('Cachapa con Queso', 8.50, 'Platos Principales', TRUE);</pre>
                         </article>
 
                         <article id="dml-update" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                            <h4 class="text-warning">UPDATE (Actualizar)</h4>
-                            <pre><code class="language-sql">-- SIEMPRE USA WHERE (o actualizarás toda la tabla)
-UPDATE Platos SET precio = precio + 1 WHERE categoria = 'Arepas';</code></pre>
+                            <h3 class="text-warning">3.2 UPDATE (Actualizar)</h3>
+                            <p class="text-secondary mb-3">
+                                <code>UPDATE</code> modifica datos <strong>ya existentes</strong>. Es
+                                <span class="text-danger fw-bold">CRÍTICO</span> usar siempre <code>WHERE</code>,
+                                de lo contrario, ¡actualizarás TODAS las filas de la tabla con el mismo valor!
+                            </p>
+                            <pre><code class="language-sql">-- SINTAXIS BÁSICA (¡CUIDADO CON EL WHERE!)
+UPDATE Tabla SET columna = nuevo_valor WHERE condicion;</code></pre>
 
                             <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios UPDATE
                                 (5-7)</h5>
@@ -3077,9 +3132,15 @@ UPDATE Platos SET precio = precio + 1 WHERE categoria = 'Arepas';</code></pre>
                         </article>
 
                         <article id="dml-delete" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                            <h4 class="text-danger">DELETE (Borrar)</h4>
-                            <pre><code class="language-sql">-- SIEMPRE USA WHERE
-DELETE FROM Pedidos WHERE estado = 'Cancelado';</code></pre>
+                            <h3 class="text-danger">3.3 DELETE (Borrar)</h3>
+                            <p class="text-secondary mb-3">
+                                <code>DELETE</code> elimina filas completas de una tabla. Al igual que con el UPDATE,
+                                si olvidas el <code>WHERE</code>, <strong>borrarás todo el contenido</strong> de la
+                                tabla.
+                                No se pueden recuperar los datos eliminados sin un backup.
+                            </p>
+                            <pre><code class="language-sql">-- SINTAXIS BÁSICA
+DELETE FROM Tabla WHERE condicion;</code></pre>
 
                             <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios DELETE
                                 (8-10)</h5>
@@ -3147,6 +3208,534 @@ DELETE FROM Pedidos WHERE estado = 'Cancelado';</code></pre>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </article>
+                    </section>
+
+                    <!-- 2.8 Advanced Modifications -->
+                    <section id="dml-advanced-modifications" class="">
+                        <h3 class="text-white mt-5 border-bottom pb-2">3.4 Modificaciones Avanzadas</h3>
+
+                        <!-- 1. INSERT FROM QUERY WITH JOIN -->
+                        <article id="adv-insert" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-success"><i class="fas fa-copy me-2"></i>3.4.1 INSERT desde SELECT
+                            </h4>
+                            <p class="text-secondary">
+                                Imagina que quieres regalar un cupón a todos los usuarios que han comprado 'Arepas'.
+                                No necesitas un script de Python. ¡Puedes insertar directamente el resultado de una
+                                consulta compleja!
+                            </p>
+                            <div class="alert alert-success bg-opacity-10 border-success mb-3">
+                                <i class="fas fa-lightbulb me-2"></i><strong>Concepto:</strong>
+                                <code>INSERT INTO ... SELECT ...</code> permite copiar datos de una tabla a otra
+                                basándose en una consulta. Es muy potente para migraciones o tablas de resumen.
+                            </div>
+
+                            <div class="dml-anim-container h-auto d-block" id="anim-insert">
+                                <!-- TARGET (INSERT) -->
+                                <div class="mb-2 d-flex align-items-center gap-2">
+                                    <span class="code-token text-success">INSERT INTO Cupones</span>
+                                    <span class="code-token border border-success px-2"
+                                        id="ins-cols-target">(cliente_id, codigo)</span>
+                                    <span class="badge bg-success opacity-0 transition-opacity" id="ins-match-badge">
+                                        <i class="fas fa-check me-1"></i>2 Campos = 2 Campos
+                                    </span>
+                                </div>
+
+                                <!-- SOURCE (SELECT) -->
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <span class="code-token">SELECT DISTINCT</span>
+                                    <span class="code-token border border-info px-2" id="ins-cols-source">c.id,
+                                        'AREPA_LOVER'</span>
+                                    <div class="w-100"></div> <!-- Line break -->
+                                    <span class="code-token">FROM Clientes c</span>
+                                    <span class="code-token">INNER JOIN Pedidos p ON c.id = p.cliente_id</span>
+                                    <span class="code-token">WHERE p.producto = 'Arepa'</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-end">
+                                <button class="btn btn-outline-success btn-sm" onclick="playInsertAnim()">
+                                    <i class="fas fa-play me-2"></i>Ver Animación
+                                </button>
+                            </div>
+                        </article>
+
+                        <!-- 2. UPDATE WITH JOIN Logic -->
+                        <article id="adv-update" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-warning"><i class="fas fa-edit me-2"></i>3.4.2 UPDATE desde SELECT
+                            </h4>
+                            <p class="text-secondary">
+                                ¿Calcular una columna compleja? Primero visualízala con un SELECT.
+                                Luego cambia la coma <code>,</code> por un igual <code>=</code> y el SELECT por UPDATE.
+                            </p>
+
+                            <div class="dml-anim-container d-block" id="anim-update" style="min-height: 180px;">
+                                <!-- LINE 1: SELECT / UPDATE -->
+                                <div class="mb-2">
+                                    <span class="code-token text-info" id="upd-verb-select">SELECT</span>
+                                    <span class="code-token text-warning hidden" id="upd-verb-update">UPDATE Productos p
+                                        SET</span>
+                                </div>
+
+                                <!-- LINE 2: COLUMNS / SET assignment -->
+                                <div class="mb-2 ps-4">
+                                    <span class="code-token" id="upd-col-target">p.popularidad</span>
+
+                                    <!-- The Transformation: Comma becomes Equals -->
+                                    <span class="code-token fw-bold" id="upd-symbol-comma">,</span>
+                                    <span class="code-token fw-bold text-warning hidden" id="upd-symbol-equals">=</span>
+
+                                    <span class="code-token" id="upd-col-source">COUNT(d.id)</span>
+                                </div>
+
+                                <!-- LINE 3: FROM / JOIN -->
+                                <div class="mb-2">
+                                    <span class="code-token" id="upd-from">FROM Productos p</span>
+                                    <span class="code-token">INNER JOIN DetallesPedido d ON p.id = d.producto_id</span>
+                                </div>
+
+                                <!-- LINE 4: GROUP BY -->
+                                <div class="mb-2">
+                                    <span class="code-token">GROUP BY p.id</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-end">
+                                <button class="btn btn-outline-warning btn-sm" onclick="playUpdateAnim()">
+                                    <i class="fas fa-play me-2"></i>Ver Animación
+                                </button>
+                            </div>
+                        </article>
+
+                        <!-- 3. DELETE WITH SUBQUERY -->
+                        <article id="adv-delete" class="card bg-glass border-0 shadow-sm p-4 mb-4">
+                            <h4 class="text-danger"><i class="fas fa-trash-alt me-2"></i>3.4.3 DELETE con Subconsulta
+                            </h4>
+
+                            <div class="alert alert-danger bg-opacity-25 border-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>¡IMPORTANTE!</strong> La subconsulta dentro del <code>IN (...)</code> debe
+                                devolver
+                                <strong>UNA SOLA COLUMNA</strong> (generalmente el ID). Si devuelves `SELECT *`,
+                                fallará.
+                            </div>
+
+                            <p class="text-secondary">Borrar usuarios que no han hecho pedidos en el último año.</p>
+
+                            <div class="dml-anim-container d-block" id="anim-delete"
+                                style="min-height: 150px; position: relative;">
+                                <!-- OUTER DELETE -->
+                                <div class="mb-3" id="del-outer">
+                                    <span class="code-token text-danger">DELETE FROM Usuarios WHERE id IN (</span>
+                                    <span class="code-token text-muted" id="del-placeholder">...</span>
+                                    <span class="code-token text-danger">);</span>
+                                </div>
+
+                                <!-- SUBQUERY (Initially below, then moves up) -->
+                                <div id="del-subquery-container" style="transition: all 1s ease-in-out;">
+                                    <div class="subquery-box d-inline-block text-white border-info bg-dark"
+                                        id="del-subquery">
+                                        <span class="code-token text-info">SELECT user_id</span>
+                                        <span class="code-token">FROM Logins</span>
+                                        <span class="code-token">WHERE fecha < '2023-01-01' </span>
+                                    </div>
+                                </div>
+
+                                <!-- RESULT PREVIEW (Hidden) -->
+                                <div class="mt-2 hidden text-end text-muted small" id="del-results">
+                                    <i class="fas fa-arrow-up"></i> Inyectando IDs: 10, 45, 99...
+                                </div>
+                            </div>
+
+                            <div class="mt-3 text-end">
+                                <button class="btn btn-outline-danger btn-sm" onclick="playDeleteAnim()">
+                                    <i class="fas fa-play me-2"></i>Ver Integración
+                                </button>
+                            </div>
+                        </article>
+
+                        <!-- REAL WORLD CASE STUDY -->
+                        <!-- REAL WORLD CASE STUDY: GDPR / DELETION -->
+                        <!-- REAL WORLD CASE STUDY: MERGED -->
+                        <section id="real-world-store" class="mb-5">
+                            <h3 class="text-white border-bottom border-primary pb-2 mb-4">
+                                <i class="fas fa-store me-2 text-primary"></i>3.5 Caso Real: Una Tienda
+                            </h3>
+
+                            <!-- 3.5.1 GDPR / DELETION -->
+                            <article id="adv-gdpr" class="card bg-glass border-0 shadow-sm p-4 mb-4 border-primary">
+                                <h4 class="text-white border-bottom border-secondary pb-2 mb-3">
+                                    <i class="fas fa-user-slash me-2 text-warning"></i>3.5.1 GDPR (Borrado de Clientes)
+                                </h4>
+                                <p>
+                                    <strong>El Problema:</strong> Un cliente pide la baja. ¿Qué haces con sus Pedidos?
+                                    Tienes 3 estrategias comunes.
+                                </p>
+
+                                <ul class="nav nav-pills mb-3" id="pills-tab-gdpr" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="pills-opt1-tab" data-bs-toggle="pill"
+                                            data-bs-target="#pills-opt1" type="button" role="tab">1. Borrado
+                                            Total</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="pills-opt2-tab" data-bs-toggle="pill"
+                                            data-bs-target="#pills-opt2" type="button" role="tab">2. PII
+                                            Anonimizado</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="pills-opt3-tab" data-bs-toggle="pill"
+                                            data-bs-target="#pills-opt3" type="button" role="tab">3. Desvincular
+                                            (NULL)</button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="pills-tabContent-gdpr">
+                                    <!-- OPTION 1: CASCADE DELETE -->
+                                    <div class="tab-pane fade show active" id="pills-opt1" role="tabpanel">
+                                        <div class="alert alert-danger bg-opacity-10 border-danger">
+                                            <i class="fas fa-biohazard me-2"></i><strong>Destructivo:</strong>
+                                            Borras al cliente Y TAMBIÉN sus pedidos. Pierdes historial de ventas.
+                                        </div>
+                                        <div
+                                            class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+                                            <div><span class="text-info">START TRANSACTION;</span></div>
+
+                                            <div class="text-muted mt-2">-- 1. Borrar detalles (Un IN con JOIN dentro)
+                                            </div>
+                                            <div>DELETE FROM DetallesPedido WHERE pedido_id IN (</div>
+                                            <div>&nbsp;&nbsp;SELECT p.id FROM Pedidos p</div>
+                                            <div>&nbsp;&nbsp;INNER JOIN Clientes c ON p.cliente_id = c.id</div>
+                                            <div>&nbsp;&nbsp;WHERE c.email = 'juan@gmail.com'</div>
+                                            <div>);</div>
+
+                                            <div class="text-muted mt-2">-- 2. Borrar pedidos del cliente</div>
+                                            <div>DELETE FROM Pedidos WHERE cliente_id IN (</div>
+                                            <div>&nbsp;&nbsp;SELECT id FROM Clientes WHERE email = 'juan@gmail.com'
+                                            </div>
+                                            <div>);</div>
+
+                                            <div class="text-muted mt-2">-- 3. Finalmente, borrar al cliente</div>
+                                            <div>DELETE FROM Clientes WHERE email = 'juan@gmail.com';</div>
+                                            <div><span class="text-info">COMMIT;</span></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- OPTION 2: OBFUSCATION (Recommended) -->
+                                    <div class="tab-pane fade" id="pills-opt2" role="tabpanel">
+                                        <div class="alert alert-success bg-opacity-10 border-success">
+                                            <i class="fas fa-check-circle me-2"></i><strong>Recomendado (GDPR):</strong>
+                                            Mantienes los datos de ventas pero el cliente se vuelve anónimo.
+                                        </div>
+                                        <div
+                                            class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+                                            <div><span class="text-warning">UPDATE</span> Clientes</div>
+                                            <div>SET nombre = <span class="text-success">'Anónimo'</span>,</div>
+                                            <div>&nbsp;&nbsp;&nbsp;&nbsp;email = CONCAT('borrado_', id, '@anonimo.com'),
+                                            </div>
+                                            <div>&nbsp;&nbsp;&nbsp;&nbsp;telefono = NULL,</div>
+                                            <div>&nbsp;&nbsp;&nbsp;&nbsp;direccion = 'Destruido'</div>
+                                            <div>WHERE email = 'juan@gmail.com';</div>
+                                            <div class="text-muted mt-2">-- Resultado: Los pedidos siguen existiendo,
+                                                pero
+                                                son de "Anónimo".</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- OPTION 3: SET NULL -->
+                                    <div class="tab-pane fade" id="pills-opt3" role="tabpanel">
+                                        <div class="alert alert-warning bg-opacity-10 border-warning">
+                                            <i class="fas fa-link me-2"></i><strong>Híbrido:</strong>
+                                            Los pedidos quedan "huérfanos" (sin cliente) y borras la ficha.
+                                        </div>
+                                        <div
+                                            class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+                                            <div><span class="text-info">START TRANSACTION;</span></div>
+
+                                            <div class="text-muted mt-2">-- 1. Desvincular pedidos (FK debe permitir
+                                                NULL)
+                                            </div>
+                                            <div>UPDATE Pedidos SET cliente_id = <span class="text-warning">NULL</span>
+                                            </div>
+                                            <div>WHERE cliente_id = (SELECT id FROM Clientes WHERE email =
+                                                'juan@gmail.com');</div>
+
+                                            <div class="text-muted mt-2">-- 2. Ahora es seguro borrar al cliente</div>
+                                            <div>DELETE FROM Clientes WHERE email = 'juan@gmail.com';</div>
+
+                                            <div class="mt-2"><span class="text-info">COMMIT;</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <!-- 3.5.2 E-COMMERCE CHECKOUT -->
+                            <article id="adv-case" class="card bg-glass border-0 shadow-sm p-4 mb-4 border-primary">
+                                <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">
+                                    <i class="fas fa-shopping-cart me-2"></i>3.5.2 Un Pedido (Tienda Online)
+                                </h4>
+                                <p>
+                                    <strong>El Escenario:</strong> Un usuario hace login, añade productos al carrito
+                                    (con
+                                    cantidades) y paga.
+                                    Observa cómo la BB.DD. recupera precios, calcula subtotales y aplica gastos de
+                                    envío.
+                                </p>
+
+                                <!-- Animation Container -->
+                                <div class="row g-0 border rounded overflow-hidden mb-4"
+                                    style="background-color: #0f172a;">
+                                    <!-- Left: Store Interface -->
+                                    <div class="col-md-5 border-end border-secondary p-3">
+                                        <h6 class="text-white border-bottom border-secondary pb-2 mb-3"><i
+                                                class="fas fa-desktop me-2"></i>Mi Carrito (Frontend)</h6>
+
+                                        <!-- User Status -->
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="badge bg-secondary" id="shop-user-status">No Logueado</span>
+                                            <small class="text-muted" id="shop-cart-id">Carrito: -</small>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div class="d-grid gap-2 mb-3">
+                                            <button class="btn btn-info btn-sm" id="btn-login"
+                                                onclick="shopAction('LOGIN')">
+                                                <i class="fas fa-sign-in-alt me-2"></i>1. Login (Ana)
+                                            </button>
+                                            <div class="d-flex gap-1">
+                                                <button class="btn btn-outline-light btn-sm w-100" id="btn-add-iphone"
+                                                    onclick="shopAction('ADD', 'iPhone 15', 900, 1)" disabled>
+                                                    <i class="fas fa-mobile-alt me-1"></i>2. iPhone (Cant: 1)
+                                                </button>
+                                            </div>
+                                            <div class="d-flex gap-1">
+                                                <button class="btn btn-outline-light btn-sm w-100" id="btn-add-case"
+                                                    onclick="shopAction('ADD', 'Funda', 20, 3)" disabled>
+                                                    <i class="fas fa-square me-1"></i>3. Fundas (Cant: 3)
+                                                </button>
+                                            </div>
+                                            <button class="btn btn-success btn-sm" id="btn-checkout"
+                                                onclick="shopAction('CHECKOUT')" disabled>
+                                                <i class="fas fa-credit-card me-2"></i>4. Pagar (Checkout)
+                                            </button>
+                                        </div>
+
+                                        <!-- Virtual Cart Display -->
+                                        <div class="bg-white text-dark p-2 rounded font-monospace small"
+                                            style="min-height: 150px;">
+                                            <div class="text-center fw-bold border-bottom mb-1">RESUMEN PEDIDO</div>
+                                            <div id="shop-cart-items">
+                                                <!-- Items go here -->
+                                            </div>
+                                            <div class="border-top mt-2 pt-1">
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Subtotal:</span>
+                                                    <span id="shop-subtotal">0.00€</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between text-muted">
+                                                    <span>Envío:</span>
+                                                    <span id="shop-shipping">--</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between fw-bold fs-6 mt-1">
+                                                    <span>TOTAL:</span>
+                                                    <span id="shop-total">0.00€</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right: Database Log (SQL) -->
+                                    <div class="col-md-7 p-3 bg-black font-monospace">
+                                        <h6 class="text-success border-bottom border-secondary pb-2 mb-3"><i
+                                                class="fas fa-database me-2"></i>Log de Base de Datos</h6>
+                                        <div id="shop-sql-log" class="small text-info"
+                                            style="height: 350px; overflow-y: auto;">
+                                            <div class="text-muted fst-italic">Esperando acciones de usuario...</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Explanation Text -->
+                                <div class="alert alert-info bg-opacity-10 border-info text-light small">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Puntos Clave:</strong>
+                                    <ul class="mb-0 mt-1 ps-3">
+                                        <li><strong>SELECT antes de INSERT:</strong> Necesitamos saber ID de usuario y
+                                            Precio actual del producto.</li>
+                                        <li><strong>Lógica de Negocio en SQL:</strong> El cálculo del envío se puede
+                                            hacer
+                                            en el `UPDATE` final.</li>
+                                        <li><strong>Transacciones:</strong> Todo el checkout debe ser atómico.</li>
+                                    </ul>
+                                </div>
+                            </article>
+                        </section>
+
+                        <!-- SAFETY: TRANSACTIONS & MEMES -->
+                        <article id="adv-safety" class="card bg-glass border-0 shadow-sm p-4 mb-4 border-danger">
+                            <h3 class="text-white"><i class="fas fa-shield-alt me-2 text-primary"></i>3.6 Seguridad:
+                                DELETE sin WHERE</h3>
+
+                            <div class="row align-items-center mb-4">
+                                <div class="col-md-6">
+                                    <h5 class="text-info">El Peligro es Real</h5>
+                                    <p class="text-secondary small">
+                                        Ejecutar un <code>DELETE</code> o <code>UPDATE</code> sin filtrar afecta a
+                                        <strong>TODAS</strong> las filas. Si trabajas en producción, esto es despido
+                                        inmediato.
+                                    </p>
+                                    <div class="ratio ratio-16x9 rounded overflow-hidden shadow">
+                                        <iframe src="https://www.youtube-nocookie.com/embed/i_cVJgIz_Cs"
+                                            title="La Cumbia del Delete" allowfullscreen></iframe>
+                                    </div>
+                                    <p class="text-center text-muted small mt-2">🎵 "La Cumbia del Delete" - Un clásico
+                                        🎵</p>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <h5 class="text-danger mb-3">Galería del Terror</h5>
+
+                                    <!-- Carousel for Memes -->
+                                    <div id="memeCarousel" class="carousel slide" data-bs-ride="carousel">
+                                        <div class="carousel-inner rounded shadow border border-secondary">
+                                            <div class="carousel-item active">
+                                                <img src="img/meme_delete_where.webp" class="d-block w-100"
+                                                    alt="Meme Disaster">
+                                                <div
+                                                    class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded p-1">
+                                                    <p class="mb-0 small">Cuando ves el "Rows affected: 15,420"</p>
+                                                </div>
+                                            </div>
+                                            <div class="carousel-item">
+                                                <img src="img/meme_gru_plan.webp" class="d-block w-100"
+                                                    alt="Meme Gru Plan">
+                                                <div
+                                                    class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded p-1">
+                                                    <p class="mb-0 small">El Plan Perfecto... con un fallo fatal</p>
+                                                </div>
+                                            </div>
+                                            <!-- User Added Memes -->
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete01.jpg"
+                                                    class="d-block w-100" alt="Meme User 1"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete02.jpg"
+                                                    class="d-block w-100" alt="Meme User 2"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete03.jpg"
+                                                    class="d-block w-100" alt="Meme User 3"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete04.jpeg"
+                                                    class="d-block w-100" alt="Meme User 4"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete05.jpg"
+                                                    class="d-block w-100" alt="Meme User 5"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete06.jpg"
+                                                    class="d-block w-100" alt="Meme User 6"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete07.jpeg"
+                                                    class="d-block w-100" alt="Meme User 7"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete08.jpeg"
+                                                    class="d-block w-100" alt="Meme User 8"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete09.jpeg"
+                                                    class="d-block w-100" alt="Meme User 9"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete10.jpeg"
+                                                    class="d-block w-100" alt="Meme User 10"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete11.jpeg"
+                                                    class="d-block w-100" alt="Meme User 11"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete12.jpeg"
+                                                    class="d-block w-100" alt="Meme User 12"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete13.jpeg"
+                                                    class="d-block w-100" alt="Meme User 13"></div>
+                                            <div class="carousel-item"><img src="img/deletessinwhere/delete14.jpeg"
+                                                    class="d-block w-100" alt="Meme User 14"></div>
+                                        </div>
+                                        <button class="carousel-control-prev" type="button"
+                                            data-bs-target="#memeCarousel" data-bs-slide="prev"
+                                            style="filter: invert(1);">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Anterior</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button"
+                                            data-bs-target="#memeCarousel" data-bs-slide="next"
+                                            style="filter: invert(1);">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Siguiente</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3.6.1 Transactions -->
+                            <div id="adv-transactions" class="mt-5 border-top border-secondary pt-4">
+                                <h4 class="text-warning"><i class="fas fa-undo-alt me-2"></i>3.6.1 Transacciones: El
+                                    "Ctrl+Z" de la Base de Datos</h4>
+                                <p class="text-secondary">
+                                    ¿Alguna vez has enviado un mensaje de WhatsApp a la persona equivocada y has deseado
+                                    borrarlo antes de que lo lea?
+                                    Bueno, en SQL, <strong>SI PUEDES</strong> (si eres listo).
+                                </p>
+
+                                <div class="row align-items-center">
+                                    <div class="col-md-7">
+                                        <div class="alert alert-warning bg-opacity-10 border-warning">
+                                            <h5 class="alert-heading text-warning"><i
+                                                    class="fas fa-exclamation-triangle me-2"></i>Regla de Oro para
+                                                Sobrevivir</h5>
+                                            <p class="mb-0">
+                                                Antes de ejecutar cualquier <code>DELETE</code> o <code>UPDATE</code>
+                                                masivo, ¡abre una transacción!
+                                                Es tu red de seguridad. Si metes la pata (y lo harás), puedes hacer
+                                                <strong>ROLLBACK</strong> y volver al pasado como si nada hubiera
+                                                ocurrido.
+                                            </p>
+                                        </div>
+                                        <div
+                                            class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+                                            <span class="text-info">-- 1. Empieza la magia (Modo Seguro ON)</span><br>
+                                            <span class="text-primary fw-bold">BEGIN;</span><br><br>
+
+                                            <span class="text-info">-- 2. Ejecuta tu sentencia peligrosa</span><br>
+                                            <span class="text-light">DELETE FROM Usuarios;</span> <span
+                                                class="text-danger fw-bold">-- ¡UPS! ¡OLVIDÉ EL WHERE! 😱</span><br><br>
+
+                                            <span class="text-info">-- 3. ¿El resultado es un desastre?</span><br>
+                                            <span class="text-warning fw-bold">ROLLBACK;</span> <span
+                                                class="text-success">-- ¡Fiú! Todo vuelve a estar bien.
+                                                😌</span><br><br>
+
+                                            <span class="text-info">-- 4. ¿Todo correcto? (Solo entonces...)</span><br>
+                                            <span class="text-success fw-bold">COMMIT;</span> <span
+                                                class="text-muted">-- Guardar cambios para siempre.</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 text-center">
+                                        <img src="img/rollback_lifesaver_meme.png"
+                                            class="img-fluid rounded shadow-lg border border-warning"
+                                            alt="Meme Transaction Rollback">
+                                        <p class="small text-muted mt-2"><em>Tu ángel de la guarda se llama
+                                                ROLLBACK</em></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tattoos Image -->
+                            <div class="text-center mt-5">
+                                <h5 class="text-white mb-3">Filosofía de Vida (Tatuajes Obligatorios)</h5>
+                                <div class="d-inline-block position-relative">
+                                    <img src="img/safety_tattoos_meme_v2.png"
+                                        class="img-fluid rounded shadow-lg border border-danger"
+                                        alt="Tatuajes SQL Safety" style="max-height: 400px;">
+                                    <div class="position-absolute top-50 start-0 translate-middle-y bg-dark bg-opacity-75 p-2 rounded text-white small fw-bold ms-2"
+                                        style="max-width: 150px;">
+                                        NI UN DELETE/UPDATE SIN WHERE
+                                    </div>
+                                    <div class="position-absolute top-50 end-0 translate-middle-y bg-dark bg-opacity-75 p-2 rounded text-white small fw-bold me-2"
+                                        style="max-width: 150px;">
+                                        NI UN DELETE/UPDATE SIN BEGIN ROLLBACK
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info border-info bg-opacity-10 mt-4">
+                                <i class="fas fa-life-ring me-2"></i><strong>Consejo Pro:</strong>
+                                Siempre escribe el <code>SELECT</code> antes que el <code>DELETE</code> para verificar
+                                qué vas a borrar.
+                                <br>
+                                <code>SELECT * FROM Usuarios WHERE id = 5;</code> -> ¿Es el correcto? ->
+                                <code>DELETE ...</code>
                             </div>
                         </article>
                     </section>

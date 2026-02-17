@@ -1187,3 +1187,360 @@ document.addEventListener('DOMContentLoaded', () => {
         renderExclusionTables();
     }
 });
+
+
+/* --- DML ADVANCED ANIMATIONS --- */
+
+// 1. INSERT FROM QUERY Animation
+function playInsertAnim() {
+    const targetCols = document.getElementById('ins-cols-target');
+    const sourceCols = document.getElementById('ins-cols-source');
+    const matchBadge = document.getElementById('ins-match-badge');
+
+    if (!targetCols || !sourceCols) return;
+
+    // Reset
+    targetCols.classList.remove('highlight', 'bg-success', 'text-white');
+    sourceCols.classList.remove('highlight', 'bg-info', 'text-black');
+    matchBadge.classList.remove('opacity-100');
+    matchBadge.classList.add('opacity-0');
+
+    // 1. Highlight Source Columns (SELECT ...)
+    setTimeout(() => {
+        sourceCols.classList.add('highlight');
+    }, 200);
+
+    // 2. Highlight Target Columns (INSERT INTO ...)
+    setTimeout(() => {
+        targetCols.classList.add('highlight');
+    }, 1000);
+
+    // 3. Show Match Badge ("2 Campos = 2 Campos")
+    setTimeout(() => {
+        sourceCols.classList.remove('highlight');
+        targetCols.classList.remove('highlight');
+
+        // Solid Highlight to show success
+        sourceCols.classList.add('bg-info', 'text-black');
+        targetCols.classList.add('bg-success', 'text-white');
+
+        matchBadge.classList.remove('opacity-0');
+        matchBadge.classList.add('opacity-100');
+        matchBadge.classList.add('animate-pop');
+    }, 2000);
+
+    // Reset after 5s
+    setTimeout(() => {
+        sourceCols.classList.remove('bg-info', 'text-black');
+        targetCols.classList.remove('bg-success', 'text-white');
+        matchBadge.classList.remove('opacity-100', 'animate-pop');
+        matchBadge.classList.add('opacity-0');
+    }, 5000);
+}
+
+// 2. UPDATE WITH JOIN Animation (Visual Transformation)
+function playUpdateAnim() {
+    // Elements
+    const elSelect = document.getElementById('upd-verb-select');
+    const elUpdate = document.getElementById('upd-verb-update');
+
+    const elComma = document.getElementById('upd-symbol-comma');
+    const elEquals = document.getElementById('upd-symbol-equals');
+
+    const elFrom = document.getElementById('upd-from');
+
+    if (!elSelect || !elUpdate) return;
+
+    // Reset
+    elSelect.classList.remove('hidden', 'fade-out');
+    elUpdate.classList.add('hidden', 'animate-pop');
+
+    elComma.classList.remove('hidden', 'fade-out');
+    elEquals.classList.add('hidden', 'animate-pop');
+
+    elFrom.classList.remove('text-muted', 'text-decoration-line-through');
+
+    // 1. Transform SELECT -> UPDATE SET
+    setTimeout(() => {
+        elSelect.classList.add('fade-out');
+        setTimeout(() => {
+            elSelect.classList.add('hidden');
+            elUpdate.classList.remove('hidden');
+        }, 300);
+    }, 500);
+
+    // 2. Transform Comma -> Equals
+    setTimeout(() => {
+        elComma.classList.add('fade-out');
+        setTimeout(() => {
+            elComma.classList.add('hidden');
+            elEquals.classList.remove('hidden');
+        }, 300);
+    }, 1200);
+
+    // 3. Optional: Cross out FROM (since UPDATE Table syntax usually implies it, but sticking to visual request)
+    // User didn't explicitly ask to remove FROM, but usually UPDATE Table SET ... FROM is specific syntax.
+    // For visual clarity, let's keep it simple or maybe dim it.
+    setTimeout(() => {
+        elFrom.classList.add('text-muted');
+        // In many dialects (like MySQL), you don't repeat FROM table if it's in UPDATE table. 
+        // But let's just highlight the change we made clearly.
+    }, 2000);
+
+    // Reset after 6s
+    setTimeout(() => {
+        elSelect.classList.remove('hidden', 'fade-out');
+        elUpdate.classList.add('hidden');
+
+        elComma.classList.remove('hidden', 'fade-out');
+        elEquals.classList.add('hidden');
+
+        elFrom.classList.remove('text-muted');
+    }, 6000);
+}
+
+// 3. DELETE WITH SUBQUERY Animation (Integration)
+function playDeleteAnim() {
+    const subqueryContainer = document.getElementById('del-subquery-container');
+    const subqueryBox = document.getElementById('del-subquery');
+    const placeholder = document.getElementById('del-placeholder');
+    const results = document.getElementById('del-results');
+    const outer = document.getElementById('del-outer');
+
+    if (!subqueryContainer || !placeholder) return;
+
+    // Reset
+    subqueryContainer.style.transform = "translate(0, 0) scale(1)";
+    subqueryContainer.style.opacity = "1";
+    placeholder.style.display = "inline";
+    results.classList.add('hidden');
+    results.classList.remove('animate-pop');
+
+    // 1. Highlight Subquery
+    subqueryBox.classList.add('highlight');
+
+    setTimeout(() => {
+        // 2. Move Subquery UP into the placeholder position
+        // Calculate simpler movement: just move up visually for demo purposes
+        // Ideally we'd calculate exact pixels, but for this demo a negative translate Y is usually enough
+        // provided the container height is known. 
+        // Let's try to fit it into the line above.
+
+        subqueryContainer.style.transform = "translate(20px, -45px) scale(0.9)";
+        placeholder.style.display = "none";
+    }, 1000);
+
+    setTimeout(() => {
+        // 3. Dock it
+        subqueryBox.classList.remove('highlight');
+        subqueryBox.classList.add('active'); // Turn blue/integrated border
+        results.classList.remove('hidden');
+        results.classList.add('animate-pop');
+    }, 2000);
+
+    // Reset after 6s
+    setTimeout(() => {
+        subqueryContainer.style.transform = "translate(0, 0) scale(1)";
+        placeholder.style.display = "inline";
+        subqueryBox.classList.remove('highlight', 'active');
+        results.classList.add('hidden', 'animate-pop');
+    }, 6000);
+}
+
+// Expose functions globally
+window.playInsertAnim = playInsertAnim;
+window.playUpdateAnim = playUpdateAnim;
+window.playDeleteAnim = playDeleteAnim;
+
+
+// --- SIDEBAR SCROLL SPY ---
+document.addEventListener('DOMContentLoaded', function () {
+    const scrollSpySections = [
+        { sectionId: 'ddl-section', menuId: 'menu-ddl' },
+        { sectionId: 'dml-section', menuId: 'menu-dml-queries' },
+        { sectionId: 'dml-modification', menuId: 'menu-dml-mod' }
+    ];
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '-20% 0px -60% 0px', // Trigger when section is near top
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const targetId = entry.target.id;
+                const activeMap = scrollSpySections.find(map => map.sectionId === targetId);
+
+                if (activeMap) {
+                    // 1. Expand the Active Menu
+                    const activeMenu = document.getElementById(activeMap.menuId);
+                    if (activeMenu && !activeMenu.classList.contains('show')) {
+                        const bsCollapse = bootstrap.Collapse.getOrCreateInstance(activeMenu, { toggle: false });
+                        bsCollapse.show();
+                    }
+
+                    // 2. Collapse Others
+                    scrollSpySections.forEach(map => {
+                        if (map.menuId !== activeMap.menuId) {
+                            const otherMenu = document.getElementById(map.menuId);
+                            if (otherMenu && otherMenu.classList.contains('show')) {
+                                const bsCollapse = bootstrap.Collapse.getOrCreateInstance(otherMenu, { toggle: false });
+                                bsCollapse.hide();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }, observerOptions);
+
+    scrollSpySections.forEach(map => {
+        const section = document.getElementById(map.sectionId);
+        if (section) {
+            observer.observe(section);
+        }
+    });
+});
+
+
+
+// --- ONLINE SHOP ANIMATION (E-COMMERCE) ---
+let shopState = {
+    cartId: null,
+    userId: null,
+    subtotal: 0,
+    shipping: 0,
+    total: 0,
+    items: [],
+    isLoggedIn: false
+};
+
+function shopAction(action, itemName, price, qty = 1) {
+    const logContainer = document.getElementById('shop-sql-log');
+    const userStatus = document.getElementById('shop-user-status');
+    const cartIdDisplay = document.getElementById('shop-cart-id');
+    const cartItemsContainer = document.getElementById('shop-cart-items');
+
+    // Totals
+    const subtotalDisplay = document.getElementById('shop-subtotal');
+    const shippingDisplay = document.getElementById('shop-shipping');
+    const totalDisplay = document.getElementById('shop-total');
+
+    // Buttons
+    const btnLogin = document.getElementById('btn-login');
+    const btnAddPhone = document.getElementById('btn-add-iphone');
+    const btnAddCase = document.getElementById('btn-add-case');
+    const btnCheckout = document.getElementById('btn-checkout');
+
+    function log(sql, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `mb-1 ${type === 'sql' ? 'text-warning font-monospace' : 'text-muted'}`;
+        div.innerHTML = type === 'sql' ? `<i class="fas fa-angle-right me-2"></i>${sql}` : sql;
+        logContainer.appendChild(div);
+        logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    if (action === 'LOGIN') {
+        // Reset
+        shopState = { cartId: Math.floor(Math.random() * 5000) + 1, userId: 101, subtotal: 0, shipping: 0, total: 0, items: [], isLoggedIn: true };
+        cartItemsContainer.innerHTML = '';
+        subtotalDisplay.textContent = '0.00€';
+        shippingDisplay.textContent = '--';
+        totalDisplay.textContent = '0.00€';
+
+        logContainer.innerHTML = '';
+        log('--- USUARIO INTENTA LOGIN ---', 'text-white fw-bold');
+
+        setTimeout(() => {
+            log(`-- 1. Buscar usuario`, 'text-secondary');
+            log(`SELECT id, nombre, estado FROM Clientes WHERE email = 'ana@gmail.com';`, 'sql');
+        }, 400);
+
+        setTimeout(() => {
+            log(`> ID: 101, Nombre: Ana`, 'text-success');
+            log(`-- 2. Crear Carrito (Pedido Abierto)`, 'text-secondary');
+            log(`INSERT INTO Pedidos (cliente_id, fecha, nombre_entrega, estado)
+                SELECT id,now(), nombre, 'Carrito' FROM Clientes WHERE email = 'ana@gmail.com'`, 'sql');
+
+            userStatus.className = 'badge bg-success';
+            userStatus.textContent = 'Ana (Logueada)';
+            cartIdDisplay.textContent = `Cart #${shopState.cartId}`;
+
+            btnLogin.disabled = true;
+            btnAddPhone.disabled = false;
+            btnAddCase.disabled = false;
+            btnCheckout.disabled = false;
+        }, 1000);
+    }
+
+    if (action === 'ADD') {
+        if (!shopState.isLoggedIn) return;
+
+        // JS Logic for UI only
+        const lineTotal = price * qty;
+        shopState.items.push({ name: itemName, price: price, qty: qty, total: lineTotal });
+        shopState.subtotal += lineTotal;
+
+        // Update UI Cart
+        const itemRow = document.createElement('div');
+        itemRow.className = 'd-flex justify-content-between border-bottom border-light small';
+        itemRow.innerHTML = `<span>${qty}x ${itemName}</span><span>${lineTotal.toFixed(2)}€</span>`;
+        cartItemsContainer.appendChild(itemRow);
+
+        subtotalDisplay.textContent = `${shopState.subtotal.toFixed(2)}€`;
+
+        log(`Usuario añade: ${qty}x ${itemName}...`, 'text-white');
+
+        setTimeout(() => {
+            log(`-- 1. Insertar (Precio via Subconsulta)`, 'text-secondary');
+            // Using subquery for price instead of hardcoded JS value
+            log(`INSERT INTO DetallesPedido (pedido_id, producto_id, cantidad, precio_unitario) 
+SELECT ${shopState.cartId}, id, ${qty},  precio FROM Productos WHERE nombre = '${itemName}');`, 'sql');
+        }, 400);
+
+        setTimeout(() => {
+            log(`-- 2. Recalcular Subtotal (SUM real)`, 'text-secondary');
+            // Using SUM aggregation instead of JS math
+            log(`UPDATE Pedidos SET subtotal = (SELECT SUM(cantidad * precio_unitario) FROM DetallesPedido WHERE pedido_id = ${shopState.cartId}) WHERE id = ${shopState.cartId};`, 'sql');
+        }, 1000);
+    }
+
+    if (action === 'CHECKOUT') {
+        if (!shopState.isLoggedIn) return;
+
+        // Shipping Calculation Rule (JS for UI only)
+        const shippingCost = 0.00;
+        shopState.shipping = shippingCost;
+        shopState.total = shopState.subtotal + shippingCost;
+
+        log('--- PROCESANDO CHECKOUT ---', 'text-white fw-bold');
+
+        setTimeout(() => {
+            log(`-- 1. Calcular Envío y Total (Lógica SQL)`, 'text-secondary');
+            // Advanced UPDATE with CASE and self-calculation
+            log(`UPDATE Pedidos 
+SET gastos_envio = 0.00,
+    total = subtotal + gastos_envio,
+    estado = 'Pagado', 
+    fecha_pago = NOW() 
+WHERE id = ${shopState.cartId};`, 'sql');
+
+            // UI Update (simulating the result of the query)
+            shippingDisplay.textContent = shippingCost === 0 ? 'GRATIS' : `${shippingCost}€`;
+            totalDisplay.textContent = `${shopState.total.toFixed(2)}€`;
+
+            userStatus.className = 'badge bg-secondary';
+            userStatus.textContent = 'Pedido Completado';
+
+            shopState.isLoggedIn = false;
+            btnLogin.disabled = false;
+            btnAddPhone.disabled = true;
+            btnAddCase.disabled = true;
+            btnCheckout.disabled = true;
+
+            log('--- PEDIDO FINALIZADO CON ÉXITO ---', 'text-success fw-bold');
+        }, 800);
+    }
+}

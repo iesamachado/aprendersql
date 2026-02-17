@@ -248,6 +248,7 @@ code {
     /* Below sidebar (1000) but above content */
     backdrop-filter: blur(2px);
 }
+
 /* --- JOIN ANIMATION STYLES --- */
 .join-row {
     background: #1e293b;
@@ -269,7 +270,8 @@ code {
 }
 
 .join-row.matched {
-    background: #064e3b; /* Dark Green */
+    background: #064e3b;
+    /* Dark Green */
     border-color: #10b981;
     color: #ecfdf5;
 }
@@ -288,15 +290,29 @@ code {
     margin-right: 5px;
 }
 
-.badge-a { background: #0ea5e9; color: white; }
-.badge-b { background: #f59e0b; color: black; }
+.badge-a {
+    background: #0ea5e9;
+    color: white;
+}
+
+.badge-b {
+    background: #f59e0b;
+    color: black;
+}
 
 /* Move animation classes */
 @keyframes moveToCenterLeft {
-    to { transform: translateX(120%) scale(0.9); opacity: 0; }
+    to {
+        transform: translateX(120%) scale(0.9);
+        opacity: 0;
+    }
 }
+
 @keyframes moveToCenterRight {
-    to { transform: translateX(-120%) scale(0.9); opacity: 0; }
+    to {
+        transform: translateX(-120%) scale(0.9);
+        opacity: 0;
+    }
 }
 
 .anim-move-right {
@@ -320,5 +336,120 @@ code {
 }
 
 @keyframes appearUp {
-    to { opacity: 1; transform: translateY(0); }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- DML ANIMATION STYLES --- */
+.dml-anim-container {
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.1rem;
+    color: #cbd5e1;
+    min-height: 120px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.code-token {
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.5s ease-in-out;
+    display: inline-block;
+}
+
+.code-token.highlight {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid #3b82f6;
+    color: white;
+    transform: scale(1.1);
+}
+
+.code-token.transform-update {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid #f59e0b;
+    color: #fbbf24;
+}
+
+.code-token.transform-delete {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+}
+
+.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.fade-out {
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+.fade-in {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.arrow-anim {
+    color: #10b981;
+    font-size: 1.5rem;
+    animation: bounceRight 1s infinite;
+}
+
+@keyframes bounceRight {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(5px);
+    }
+}
+
+.subquery-box {
+    border: 2px dashed #64748b;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    width: 100%;
+    transition: all 0.5s;
+}
+
+.subquery-box.active {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.result-id {
+    display: inline-block;
+    padding: 2px 6px;
+    background: #475569;
+    border-radius: 4px;
+    margin: 2px;
+    font-size: 0.9rem;
+}
+
+
+/* --- CAROUSEL STYLES --- */
+.carousel-item img {
+    height: 400px;
+    object-fit: contain;
+    /* or cover, depending on preference. Contain ensures whole meme is seen */
+    background-color: #000;
+    /* Black background for letterboxing */
 }
