@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (document.getElementById('groupby-interactive-demo')) {
         initGroupByDemo();
     }
+
+    // --- SCROLL SPY ---
+    initScrollSpy();
 });
 
 const rawData = [
@@ -1543,4 +1546,46 @@ WHERE id = ${shopState.cartId};`, 'sql');
             log('--- PEDIDO FINALIZADO CON ÉXITO ---', 'text-success fw-bold');
         }, 800);
     }
+}
+
+function initScrollSpy() {
+    const observerOptions = {
+        root: null,
+        rootMargin: '-20% 0px -60% 0px',
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                // console.log('ScrollSpy Active:', id);
+
+                // 1. Deactivate all
+                document.querySelectorAll('#sidebar-wrapper .list-group-item').forEach(link => {
+                    link.classList.remove('text-warning', 'bg-white', 'bg-opacity-10', 'fw-bold', 'border-infos', 'border-start', 'border-4');
+                });
+
+                // 2. Activate current
+                const activeLink = document.querySelector(`#sidebar-wrapper a[href="#${id}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('text-warning', 'bg-white', 'bg-opacity-10', 'fw-bold', 'border-start', 'border-warning', 'border-4');
+
+                    // Optional: Expand parent collapse if needed
+                    const parentCollapse = activeLink.closest('.collapse');
+                    if (parentCollapse && !parentCollapse.classList.contains('show')) {
+                        // Bootstrap 5 logic to show would require instance, but simply adding 'show' might work for visual
+                        parentCollapse.classList.add('show');
+                    }
+                }
+            }
+        });
+    }, observerOptions);
+
+    // Observe all sections that have a sidebar link
+    document.querySelectorAll('section[id], article[id]').forEach(section => {
+        if (document.querySelector(`#sidebar-wrapper a[href="#${section.id}"]`)) {
+            observer.observe(section);
+        }
+    });
 }
