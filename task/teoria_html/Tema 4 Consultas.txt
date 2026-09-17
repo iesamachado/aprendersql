@@ -1,0 +1,627 @@
+Tema 4:
+Consultando
+nuestros datos
+Bernat costa
+bernatcosta@iesamachado.org
+
+DML Data Manipulation Language
+Consultar
+
+Select
+
+Insertar
+
+Insert
+
+Modificar
+
+Update
+
+Borrar
+
+Delete
+
+Select * from
+
+●
+
+Con el select podremos ver el contenido de una tabla.
+
+Listar los datos
+
+Filtrar los datos
+
+Ordenar los datos
+
+Agrupar los datos
+
+Select * from TABLA
+
+Where condicion
+
+Order by fecha
+
+Group by
+nombrecolumna
+
+Tutorial web interesante
+
+● https://www.sql-easy.com/es/
+● Videos de Aprende SQL en 1 Minuto
+
+con piezas de lego de @dev_gabo
+
+Estructura del
+Select
+
+SELECT [* o lista campos]
+FROM [NOMBRETABLA]
+WHERE [CONDICIONES]
+ORDER BY [NOMBRECAMPO] ASC/DESC
+
+Partes del Select
+
+Comando
+
+Descripción
+
+FROM
+
+Utilizada para especificar la tabla de la cual se van
+a seleccionar los registros
+
+WHERE
+
+Utilizada para determinar los registros seleccionados en la clausula
+FROM
+
+ORDER BY
+
+Utilizada para ordenar los registros seleccionados de acuerdo con
+un orden específico
+
+GROUP BY
+
+Utilizada para separar los registros seleccionados en grupos específicos
+
+HAVING
+
+Utilizada para expresar condición que debe satisfacer cada grupo
+
+El Where...
+PODEMOS PONER
+CONDICIONES USANDO
+LOS OPERADORES COMO
+MAYOR QUE, MENOR QUE,
+IGUAL....
+
+Operador
+
+Uso
+
+<
+
+Menor que
+
+>
+
+Mayor que
+
+<>
+
+Distinto de
+
+<=
+
+Menor o igual que
+
+>=
+
+Mayor o igual que
+
+BETWEEN
+
+Intervalo
+
+LIKE
+
+Comparación
+
+In
+
+Especificar
+
+=
+
+Igual
+
+...Y podemos
+concatenar varias
+condiciones
+Usando operadores
+lógicos como and, or o not
+
+Podemos hacer uso de
+parentesi para agrupar
+condiciones y operadores
+
+Operador
+
+Uso
+
+AND
+
+Es el “y” lógico. Evalúa dos
+condiciones y devuelve un v
+alor
+de verdad sólo si ambas
+son ciertas.
+Es el “o” lógico. Evalúa dos
+condiciones y devuelve un
+valor
+de verdad si alguna de las
+dos es cierta.
+Negación lógica. Devuelve e
+l valor contrario de
+la expresión.
+
+OR
+
+NOT
+
+Funciones de agregado
+
+Comando
+
+Descripción
+
+AVG
+
+Utilizada para calcular el promedio de los valores de un
+campo determinado
+
+COUNT
+
+Utilizada para devolver el número de registros de la selección
+
+SUM
+
+Utilizada para devolver la suma de todos los valores de un
+campo determinado
+
+MAX
+
+Utilizada para devolver el valor más alto de un campo especificado
+
+MIN
+
+Utilizada para devolver el valor más bajo de un campo especificado
+
+Ejemplos de funciones de agregado
+
+SELECT Count(1) FROM CLIENTES
+
+SELECT Max(total) from PEDIDOS
+
+SELECT AVG(gastosEnvio) from PEDIDOS
+
+COUNT(1), COUNT(id) o COUNT(*)
+
+¿Qué diferencia hay?
+
+Todas dan el mismo resultado, cuentan filas.
+Cuando hacemos un COUNT(1), contamos solo los registros de la primera
+columna. Que es lo mismo que contar los de todas las filas.
+… Pero, gasta menos memoria, ya que solo se trae la primera columna
+
+Ponemos después del where ORDER BY nombrecolumna
+Podemos agregarle ASC o DESC para indicar el orden que queremos
+Podemos añadir tantas columnas como queramos en el Order by
+Ejemplo: Select * from clientes ORDER BY apellido,nombre ASC
+
+Ordenar una consulta
+
+Seleccionar los primeros elementos En SQL Server
+Con la instrucción TOP podemos seleccionar los primeros elementos de
+nuestra tabla
+Si tenemos muchos datos, nos puede ser útil si solo queremos una
+muestra.
+Tambíen es útil cuando queremos el primero o el último, hacer un top 1
+ordenado de forma correcta.
+SELECT TOP 10 * from Clientes Order by Nombre ASC
+SELECT TOP 1 * FROM Pedidos order by Total
+
+Seleccionar los primeros elementos En MariaDB
+Con la instrucción LIMIT podemos seleccionar los primeros elementos
+de nuestra tabla
+Si tenemos muchos datos, nos puede ser útil si solo queremos una
+muestra.
+También es útil cuando queremos el primero o el último, hacer un limit
+1 ordenado de forma correcta.
+SELECT * from Clientes Order by Nombre ASC LIMIT 10
+SELECT * FROM Pedidos order by Total LIMIT 1
+
+Operaciones aritméticas
+En el SELECT o el WHERE, podemos hacer
+operaciones aritméticas con las columnas.
+Podemos Sumar dos campos y mostrar el resultado
+en una columna adicional
+Podemos restar dos campos y compararlo con un
+valor fijo en el where
+También podemos "sumar" dos varchars, los
+concatenará.
+
+Ejemplos con el arepezo
+
+SELECT subtotal + gastosenvio, * from
+pedidos
+SELECT * from pedidos WHERE (total –
+gastosenvio-subtotal) <>0
+SELECT direccion + ', ' + ciudad, nombre
+from clientes
+
+Operaciones con texto
+
+Replace
+
+Substring
+
+Buscar
+texto
+
+FUNCION REPLACE
+
+REPLACE(cadena1, cadena2,cadena3)
+Nos cambiará en la cadena1, la cadena2 por
+la cadena3
+Ejemplo: select REPLACE(Descripcion,
+'Arepa',' Kebab') from menu
+
+Funcion Substring
+●
+
+●
+
+●
+
+La función subsctring nos recorta un STRING
+(VARCHAR) por los caracteres que le indiquemos.
+Se le pasan 3 parametros.
+○
+
+Cadena de texto que queremos recortar
+
+○
+
+Posición incial
+
+○
+
+Numero de caracteres que queremos recortar.
+
+Ejemplo select LoginID,SUBSTRING(LoginID,17,100)
+from HumanResources.Employee
+
+Búsquedas de texto
+Para buscar una cadena de texto libre en un varchar, usaremos el
+comparador Like.
+Usaremos el comodin % para indicar que queremos buscar una cadena
+cualquiera.
+Si queremos buscar una la palabra arepa en la descripción, pondremos
+%arepa%
+Esto nos buscará cualquier varchar que empiece con algo, luego
+contenga arepa, y luego siga con más texto.
+Select * from menu where Descripcion like '%arepa%'
+
+Busqueda de NULLS
+
+Para buscar
+NULLS no
+podemos
+igualar a NULL
+
+Debemos poner
+la condición "is
+null" o " is not
+null"
+
+Select * from
+CLIENTES where
+EDAD IS NOT
+NULL
+
+Hay veces que en una consulta,
+puede darnos valores repetidos.
+
+QUITAR
+REPETIDOS
+
+Podemos quitarlos con la
+palabra DISTINCT
+
+Select DISTINCT ciudad from
+clientes
+
+●
+
+●
+
+AGRUPAR
+RESULTADOS
+
+●
+
+●
+
+Podemos agrupar los resultados por
+campos repetidos
+El group by especiﬁca por
+que campos vamos a "agrupar".
+En el Select, SOLO
+podremos poner los campos del group
+by. Solo podremos añadir funciones de agre
+gación como sum, count, max,min,avg...
+Select nombre, ciudad, count(1) from
+personas
+Group by nombre,ciudad
+
+GROUP BY
+●
+
+IMPORTANTE recordar que no podremos mostrar
+NINGUN campo de la tabla que no estemos
+agrupando.
+
+●
+
+Se puede obtener valores medios, sumas, max, min
+de los otros campos usando las funciones de
+agregado.
+
+●
+
+Nos sirve para contar personas por ciudades.
+
+HAVING
+
+Nos sirve para poner un filtro sobre
+un group by y usar una función de
+agregado.
+Select count(1),ciudad from
+clientes group by ciudad having
+count(1)>2
+
+Renombrar columnas
+
+Nuestras consultas devuelven tablas, podemos renombrar las columnas para
+su visualización o para quitar los 'no name' que aparecen cuando en el select
+le ponemos una operación aritmetica o una función de agregado
+
+select count(1) as NUMERODECLIENTES,ciudad from clientes group by ciudad
+having count(1)>2
+
+FUNCIONES CON LAS FECHAS
+now()
+
+• Nos devuelve la fecha actual
+
+YEAR(fecha)
+
+• Nos devuelve el INT del año de la fecha
+que le pasemos
+
+MONTH(fecha)
+
+• Nos devuelve el mes
+
+DAY(fecha)
+
+• Nos devuelve el dia
+
+SELECT fecha_pedido,year(fecha_pedido),MONTH(fecha_pedido),day(Fecha
+_pedido) FROM PEDIDOS
+
+UNIR DOS TABLAS
+Podemos unir el resultado de dos
+Selects siempre que tengan el mismo numero de campos.
+CONCATENAMOS los resultados de dos selects en una sola tabla, unos tras otros.
+
+SELECT salesorderid, TotalDue, 'Sales' as tipo
+FROM sales.Salesorderheader
+UNION ALL
+SELECT PurchaseORDERID, TotalDue,'Purchase'
+FROM PURCHASING.PurchaseOrderHeader
+
+●
+
+CRUZAR DOS
+TABLAS
+
+●
+
+●
+●
+
+Para cruzar dos tablas siguiendo una FK,
+usamos los INNER JOINS
+Le indicamos después del FROM, con que
+tabla queremos unirlo y que campo es el
+que nos une cada tabla con un ON.
+En el ON pondremos una condición.
+SELECT * FROM tabla1
+INNER JOIN tabla2 ON tabla1.id = tabla2.id
+
+Diferencia entre el INNER JOIN y la
+unión cartesiana
+SELECT nombre_corto AS 'Nombre jugador', e.nombre AS Equipo
+FROM jugadores j
+INNER JOIN equipos e ON e.id = j.equipo_id
+WHERE j.nacionalidad='Spain'
+en lugar de:
+SELECT nombre_corto AS 'Nombre jugador', e.nombre AS Equipo
+FROM jugadores j,equipos e
+WHERE e.id = j.equipo_id and j.nacionalidad='Spain'
+
+¿Porqué es mejor el inner join?
+● Producto cartesiano es obsoleto.
+● No todos los SGBD son eﬁcientes con un cruce
+
+cartesiano
+● Los SGBD modernos, traducen el cruce cartesiano
+con un inner join
+● Queda más claro y evita errores.
+● Cuando añades muchas tablas, estás complicando la
+tarea del planiﬁcador de consultas del SGBD
+
+OTROS JOINS
+●
+
+Se usan de la misma forma XXX JOIN tabla on CONDICION
+
+●
+
+Con el Inner Join, no mostramos los datos no coincidentes en alguna de las dos tablas
+
+●
+
+Con el Left Join, nos deja los valores de la tabla 1 aunque no tenga coincidencias en la tabla2.
+Nos pondrá a null los datos de la tabla 2 cuando no haya coincidencias
+
+SELECT p.idPersona, p.nombre, p.apellido, p.email,c.id,c.direccion, c.cod_postal
+FROM Personas p
+LEFT JOIN Clientes c ON p.email = c.email
+●
+
+Esta select nos dará los datos de la tabla personas y clientes, cuando coincida el
+email, los pondrá en la misma ﬁla, cuando el email de Personas no lo encuentre en
+la tabla CLIENTES, pondrá los campos de la tabla CLIENTES a null.
+
+1 Paco Gonzalez paco@gmail.com 1 calle 41002
+2 Bernat Costa bernat@gmail.com NULL NULL NULL
+(Con un Inner Join, la linea 2 con Bernat Costa, no se muestra ya que no hay coincidencia)
+
+SURFEANDO LAS FKs
+Podemos concatenar tantos INNERS JOINS COMO
+NECESITEMOS.
+Con el diagrama de tablas en la mano,
+podemos mostrar datos distantes si hay líneas
+entre esas tablas.
+Una vez encontrado el camino que nos une los
+campos, ponemos un INNER JOIN por cada tabla por la
+que debemos pasar.
+
+Subconsultas
+●
+
+●
+
+Podemos poner el
+resultado de una consulta
+en otra.
+Si el resultado de la
+subconsultas es una tabla,
+podemos usarla en un from
+o inner join. Si es un dato
+concreto, pisos.ponerlo en
+el where en una
+comparación con otro
+campo o en el select.
+
+Ejemplos
+subconsultas nba
+--media de puntos por equipo
+select avg(t1.media),idequipo_local from
+(select avg(marcador_local) as
+media,idequipo_local
+from partidos
+group by idequipo_local
+union all
+select avg(marcador_visitante) as
+media,idequipo_visitante
+from partidos
+group by idequipo_visitante) as t1
+Group by idequipo_local
+
+Ejemplo subconsulta NBA
+--15.¿Qué jugadores se seleccionaron en el draft el mismo año
+que Ricky Rubio?
+
+select * from jugadores
+where draft_anyo =(select draft_anyo from jugadores where
+nombre like'%Rubio%')
+
+¿Se puede resolver con una consulta?
+●
+
+Si tuvieras todo el tiempo del mundo, viendo los datos de la bbdd, podrías calcular lo
+que te piden a mano?
+
+●
+
+Si la respuesta es sí, SE PUEDE ESCRIBIR UNA CONSULTA que te lo haga.
+
+●
+
+Puede ser más fácil o más difícil, pero se puede.
+
+●
+
+Ejemplo:
+
+●
+
+Con la bbdd ﬁfa,
+
+●
+
+¿puedo calcular el dorsal más veces repetido?
+
+●
+
+¿puedo calcular la clasiﬁcación de LaLiga?
+
+Cómo afrontar una consulta
+1.
+
+HACER EL DIAGRAMA DE TABLAS
+
+2.
+
+Entender los datos y el esquema de la BBDD.
+
+3.
+
+LEER BIEN los enunciados
+
+4.
+
+Buscar los datos en mi bbdd, e escribir el select * from .... Con los inners necesarios
+
+5.
+
+Añadir ﬁltros o groups by necesarios
+
+6.
+
+Ordenar la consulta si necesario
+
+7.
+
+Poner el LIMIT si es necesario.
+
+Orden parámetros en una consulta
+SELECT
+• obligatorio
+FROM
+• obligatorio
+INNER JOIN
+
+WHERE
+
+GROUP BY
+
+HAVING
+
+ORDER BY
+
+

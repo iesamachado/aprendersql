@@ -1,0 +1,1168 @@
+Tema 2:
+Diseñando
+una BBDD
+Bernat costa
+bernatcosta@iesamachado.org
+
+Modelando una BBDD
+Debemos conocer muy bien que queremos
+modelar.
+Tener en cuenta los estándares para que sea
+entendido por el resto
+Características técnicas de nuestros SGDB
+
+Usaremos 3 modelos
+Conceptual
+
+Modelo E-R (Entidad Relacion)
+
+Lógico
+
+Diagrama de tablas
+
+Físico
+
+DDL
+
+Diagramas Entidad-Relacion (E-R)
+Van a ser nuestra primera
+aproximación al problema.
+Es un mapa conceptual del
+problema a resolver.
+Es un modelo estandard, para que
+toda la comunidad lo comprenda.
+
+Entidades
+Las entidades, las representaremos en rectangulos.
+Una entidad es un objeto o concepto sobre el que se recoge
+información.
+Tendremos entidades reales y abstractas
+• Alumno/a -> real, palpable
+• Un módulo de FP -> es algo abstracto, no podemos palparlo. (DAM, DAW, ASIR...)
+Tambíen tendremos Entidades Fuertes y Debiles
+• Fuerte -> Existen por si misma. -> Pedidos
+• Débiles -> Necesitan de otra entidad para tener sentido. -> lineas de pedido
+
+ATRIBUTOS
+Se representan con círculos, unidos con una linea a una entidad.
+Servirán para definir las características de una entidad
+Habrá atributos especiales. Atributos Clave. Estos se subrayan.
+• Atributo que no se puede repetir.
+
+Ejemplo: Entidad Coche
+• Atributos: Color, NumPuertas,Motor,Ventanas,Luces...
+• Atributo Clave: Matrícula, numBastidor...
+
+Tipos de Atributo
+Obligatorios -> No confundir con Atributo Clave.
+Opcionales -> pueden quedarse vacios
+Compuesto -> subatributos que salen de otro atributo ->
+Dirección -> calle, numero...
+Derivados -> círculo discontinuo
+
+Relaciones
+Las representaremos por Rombos.
+
+Son las asociaciones entre las entidades.
+Las clasificaremos por el número de entidades
+que intervienen
+• Binaria
+• Terciaria
+• Unaria o Reflexiva
+• N-Arias
+
+Cardinalidad
+► Cardinalidad es el número de entidades con la cual otra entidad
+
+puede asociar mediante una relación binaria
+► Se escribe sobre el rombo de la relación.
+► ¿Cuantas veces la entidad participa en la relación?
+► Posibles cardinalidades
+►
+
+(1,1) Una instancia de una entidad solo está asociada a otra instancia
+de la otra entidad de la relación.
+
+►
+
+(1,N) Una instancia de una entidad está asociada a varias instancias de
+la otra entidad de la relación.
+
+►
+
+(N,N) Una instancia de una entidad está asociada a varias instancias de
+la otra entidad de la relación, y viceversa.
+
+Superclase
+► Habrá entidades que compartirán muchas características.
+
+Son las superclase.
+► Es una entidad que engloba a otras.
+► Ejemplo:
+► En un Zoo, tenemos entidades Perro,
+
+Gato,León,Elefante,Serpiente, Águila con atributos parecidos.
+También podríamos definir la Entidad Mamífero, o Felino, para
+asociar a esa entidad, atributos comunes de esos animales.
+Mamífero o felino, serían superclases.
+
+Ejemplo
+►
+
+Intentemos entender
+este diagrama
+
+►
+
+¿Que representa?
+
+Ejemplo
+
+Ejemplo
+
+Estrategia para sacar un buen E-R
+1.
+
+Leer varias veces el enunciado y comprender el problema.
+
+2.
+
+Obtener una lista inicial a candidatos a Atributo,Relación,Entidades.
+identificar:
+► Entidades débiles y fuertes.
+► Posibles relaciones
+► Extraer Atributos
+► Identificar SuperClases buscando Entidades con atributos iguales.
+
+3.
+
+Poner los elementos en un mapa conceptual
+
+4.
+
+Buscar alguna incoherencia y refinar el modelo E-R
+1. Buscar errores sintácticos ( flechas, hexágonos...)
+2. Buscar errores conceptuales (demasiados atributos compuestos,
+
+círculos entidad relación)
+
+¿Que debe tener SIEMPRE UN MODELO
+E-R?
+01
+
+02
+
+03
+
+04
+
+Una relación,
+DEBE tener
+una cardinalidad
+
+Entre dos
+entidades, hay
+una relación
+
+Una entidad
+DEBE tener
+atributos y uno
+de ellos mínimo
+ser clave.
+
+Los atributos se
+asocian a las
+ENTIDADES o
+relaciones. NO
+SE COMPARTEN
+
+05
+NO HAY
+FLECHAS.
+
+Errores típicos a pulir
+Demasiadas relaciones 1:1 -> repasa si no tienes alguna entidad
+que pueda ser un atributo
+Muchos atributos compuestos -> repasa si alguno de esos
+atributos, no es una entidad.
+Circulo de entidades y relaciones cerrado -> asegurate que todas
+las relaciones son necesarias y no tienes alguna de más.
+Buscar atributos derivados
+
+Representa en 3 diagramas E-R el proceso de login
+y registro de Netflix, Spotify y HBO.
+Las tres plataformas, deben ser capaces de pasar
+los cobros a sus clientes y asignarles una licencia
+de uso. También debemos asignar contenidos
+audivisuales a sus usuarios (Favoritos, que están
+viendo/escuchando...)
+
+Ejercicio
+
+También deben guardar la información de login
+►
+
+Netflix para cada cliente, asigna unas
+credenciales de acceso. Luego, tendremos N
+usuarios (4 max) por cada cliente
+
+►
+
+HBO (pre HBO Max) las credenciales se asignan
+por clientes. No diferencia cliente usuario. Un
+cliente tiene un solo usuario.
+
+►
+
+Spotify tiene clientes y usuarios. El login se
+hace desde el propio usuario, mientras que
+estos se vinculan a un cliente que es quíen
+paga y tiene una licencia de uso.
+
+netflix
+
+Hbo NO max
+
+Spotify
+
+►
+
+En un instituto cualquiera como el Antonio Machado, el
+equipo directivo pide mano dura al profesorado contra
+el uso del móvil en clase. Se solicita al claustro que se
+abra un parte disciplinario a TODO alumno que use el
+móvil.
+
+►
+
+Esto, provoca una carga de trabajo desmesurada entre
+el profesorado del centro y se propone al departamento
+de informática realizar una aplicación para poner partes
+por uso de móvil en clase.
+
+►
+
+Esa aplicación, deberá tener una base de datos donde
+se guarde la información básica del alumno, el email y
+teléfono de los tutores y su edad, para notificar los
+partes a la familia.
+
+►
+
+También deberemos guardar la hora y fecha en la que se
+ha puesto el parte así como el número de partes
+impuestos a cada alumno.
+
+Ejercicio
+
+Diseño
+lógico
+Diagrama de tablas
+
+Diseño Relacional
+La idea es evitar que el usuario de la BBDD deba
+conocer las estructuras físicas de los datos.
+Para transformar un diagrama E-R en un modelo lógico,
+necesitamos definir mejor los atributos.
+
+Necesitamos ver el sentido de las relaciones 1:N
+
+Características de los atributos
+
+Dominio
+• Conjunto de valores permitidos para un atributo
+• Por ejemplo: Entero, Cadena, Fecha, Decimal...
+Restricciones semánticas
+• Condiciones que deben cumplir los atributos:
+null, unico, clave,referencia..
+
+Domínios mínimos que usaremos
+
+Texto o
+cadena
+
+Entero
+
+Decimal
+
+Fecha
+
+Booleano
+
+Restricciones semánticas
+
+Clave
+Atributo clave,
+diferencian de
+forma inequívoca un
+elemento de una
+entidad.
+
+Valor Único
+
+Integridad
+referencial
+
+Atributo que no
+puede repetirse, pero
+tiene por que ser
+clave.
+
+Atributos que hacen
+referencia
+a algun elemento de
+otra entidad.
+
+Nulo
+Atributos que pueden
+dejarse vacios o no. (
+NULL, NOT NULL)
+
+Claves
+
+Superclave
+Posible conjunto de
+atributos que
+identifican un
+elemento de una
+entidad. Puede ser la
+clave primaria de esa
+entidad.
+
+Clave
+Candidata
+Es la mínima
+superclave posible
+(menor num de
+atributos).
+
+Clave Primaria
+Clave candidata
+escogida por el
+diseñador como
+definitiva.
+
+Clave Foránea.
+Atributo de una
+entidad, relacionada
+con otra entidad. La
+clave foranea, debe
+existir como clave
+primaria en la otra
+entidad.
+
+¿Como transformamos un modelo ER en lógico?
+
+Vamos a ver como transformamos cada
+elemento de nuestro diagrama ER en
+tablas y atributos.
+También deberemos transformar nuestras
+relaciones.
+
+Transformación de Entidades
+
+Cada entidad, será una tabla, cada atributo, serán sus
+columnas. Deberemos definir el dominio de cada atributo,
+así como las restricciones semánticas de cada atributo.
+
+El atributo clave, es una buena candidata a clave primaria.
+
+Transformando Relacion 1:N
+
+SE CREA UNA CLAVE FORÁNEA
+DE UNA ENTIDAD A OTRA.
+
+DEBEMOS VER EL SENTIDO DE
+LA CARDINALIDAD 1:N O N:1
+
+Ejemplo relación
+1:N
+Si un libropuede tener
+1 solo editor, y 1 editor
+puede tener N libros,
+crearemos un nuevo
+atributo idEditorial en
+la tabla/Entidad
+Libros, que sea una
+clave foránea del
+ID de la Editorial
+
+Esto nos implicará
+que nuestro SGBD NO
+NOS DEJARÁ
+AGREGAR UN LIBRO DE
+UNA EDITORIAL
+INEXISTENTE O
+BORRADO EN
+NUESTRA BBDD.
+
+TRANSFORMAR UNA RELACIÓN N:N
+
+Crearemos una tabla intermedia con una
+clave foranea de cada entidad.
+Esta pareja de claves foraneas, será la
+clave primaria de esa tabla intermedia.
+Podremos agregar otros atributos a esta
+tabla N:N.
+• Ejemplo. Netflix. Relación estoy viendo entre un
+Usuario y una Película.
+• Tabla VISUALIZANDO
+• IdUsuario, int, not null, pk,fk -> usuarios.id
+• IdPelicula,int,not null, pk,fk -> peliculas.id
+• TiempoVisto, int, not null.
+
+Relación 1:1
+
+Pasar los atributos de una entidad a otra. No necesitamos
+dos entidades. Con una sola tabla podemos resolverlo.
+
+Podemos en algunos casos, mantener las dos tablas con
+claves foráneas cruzadas para facilitar las consultas.
+
+Transformar
+una relación
+1:N Reflexiva
+
+Como en las relaciones 1:N se crea un nuevo atributo que
+sea una clave foránea a la otra tabla, con la diferencia,
+que al tener solo una tabla, la FK es a la misma tabla.
+
+TRANSFORMAR LAS SUPERCLASES
+
+Varias opciones
+Se crea una tabla para la
+superclase y otras tantas
+para cada subclase,
+incorporando la clave
+primaria de la superclase
+a las tablas.
+
+Se crea una tabla para
+cada subclase
+incorporando todos los
+atributos de la
+superclase, y no crear
+una tabla para ésta.
+
+Se crear una sola tabla
+para superclase,
+incorporando los atributos
+de todas las subclases y
+añadir, para distinguir el
+tipo de la superclase,
+llamado “tipo”, que
+contendrá el tipo de
+subclase al que pertenece
+cada ocurrencia.
+
+Modelo lógico
+de una Librería
+
+diagrama de tablas DEBE CUMPLIR:::
+
+Toda tabla tiene 1 sola
+clave primaria
+(formada por 1 o N
+campos)
+La FK DEBE
+especificarse. Si hay
+una relación, hay
+una FK. Indicar en
+que tabla está.
+
+Los nombres de las
+tablas no pueden
+repetirse
+
+Las relaciones
+deben relacionar 2
+campos, no
+dos tablas
+
+Atributos DEBEN
+tener un dominio
+
+El atributo DEBE
+tener un punto
+negro o blanco para
+indicar si es nulo o
+no.
+
+NORMALIZACIÓN
+La normalización es obligar a los atributos de un
+diseño a cumplir ciertas formas normales para
+mejorar la calidad del propio diseño. Hay
+varias formas normales.
+Nosotros, solo veremos las 3 primeras.
+
+1º FORMA NORMAL (1NF)
+NO HAY GRUPOS REPETITIVOS
+► Las tablas tienen que cumplir una serie de normas para evitar
+
+grupos de atributos repetidos.
+► 5 cosas que deben cumplir:
+1.
+
+No hay orden arriba abajo
+
+2.
+
+No hay orden derecha izquierda
+
+3.
+
+No hay filas duplicadas
+
+4.
+
+Cada casilla, tiene un solo valor.
+
+5.
+
+Todas las columnas son regulares, (Todo valor en una columna está
+dentro del mismo dominio)
+
+¿Qué no cumple la 1FN?
+Una tabla sin clave primaria -> permite
+duplicados
+Una vista que tenga algún orden
+preestablecido.
+Un campo null -> no está dentro del dominio.
+• Este caso es controvertido. Hay gente que considera que el
+null no puede estar en la clave primaria, pero si en un
+atributo (así lo definió CODD en el modelo relacional).
+
+Ejemplo incumplimiento 1FN
+ID Cliente
+
+Nombre
+
+Apellido
+
+Teléfono
+
+123
+
+Rachel
+
+Ingram
+
+555-861-2025
+
+456
+
+James
+
+Wright
+
+555-403-1659,
+555-776-4100,
+555-888-6366
+
+789
+
+Cesar
+
+Dure
+
+555-808-9633
+
+Posible solución 1
+
+ID
+Cliente
+
+Nombre
+
+Apellido
+
+Teléfono 1
+
+123
+
+Rachel
+
+Ingram
+
+555-861-2025
+
+456
+
+James
+
+Wright
+
+555-403-1659
+
+789
+
+Cesar
+
+Dure
+
+555-808-9633
+
+Teléfono 2
+
+Teléfono 3
+
+555-776-4100
+
+555-888-6366
+
+Solución 2 tablas con una relación.
+
+ID Cliente
+
+Nombre
+
+Apellido
+
+123
+
+Rachel
+
+Ingram
+
+456
+
+James
+
+Wright
+
+789
+
+Cesar
+
+Dure
+
+ID Cliente
+
+Teléfono
+
+123
+
+555-861-2025
+
+456
+
+555-403-1659
+
+456
+
+555-776-4100
+
+456
+
+555-888-6366
+
+789
+
+555-808-9633
+
+Segunda Forma Normal
+Una bbdd está en 2FN si cumple la 1FN y
+además:
+Si un elemento de una entidad está
+identificado por una clave primaria doble,
+TODOS sus atributos, dependen de esos dos
+atributos claves.
+•Con un solo elemento de la clave, no puedo deducir un
+atributo.
+•Ejemplo:
+•COMPRAS ( CodigoProducto, CodigoProveedor,
+NombreProducto, Cantidad)
+•CodigoProducto -> NombreProducto, por tanto no esta en
+FN2
+
+Ejemplo 2FN
+
+EMPLEADO
+
+HABILIDAD
+
+LUGAR ACTUAL DE TRABAJO
+
+Jones
+
+Mecanografía
+
+114 Main Street
+
+Jones
+
+Taquigrafía
+
+114 Main Street
+
+Jones
+
+Tallado
+
+114 Main Street
+
+Bravo
+
+Limpieza ligera 73 Industrial Way
+
+Ellis
+
+Alquimia
+
+73 Industrial Way
+
+Ellis
+
+Malabarismo
+
+73 Industrial Way
+
+Harrison
+
+Limpieza ligera 73 Industrial Way
+
+►La única clave candidata de la
+
+tabla es {Empleado,
+Habilidades}, pero el lugar del
+trabajo, depende únicamente
+del empleado, no de sus
+habilidades. NO ESTA EN 2FN.
+
+Solución 2FN
+Empleado
+
+Habilidad
+
+Jones
+
+Mecanografía
+
+Jones
+
+Taquigrafía
+
+Jones
+
+Tallado
+
+Bravo
+
+Limpieza ligera
+
+Ellis
+
+Alquimia
+
+Ellis
+
+Malabarismo
+
+Harrison
+
+Limpieza ligera
+
+Empleado
+
+Lugar actual de trabajo
+
+Jones
+
+114 Main Street
+
+Bravo
+
+73 Industrial Way
+
+Ellis
+
+73 Industrial Way
+
+Harrison
+
+73 Industrial Way
+
+► Debe cumplir la 2FN
+► Un atributo no puede deducirse de otro
+
+atributo no clave.
+
+Tercera Forma
+normal (3Fn)
+
+► Ejemplo: Si sabemos el fabricante de un
+
+producto, no guardaremos el país del
+fabricante en la tabla productos, ya que si
+sabemos el fabricante, ya sabemos el
+producto.
+
+No cumple la 3FN
+
+TORNEO
+
+AÑO
+
+GANADOR
+
+FECHA DE NACIMIENTO DEL
+GANADOR
+
+Indiana Invitational
+
+1998
+
+Al Fredrickson
+
+21 de julio de 1975
+
+Cleveland Open
+
+1999
+
+Bob Albertson
+
+28 de septiembre de
+1968
+
+Des Moines Masters
+
+1999
+
+Al Fredrickson
+
+21 de julio de 1975
+
+Indiana Invitational
+
+1999
+
+Chip Masterson
+
+14 de marzo de 1977
+
+La fecha de nacimiento depende del ganador. No es 3FN
+
+Solución
+idTorneo
+
+Año
+
+1
+
+1998
+
+2
+
+2
+
+1999
+
+3
+
+3
+
+1999
+
+2
+
+1
+
+1999
+
+Jugador
+
+Fecha de
+nacimiento
+
+1
+
+Chip
+Masterson
+
+14 de marzo
+de 1977
+
+2
+
+Al Fredrickson
+
+21 de julio de
+1975
+
+Bob Albertson
+
+28 de
+septiembre de
+1968
+
+idGanador
+
+1
+
+idJugador
+
+3
+
+idTorneo
+
+Nombre
+
+1
+
+Indiana Invitational
+
+2
+
+Cleveland Open
+
+3
+
+Des Moines Masters
+
+Ejercicio 1
+Abogados
+
+Se quiere diseñar una base de datos relacional para
+almacenar información sobre los asuntos que lleva un
+gabinete de abogados. Cada asunto tiene un número de
+expediente que lo identifica, y corresponde a un solo
+cliente. Del asunto se debe almacenar el período (fecha de
+inicio y fecha de archivo o finalización), su estado (en
+trámite, archivado, etc.), así como los datos personales del
+cliente al que pertenece (DNI, nombre, dirección, etc.).
+Algunos asuntos son llevados por uno o varios procuradores,
+de los que nos interesa también los datos personales.
+
+Ejercicio 2
+TIENDA
+Informática
+Tenemos que diseñar una base de datos para una empresa de material informático, de la que tenemos esta
+información:
+•
+
+Un equipo consta de varios componentes. Pueden ser necesarios varios componentes del mismo tipo para
+montar un equipo, por lo que será necesario almacenar la cantidad de componentes que se necesitan en cada
+caso.
+
+•
+
+Un cliente puede comprar equipos completos o componentes sueltos. Habrá que almacenar la cantidad de
+equipos o la cantidad de componentes de cada tipo que compra cada cliente. También habrá que guardar la
+fecha de la compra.
+
+•
+
+Tenga en cuenta que un mismo cliente puede comprar el mismo equipo o el mismo componente en diferentes
+fechas. El diseño de la base de datos debe permitir almacenar un histórico con todas las fechas y las
+cantidades de equipos o componentes que ha comprado.
+
+•
+
+Cada equipo está etiquetado con un código de equipo, una descripción, un precio y el stock disponible.
+
+•
+
+Cada componente está etiquetado con un código de componente, una descripción, un precio y el stock
+disponible.
+
+•
+
+Los datos que almacenamos los clientes son el NIF, nombre, apellidos, domicilio, ciudad, provincia y teléfono.
+
+•
+
+Los datos que almacenamos de los empleados son el NIF, nombre, apellidos y la sección donde trabaja.
+
+•
+
+Un empleado trabaja en una única sección.
+
+•
+
+Una sección se identifica por un id y un nombre de sección.
+
+Ejercicio 3
+VENTA DE COches
+Un concesionario de automóviles desea informatizar su gestión de ventas de vehículos. En particular, se quiere tener
+almacenada la información referente a los clientes que compran en el concesionario, los vehículos vendidos, así
+como los vendedores que realizan las distintas ventas. Para ello se tendrá en cuenta que:
+•
+
+Existen diferentes marcas de automóviles, para cada marca se almacena un identificador único y un nombre. Por
+ejemplo, pueden existir las marcas Audi, BMW, Volkswagen, etc.
+
+•
+
+Una marca puede tener muchos modelos diferentes pero un modelo sólo puede pertenecer a una marca. De cada
+modelo se almacena un identificador único y un nombre. Por ejemplo, para la marca Audi, podemos tener los
+modelos A1, A3, A4, etc.
+
+•
+
+Para cada modelo pueden existir diferentes versiones. De cada versión se almacena un identificador único, un
+nombre de versión, la potencia, un precio base y el tipo de combustible que puede ser Gasolina o Diesel. Por
+ejemplo, para la marca Audi, modelo A3, pueden existir las versiones AUDI A3 1.0 TFSI 85kW (116CV), AUDI A3 1.6 TDI
+85kW (116CV), etc.
+
+•
+
+Cada una de las versiones dispondrá de unos extras adicionales (aire acondicionado, pintura metalizada, etc). Los
+extras vienen definidos por un identificador, nombre y una descripción. Hay que tener en cuenta que un extra puede
+ser común para varias versiones variando sólo el precio en cada caso.
+
+•
+
+En cuanto a los clientes, la información de interés es el nombre, apellidos, NIF, dirección y teléfono, lo mismo que
+para los vendedores.
+
+•
+
+Los clientes pueden ceder su coche usado al comprar un vehículo nuevo. El coche usado vendrá definido por su
+marca, modelo, matrícula y precio de tasación. Es importante conocer la fecha en la que el cliente realiza esta
+cesión.
+
+•
+
+Se desea saber qué vendedor ha vendido qué modelo a qué cliente. También la fecha de la venta y la matrícula del
+
+Ejercicio 4
+Parques naturales
+La ministra de medio ambiente a decidido crear un sistema de información sobre parques naturales
+gestionados por cada CCAA. Después de realizar un detallado análisis se ha llegado a las sgtes
+conclusiones:
+►
+
+Una CCAA puede tener varios parques naturales.
+
+►
+
+Un parque puede estar compartido por mas de una CCAA
+
+►
+
+Un parque Natural se identifica por un nombre, fue declarado en una fecha y se compone de
+varias áreas identificadas por un nombre y caracterizadas por una determinada extensión.
+
+En cada Área forzosamente, residen especies que pueden ser de 3 tipos: Vegetales, animales y
+minerales.
+Cada especie tiene una denominación científica y una denominación vulgar y un número
+inventariado de individuos por áreas
+De las especies vegetales, se desea saber si tienen floración y en que periodo se produce, de los
+animales se desea saber su tipo de alimentación y su periodo de celo, de las minerales se desea
+saber si se trata de cristales o rocas.
+Del personal que trabaja en cada parque se guarda DNI, NSS, Nombre, Dirección, teléfono, sueldo.
+
+Ejercicio 5
+Netflix
+►
+
+Vamos a diseñar la BBDD de Netflix.
+
+►
+
+Tenemos clientes y usuarios. Vamos a considerar que todas las cuentas son
+premium con 4 usuarios.
+
+►
+
+Al cliente deberemos tener la información necesaria para pasarle el cobro.
+
+►
+
+En el catalogo tendremos series y películas. Las series tendrán temporadas
+y capítulos.
+
+►
+
+Deberemos guardar la información necesaria para saber que está viendo
+cada usuario, y en que minuto se ha quedado.
+
+►
+
+También deberemos ser capaces de guardar las series o películas favoritas
+de cada usuario
+
+►
+
+De cada película o serie, deberemos guardar a parte de su título, su
+miniatura, la duración, el num de capítulos si corresponde, de temporadas
+y su género.
+
+Ejercicio 6
+Zoo
+Se quiere diseñar una base de datos relacional que almacene
+información relativa a los zoos existentes en el mundo, así como las
+especies animales que éstos albergan. De cada zoo se conoce el
+nombre, ciudad y país donde se encuentra, tamaño (en m2) y
+presupuesto anual. De cada especie animal se almacena el nombre
+vulgar y nombre científico, familia a la que pertenece y si se
+encuentra en peligro de extinción. Además, se debe guardar
+información sobre cada animal que los zoos poseen, como su número
+de identificación, especie, sexo, año de nacimiento, país de origen y
+continente.
+
+Ejercicio 7
+Cines
+La asociación de cines de una ciudad quiere crear un servicio telefónico
+en el que se pueda hacer cualquier tipo de consulta sobre las películas
+que se están proyectando actualmente: en qué cines hacen una
+determinada película y el horario de los pases, qué películas de dibujos
+animados se están proyectando y dónde, qué películas hay en un
+determinado cine, etc. Para ello debemos diseñar una base de datos
+relacional que contenga toda esta información. En concreto, para cada
+cine se debe dar el título de la película y el horario de los pases, además
+del nombre del director de la misma, el nombre de hasta tres de sus
+protagonistas, el género (comedia, intriga, etc.) y la clasificación
+(tolerada menores, mayores de 18 años, etc.). La base de datos también
+almacenará la calle y número donde está el cine, el teléfono y los
+distintos precios según el día (día del espectador, día del jubilado,
+festivos y vísperas, carnet de estudiante, etc.).
+Hay que tener en cuenta que algunos cines tienen varias salas en las que
+se pasan distintas películas y también que en un mismo cine se pueden
+
+Ejercicio 8 Guardería
+Una guardería desea controlar los gastos que cada uno de los niños realiza a través de su
+asistencia y de las comidas que consume. De cada niño se desea conocer los datos propios de
+su matrícula en el centro educativo, es decir, el número de matrícula, el nombre, la fecha de
+nacimiento y la fecha de ingreso en la guardería. Para aquellos niños que se hayan dado de
+baja, también se desea conocer la fecha de la baja.
+Los niños sólo pueden ser recogidos en la guardería por un conjunto de personas que suelen
+ser un familiar del niño o un conocido de sus familiares De éstos se desea conocer el DNI, el
+nombre, la dirección y al menos un número de teléfono de contacto. Además, debe de
+quedar constancia de cuál es la relación entre la persona autorizada y el niño. El coste
+mensual del niño en la guardería es abonado por una persona, de la que se desea conocer el
+DNI, el nombre, la dirección, el teléfono, y el número de la cuenta corriente en la que se
+realizará el cargo. Estas personas también pueden estar autorizadas para recoger al niño. En
+la guardería aparece un conjunto de menús, compuesto por una serie de platos concretos,
+cada uno de los cuales presentan unos ingredientes determinados. Cada menú se identifica
+por un número, mientras que los platos y los ingredientes se caracterizan por su nombre. Un
+niño puede ser alérgico a diferentes ingredientes, y por tanto no puede consumir los platos
+en los que aparece este ingrediente. Estas alergias deben de ser controladas para evitar
+posibles intoxicaciones en los niños. El cargo mensual de un niño se calcula como la suma de
+un coste fijo mensual y el coste de las comidas realizadas. Este último se obtiene a partir del
+número de días que el niño ha comido en la guardería, por lo que resulta necesario controlar
+dicho número. Además, se desea saber el menú que ha consumido cada niño cada día.
+
+Ejercicio 9 Librerías
+Vamos a hacer una web para una red de librerías. Cada librería, tendrá sus clientes y
+pedidos independientes. De cada cliente, guardaremos la información necesaria para
+contactar (email, nombre, apellidos, dirección, teléfono...). Cada cliente, podrá comprar
+tantos libros como quiera con sus credenciales en cualquier librería. Y deberemos ser
+capaces de cobrarle el precio (que es único por ISBN) y los gastos de envío que calcularemos
+con el peso y el código postal del cliente. Cada cliente, solo tendrá una dirección de
+entrega. Deberemos saber también, que pedidos se han hecho cada día y en qué librería se
+han hecho.
+Los libros, podrán estar disponibles en más de una librería y podrán ser comprados por
+cualquier cliente.
+Cada librería, tendrá un stock de libros concreto.
+Sobre cada libro, nos interesa saber el autor o autoras, el título, una pequeña reseña y el
+género.
+Cada libro, será impreso por una editorial. La información relativa a la edición de ese libro
+dependerá de cada editorial. Un mismo libro, lo pueden imprimir varias editoriales, pero
+con ISBN distinto. También diferirá el número de páginas, el gramaje del papel usado, el
+peso del libro y el tamaño.
+Nuestras librerías solo venderán libros de bolsillo.
+De cada autor, guardaremos además una pequeña biografía, su nombre y su apellido.
+
+

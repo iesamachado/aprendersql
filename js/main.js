@@ -6,18 +6,22 @@ document.addEventListener('DOMContentLoaded', function () {
     var overlay = document.getElementById("sidebar-overlay");
 
     function toggleMenu() {
-        el.classList.toggle("sb-sidenav-toggled");
+        if (el) el.classList.toggle("sb-sidenav-toggled");
         document.body.classList.toggle("sb-sidenav-toggled");
 
         // Handle Overlay on Mobile
-        if (document.body.classList.contains("sb-sidenav-toggled") && window.innerWidth < 768) {
-            overlay.classList.remove("d-none");
-        } else {
-            overlay.classList.add("d-none");
+        if (overlay) {
+            if (document.body.classList.contains("sb-sidenav-toggled") && window.innerWidth < 768) {
+                overlay.classList.remove("d-none");
+            } else {
+                overlay.classList.add("d-none");
+            }
         }
     }
 
-    toggleButton.onclick = toggleMenu;
+    if (toggleButton) {
+        toggleButton.onclick = toggleMenu;
+    }
 
     if (closeButton) {
         closeButton.onclick = function () {
@@ -60,6 +64,7 @@ function initGroupByDemo() {
 function renderTable(data) {
     const thead = document.getElementById('demo-header-row');
     const tbody = document.getElementById('demo-body-row');
+    if (!thead || !tbody) return;
 
     // Setup Header
     if (!isGrouped) {
@@ -222,6 +227,8 @@ function renderJoinTables() {
     const containerA = document.getElementById('table-a-rows');
     const containerB = document.getElementById('table-b-rows');
     const containerRes = document.getElementById('join-result-rows');
+    
+    if (!containerA || !containerB || !containerRes) return;
 
     // Clear
     containerA.innerHTML = '';
@@ -1589,3 +1596,18 @@ function initScrollSpy() {
         }
     });
 }
+window.initInteractiveTheory = function() {
+    if (typeof renderTable === 'function') {
+        renderTable(rawData);
+        renderJoinTables();
+        renderLimitSource();
+        if (typeof orderByData !== 'undefined') renderOrderByTable(orderByData);
+        renderExclusionTables();
+        
+        // Also toggle the active simulator in case it's in the page
+        const selectSimContainer = document.getElementById('select-sim-container');
+        if (selectSimContainer && typeof runSelectSim === 'function') {
+             // Maybe reset or clear?
+        }
+    }
+};

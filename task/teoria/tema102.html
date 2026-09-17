@@ -1,0 +1,286 @@
+<div class="tema-content bg-dark text-white p-4 rounded border border-secondary shadow-lg">
+    <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-4">
+        <h1 class="text-primary"><i class="fas fa-database me-2"></i>Tema 2.1: Diagramas E-R</h1>
+        <p class="mb-0 text-muted">Bernat Costa</p>
+    </div>
+
+    <!-- Introducción -->
+    <section class="mb-5">
+        <h2 class="text-info"><i class="fas fa-book-open me-2"></i>Modelando una BBDD</h2>
+        <div class="alert alert-dark border-secondary text-light">
+            <p class="mb-0"><i class="fas fa-info-circle me-2 text-warning"></i>Debemos conocer muy bien qué queremos modelar. Tener en cuenta los estándares para que sea entendido por el resto. Es importante considerar las características técnicas de nuestros SGBD.</p>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 bg-dark border-secondary text-white">
+                    <div class="card-header bg-secondary text-white text-center fw-bold">Conceptual</div>
+                    <div class="card-body text-center d-flex align-items-center justify-content-center">
+                        <p class="card-text">Modelo E-R<br><small class="text-muted">(Entidad-Relación)</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 bg-dark border-secondary text-white">
+                    <div class="card-header bg-secondary text-white text-center fw-bold">Lógico</div>
+                    <div class="card-body text-center d-flex align-items-center justify-content-center">
+                        <p class="card-text">Diagrama de Tablas<br><small class="text-muted">(Modelo Relacional)</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 bg-dark border-secondary text-white">
+                    <div class="card-header bg-secondary text-white text-center fw-bold">Físico</div>
+                    <div class="card-body text-center d-flex align-items-center justify-content-center">
+                        <p class="card-text">DDL<br><small class="text-muted">(Data Definition Language)</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Diagramas Entidad-Relación (E-R) -->
+    <section class="mb-5">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-project-diagram me-2"></i>Diagramas Entidad-Relación (E-R)</h2>
+        <p>Van a ser nuestra primera aproximación al problema. Es un mapa conceptual del problema a resolver. Es un modelo estándar, para que toda la comunidad lo comprenda.</p>
+
+        <div class="accordion accordion-flush bg-dark mt-4 border border-secondary rounded" id="accordionER">
+            <!-- Entidades -->
+            <div class="accordion-item bg-dark text-white border-secondary">
+                <h3 class="accordion-header" id="headingEntidades">
+                    <button class="accordion-button collapsed bg-dark text-white border-bottom border-secondary shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEntidades" aria-expanded="false" aria-controls="collapseEntidades">
+                        <i class="far fa-square me-2 text-primary"></i> 1. Entidades
+                    </button>
+                </h3>
+                <div id="collapseEntidades" class="accordion-collapse collapse" aria-labelledby="headingEntidades" data-bs-parent="#accordionER">
+                    <div class="accordion-body">
+                        <p>Se representan en <strong>rectángulos</strong>. Una entidad es un objeto o concepto sobre el que se recoge información.</p>
+                        <ul class="list-group list-group-flush border-0">
+                            <li class="list-group-item bg-transparent text-white border-0"><i class="fas fa-check text-success me-2"></i><strong>Reales:</strong> Alumno/a -> real, palpable.</li>
+                            <li class="list-group-item bg-transparent text-white border-0"><i class="fas fa-check text-success me-2"></i><strong>Abstractas:</strong> Un módulo de FP (DAM, DAW, ASIR...) -> es algo abstracto.</li>
+                            <li class="list-group-item bg-transparent text-white border-0"><i class="fas fa-dumbbell text-warning me-2"></i><strong>Fuertes:</strong> Existen por sí mismas (ej: Pedidos).</li>
+                            <li class="list-group-item bg-transparent text-white border-0"><i class="fas fa-link text-warning me-2"></i><strong>Débiles:</strong> Necesitan de otra entidad para tener sentido (ej: líneas de pedido).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Atributos -->
+            <div class="accordion-item bg-dark text-white border-secondary">
+                <h3 class="accordion-header" id="headingAtributos">
+                    <button class="accordion-button collapsed bg-dark text-white border-bottom border-secondary shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAtributos" aria-expanded="false" aria-controls="collapseAtributos">
+                        <i class="far fa-circle me-2 text-primary"></i> 2. Atributos
+                    </button>
+                </h3>
+                <div id="collapseAtributos" class="accordion-collapse collapse" aria-labelledby="headingAtributos" data-bs-parent="#accordionER">
+                    <div class="accordion-body">
+                        <p>Se representan con <strong>círculos</strong>, unidos con una línea a una entidad. Sirven para definir las características.</p>
+                        <ul class="list-group list-group-flush mb-3 border-0">
+                            <li class="list-group-item bg-transparent text-white border-0"><strong>Atributos Clave (subrayados):</strong> No se pueden repetir. Identifican unívocamente.</li>
+                            <li class="list-group-item bg-transparent text-white border-0"><strong>Obligatorios:</strong> No confundir con Atributo Clave.</li>
+                            <li class="list-group-item bg-transparent text-white border-0"><strong>Opcionales:</strong> Pueden quedarse vacíos.</li>
+                            <li class="list-group-item bg-transparent text-white border-0"><strong>Compuestos:</strong> Subatributos que salen de otro (ej: Dirección -> calle, número...).</li>
+                            <li class="list-group-item bg-transparent text-white border-0"><strong>Derivados:</strong> Círculo discontinuo. Se calculan a partir de otros.</li>
+                        </ul>
+                        <div class="alert alert-secondary bg-dark border-secondary text-light mb-0">
+                            <strong>Ejemplo: Entidad Coche</strong><br>
+                            - Atributos: Color, NumPuertas, Motor, Ventanas, Luces...<br>
+                            - Atributo Clave: Matrícula, numBastidor...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relaciones y Cardinalidad -->
+            <div class="accordion-item bg-dark text-white border-secondary">
+                <h3 class="accordion-header" id="headingRelaciones">
+                    <button class="accordion-button collapsed bg-dark text-white border-bottom border-secondary shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRelaciones" aria-expanded="false" aria-controls="collapseRelaciones">
+                        <i class="fas fa-diamond me-2 text-primary"></i> 3. Relaciones y Cardinalidad
+                    </button>
+                </h3>
+                <div id="collapseRelaciones" class="accordion-collapse collapse" aria-labelledby="headingRelaciones" data-bs-parent="#accordionER">
+                    <div class="accordion-body">
+                        <p>Las representamos por <strong>Rombos</strong>. Son asociaciones entre las entidades (Binarias, Terciarias, Reflexivas, N-Arias).</p>
+                        <h5 class="mt-3 text-warning">Cardinalidad</h5>
+                        <p>Número de entidades con la cual otra entidad se puede asociar. Se escribe sobre el rombo.</p>
+                        <ul>
+                            <li><strong>(1,1):</strong> Una instancia solo está asociada a otra instancia.</li>
+                            <li><strong>(1,N):</strong> Una instancia está asociada a varias instancias.</li>
+                            <li><strong>(N,N):</strong> Una instancia está asociada a varias y viceversa.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Superclase -->
+            <div class="accordion-item bg-dark text-white border-secondary">
+                <h3 class="accordion-header" id="headingSuperclase">
+                    <button class="accordion-button collapsed bg-dark text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSuperclase" aria-expanded="false" aria-controls="collapseSuperclase">
+                        <i class="fas fa-sitemap me-2 text-primary"></i> 4. Superclases
+                    </button>
+                </h3>
+                <div id="collapseSuperclase" class="accordion-collapse collapse" aria-labelledby="headingSuperclase" data-bs-parent="#accordionER">
+                    <div class="accordion-body">
+                        <p>Entidades que comparten muchas características (engloba a otras).</p>
+                        <p class="mb-0"><strong>Ejemplo:</strong> En un Zoo tenemos Perro, Gato, León, Elefante... Podríamos definir la Entidad <em>Mamífero</em> para asociar atributos comunes. Mamífero sería una superclase.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reglas de Oro -->
+    <section class="mb-5">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card h-100 bg-dark border-secondary text-white">
+                    <div class="card-header border-secondary text-warning fw-bold"><i class="fas fa-check-circle me-2"></i>¿Qué debe tener SIEMPRE un Modelo E-R?</div>
+                    <div class="card-body">
+                        <ol class="mb-0">
+                            <li>Entre dos entidades, hay una relación.</li>
+                            <li>Una relación DEBE tener una cardinalidad.</li>
+                            <li>Una entidad DEBE tener atributos y uno de ellos mínimo ser clave.</li>
+                            <li>Los atributos se asocian a las ENTIDADES o relaciones. NO SE COMPARTEN.</li>
+                            <li><strong>NO HAY FLECHAS.</strong></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100 bg-dark border-secondary text-white">
+                    <div class="card-header border-secondary text-danger fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Errores típicos a pulir</div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li><strong>Demasiadas relaciones 1:1:</strong> repasa si no tienes alguna entidad que pueda ser un atributo.</li>
+                            <li><strong>Muchos atributos compuestos:</strong> repasa si alguno de esos atributos no es una entidad.</li>
+                            <li><strong>Círculo de entidades y relaciones cerrado:</strong> asegúrate que todas las relaciones son necesarias.</li>
+                            <li><strong>Buscar atributos derivados:</strong> no almacenarlos físicamente si no es necesario.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+                        
+        <h4 class="mt-5 text-info border-bottom border-secondary pb-2"><i class="fas fa-tv me-2"></i>Ejemplos E-R: Sistemas de Login en Plataformas de Streaming</h4>
+        <p class="mb-4">Un pequeño cambio en la lógica de negocio cambia por completo el diagrama E-R. Veamos cómo modelaríamos distintas plataformas reales.</p>
+
+        <!-- HBO Clásico -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header bg-secondary bg-opacity-25 text-white fw-bold"><i class="fas fa-user me-2"></i>1. HBO (Clásico) - Un único usuario por cuenta</div>
+            <div class="card-body text-center bg-white">
+                <img src="../img/er_login_2.png" alt="ER Login HBO" class="img-fluid my-3 border border-secondary" style="max-height: 400px; border-radius: 8px;">
+            </div>
+            <div class="card-footer text-muted small border-secondary">
+                En los orígenes de plataformas como HBO, el cliente era el propio usuario. Una cuenta, un perfil. Toda la información de facturación (tarjeta) y de login (email, password) recae sobre la misma entidad. Sus favoritos se asocian directamente a esta entidad única.
+            </div>
+        </div>
+
+        <!-- Netflix / HBO Max -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header bg-secondary bg-opacity-25 text-white fw-bold"><i class="fas fa-users-cog me-2"></i>2. Netflix - Cuenta única con múltiples perfiles (Usuarios débiles)</div>
+            <div class="card-body text-center bg-white">
+                <img src="../img/er_login_1.png" alt="ER Login Netflix" class="img-fluid my-3 border border-secondary" style="max-height: 400px; border-radius: 8px;">
+            </div>
+            <div class="card-footer text-muted small border-secondary">
+                Netflix dio una vuelta de tuerca: la entidad fuerte "Cliente" es quien hace el login real (email y contraseña) y paga. De ahí cuelgan múltiples "Perfiles/Usuarios" (entidad débil) que solo tienen un nombre y un avatar. Los favoritos y el historial de visionado no van al cliente, ¡sino a cada perfil!
+            </div>
+        </div>
+
+        <!-- Spotify Familiar -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header bg-secondary bg-opacity-25 text-white fw-bold"><i class="fas fa-users me-2"></i>3. Spotify Familiar - Múltiples cuentas bajo una misma facturación</div>
+            <div class="card-body text-center bg-white">
+                <img src="../img/er_login_3.png" alt="ER Login Spotify" class="img-fluid my-3 border border-secondary" style="max-height: 450px; border-radius: 8px;">
+            </div>
+            <div class="card-footer text-muted small border-secondary">
+                Aquí el concepto se divide aún más. Existe un "Cliente" que es el que paga (entidad fuerte con tarjeta bancaria), y se relaciona 1:N con diferentes "Usuarios". Cada usuario sigue teniendo su propio <strong>email y contraseña</strong> independiente para iniciar sesión.
+            </div>
+        </div>
+
+        <div class="alert alert-info bg-dark border-info text-info mt-4">
+            <h5 class="alert-heading"><i class="fas fa-lightbulb me-2"></i>Estrategia para sacar un buen E-R</h5>
+            <hr class="border-info">
+            <ol class="mb-0">
+                <li>Leer varias veces el enunciado y comprender el problema.</li>
+                <li>Obtener lista inicial: Identificar Entidades (fuertes/débiles), Relaciones, Atributos y Superclases.</li>
+                <li>Poner los elementos en un mapa conceptual.</li>
+                <li>Buscar incoherencias y refinar (errores sintácticos o conceptuales).</li>
+            </ol>
+        </div>
+    </section>
+
+    
+        <h4 class="mt-5 text-info border-bottom border-secondary pb-2"><i class="fas fa-book me-2"></i>Ejemplo E-R Completo: Librería (Notación Clásica)</h4>
+        <p class="mb-4">Como demostración de un diagrama Entidad-Relación clásico (notación de Chen) generado automáticamente pero respetando las normas, aquí tienes el diseño de la librería que veremos más adelante en tablas. Fíjate en cómo los atributos clave (PK) están subrayados, las entidades son rectángulos, las relaciones rombos y los atributos óvalos.</p>
+        
+        <div class="card bg-dark border-secondary mb-5">
+            <div class="card-header bg-secondary bg-opacity-25 text-white fw-bold"><i class="fas fa-project-diagram me-2"></i>Diagrama E-R de la Librería</div>
+            <div class="card-body text-center bg-white rounded-bottom overflow-auto">
+                <pre class="mermaid">
+flowchart TD
+    %% Entidades
+    CLIENTE[CLIENTE]
+    PEDIDO[PEDIDO]
+    LIBRO[LIBRO]
+    CATEGORIA[CATEGORIA]
+
+    %% Relaciones
+    REALIZA{Realiza}
+    CONTIENE{Contiene}
+    PERTENECE{Pertenece}
+
+    %% Conexiones
+    CLIENTE ---|"1"| REALIZA
+    REALIZA ---|"N"| PEDIDO
+
+    PEDIDO ---|"N"| CONTIENE
+    CONTIENE ---|"M"| LIBRO
+
+    LIBRO ---|"N"| PERTENECE
+    PERTENECE ---|"M"| CATEGORIA
+
+    %% Atributos CLIENTE
+    c_id(["&lt;u&gt;id_cliente&lt;/u&gt;"])
+    c_nom(["nombre"])
+    CLIENTE --- c_id
+    CLIENTE --- c_nom
+
+    %% Atributos PEDIDO
+    p_id(["&lt;u&gt;id_pedido&lt;/u&gt;"])
+    p_fec(["fecha_hora"])
+    p_tot(["total"])
+    PEDIDO --- p_id
+    PEDIDO --- p_fec
+    PEDIDO --- p_tot
+
+    %% Atributos LIBRO
+    l_id(["&lt;u&gt;id_libro&lt;/u&gt;"])
+    l_tit(["titulo"])
+    l_pre(["precio_actual"])
+    LIBRO --- l_id
+    LIBRO --- l_tit
+    LIBRO --- l_pre
+
+    %% Atributos CATEGORIA
+    cat_id(["&lt;u&gt;id_categoria&lt;/u&gt;"])
+    cat_nom(["nombre"])
+    CATEGORIA --- cat_id
+    CATEGORIA --- cat_nom
+
+    %% Atributos de la Relacion CONTIENE (N:M)
+    con_cant(["cantidad"])
+    con_pre(["precio_venta"])
+    CONTIENE -.- con_cant
+    CONTIENE -.- con_pre
+                </pre>
+            </div>
+            <div class="card-footer text-muted small border-secondary text-start">
+                <strong>Puntos clave:</strong>
+                <ul>
+                    <li>Las claves primarias (PK) van <u>subrayadas</u> dentro de su óvalo.</li>
+                    <li>La relación N:M <strong>Contiene</strong> tiene sus propios atributos (<em>cantidad</em> y <em>precio_venta</em>) que cuelgan del rombo con líneas punteadas.</li>
+                    <li>Existe una relación N:M <strong>Pertenece</strong> entre Libro y Categoría, permitiendo que un libro tenga varias categorías y viceversa.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>

@@ -1,0 +1,214 @@
+<div class="tema-content bg-dark text-white p-4 rounded border border-secondary shadow-lg">
+    <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-4">
+        <h1 class="text-primary"><i class="fas fa-tasks me-2"></i>Tema 2.3: Enunciados de Ejercicios</h1>
+        <p class="mb-0 text-muted">Bernat Costa</p>
+    </div>
+    
+    <section>
+        <p class="lead mb-4 text-info">Practica el paso a modelo Entidad-Relación y posteriormente al Modelo Relacional con los siguientes casos de uso.</p>
+        
+        <div class="row mt-2">
+            <!-- Tabs Nav -->
+            <div class="col-md-3 mb-4">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej1-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej1" type="button" role="tab" aria-controls="v-pills-ej1" aria-selected="true"><i class="fas fa-balance-scale me-2"></i>1. Abogados</button>
+                    <button class="nav-link bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej2-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej2" type="button" role="tab" aria-controls="v-pills-ej2" aria-selected="false"><i class="fas fa-laptop me-2"></i>2. Informática</button>
+                    <button class="nav-link bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej3-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej3" type="button" role="tab" aria-controls="v-pills-ej3" aria-selected="false"><i class="fas fa-car me-2"></i>3. Coches</button>
+                    <button class="nav-link bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej4-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej4" type="button" role="tab" aria-controls="v-pills-ej4" aria-selected="false"><i class="fas fa-tree me-2"></i>4. Parques Naturales</button>
+                    <button class="nav-link bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej5-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej5" type="button" role="tab" aria-controls="v-pills-ej5" aria-selected="false"><i class="fas fa-film me-2"></i>5. Netflix</button>
+                    <button class="nav-link bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej6-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej6" type="button" role="tab" aria-controls="v-pills-ej6" aria-selected="false"><i class="fas fa-paw me-2"></i>6. Zoo</button>
+                    <button class="nav-link bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej7-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej7" type="button" role="tab" aria-controls="v-pills-ej7" aria-selected="false"><i class="fas fa-video me-2"></i>7. Cines</button>
+                    <button class="nav-link bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej8-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej8" type="button" role="tab" aria-controls="v-pills-ej8" aria-selected="false"><i class="fas fa-baby me-2"></i>8. Guardería</button>
+                    <button class="nav-link bg-dark border border-secondary text-start mb-2 text-light" id="v-pills-ej9-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ej9" type="button" role="tab" aria-controls="v-pills-ej9" aria-selected="false"><i class="fas fa-book me-2"></i>9. Librerías</button>
+                </div>
+            </div>
+            
+            <!-- Tabs Content -->
+            <div class="col-md-9">
+                <div class="tab-content" id="v-pills-tabContent">
+                
+                    <!-- Ejercicio 1 -->
+                    <div class="tab-pane fade show active" id="v-pills-ej1" role="tabpanel" aria-labelledby="v-pills-ej1-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-balance-scale me-2"></i>Ejercicio 1: Gabinete de Abogados</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #2c3e50);">
+                                <i class="fas fa-balance-scale fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">Se quiere diseñar una base de datos relacional para almacenar información sobre los asuntos que lleva un gabinete de abogados.</p>
+                                <p class="mb-3">Cada <strong>asunto</strong> tiene un <em>número de expediente</em> que lo identifica, y corresponde a un solo cliente. Del asunto se debe almacenar el período (fecha de inicio y fecha de archivo o finalización) y su estado (en trámite, archivado, etc.).</p>
+                                <p class="mb-3">También se deben registrar los datos personales del <strong>cliente</strong> al que pertenece el asunto (DNI, nombre, dirección, etc.).</p>
+                                <p class="mb-0">Algunos asuntos son llevados por uno o varios <strong>procuradores</strong>, de los que nos interesa también guardar sus datos personales.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 2 -->
+                    <div class="tab-pane fade" id="v-pills-ej2" role="tabpanel" aria-labelledby="v-pills-ej2-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-laptop me-2"></i>Ejercicio 2: Tienda de Informática</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #173b40);">
+                                <i class="fas fa-laptop fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">Tenemos que diseñar una base de datos para una empresa de material informático, de la que tenemos la siguiente información:</p>
+                                <p class="mb-3">Un <strong>equipo</strong> consta de varios componentes. Pueden ser necesarios varios componentes del mismo tipo para montar un equipo, por lo que será necesario almacenar la <em>cantidad</em> de componentes que se necesitan en cada caso. Cada equipo está etiquetado con un código de equipo, una descripción, un precio y el stock disponible.</p>
+                                <p class="mb-3">Cada <strong>componente</strong> está etiquetado con un código de componente, una descripción, un precio y el stock disponible.</p>
+                                <p class="mb-3">Un <strong>cliente</strong> puede comprar equipos completos o componentes sueltos. Habrá que almacenar la cantidad de equipos o la cantidad de componentes de cada tipo que compra cada cliente. También habrá que guardar la <em>fecha de la compra</em>. Un mismo cliente puede comprar el mismo equipo o el mismo componente en diferentes fechas. El diseño debe permitir almacenar un <strong>histórico</strong> con todas las fechas y las cantidades de equipos o componentes que ha comprado en total.</p>
+                                <p class="mb-3">Los datos que almacenamos de los clientes son el NIF, nombre, apellidos, domicilio, ciudad, provincia y teléfono.</p>
+                                <p class="mb-0">Los datos que almacenamos de los <strong>empleados</strong> son el NIF, nombre, apellidos y la sección donde trabaja. Un empleado trabaja en una única <strong>sección</strong>. Una sección se identifica por un id y un nombre de sección.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 3 -->
+                    <div class="tab-pane fade" id="v-pills-ej3" role="tabpanel" aria-labelledby="v-pills-ej3-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-car me-2"></i>Ejercicio 3: Venta de Coches</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #401717);">
+                                <i class="fas fa-car fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">Un concesionario de automóviles desea informatizar su gestión de ventas de vehículos. Se quiere tener almacenada la información referente a los <strong>clientes</strong> que compran en el concesionario, los vehículos vendidos, así como los <strong>vendedores</strong> que realizan las distintas ventas.</p>
+                                <p class="mb-3">Existen diferentes <strong>marcas</strong> de automóviles; para cada marca se almacena un identificador único y un nombre. Una marca puede tener muchos <strong>modelos</strong> diferentes, pero un modelo sólo puede pertenecer a una marca. De cada modelo se almacena un identificador único y un nombre.</p>
+                                <p class="mb-3">Para cada modelo pueden existir diferentes <strong>versiones</strong> (se almacena id, nombre de versión, potencia, precio base y tipo de combustible).</p>
+                                <p class="mb-3">Cada una de las versiones dispondrá de unos <strong>extras</strong> adicionales (aire acondicionado, etc.) definidos por identificador, nombre y descripción. Hay que tener en cuenta que un extra puede ser común para varias versiones variando sólo el precio en cada caso.</p>
+                                <p class="mb-3">En cuanto a los clientes y vendedores, la información de interés es el nombre, apellidos, NIF, dirección y teléfono.</p>
+                                <p class="mb-3">Los clientes pueden ceder su <strong>coche usado</strong> al comprar un vehículo nuevo (definido por marca, modelo, matrícula, precio de tasación y fecha de la cesión).</p>
+                                <p class="mb-0">Por último, se desea saber qué vendedor ha vendido qué versión a qué cliente, la fecha de la venta y la matrícula del nuevo coche vendido.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 4 -->
+                    <div class="tab-pane fade" id="v-pills-ej4" role="tabpanel" aria-labelledby="v-pills-ej4-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-tree me-2"></i>Ejercicio 4: Parques Naturales</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #1b4017);">
+                                <i class="fas fa-tree fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">La ministra de medio ambiente ha decidido crear un sistema de información sobre parques naturales.</p>
+                                <p class="mb-3">Una <strong>CCAA</strong> puede tener varios parques naturales. Un parque puede estar compartido por más de una CCAA.</p>
+                                <p class="mb-3">Un <strong>parque natural</strong> se identifica por un nombre, fue declarado en una fecha y se compone de varias <strong>áreas</strong> identificadas por un nombre y caracterizadas por una determinada extensión.</p>
+                                <p class="mb-3">En cada área forzosamente residen <strong>especies</strong> que pueden ser de 3 tipos: Vegetales, animales y minerales. Cada especie tiene una denominación científica y una denominación vulgar y un número inventariado de individuos por áreas.</p>
+                                <ul>
+                                    <li>De las especies <strong>vegetales</strong>, se desea saber si tienen floración y en qué periodo se produce.</li>
+                                    <li>De los <strong>animales</strong> se desea saber su tipo de alimentación y su periodo de celo.</li>
+                                    <li>De las <strong>minerales</strong> se desea saber si se trata de cristales o rocas.</li>
+                                </ul>
+                                <p class="mb-0">Del <strong>personal</strong> que trabaja en cada parque se guarda DNI, NSS, Nombre, Dirección, teléfono y sueldo.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 5 -->
+                    <div class="tab-pane fade" id="v-pills-ej5" role="tabpanel" aria-labelledby="v-pills-ej5-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-film me-2"></i>Ejercicio 5: Netflix</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #401726);">
+                                <i class="fas fa-film fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">Vamos a diseñar la BBDD de Netflix.</p>
+                                <p class="mb-3">Tenemos <strong>clientes</strong> y <strong>usuarios (perfiles)</strong>. Vamos a considerar que todas las cuentas son premium con hasta 4 usuarios. Del cliente deberemos tener la información necesaria para pasarle el cobro.</p>
+                                <p class="mb-3">En el catálogo tendremos <strong>series</strong> y <strong>películas</strong>. De cada película o serie, deberemos guardar aparte de su título, su miniatura, la duración, el género y número de temporadas o capítulos si corresponde.</p>
+                                <p class="mb-3">Las series tendrán <strong>temporadas</strong> y <strong>capítulos</strong>.</p>
+                                <p class="mb-3">Deberemos guardar la información necesaria (historial de visionado) para saber <em>qué está viendo</em> cada usuario, y en qué minuto exacto se ha quedado de un capítulo o película en concreto.</p>
+                                <p class="mb-0">También deberemos ser capaces de guardar las series o películas <strong>favoritas</strong> de cada usuario de forma independiente.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 6 -->
+                    <div class="tab-pane fade" id="v-pills-ej6" role="tabpanel" aria-labelledby="v-pills-ej6-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-paw me-2"></i>Ejercicio 6: Zoo</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #403e17);">
+                                <i class="fas fa-paw fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">Se quiere diseñar una base de datos relacional que almacene información relativa a los zoos existentes en el mundo, así como las especies animales que éstos albergan.</p>
+                                <p class="mb-3">De cada <strong>zoo</strong> se conoce el nombre, ciudad y país donde se encuentra, tamaño (en m2) y presupuesto anual.</p>
+                                <p class="mb-3">De cada <strong>especie</strong> animal se almacena el nombre vulgar y nombre científico, familia a la que pertenece y si se encuentra en peligro de extinción.</p>
+                                <p class="mb-0">Además, se debe guardar información sobre cada <strong>animal concreto</strong> (individuo) que los zoos poseen, como su número de identificación (propio de cada animal), especie a la que pertenece, sexo, año de nacimiento, país de origen y continente.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 7 -->
+                    <div class="tab-pane fade" id="v-pills-ej7" role="tabpanel" aria-labelledby="v-pills-ej7-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-video me-2"></i>Ejercicio 7: Cines</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #321740);">
+                                <i class="fas fa-video fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">La asociación de cines de una ciudad quiere crear un servicio de consulta telefónica sobre las películas que se están proyectando actualmente.</p>
+                                <p class="mb-3">Se debe poder responder a consultas como: en qué cines hacen una determinada película y el horario de los pases, qué películas de dibujos animados se están proyectando y dónde, qué películas hay en un determinado cine, etc.</p>
+                                <p class="mb-3">Para cada <strong>cine</strong> la base de datos almacenará su nombre, la calle y número donde está, el teléfono y los distintos precios de la entrada (según el día de la semana).</p>
+                                <p class="mb-3">Hay que tener en cuenta que algunos cines tienen varias <strong>salas</strong> en las que se pasan distintas películas. Una sala se identifica por un número y tiene un aforo total.</p>
+                                <p class="mb-3">En un mismo cine (en sus salas) se pueden hacer <strong>pases de proyección</strong> (sesiones) a distintas horas. Se debe saber el título de la película y el horario de inicio.</p>
+                                <p class="mb-0">De las <strong>películas</strong> se almacena título, director, hasta tres protagonistas principales, el género y la clasificación por edades.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 8 -->
+                    <div class="tab-pane fade" id="v-pills-ej8" role="tabpanel" aria-labelledby="v-pills-ej8-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-baby me-2"></i>Ejercicio 8: Guardería</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #402817);">
+                                <i class="fas fa-baby fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">Una guardería desea controlar los gastos que cada <strong>niño</strong> realiza a través de su asistencia y comidas. De cada niño se conoce matrícula, nombre, fecha de nacimiento y de ingreso (y fecha de baja si aplica).</p>
+                                <p class="mb-3">Los niños solo pueden ser recogidos por <strong>personas autorizadas</strong> (DNI, nombre, dirección, teléfono, y relación con el niño).</p>
+                                <p class="mb-3">El coste mensual es abonado por una <strong>persona responsable del pago</strong> (DNI, nombre, cuenta corriente), que también puede estar autorizada a recoger al niño.</p>
+                                <p class="mb-3">En la guardería hay un conjunto de <strong>menús</strong>, compuestos por <strong>platos</strong>, que a su vez tienen <strong>ingredientes</strong>. Un niño puede ser <em>alérgico</em> a diferentes ingredientes.</p>
+                                <p class="mb-0">El cargo mensual se calcula a partir de los <strong>días de asistencia</strong>, sumando un coste fijo más el coste de las comidas de ese día. Además se desea saber exactamente el menú que consumió cada niño cada día.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejercicio 9 -->
+                    <div class="tab-pane fade" id="v-pills-ej9" role="tabpanel" aria-labelledby="v-pills-ej9-tab">
+                        <div class="card bg-dark border-secondary text-white shadow h-100">
+                            <div class="card-header bg-secondary bg-opacity-25 border-bottom border-secondary p-3">
+                                <h4 class="mb-0 text-primary"><i class="fas fa-book me-2"></i>Ejercicio 9: Librerías</h4>
+                            </div>
+                            <div class="bg-darker text-center py-5 border-bottom border-secondary" style="background: linear-gradient(45deg, #1a1c20, #17403f);">
+                                <i class="fas fa-book fa-5x text-secondary opacity-50"></i>
+                            </div>
+                            <div class="card-body p-4 text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                                <p class="mb-3">Vamos a hacer una web para una <strong>red de librerías</strong> (como las librerías de barrio asociadas en un portal común).</p>
+                                <p class="mb-3">Cada <strong>librería</strong> tendrá un identificador, nombre, dirección y teléfono.</p>
+                                <p class="mb-3">De cada <strong>cliente</strong> guardamos email, nombre, apellidos, dirección, teléfono. Un cliente puede comprar en cualquier librería a través de la web.</p>
+                                <p class="mb-3">Debemos saber qué <strong>pedidos</strong> se han hecho cada día. Cada pedido pertenece a un cliente y el producto se solicita a una librería en concreto. El cobro del pedido depende de los libros comprados (y sus precios de venta) y los <em>gastos de envío</em> (calculados por el peso total del pedido y el código postal del cliente).</p>
+                                <p class="mb-3">Sobre el <strong>libro</strong> nos interesa: título, reseña y género. De cada <strong>autor</strong> guardamos nombre, apellidos y pequeña biografía. Un libro puede ser escrito por varios autores.</p>
+                                <p class="mb-0">Cada libro será impreso por una <strong>editorial</strong>. Un mismo libro (obra) lo pueden imprimir varias editoriales diferentes, pero entonces tendrán un <strong>ISBN distinto</strong>, diferente número de páginas, peso y tamaño. Es esta <em>edición en concreto</em> (el ISBN) la que las librerías tienen en su <strong>stock</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,169 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────
+    // FUNCIONES AUXILIARES
+    // ─────────────────────────────────────────────────────────
+
+    // Devuelve el documento del usuario autenticado
+    function userData() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
+    // Comprueba si el usuario está autenticado
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Comprueba si es el superadmin
+    function isAdmin() {
+      return isAuth() && request.auth.token.email == 'bernatcosta@iesamachado.org';
+    }
+
+    // Comprueba si es docente (o admin)
+    function isDocente() {
+      return isAuth() && (isAdmin() || userData().rol == 'docente');
+    }
+
+    // Comprueba si es el propio usuario
+    function isSelf(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // COLECCIÓN: usuarios
+    // ─────────────────────────────────────────────────────────
+    match /usuarios/{uid} {
+
+      // Cualquier usuario autenticado puede leer su propio documento.
+      // Los docentes y admin pueden leer todos los usuarios.
+      allow read: if isSelf(uid) || isDocente();
+
+      // Solo el propio usuario puede crear su perfil (al hacer login por primera vez).
+      // El admin puede crearlo directamente.
+      allow create: if isSelf(uid) || isAdmin();
+
+      // El propio usuario puede actualizar sus datos, EXCEPTO su rol.
+      // El admin puede actualizar cualquier campo.
+      allow update: if isAdmin()
+                    || (isSelf(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol']));
+
+      // Solo el admin puede eliminar usuarios.
+      allow delete: if isAdmin();
+
+      // ── Subcolección: ejercicios (progreso del alumno) ──
+      match /ejercicios/{ejercicioId} {
+
+        // El alumno lee su propio progreso. Los docentes/admin leen todo.
+        allow read: if isSelf(uid) || isDocente();
+
+        // El alumno solo puede escribir en sus propios documentos de ejercicio.
+        // No puede modificar puntoObtenido si ya está marcado como superado.
+        allow create: if isSelf(uid);
+        allow update: if isSelf(uid)
+                      && !(resource.data.get('superado', false) == true
+                           && request.resource.data.get('puntoObtenido', 0) != resource.data.get('puntoObtenido', 0));
+
+        // Nadie puede borrar su progreso (integridad académica).
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // COLECCIÓN: clases
+    // ─────────────────────────────────────────────────────────
+    match /clases/{claseId} {
+
+      // Los alumnos pueden leer la clase a la que pertenecen o si su email está en la lista de invitados.
+      // Los docentes/admin leen todas.
+      allow read: if isDocente()
+                  || (isAuth() && 'alumnosIds' in resource.data && resource.data.alumnosIds.hasAny([request.auth.uid]))
+                  || (isAuth() && 'alumnosEmails' in resource.data && resource.data.alumnosEmails.hasAny([request.auth.token.email]));
+
+      // Solo los docentes y el admin pueden crear clases.
+      allow create: if isDocente()
+                    && request.resource.data.docenteId == request.auth.uid || isAdmin();
+
+      // Solo el docente dueño de la clase o el admin pueden actualizar.
+      allow update: if isAdmin()
+                    || (isDocente() && resource.data.docenteId == request.auth.uid);
+
+      // Solo el admin puede borrar clases.
+      allow delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // COLECCIÓN: intentos (log de intentos de ejercicios)
+    // ─────────────────────────────────────────────────────────
+    match /intentos/{intentoId} {
+
+      // El alumno solo puede leer sus propios intentos.
+      // Los docentes y admin leen todos.
+      allow read: if isDocente()
+                  || (isAuth() && resource.data.uid == request.auth.uid);
+
+      // Solo el propio alumno puede crear intentos (el servidor JS los escribe).
+      // El uid del intento debe coincidir con el del usuario autenticado.
+      allow create: if isAuth()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.email == request.auth.token.email;
+
+      // Nadie puede modificar ni borrar un intento una vez creado.
+      allow update, delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // COLECCIÓN: ejercicios (catálogo estático de enunciados y soluciones)
+    // ─────────────────────────────────────────────────────────
+    match /ejercicios/{ejercicioId} {
+      allow read: if isAuth();
+      allow write: if isDocente();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // COLECCIÓN: intentos_tandas (intentos completos de tandas en modo examen/practica)
+    // ─────────────────────────────────────────────────────────
+    match /intentos_tandas/{intentoId} {
+      allow read: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid);
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid && !('nota' in request.resource.data.diff(resource.data).affectedKeys()));
+      allow delete: if isAdmin();
+    }
+
+
+    // ─────────────────────────────────────────────────────────
+    // COLECCIÓN: usuarios_pendientes
+    // (docentes pre-registrados antes de su primer login)
+    // ─────────────────────────────────────────────────────────
+    match /usuarios_pendientes/{docId} {
+
+      // Solo el admin crea estas entradas.
+      // Un usuario autenticado puede comprobar si su propio email está pendiente.
+      allow read: if isAdmin() || (isAuth() && resource.data.email == request.auth.token.email);
+      allow write: if isAdmin();
+    }
+    // ─────────────────────────────────────────────────────────
+    // COLECCIÓN: banco_ejercicios
+    // ─────────────────────────────────────────────────────────
+    match /banco_ejercicios/{exId} {
+      // Todos los usuarios pueden leer los ejercicios
+      allow read: if isAuth();
+      // Solo el administrador puede modificar/crear los ejercicios directamente
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // COLECCIÓN: propuestas_ejercicios
+    // ─────────────────────────────────────────────────────────
+    match /propuestas_ejercicios/{propuestaId} {
+      // Los docentes pueden leer las propuestas y crear nuevas
+      allow read: if isDocente();
+      allow create: if isDocente();
+      // Solo el administrador puede editar (aprobar/rechazar) o borrar
+      allow update, delete: if isAdmin();
+    }
+
+  }
+}

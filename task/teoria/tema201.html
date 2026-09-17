@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-dark text-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tema 1: Instalación de SGBD (RA1)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #212529; color: #fff; }
+        .toc a { color: #0d6efd; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        .section-icon { margin-right: 10px; color: #0d6efd; }
+    </style>
+</head>
+<body class="bg-dark text-white">
+
+<div class="tema-content p-4">
+    <h1 class="mb-4"><i class="fas fa-database section-icon"></i> Tema 1: Instalación de SGBD (RA1)</h1>
+
+    <div class="card bg-secondary text-white mb-4 toc">
+        <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-list"></i> Índice de Contenidos</h5>
+            <ul>
+                <li><a href="#tipos-sgbd" class="text-info">1. Tipos de SGBD</a></li>
+                <li><a href="#arquitectura-ansi" class="text-info">2. Arquitectura ANSI/SPARC</a></li>
+                <li><a href="#instalacion-docker" class="text-info">3. Instalación usando Docker</a>
+                    <ul>
+                        <li><a href="#mariadb-docker" class="text-info">3.1. MariaDB en Linux/Docker</a></li>
+                    </ul>
+                </li>
+                <li><a href="#instalacion-oracle" class="text-info">4. Oracle en Oracle Cloud / Linux</a></li>
+                <li><a href="#instalacion-sqlserver" class="text-info">5. SQL Server en VirtualBox con Windows</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <section id="tipos-sgbd" class="mb-5">
+        <h2><i class="fas fa-server section-icon"></i>1. Tipos de SGBD (Sistemas Gestores de Bases de Datos)</h2>
+        <p>Los SGBD se pueden clasificar principalmente en dos grandes categorías, dependiendo de su modelo de datos y características relacionales:</p>
+        <div class="accordion text-dark" id="accordionSGBD">
+            <div class="accordion-item bg-dark text-white border-secondary">
+                <h2 class="accordion-header" id="headingRelacional">
+                    <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#collapseRelacional" aria-expanded="false" aria-controls="collapseRelacional">
+                        SGBD Relacionales (SQL)
+                    </button>
+                </h2>
+                <div id="collapseRelacional" class="accordion-collapse collapse" aria-labelledby="headingRelacional" data-bs-parent="#accordionSGBD">
+                    <div class="accordion-body border-top border-secondary">
+                        Utilizan el modelo relacional donde los datos se almacenan en tablas (filas y columnas) vinculadas mediante claves. Ejemplos: MySQL, MariaDB, PostgreSQL, Oracle, SQL Server.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item bg-dark text-white border-secondary">
+                <h2 class="accordion-header" id="headingNoRelacional">
+                    <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNoRelacional" aria-expanded="false" aria-controls="collapseNoRelacional">
+                        SGBD No Relacionales (NoSQL)
+                    </button>
+                </h2>
+                <div id="collapseNoRelacional" class="accordion-collapse collapse" aria-labelledby="headingNoRelacional" data-bs-parent="#accordionSGBD">
+                    <div class="accordion-body border-top border-secondary">
+                        No utilizan el modelo tabular clásico, diseñados para grandes volúmenes de datos distribuidos. Tipos: Documentales (MongoDB), Clave-Valor (Redis), Grafos (Neo4j), Columnas (Cassandra).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="arquitectura-ansi" class="mb-5">
+        <h2><i class="fas fa-layer-group section-icon"></i>2. Arquitectura ANSI/SPARC</h2>
+        <p>La arquitectura ANSI/SPARC de tres niveles es un estándar para el diseño de SGBD, que separa la visión del usuario de la estructura física de la base de datos:</p>
+        <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-eye text-primary"></i> <strong>Nivel Externo (Vistas):</strong> Es la forma en que los usuarios o aplicaciones ven los datos. Permite múltiples vistas personalizadas.</li>
+            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-sitemap text-warning"></i> <strong>Nivel Conceptual (Lógico):</strong> Describe qué datos se almacenan en la base de datos y las relaciones entre ellos (tablas, restricciones), ocultando los detalles físicos.</li>
+            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-hdd text-danger"></i> <strong>Nivel Interno (Físico):</strong> Describe cómo se almacenan físicamente los datos en los dispositivos de almacenamiento (índices, archivos, asignación de espacio).</li>
+        </ul>
+        <p><strong>Ventaja principal:</strong> Independencia de datos (lógica y física).</p>
+    </section>
+
+    <section id="instalacion-docker" class="mb-5">
+        <h2><i class="fab fa-docker section-icon"></i>3. Instalación usando Docker</h2>
+        <p>Docker es una herramienta que nos permite "virtualizar" varias bases de datos en un mismo equipo utilizando contenedores ligeros en lugar de máquinas virtuales completas.</p>
+        <ul>
+            <li>Un contenedor por servicio.</li>
+            <li>Podremos tener varios SGBD (MySQL, SQL Server) en la misma máquina funcionando en puertos distintos.</li>
+            <li>Es más ágil de levantar y consume menos recursos que VirtualBox.</li>
+        </ul>
+        
+        <h3 id="mariadb-docker" class="mt-4"><i class="fas fa-database section-icon text-info"></i>3.1. MariaDB en Linux / Docker</h3>
+        <p>MariaDB es un SGBD libre con licencia GPL, muy usado en entornos web (LAMP o XAMP).</p>
+        <p>Para levantar MariaDB con Docker exponiendo el puerto 3306 y configurando la contraseña <code>root</code>, y utilizando un volumen persistente:</p>
+        <pre><code class="language-bash bg-black p-3 rounded d-block text-success">
+docker run -d --name mariadb_server \
+  -e MYSQL_ROOT_PASSWORD=root \
+  -p 3306:3306 \
+  -v mariadb_data:/var/lib/mysql \
+  mariadb:latest
+        </code></pre>
+        <p>También podemos usar <strong>Docker Compose</strong> creando un archivo <code>docker-compose.yml</code> y ejecutando <code>docker-compose up -d</code>.</p>
+        
+        <h4 class="mt-3">Configuración adicional de MariaDB (Nativo en Linux)</h4>
+        <p>Si se instala nativamente con <code>apt install mariadb-server</code>, se recomienda ejecutar:</p>
+        <pre><code class="language-bash bg-black p-3 rounded d-block text-success">sudo mysql_secure_installation</code></pre>
+        <p>Para permitir conexiones remotas, editar <code>/etc/mysql/mariadb.conf.d/50-server.cnf</code> y comentar la línea <code>bind-address</code>, luego reiniciar: <code>sudo systemctl restart mariadb</code>.</p>
+    </section>
+
+    <section id="instalacion-oracle" class="mb-5">
+        <h2><i class="fas fa-cloud section-icon text-danger"></i>4. Oracle en Oracle Cloud / Linux</h2>
+        <p>Oracle Database es un SGBD relacional avanzado. Instalarlo localmente puede ser pesado, por lo que una excelente opción es desplegarlo en Oracle Cloud usando una instancia de Linux.</p>
+        <ol>
+            <li>Crear una instancia "Always Free" de Compute (ej. Oracle Linux) en Oracle Cloud.</li>
+            <li>Configurar las reglas de ingreso (Ingress Rules) en la red virtual (VCN) para abrir el puerto de escucha (por defecto 1521).</li>
+            <li>Acceder por SSH a la máquina Linux e instalar los pre-requisitos de Oracle o utilizar una imagen de Docker de Oracle Database preconfigurada.</li>
+            <li>Si se usa Docker para Oracle Database 21c/19c Express Edition (XE):
+                <pre><code class="language-bash bg-black p-3 rounded d-block mt-2 text-success">docker run -d --name oracle_db \
+  -p 1521:1521 -p 5500:5500 \
+  -e ORACLE_PWD=TuPasswordSeguro123 \
+  -e ORACLE_CHARACTERSET=AL32UTF8 \
+  container-registry.oracle.com/database/express:latest</code></pre>
+            </li>
+            <li>Conectarse remotamente utilizando un cliente como SQL Developer.</li>
+        </ol>
+    </section>
+
+    <section id="instalacion-sqlserver" class="mb-5">
+        <h2><i class="fab fa-windows section-icon text-primary"></i>5. SQL Server en VirtualBox con Windows</h2>
+        <p>Para instalar Microsoft SQL Server en un entorno aislado usando VirtualBox:</p>
+        <ol>
+            <li><strong>Preparar Máquina Virtual:</strong> Instalar Windows (10/11 o Windows Server) en VirtualBox. Asignar al menos 4GB de RAM y configuración de red en modo "Adaptador Puente" para tener IP propia en la red local.</li>
+            <li><strong>Descargar Instalador:</strong> Descargar SQL Server 2019/2022 Developer Edition (gratuita para desarrollo y pruebas).</li>
+            <li><strong>Ejecutar Centro de Instalación:</strong> Seleccionar "Nueva instalación independiente de SQL Server".</li>
+            <li><strong>Selección de características:</strong> Seleccionar "Servicios de Motor de base de datos" (Database Engine Services).</li>
+            <li><strong>Configuración de Instancia:</strong> Se puede elegir "Instancia predeterminada" (MSSQLSERVER).</li>
+            <li><strong>Configuración del Servidor:</strong> En "Modo de autenticación", elegir <strong>Modo mixto</strong> (Autenticación de SQL Server y de Windows). Esto es crucial para poder conectarse con el usuario <code>sa</code> (System Administrator). Introducir una contraseña segura para <code>sa</code>.</li>
+            <li><strong>Habilitar Conexiones Remotas:</strong>
+                <ul>
+                    <li>Abrir "Administrador de configuración de SQL Server" (SQL Server Configuration Manager).</li>
+                    <li>Ir a "Configuración de red de SQL Server" -> "Protocolos de MSSQLSERVER".</li>
+                    <li>Habilitar el protocolo <strong>TCP/IP</strong>.</li>
+                    <li>Reiniciar el servicio de SQL Server desde la propia herramienta.</li>
+                </ul>
+            </li>
+            <li><strong>Firewall:</strong> Desactivar el Firewall de Windows en la máquina virtual, o añadir una regla de entrada para permitir el tráfico en el puerto TCP 1433.</li>
+        </ol>
+    </section>
+
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

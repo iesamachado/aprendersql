@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roadmap Curricular — AprenderSQL Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/shared-admin.css">
+  <style>
+    .roadmap-card { border-radius: 12px; padding: 1.25rem; margin-bottom: 0.75rem; transition: transform 0.2s; }
+    .roadmap-card:hover { transform: translateY(-2px); }
+    .status-done    { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); }
+    .status-partial { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); }
+    .status-pending { background:rgba(100,116,139,0.06); border:1px solid rgba(100,116,139,0.15); }
+    .ra-badge { display:inline-block; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:4px; margin-right:4px; }
+    .module-header { border-radius:14px; padding:1.5rem; margin-bottom:1.5rem; }
+    .module-0372 { background:rgba(79,142,247,0.1); border:1px solid rgba(79,142,247,0.25); }
+    .module-0377 { background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.25); }
+    .legend-pill { display:inline-flex; align-items:center; gap:6px; font-size:0.78rem; padding:4px 12px; border-radius:20px; margin-right:8px; }
+  </style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="admin-sidebar" id="admin-sidebar"></aside>
+  <main class="admin-main">
+    <div class="admin-page-title">
+      <i class="fas fa-map-signs" style="color:var(--accent)"></i> Roadmap Curricular
+    </div>
+
+    <p class="text-secondary mb-3">
+      Cobertura del temario según la Orden 19 julio 2010 (BOJA 168, Andalucía) para los módulos de ASIR.
+    </p>
+
+    <!-- Leyenda -->
+    <div class="mb-4">
+      <span class="legend-pill" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#10b981">
+        <i class="fas fa-check-circle"></i> Implementado
+      </span>
+      <span class="legend-pill" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#f59e0b">
+        <i class="fas fa-exclamation-circle"></i> Parcial / Ampliable
+      </span>
+      <span class="legend-pill" style="background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.2);color:#64748b">
+        <i class="fas fa-clock"></i> Pendiente — Sin ejercicios
+      </span>
+    </div>
+
+        <!-- Módulo 0372 -->
+    <div class="module-header module-0372 mb-3">
+      <h4 class="text-primary mb-1"><i class="fas fa-database me-2"></i>Módulo 0372 — Gestión de Bases de Datos</h4>
+      <div class="text-secondary small">1º ASIR · 192 horas anuales · Orden 19 julio 2010</div>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA1</span>
+          <strong>Reconoce los elementos de las BD y valora SGBD</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=101" class="badge bg-success text-decoration-none">✅ Tema 1 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Sistemas lógicos de almacenamiento, tipos de BD. Teoría interactiva implementada en el Tema 1.</p>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA2</span>
+          <strong>Diseña modelos lógicos normalizados (E-R y Relacional)</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=102" class="badge bg-success text-decoration-none">✅ Tema 2 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Pasar de diagrama E-R a modelo lógico relacional, normalización. Teoría interactiva implementada en el Tema 2.</p>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA3</span>
+          <strong>Diseño físico de bases de datos (DDL)</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=103" class="badge bg-success text-decoration-none">✅ Tema 3 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-1">CREATE TABLE · ALTER TABLE · DROP · tipos de datos · restricciones.</p>
+      <div class="d-flex gap-2 flex-wrap mt-2">
+        <span class="badge bg-primary">180 ejercicios implementados</span>
+      </div>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA4</span>
+          <strong>Consulta la información almacenada (DML SELECT)</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=104" class="badge bg-success text-decoration-none">✅ Tema 4 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-1">WHERE · ORDER BY · LIMIT · GROUP BY · HAVING · JOINs · subconsultas · funciones de agregado.</p>
+      <div class="d-flex gap-2 flex-wrap mt-2">
+        <span class="badge bg-warning text-dark">🍽️ Arepazo</span>
+        <span class="badge bg-info text-dark">🏀 NBA</span>
+        <span class="badge bg-danger">⚔️ MMORPG</span>
+        <span class="badge bg-primary">540 ejercicios implementados</span>
+      </div>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA5</span>
+          <strong>Modifica la información almacenada (DML y Transacciones)</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=105" class="badge bg-success text-decoration-none">✅ Tema 5.1 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">INSERT · UPDATE · DELETE · COMMIT · ROLLBACK. Teoría interactiva implementada en el Tema 5.1.</p>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA5</span>
+          <strong>Automatización: Procedimientos y Funciones</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=106" class="badge bg-success text-decoration-none">✅ Tema 5.2 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">SQL/PSM, funciones, variables, control de flujo y procedimientos almacenados implementados.</p>
+    </div>
+
+    <div class="roadmap-card status-pending">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(100,116,139,0.2);color:#94a3b8">RA6</span>
+          <strong>Aseguramiento de la información (Backups y Exportación)</strong>
+        </div>
+        <span class="badge" style="background:rgba(100,116,139,0.15);color:#64748b">Procedural - Sin SQL Web</span>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Copias de seguridad, mysqldump, importar/exportar. Tareas de entorno real, no aplicables al editor web.</p>
+    </div>
+
+    <!-- Módulo 0377 -->
+    <div class="module-header module-0377 mt-5 mb-3">
+      <h4 style="color:var(--accent)" class="mb-1"><i class="fas fa-server me-2"></i>Módulo 0377 — Administración de SGBD</h4>
+      <div class="text-secondary small">2º ASIR · 63 horas anuales · Orden 19 julio 2010</div>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA1</span>
+          <strong>Instalación de SGBD</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=201" class="badge bg-success text-decoration-none">✅ Tema 1 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Instalación y arquitectura. Docker y VirtualBox. MariaDB, Oracle y SQL Server.</p>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA2</span>
+          <strong>Configuración y Arquitectura</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=202" class="badge bg-success text-decoration-none">✅ Tema 2 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Parámetros, motores (InnoDB), conexiones y logs de MariaDB.</p>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA3</span>
+          <strong>Seguridad y Control de Acceso</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=203" class="badge bg-success text-decoration-none">✅ Tema 3 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Vistas, sinónimos, usuarios, roles, privilegios, GRANT y REVOKE.</p>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA4</span>
+          <strong>Automatización: Triggers y Cursores</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=204" class="badge bg-success text-decoration-none">✅ Tema 4 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Triggers, cursores, excepciones y eventos temporales en MariaDB.</p>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA5</span>
+          <strong>Optimización del Rendimiento</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=205" class="badge bg-success text-decoration-none">✅ Tema 5 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Creación de índices y análisis de ejecución con EXPLAIN.</p>
+    </div>
+
+    <div class="roadmap-card status-done">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="ra-badge" style="background:rgba(16,185,129,0.2);color:#10b981">RA6</span>
+          <strong>Disponibilidad y Distribución</strong>
+        </div>
+        <a href="../task/teoria.html?bloqueId=206" class="badge bg-success text-decoration-none">✅ Tema 6 (Ver)</a>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Bases de datos distribuidas (FEDERATED) y Replicación (Master-Slave) con Docker.</p>
+    </div>
+
+    <!-- Resumen -->
+    <div class="mt-5 p-4 rounded" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)">
+      <h6 class="text-secondary mb-3"><i class="fas fa-chart-bar me-2"></i>Resumen de cobertura</h6>
+      <div class="row g-3 text-center">
+        <div class="col-md-4">
+          <div class="text-success" style="font-size:1.8rem;font-weight:800">12</div>
+          <div class="text-muted small">Temas Teoría Completados<br>(Todos los módulos)</div>
+        </div>
+        <div class="col-md-4">
+          <div class="text-secondary" style="font-size:1.8rem;font-weight:800">1</div>
+          <div class="text-muted small">No aplicable al editor<br>(0372 RA6 Backups)</div>
+        </div>
+        <div class="col-md-4">
+          <div class="text-primary" style="font-size:1.8rem;font-weight:800">720+</div>
+          <div class="text-muted small">Ejercicios<br>Activos en Plataforma</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
+<script type="module">
+  import { initAdminPage } from './js/shared.js';
+  await initAdminPage();
+</script>
+</body>
+</html>

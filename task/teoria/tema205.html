@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tema 5: Optimización de Rendimiento (RA5)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #212529; color: #fff; }
+        .toc a { color: #0d6efd; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        pre { background-color: #343a40; padding: 15px; border-radius: 5px; color: #f8f9fa; }
+        .concept-card { background-color: #2c3034; border: 1px solid #495057; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    </style>
+</head>
+<body class="bg-dark text-white">
+
+<div class="tema-content p-4">
+    <h1 class="mb-4 text-center text-primary"><i class="fas fa-tachometer-alt me-2"></i>Tema 5: Optimización de Rendimiento (RA5)</h1>
+    
+    <div class="concept-card mb-5">
+        <h4 class="mb-3"><i class="fas fa-list-ul me-2"></i>Índice de Contenidos</h4>
+        <ul class="toc list-unstyled fs-5">
+            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#factores-rendimiento">1. Factores que Afectan al Rendimiento</a></li>
+            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#que-no-hacer">2. Qué NO hacer en una consulta (Buenas Prácticas)</a></li>
+            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#indices">3. Índices (Clustered vs Non-Clustered)</a></li>
+            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#comando-explain">4. El Comando EXPLAIN en MariaDB</a></li>
+            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#monitorizacion-logs">5. Monitorización y Optimización (Binary Logs)</a></li>
+        </ul>
+    </div>
+
+    <!-- 1. Factores -->
+    <h2 id="factores-rendimiento" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-chart-line me-2"></i>1. Factores que Afectan al Rendimiento</h2>
+    <p class="fs-5">El rendimiento de una base de datos depende principalmente de dos grandes factores:</p>
+    <ul>
+        <li><strong>Consultas bien escritas y optimizadas:</strong> La forma en que pedimos los datos impacta enormemente en el tiempo de respuesta.</li>
+        <li><strong>Técnicas de mejora (Índices):</strong> Estructuras adicionales que permiten al motor de base de datos encontrar la información rápidamente sin recorrer toda la tabla.</li>
+    </ul>
+
+    <!-- 2. Buenas prácticas -->
+    <h2 id="que-no-hacer" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>2. Qué NO hacer en una consulta (Buenas Prácticas)</h2>
+    
+    <div class="row mt-4">
+        <div class="col-md-6 mb-3">
+            <div class="concept-card h-100">
+                <h5><i class="fas fa-times-circle text-danger me-2"></i>Evitar el <code>SELECT *</code></h5>
+                <p>Si solo necesitamos los emails de los clientes, no debemos traer toda la tabla. Traer solo las columnas necesarias ahorra memoria y tiempo de procesamiento (y ancho de banda de red).</p>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="concept-card h-100">
+                <h5><i class="fas fa-filter text-success me-2"></i>Filtrar al máximo con el <code>WHERE</code></h5>
+                <p>Todo lo que podamos filtrar desde el servidor SQL, mejor. Extraer millones de registros para luego filtrarlos en Excel o en la aplicación es ineficiente y consume red y memoria.</p>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="concept-card h-100">
+                <h5><i class="fas fa-sort-numeric-down text-info me-2"></i>Ordenar condiciones en el <code>WHERE</code></h5>
+                <p>Si usamos un <code>OR</code>, poner primero la condición que se evalúa más rápido y que suele dar verdadero. Así, la base de datos se ahorra procesar condiciones complejas.</p>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="concept-card h-100">
+                <h5><i class="fas fa-table text-primary me-2"></i>Evitar Tablas Temporales</h5>
+                <p>Las tablas temporales no tienen índices, lo que ralentiza las búsquedas. Siempre que sea posible, es mejor utilizar <strong>Vistas (Views)</strong> en su lugar.</p>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="concept-card h-100">
+                <h5><i class="fas fa-key text-warning me-2"></i>Pon siempre Primary Keys (PK)</h5>
+                <p>Las Claves Primarias son una forma automática y eficiente de indexar las tablas. Toda tabla debería tener una PK.</p>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="concept-card h-100">
+                <h5><i class="fas fa-ban text-danger me-2"></i>No usar Cursores en la BBDD</h5>
+                <p>Para recorrer tablas registro a registro, es mucho mejor hacerlo desde la aplicación cliente. Los cursores en el servidor están mal optimizados.</p>
+            </div>
+        </div>
+        <div class="col-12 mb-3">
+            <div class="concept-card">
+                <h5><i class="fas fa-link text-info me-2"></i>Revisa bien los JOINS</h5>
+                <p>Los joins mal estructurados causan grandes caídas de rendimiento. Es fundamental asegurarse de tener <strong>índices</strong> en las columnas que participan en la cláusula <code>ON</code>.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Índices -->
+    <h2 id="indices" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-book me-2"></i>3. Índices (Clustered vs Non-Clustered)</h2>
+    <p class="fs-5">Los índices son estructuras de datos que mejoran la velocidad de las operaciones, permitiendo búsquedas y ordenamientos rápidos a costa de algo de espacio en disco y tiempo en las inserciones/modificaciones.</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="concept-card border-primary">
+                <h4 class="text-primary"><i class="fas fa-layer-group me-2"></i>Clustered Index (Agrupados)</h4>
+                <ul>
+                    <li>La tabla se <strong>reordena físicamente</strong> basándose en el índice.</li>
+                    <li><strong>Solo puede haber UNO</strong> por tabla (generalmente es la Primary Key).</li>
+                    <li>Funciona igual que un diccionario físico o un listín telefónico, donde la información ya está ordenada.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="concept-card border-success">
+                <h4 class="text-success"><i class="fas fa-map-pin me-2"></i>Non-Clustered Index (No Agrupados)</h4>
+                <ul>
+                    <li>No reordena físicamente la tabla. En su lugar, crea una <strong>copia indexada de la columna</strong> con punteros a la fila real.</li>
+                    <li>Podemos crear múltiples índices no agrupados por tabla.</li>
+                    <li>Funciona como el índice analítico al final de un libro.</li>
+                    <li>En MariaDB (InnoDB), los índices que creamos manualmente son de este tipo.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="concept-card bg-danger bg-opacity-10 border-danger mt-3">
+        <h5><i class="fas fa-exclamation-circle text-danger me-2"></i>¡Cuidado: No abusar de los índices!</h5>
+        <p>Los índices ralentizan enormemente la inserción (INSERT), modificación (UPDATE) y borrado (DELETE) de datos, ya que el motor debe actualizar el índice cada vez que los datos cambian. Además, ocupan espacio adicional en disco.</p>
+    </div>
+
+    <h4 class="mt-4">Gestión de Índices en SQL</h4>
+    <pre><code>-- Crear un índice (Non-Clustered en MariaDB)
+CREATE INDEX nombre_indice ON tabla(columna1, columna2);
+
+-- Ver los índices de una tabla
+SHOW INDEX FROM nombre_tabla;
+
+-- Borrar un índice
+DROP INDEX nombre_indice ON tabla;</code></pre>
+
+    <!-- 4. EXPLAIN -->
+    <h2 id="comando-explain" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-search me-2"></i>4. El Comando EXPLAIN en MariaDB</h2>
+    <p class="fs-5">El comando <code>EXPLAIN</code> es fundamental para la monitorización y optimización de consultas. Nos permite ver el <strong>plan de ejecución</strong> que MariaDB utilizará para resolver nuestra consulta, mostrando si está utilizando índices o haciendo escaneos completos de tabla.</p>
+    
+    <pre><code>EXPLAIN SELECT * FROM clientes c JOIN pedidos p ON c.id = p.cliente_id WHERE c.pais = 'España';</code></pre>
+    
+    <p>Al ejecutar <code>EXPLAIN</code> (o <code>EXPLAIN ANALYZE</code> para estadísticas en tiempo real), MariaDB devuelve una tabla con información vital:</p>
+    <div class="table-responsive">
+        <table class="table table-dark table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Columna</th>
+                    <th>Significado e Interpretación</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>type</code></td>
+                    <td>El tipo de JOIN o escaneo. Es crucial para el rendimiento. Valores de mejor a peor: <code>system</code>, <code>const</code>, <code>eq_ref</code>, <code>ref</code>, <code>range</code>, <code>index</code>, <strong><code>ALL</code></strong> (Significa <em>Table Scan</em> completo, ¡muy lento!).</td>
+                </tr>
+                <tr>
+                    <td><code>possible_keys</code></td>
+                    <td>Los índices que MariaDB consideró utilizar para la consulta.</td>
+                </tr>
+                <tr>
+                    <td><code>key</code></td>
+                    <td>El índice que MariaDB <strong>realmente decidió usar</strong>. Si es <code>NULL</code>, no usó ninguno.</td>
+                </tr>
+                <tr>
+                    <td><code>rows</code></td>
+                    <td>El número de filas estimadas que el motor debe leer para ejecutar la consulta. A menor número, mejor rendimiento.</td>
+                </tr>
+                <tr>
+                    <td><code>Extra</code></td>
+                    <td>Información adicional, como <em>Using index</em> (se resolvió solo con el índice), o <em>Using filesort</em> / <em>Using temporary</em> (generalmente indica problemas de rendimiento a optimizar).</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 5. Binary Log -->
+    <h2 id="monitorizacion-logs" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-server me-2"></i>5. Monitorización y Optimización (Binary Logs)</h2>
+    <p class="fs-5">Los <strong>Binary Logs (binlog)</strong> de MariaDB registran todas las operaciones (cambios) realizadas en la base de datos. Son fundamentales para la replicación y para reconstruir la BBDD desde un backup en caso de desastre.</p>
+
+    <div class="concept-card">
+        <h5><i class="fas fa-hdd text-info me-2"></i>El problema del espacio y el CAOS</h5>
+        <p>Una mala configuración del <em>binary log</em> puede hacer que nuestro disco se llene rápidamente. Por ejemplo, si configuramos <code>expire-logs-days=0</code>, los logs nunca se borrarán y crecerán hasta el infinito, incluso si borramos los datos originales de las tablas.</p>
+        
+        <h6 class="mt-3">¿Cómo verificar el estado de los Binary Logs?</h6>
+        <pre><code>SHOW VARIABLES LIKE 'log_bin';
+SHOW VARIABLES LIKE 'expire_logs_days';
+SHOW VARIABLES LIKE 'binlog_expire_logs_seconds';</code></pre>
+        
+        <h6 class="mt-3">Gestión Correcta de Logs (Purgado)</h6>
+        <p class="text-danger fw-bold"><i class="fas fa-skull-crossbones me-2"></i>¡NUNCA BORRAR FICHEROS BINARIOS DIRECTAMENTE DESDE EL SISTEMA OPERATIVO (WINDOWS/LINUX)!</p>
+        <p>Para liberar espacio de forma segura, se deben usar comandos SQL:</p>
+        <pre><code>-- Ver los ficheros binarios actuales
+SHOW BINARY LOGS;
+
+-- Borrar ficheros hasta una fecha determinada (hasta hoy)
+PURGE BINARY LOGS BEFORE NOW();
+
+-- Borrar ficheros hasta un nombre de log específico
+PURGE BINARY LOGS TO 'mysql-bin.000006';
+
+-- Rotar el log (cierra el actual y crea uno nuevo)
+FLUSH LOGS;</code></pre>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

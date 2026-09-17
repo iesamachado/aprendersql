@@ -1,0 +1,191 @@
+<div class="tema-content p-4 bg-dark text-white">
+    <h1 class="mb-4 text-primary"><i class="fas fa-database me-2"></i>Tema 6: Distribución y Alta Disponibilidad (RA6)</h1>
+
+    <div class="card bg-secondary text-white mb-5">
+        <div class="card-body">
+            <h4 class="card-title"><i class="fas fa-list-ul me-2"></i>Índice</h4>
+            <ul class="fs-5 mb-0">
+                <li><a href="#distribucion-vs-replicacion" class="text-info text-decoration-none">1. Bases de Datos Distribuidas vs Replicadas</a></li>
+                <li><a href="#fragmentacion" class="text-info text-decoration-none">2. Fragmentación de Datos</a></li>
+                <li><a href="#practica1" class="text-warning text-decoration-none fw-bold">3. Práctica 1: Distribución con MariaDB (Motor FEDERATED)</a></li>
+                <li><a href="#practica2" class="text-warning text-decoration-none fw-bold">4. Práctica 2: Alta Disponibilidad (Master-Slave en MariaDB)</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 id="distribucion-vs-replicacion" class="mt-5 border-bottom pb-2 border-secondary"><i class="fas fa-network-wired me-2"></i>1. Bases de Datos Distribuidas vs Replicadas</h2>
+    <p class="fs-5 mt-3">Al escalar nuestras aplicaciones o buscar una mayor tolerancia a fallos, necesitamos soluciones que vayan más allá de un único servidor. Aquí surgen dos conceptos clave:</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card bg-dark border-info h-100">
+                <div class="card-header bg-info text-dark fw-bold">
+                    <i class="fas fa-project-diagram me-2"></i>Bases de Datos Distribuidas
+                </div>
+                <div class="card-body">
+                    <p>Los datos se dividen y almacenan en distintos nodos, pero conforman <strong>una única base de datos lógica</strong>. Los usuarios o aplicaciones acceden a ella sin necesidad de saber dónde están físicamente los datos (principio de transparencia).</p>
+                    <ul>
+                        <li>Los datos no se duplican (por defecto), se reparten.</li>
+                        <li>Ideal para segmentar información por territorios o delegaciones.</li>
+                        <li>Requiere un diseño cuidadoso para evitar latencias en consultas cruzadas.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mt-3 mt-md-0">
+            <div class="card bg-dark border-success h-100">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-copy me-2"></i>Bases de Datos Replicadas
+                </div>
+                <div class="card-body">
+                    <p>Existen <strong>copias parciales o totales</strong> de la misma base de datos en distintos servidores. Todos los nodos (o parte de ellos) contienen la misma información.</p>
+                    <ul>
+                        <li><strong>Distribución Direccional (Maestro-Esclavo):</strong> Las modificaciones se hacen en el Maestro y éste las replica a los Esclavos.</li>
+                        <li><strong>Descentralizada (Multi-Maestro):</strong> Todos los nodos pueden recibir escrituras y se sincronizan entre sí.</li>
+                        <li>Aumenta la disponibilidad y permite balancear cargas de lectura.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 id="fragmentacion" class="mt-5 border-bottom pb-2 border-secondary"><i class="fas fa-puzzle-piece me-2"></i>2. Fragmentación de Datos</h2>
+    <p class="fs-5 mt-3">Para distribuir una base de datos, solemos emplear la fragmentación, que consiste en dividir las tablas en fragmentos lógicos más pequeños que se reparten entre los nodos.</p>
+    
+    <ul class="list-group list-group-flush bg-transparent mt-3">
+        <li class="list-group-item bg-dark text-white border-secondary">
+            <h5 class="text-info"><i class="fas fa-arrows-alt-h me-2"></i>Fragmentación Horizontal</h5>
+            <p class="mb-0">Se divide la tabla por filas (registros). Por ejemplo, en una tabla <code>Clientes</code>, los clientes de España se almacenan en un servidor en Madrid, y los clientes de México en un servidor en CDMX.</p>
+        </li>
+        <li class="list-group-item bg-dark text-white border-secondary">
+            <h5 class="text-info"><i class="fas fa-arrows-alt-v me-2"></i>Fragmentación Vertical</h5>
+            <p class="mb-0">Se divide la tabla por columnas. Requiere que la clave primaria esté en todos los fragmentos para poder reconstruir el registro. Ejemplo: en un servidor guardamos el nombre y email, y en otro los datos bancarios por mayor seguridad.</p>
+        </li>
+        <li class="list-group-item bg-dark text-white border-secondary">
+            <h5 class="text-info"><i class="fas fa-compress-arrows-alt me-2"></i>Fragmentación Mixta o Híbrida</h5>
+            <p class="mb-0">Una combinación de ambas estrategias. Primero se fragmenta horizontalmente y luego verticalmente (o viceversa).</p>
+        </li>
+    </ul>
+
+    <!-- PRÁCTICA 1 -->
+    <div class="p-4 mt-5 rounded bg-dark border border-warning">
+        <h2 id="practica1" class="text-warning mb-4"><i class="fas fa-laptop-code me-2"></i>Práctica 1: Distribución con MariaDB (Motor FEDERATED)</h2>
+        <p class="fs-5">El motor <strong>FEDERATED</strong> de MariaDB permite acceder a tablas que residen en bases de datos remotas como si fueran locales. No replica los datos, sino que las consultas se envían al servidor remoto. Esto es ideal para implementar una base de datos distribuida.</p>
+        
+        <h4 class="mt-4 text-info">Paso 1: Habilitar el motor FEDERATED</h4>
+        <p>En ambos contenedores o servidores MariaDB, asegúrate de tener activado el motor FEDERATED. Edita el archivo de configuración (ej. <code>/etc/mysql/mariadb.conf.d/50-server.cnf</code>) y añade:</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>[mysqld]
+federated</code></pre>
+        <p>Reinicia el servicio de MariaDB y comprueba que esté activo entrando a MariaDB y ejecutando: <code>SHOW ENGINES;</code></p>
+
+        <h4 class="mt-4 text-info">Paso 2: Crear la tabla real en el Servidor Remoto (Nodo A)</h4>
+        <p>En el servidor donde <strong>realmente</strong> se guardarán los datos (asumamos que su IP es <code>192.168.1.100</code>):</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>CREATE DATABASE empresa;
+USE empresa;
+
+CREATE TABLE empleados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    departamento VARCHAR(50)
+);
+
+INSERT INTO empleados (nombre, departamento) VALUES ('Ana García', 'Ventas');</code></pre>
+
+        <h4 class="mt-4 text-info">Paso 3: Crear el usuario para conexión</h4>
+        <p>En el Nodo A, crea un usuario con permisos sobre esa tabla para que el Nodo B pueda conectarse:</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>CREATE USER 'federado_user'@'%' IDENTIFIED BY 'password123';
+GRANT SELECT, INSERT, UPDATE, DELETE ON empresa.empleados TO 'federado_user'@'%';
+FLUSH PRIVILEGES;</code></pre>
+
+        <h4 class="mt-4 text-info">Paso 4: Crear la tabla FEDERATED en el Servidor Local (Nodo B)</h4>
+        <p>En el servidor local (Nodo B), creamos una tabla con <strong>la misma estructura exacta</strong>, pero indicando que su motor es FEDERATED y pasándole la cadena de conexión:</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>CREATE DATABASE empresa_local;
+USE empresa_local;
+
+CREATE TABLE empleados_remotos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    departamento VARCHAR(50)
+)
+ENGINE=FEDERATED
+CONNECTION='mysql://federado_user:password123@192.168.1.100:3306/empresa/empleados';</code></pre>
+        <div class="alert alert-success mt-3">
+            <i class="fas fa-check-circle me-2"></i><strong>¡Listo!</strong> Ahora, si haces <code>SELECT * FROM empleados_remotos;</code> en el Nodo B, verás los datos del Nodo A. Cualquier <code>INSERT</code> se guardará remotamente.
+        </div>
+    </div>
+
+    <!-- PRÁCTICA 2 -->
+    <div class="p-4 mt-5 rounded bg-dark border border-warning">
+        <h2 id="practica2" class="text-warning mb-4"><i class="fas fa-server me-2"></i>Práctica 2: Alta Disponibilidad (Replicación Master-Slave en MariaDB)</h2>
+        <p class="fs-5">Vamos a configurar una topología de <strong>Alta Disponibilidad</strong> usando Docker Compose. Tendremos un nodo <strong>Master</strong> (donde se hacen las escrituras) y un nodo <strong>Slave</strong> (que replica los datos del Master y sirve para lecturas).</p>
+
+        <h4 class="mt-4 text-info">Paso 1: Archivo docker-compose.yml</h4>
+        <p>Crea un directorio para tu proyecto y dentro genera el archivo <code>docker-compose.yml</code>:</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>version: '3.8'
+services:
+  mariadb-master:
+    image: mariadb:10.11
+    container_name: mariadb-master
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+      MYSQL_DATABASE: agenda
+    command: [
+      "mysqld",
+      "--server-id=1",
+      "--log-bin=mysql-bin",
+      "--bind-address=0.0.0.0"
+    ]
+    ports:
+      - "3306:3306"
+
+  mariadb-slave:
+    image: mariadb:10.11
+    container_name: mariadb-slave
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+    command: [
+      "mysqld",
+      "--server-id=2",
+      "--bind-address=0.0.0.0"
+    ]
+    ports:
+      - "3307:3306"
+    depends_on:
+      - mariadb-master</code></pre>
+        <p>Levanta los contenedores con: <code>docker-compose up -d</code></p>
+
+        <h4 class="mt-4 text-info">Paso 2: Configurar el Master</h4>
+        <p>Entra al contenedor del Master: <code>docker exec -it mariadb-master mysql -u root -p</code> (contraseña: rootpwd)</p>
+        <p>Crea un usuario específico para que el Slave pueda conectarse a replicar:</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>CREATE USER 'replica_user'@'%' IDENTIFIED BY 'replica_pass';
+GRANT REPLICATION SLAVE ON *.* TO 'replica_user'@'%';
+FLUSH PRIVILEGES;</code></pre>
+        <p>Revisa el estado del Master y <strong>anota el File y Position</strong>:</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>SHOW MASTER STATUS;</code></pre>
+        <p><em>(Supongamos que devuelve File: <code>mysql-bin.000001</code> y Position: <code>328</code>)</em></p>
+
+        <h4 class="mt-4 text-info">Paso 3: Configurar el Slave e iniciar la replicación</h4>
+        <p>Entra al contenedor del Slave: <code>docker exec -it mariadb-slave mysql -u root -p</code></p>
+        <p>Configura la conexión hacia el Master usando los datos anotados (el host es el nombre del servicio en docker-compose):</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>CHANGE MASTER TO 
+    MASTER_HOST='mariadb-master',
+    MASTER_USER='replica_user',
+    MASTER_PASSWORD='replica_pass',
+    MASTER_LOG_FILE='mysql-bin.000001',
+    MASTER_LOG_POS=328;
+
+START SLAVE;</code></pre>
+
+        <h4 class="mt-4 text-info">Paso 4: Verificar la Replicación</h4>
+        <p>En el Slave, comprueba que la replicación funciona:</p>
+        <pre class="bg-secondary text-white p-3 rounded"><code>SHOW SLAVE STATUS\G</code></pre>
+        <p>Debes buscar que estas dos variables digan <strong>Yes</strong>:</p>
+        <ul>
+            <li><code>Slave_IO_Running: Yes</code></li>
+            <li><code>Slave_SQL_Running: Yes</code></li>
+        </ul>
+        <div class="alert alert-success mt-3">
+            <i class="fas fa-check-circle me-2"></i><strong>¡Comprobación final!</strong> Entra al Master, crea una tabla e inserta un dato en la BBDD <code>agenda</code>. Luego entra al Slave y haz un <code>SELECT</code>. ¡El dato estará ahí automáticamente!
+        </div>
+    </div>
+</div>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — AprenderSQL Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/shared-admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="admin-sidebar" id="admin-sidebar"></aside>
+  <main class="admin-main">
+
+    <div class="admin-page-title">
+      <i class="fas fa-chart-line text-primary"></i> Dashboard
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-grid">
+      <div class="stat-card primary">
+        <div class="stat-label"><i class="fas fa-users me-1"></i>Alumnos</div>
+        <div class="stat-value" id="stat-alumnos">—</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-label"><i class="fas fa-chalkboard me-1"></i>Clases</div>
+        <div class="stat-value" id="stat-clases">—</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-label"><i class="fas fa-user-tie me-1"></i>Docentes</div>
+        <div class="stat-value" id="stat-docentes">—</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label"><i class="fas fa-dumbbell me-1"></i>Ejercicios</div>
+        <div class="stat-value" id="stat-ejercicios">—</div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Últimos intentos -->
+      <div class="col-lg-7">
+        <div class="admin-table-wrapper">
+          <div class="admin-table-header">
+            <h5><i class="fas fa-history me-2 text-info"></i>Últimos Intentos</h5>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-dark table-sm mb-0">
+              <thead>
+                <tr><th>Alumno</th><th>Ejercicio</th><th>Resultado</th><th>Pts</th><th>Fecha</th></tr>
+              </thead>
+              <tbody id="dash-intentos-tbody">
+                <tr><td colspan="5" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranking -->
+      <div class="col-lg-5">
+        <div class="admin-table-wrapper">
+          <div class="admin-table-header">
+            <h5><i class="fas fa-trophy me-2 text-warning"></i>Ranking Alumnos</h5>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-dark table-sm mb-0">
+              <thead>
+                <tr><th>#</th><th>Alumno</th><th>Puntos</th><th>Ej.</th></tr>
+              </thead>
+              <tbody id="dash-ranking-tbody">
+                <tr><td colspan="4" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/ejercicios-data.js"></script>
+<script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
+<script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin — AprenderSQL</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/shared-admin.css">
+</head>
+<body>
+
+<div id="admin-login">
+  <div class="admin-login-card">
+    <div class="admin-badge-icon">🛡️</div>
+    <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:0.5rem">Panel de Administración</h1>
+    <p style="color:#64748b;font-size:0.88rem;margin-bottom:2rem">
+      Solo accesible para administradores y docentes del IES A Machado
+    </p>
+    <button class="btn-google-admin" id="btn-google-admin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Acceder con Google
+    </button>
+    <p style="color:#334155;font-size:0.72rem;margin-top:1rem">
+      <i class="fas fa-lock me-1"></i>Acceso restringido
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
+<script type="module">
+  import { initFirebase } from '../js/shared-firebase.js';
+
+  const fb = await initFirebase();
+
+  fb.onAuthStateChanged(fb.auth, async (user) => {
+    if (!user) return; // Esperar login
+    const snap = await fb.getDoc(fb.doc(fb.db, 'usuarios', user.uid));
+    if (snap.exists() && ['admin','docente'].includes(snap.data().rol)) {
+      window.location.href = 'dashboard.html';
+    } else if (!snap.exists()) {
+      // Primer acceso — comprobar si está pre-registrado como docente
+      try {
+        const pending = await fb.getDocs(
+          fb.query(fb.collection(fb.db, 'usuarios_pendientes'), fb.where('email','==', user.email))
+        );
+        const rol = (!pending.empty) ? 'docente' : 'alumno';
+        if (rol === 'docente') {
+          await fb.setDoc(fb.doc(fb.db, 'usuarios', user.uid), {
+            nombre: user.displayName, email: user.email, foto: user.photoURL,
+            rol: 'docente', createdAt: fb.serverTimestamp()
+          });
+          window.location.href = 'dashboard.html';
+          return;
+        }
+      } catch(e) {}
+      await fb.signOut(fb.auth);
+      document.getElementById('btn-google-admin').insertAdjacentHTML('afterend',
+        '<p style="color:#ef4444;margin-top:1rem;font-size:0.85rem">⚠️ No tienes permisos de acceso al panel.</p>');
+    } else {
+      await fb.signOut(fb.auth);
+      window.location.href = '../task/clases.html';
+    }
+  });
+
+  document.getElementById('btn-google-admin').addEventListener('click', async () => {
+    const provider = new fb.GoogleAuthProvider();
+    try { await fb.signInWithPopup(fb.auth, provider); }
+    catch(e) { console.error(e); }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor SQL — AprenderSQL</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/task-shared.css">
+  <link rel="stylesheet" href="css/ejercicios.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary px-3" style="height:60px">
+  <div class="d-flex align-items-center me-auto">
+    <button class="btn btn-sm btn-outline-secondary me-3" id="btn-volver-tandas">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <span class="navbar-brand mb-0 h1 fs-5">
+      <i class="fas fa-database text-primary me-2"></i>
+      <span id="ex-title-badge">Cargando Tarea...</span>
+    </span>
+  </div>
+  
+  <div class="d-flex align-items-center gap-3">
+    <!-- Badge Modo -->
+    <span id="header-modo-badge" class="badge bg-secondary">MODO PRÁCTICA</span>
+    
+    <!-- Contador Puntos / Reloj -->
+    <div class="d-flex align-items-center gap-2">
+      <div id="examen-timer" style="display:none; font-family:monospace; font-size:1.1rem; color:var(--danger)">
+        <i class="fas fa-stopwatch"></i> <span id="timer-text">00:00</span>
+      </div>
+      <div id="puntos-actuales-container" class="badge" style="background:#1e293b; color:#fbbf24; font-size:0.95rem; border:1px solid #334155">
+        <i class="fas fa-star me-1"></i> <span id="puntos-actuales">0</span> / <span id="puntos-max">0</span>
+      </div>
+    </div>
+    
+    <!-- Entregar (solo examen) -->
+    <button class="btn btn-sm btn-success fw-bold" id="btn-submit-tanda" style="display:none">
+      <i class="fas fa-check-double me-1"></i> Entregar
+    </button>
+  </div>
+</nav>
+
+<!-- Layout Principal -->
+<div class="d-flex" style="height: calc(100vh - 60px);">
+  
+  <!-- Sidebar Izquierdo: Lista de ejercicios y schema -->
+  <div class="bg-dark border-end border-secondary d-flex flex-column" style="width: 320px; overflow-y:auto">
+    <div class="p-3 border-bottom border-secondary">
+      <h6 class="text-white mb-2"><i class="fas fa-list-ol text-primary me-2"></i>Ejercicios (<span id="tanda-counter">0/0</span>)</h6>
+      <div class="progress" style="height: 6px; background:#1e293b">
+        <div id="tanda-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+      </div>
+    </div>
+    
+    <div class="list-group list-group-flush" id="ex-list" style="flex:1; overflow-y:auto">
+      <!-- Se llena por JS -->
+      <div class="text-center p-4 text-muted"><i class="fas fa-spinner fa-spin"></i></div>
+    </div>
+    
+    <div class="p-3 border-top border-secondary bg-dark" style="position:sticky; bottom:0">
+      <h6 class="text-secondary small mb-2"><i class="fas fa-sitemap me-1"></i>Esquema BD</h6>
+      <button class="btn btn-sm btn-outline-info w-100" id="btn-show-schema">
+        <i class="fas fa-project-diagram me-1"></i> Ver Estructura
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel Central: Enunciado, Editor y Resultados -->
+  <div class="flex-grow-1 d-flex flex-column bg-main position-relative">
+    
+    <!-- Enunciado y Feedback -->
+    <div class="p-4 border-bottom border-secondary" style="background:#0b1120">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h5 class="text-white fw-bold mb-0" id="current-ex-title">Cargando...</h5>
+        <span class="badge bg-primary" id="current-ex-badge">Ejercicio #—</span>
+      </div>
+      <div class="text-light" id="current-ex-text" style="font-size: 0.95rem; line-height: 1.5">
+        Selecciona un ejercicio del panel izquierdo.
+      </div>
+      
+      <div id="feedback-panel" class="alert mt-3 mb-0" style="display:none; padding: 0.6rem 1rem">
+        <div class="d-flex gap-2">
+          <div id="feedback-icon" class="fs-4"></div>
+          <div>
+            <strong id="feedback-title" class="d-block"></strong>
+            <span id="feedback-message" class="small"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Editor SQL -->
+    <div class="flex-grow-1 position-relative p-3 d-flex flex-column">
+      <label class="form-label text-secondary small fw-bold mb-1"><i class="fas fa-code me-1"></i>Tu consulta SQL:</label>
+      <textarea id="sql-editor" class="form-control flex-grow-1 mb-3 bg-dark text-white border-secondary" 
+                style="font-family: 'Fira Code', monospace; font-size: 1.1rem; resize: none;" 
+                placeholder="Escribe aquí tu SELECT..."></textarea>
+      
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <button class="btn btn-primary" id="btn-run" disabled>
+            <i class="fas fa-play me-2"></i>Ejecutar y Validar
+          </button>
+          <span id="run-spinner" class="ms-2 text-primary" style="display:none"><i class="fas fa-spinner fa-spin"></i> Validando...</span>
+        </div>
+        <button class="btn btn-outline-warning" id="btn-hint" title="Ver pista (penaliza puntos)" disabled>
+          <i class="fas fa-lightbulb"></i> Pista
+        </button>
+      </div>
+    </div>
+    
+    <!-- Resultados Tabla (Resizer panel inferior) -->
+    <div class="bg-dark border-top border-secondary d-flex flex-column" style="height: 35%; min-height: 200px">
+      <div class="bg-dark p-2 border-bottom border-secondary d-flex justify-content-between align-items-center">
+        <span class="small fw-bold text-secondary"><i class="fas fa-table me-1"></i>Resultados de la consulta</span>
+        <span class="badge bg-secondary" id="row-count">0 filas</span>
+      </div>
+      <div class="table-responsive flex-grow-1 bg-black p-2" id="results-container">
+        <div class="text-center text-muted mt-4 small">Ejecuta una consulta para ver los resultados aquí.</div>
+      </div>
+    </div>
+    
+    <!-- Overlay Éxito (Cortina Verde) -->
+    <div id="success-overlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="background: rgba(16, 185, 129, 0.95); z-index: 1000; display: none !important; backdrop-filter: blur(5px)">
+      <i class="fas fa-check-circle text-white mb-3" style="font-size: 5rem; text-shadow: 0 4px 15px rgba(0,0,0,0.2)"></i>
+      <h2 class="text-white fw-bold">¡Correcto!</h2>
+      <p class="text-white-50 mb-4" id="success-overlay-pts">+10 pts</p>
+      <button class="btn btn-light btn-lg fw-bold px-5 rounded-pill shadow" id="btn-next-overlay">
+        Siguiente <i class="fas fa-arrow-right ms-2"></i>
+      </button>
+    </div>
+    
+  </div>
+</div>
+
+<!-- Modal Schema -->
+<div class="modal fade" id="schema-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border-secondary">
+      <div class="modal-header border-bottom border-secondary">
+        <h5 class="modal-title"><i class="fas fa-project-diagram text-info me-2"></i>Esquema de Base de Datos</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <img id="schema-img" src="" alt="Esquema BD" class="img-fluid rounded" style="max-height: 60vh">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<!-- SQL.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+<!-- Firebase & Data -->
+<script src="../js/firebase-config.js"></script>
+<script src="../js/ejercicios-data.js"></script>
+<script>
+  window.FIREBASE_CONFIG = FIREBASE_CONFIG; 
+  window.APP_CONFIG = APP_CONFIG;
+</script>
+<script type="module" src="js/ejercicio.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docentes — AprenderSQL Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/shared-admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="admin-sidebar" id="admin-sidebar"></aside>
+  <main class="admin-main">
+    <div class="admin-page-title">
+      <i class="fas fa-user-tie" style="color:var(--accent)"></i> Gestión de Docentes
+    </div>
+
+    <!-- Añadir docente -->
+    <div class="admin-table-wrapper mb-4">
+      <div class="admin-table-header">
+        <h5><i class="fas fa-user-plus me-2" style="color:var(--accent)"></i>Añadir Docente</h5>
+      </div>
+      <div class="p-3">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-8">
+            <label class="form-label text-secondary small">Email del docente (cuenta Google)</label>
+            <input type="email" id="docente-email" class="form-control dark-input" placeholder="profesor@iesamachado.org">
+          </div>
+          <div class="col-md-4">
+            <button class="btn w-100" style="background:var(--accent);color:white" onclick="window._addDocente()">
+              <i class="fas fa-user-plus me-2"></i>Añadir Docente
+            </button>
+          </div>
+        </div>
+        <p class="text-muted small mt-2">
+          <i class="fas fa-info-circle me-1 text-info"></i>
+          Si el usuario ya accedió con Google, se le asignará el rol inmediatamente. Si no, se activará la primera vez que acceda.
+        </p>
+      </div>
+    </div>
+
+    <!-- Lista docentes -->
+    <div class="admin-table-wrapper">
+      <div class="admin-table-header">
+        <h5><i class="fas fa-chalkboard me-2"></i>Docentes Registrados</h5>
+        <button class="btn btn-sm btn-outline-secondary" onclick="window._loadDocentes()"><i class="fas fa-sync-alt"></i></button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-dark table-sm mb-0 table-hover">
+          <thead>
+            <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="docentes-tbody">
+            <tr><td colspan="4" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
+<script type="module" src="js/docentes.js"></script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<div class="tema-content text-white p-4">
+    <h1 class="text-primary border-bottom border-primary pb-2 mb-4"><i class="fas fa-terminal me-2"></i>Tema 5.2: Procedimientos y Funciones (SQL/PSM)</h1>
+
+    <!-- Índice -->
+    <div class="card bg-dark border-info mb-5">
+        <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
+            <i class="fas fa-list me-2"></i>Índice del Tema
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled mb-0" style="line-height: 2;">
+                        <li><a href="#psm-intro" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>1. ¿Qué es SQL/PSM?</a></li>
+                        <li><a href="#psm-strings" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>2. Funciones sobre Cadenas</a></li>
+                        <li><a href="#psm-vars" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>3. Variables y Bloques de Código</a></li>
+                        <li><a href="#psm-control" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>4. Estructuras de Control (IF, WHILE)</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled mb-0" style="line-height: 2;">
+                        <li><a href="#psm-procedures" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>5. Procedimientos Almacenados (Procedures)</a></li>
+                        <li><a href="#psm-functions" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>6. Funciones Personalizadas</a></li>
+                        <li><a href="#psm-diff" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>7. Diferencias: Procedures vs Funciones</a></li>
+                        <li><a href="#psm-ejercicios" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>8. Ejercicios Prácticos</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Intro -->
+    <section id="psm-intro" class="mb-5">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-code me-2"></i>1. ¿Qué es SQL/PSM?</h2>
+        <p><strong>SQL/PSM (Persistent Stored Modules)</strong> es una extensión de SQL que nos dota de herramientas de programación procedural. Nos permite crear bucles, condicionales y variables directamente dentro de la base de datos (MariaDB / MySQL).</p>
+        
+        <div class="row g-4 mt-2">
+            <div class="col-md-6">
+                <div class="card h-100 bg-dark border-success">
+                    <div class="card-header bg-success bg-opacity-25 text-success fw-bold"><i class="fas fa-check-circle me-2"></i>Lo que SÍ permite</div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li>Tipos de datos y Variables locales.</li>
+                            <li>Estructuras de control de flujo (IF, CASE, WHILE).</li>
+                            <li>Programar <strong>Funciones</strong>, <strong>Procedimientos</strong> y <strong>Triggers</strong> (disparadores).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 bg-dark border-danger">
+                    <div class="card-header bg-danger bg-opacity-25 text-danger fw-bold"><i class="fas fa-times-circle me-2"></i>Lo que NO permite</div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li>No permite crear interfaces de usuario (ventanas, botones).</li>
+                            <li>No crea aplicaciones ejecutables (como un .exe o .apk), son scripts que viven en el servidor de datos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-secondary bg-dark border-secondary text-white mt-4">
+            <i class="fas fa-lightbulb text-warning me-2"></i><strong>¿Es lo mismo que PL/SQL o T-SQL?</strong> No. <strong>PL/SQL</strong> es el lenguaje de Oracle y <strong>T-SQL</strong> es el de SQL Server (Microsoft). Se parecen mucho, pero SQL/PSM es el estándar que usa MariaDB y MySQL.
+        </div>
+    </section>
+
+    <!-- 2. Strings -->
+    <section id="psm-strings" class="mb-5">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-font me-2"></i>2. Funciones sobre Cadenas (Varchars)</h2>
+        <p>Antes de programar, debemos dominar las funciones predefinidas de SQL para tratar textos:</p>
+        <div class="table-responsive">
+            <table class="table table-dark table-striped table-bordered mt-3">
+                <thead><tr><th>Función</th><th>Descripción</th><th>Ejemplo</th></tr></thead>
+                <tbody>
+                    <tr><td><code>REPLACE(cad, buscar, nuevo)</code></td><td>Cambia un trozo de texto por otro.</td><td><code>REPLACE('Hola', 'a', 'o') -> 'Holo'</code></td></tr>
+                    <tr><td><code>LEFT(cad, num) / RIGHT()</code></td><td>Recorta la cadena por la izquierda o derecha.</td><td><code>LEFT('Murcielago', 3) -> 'Mur'</code></td></tr>
+                    <tr><td><code>TRIM() / LTRIM() / RTRIM()</code></td><td>Quita espacios en blanco de los extremos.</td><td><code>TRIM('  Hola  ') -> 'Hola'</code></td></tr>
+                    <tr><td><code>LENGTH(cad)</code></td><td>Devuelve el número de caracteres (longitud).</td><td><code>LENGTH('Hola') -> 4</code></td></tr>
+                    <tr><td><code>CONCAT(cad1, cad2...)</code></td><td>Une varias cadenas en una sola.</td><td><code>CONCAT('A', 'B') -> 'AB'</code></td></tr>
+                    <tr><td><code>SUBSTRING(cad, pos, num)</code></td><td>Extrae una porción desde una posición.</td><td><code>SUBSTRING('Database', 5, 4) -> 'base'</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 3. Variables -->
+    <section id="psm-vars" class="mb-5">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-box me-2"></i>3. Bloques de Código y Variables</h2>
+        
+        <h4 class="text-light mt-4">Bloques BEGIN...END</h4>
+        <p>En SQL/PSM, los bloques de código se encierran entre <code>BEGIN</code> y <code>END</code>. Es el equivalente a las llaves <code>{ }</code> en Java o C++.</p>
+        
+        <h4 class="text-light mt-4">Declaración y Asignación de Variables</h4>
+        <p>Las variables son volátiles (se destruyen al terminar el script). Se declaran con <code>DECLARE</code> y se asignan con <code>SET</code> o dentro de un <code>SELECT</code>.</p>
+        
+        <pre class="bg-black p-3 rounded border border-secondary text-light"><code>BEGIN
+    -- 1. Declarar (Nombre y Tipo)
+    DECLARE mi_fecha DATE;
+    DECLARE contador INT;
+    
+    -- 2. Asignar valor (Setear)
+    SET mi_fecha = NOW();
+    
+    -- También se puede setear el resultado de una consulta (si devuelve 1 valor)
+    SET contador = (SELECT COUNT(*) FROM clientes);
+END;</code></pre>
+    </section>
+
+    <!-- 4. Control de flujo -->
+    <section id="psm-control" class="mb-5">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-code-branch me-2"></i>4. Estructuras de Control</h2>
+        
+        <div class="row g-4 mt-2">
+            <div class="col-md-6">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-header bg-secondary bg-opacity-25 text-white fw-bold">Condicionales (IF ELSE)</div>
+                    <div class="card-body">
+                        <p class="small text-muted">A diferencia del <code>CASE WHEN</code> que va dentro de una consulta, el <code>IF</code> define bloques lógicos de código en procedimientos.</p>
+                        <pre class="bg-black p-2 rounded small text-light border border-secondary mb-0"><code>IF num > 150 THEN
+    SELECT 'Ya tengo todos los pokemons';
+ELSE
+    SELECT 'Aún tengo que insertar más';
+END IF;</code></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-header bg-secondary bg-opacity-25 text-white fw-bold">Bucles (WHILE)</div>
+                    <div class="card-body">
+                        <p class="small text-muted">Itera mientras se cumpla la condición. Muy útil para recorrer registros o cálculos matemáticos recurrentes.</p>
+                        <pre class="bg-black p-2 rounded small text-light border border-secondary mb-0"><code>WHILE num > 0 DO
+    SET resultado = resultado * num;
+    SET num = num - 1;
+END WHILE;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Procedures -->
+    <section id="psm-procedures" class="mb-5">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-cogs me-2"></i>5. Procedimientos Almacenados (Procedures)</h2>
+        <p>Un procedimiento es un script guardado en la base de datos con un nombre. Se pueden llamar externamente y pueden modificar datos.</p>
+        
+        <h4 class="text-light mt-4">Sintaxis Básica y Ejecución</h4>
+        <pre class="bg-black p-3 rounded border border-secondary text-light"><code>CREATE PROCEDURE HolaMundo()
+BEGIN
+    SELECT 'Hola Mundo!';
+END;
+
+-- Para ejecutarlo usamos CALL:
+CALL HolaMundo();</code></pre>
+
+        <h4 class="text-light mt-4">Parámetros de Entrada (IN) y Salida (OUT)</h4>
+        <p>Los procedimientos pueden recibir variables de entrada para filtrar datos, y devolver múltiples variables de salida.</p>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <pre class="bg-black p-3 rounded border border-secondary text-light h-100 mb-0"><code>-- Parámetros de Entrada (IN)
+CREATE PROCEDURE plantilla(idEquipo INT, pais VARCHAR(20))
+BEGIN
+    SELECT nombre FROM jugadores
+    WHERE equipo_id = idEquipo AND nacionalidad = pais;
+END;
+
+CALL plantilla(1, 'Spain');</code></pre>
+            </div>
+            <div class="col-md-6">
+                <pre class="bg-black p-3 rounded border border-secondary text-light h-100 mb-0"><code>-- Parámetros de Salida (OUT)
+CREATE PROCEDURE contarJugadores(OUT total INT)
+BEGIN
+    SET total = (SELECT COUNT(*) FROM jugadores);
+END;
+
+CALL contarJugadores(@conteo);
+SELECT @conteo; -- Ver el resultado</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Functions -->
+    <section id="psm-functions" class="mb-5">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-subscript me-2"></i>6. Funciones Personalizadas</h2>
+        <p>A diferencia de los procedimientos, una <strong>función SIEMPRE devuelve un valor</strong>, y se puede usar en medio de cualquier consulta SQL habitual (como un SELECT o UPDATE).</p>
+        
+        <pre class="bg-black p-3 rounded border border-secondary text-light"><code>CREATE FUNCTION celsiusToFahrenheit(celsius REAL) 
+RETURNS REAL
+BEGIN
+    RETURN celsius * 1.8 + 32;
+END;
+
+-- Se ejecuta como cualquier función nativa de SQL
+SELECT celsiusToFahrenheit(25) AS temp_madrid;</code></pre>
+    </section>
+
+    <!-- 7. Diferencias -->
+    <section id="psm-diff" class="mb-5">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-balance-scale me-2"></i>7. Procedures vs Funciones</h2>
+        
+        <div class="row g-4 mt-2">
+            <div class="col-md-6">
+                <div class="card bg-dark border-warning h-100">
+                    <div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-cogs me-2"></i>PROCEDURES</div>
+                    <ul class="list-group list-group-flush border-warning">
+                        <li class="list-group-item bg-dark text-white border-warning">Tienen que llamarse con <code>CALL nombre();</code></li>
+                        <li class="list-group-item bg-dark text-white border-warning">Pueden tener <strong>Múltiples variables</strong> de salida (OUT).</li>
+                        <li class="list-group-item bg-dark text-white border-warning"><strong>Sí pueden</strong> ejecutar modificaciones en las tablas (INSERT, UPDATE, DELETE).</li>
+                        <li class="list-group-item bg-dark text-white border-warning">Pueden contener/llamar a otros procedures y funciones.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-dark border-info h-100">
+                    <div class="card-header bg-info text-dark fw-bold"><i class="fas fa-subscript me-2"></i>FUNCIONES</div>
+                    <ul class="list-group list-group-flush border-info">
+                        <li class="list-group-item bg-dark text-white border-info">Se llaman dentro de consultas: <code>SELECT mi_funcion();</code></li>
+                        <li class="list-group-item bg-dark text-white border-info">Solo pueden tener <strong>Un solo RETURN</strong> de salida.</li>
+                        <li class="list-group-item bg-dark text-white border-info"><strong>No pueden</strong> modificar tablas, son de solo lectura.</li>
+                        <li class="list-group-item bg-dark text-white border-info">No pueden contener ni llamar a un procedure.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. Ejercicios -->
+    <section id="psm-ejercicios">
+        <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-laptop-code me-2"></i>8. Retos Prácticos</h2>
+        
+        <div class="accordion mt-4" id="accordionEjercicios">
+            <!-- Retos Manipulación Cadenas -->
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-dark text-warning border-bottom border-secondary" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#cadenasReto">
+                        <i class="fas fa-font me-2"></i> Retos de Manipulación de Cadenas
+                    </button>
+                </h2>
+                <div id="cadenasReto" class="accordion-collapse collapse" data-bs-parent="#accordionEjercicios">
+                    <div class="accordion-body text-light">
+                        <ol>
+                            <li class="mb-2">Dime qué clientes de "El Arepazo" tienen un nombre de más de 5 caracteres.</li>
+                            <li class="mb-2">Recorta a 5 caracteres los nombres de los clientes. Muéstralo por pantalla (no guardes).</li>
+                            <li class="mb-2">De los emails, obtén los caracteres de la posición 3 a la 7.</li>
+                            <li class="mb-2">Dime el total de caracteres sumando todos los nombres de los clientes.</li>
+                            <li class="mb-2">Haz un procedimiento que, pasándole el ID de un cliente, devuelva la cadena: <br><span class="text-info fst-italic">'El cliente Bernat, ha gastado 100€ en un total de 4 pedidos.'</span></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Retos de Procedimientos -->
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-dark text-primary border-bottom border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#procReto">
+                        <i class="fas fa-cogs me-2"></i> Retos de Procedimientos
+                    </button>
+                </h2>
+                <div id="procReto" class="accordion-collapse collapse" data-bs-parent="#accordionEjercicios">
+                    <div class="accordion-body text-light">
+                        <ol>
+                            <li class="mb-2">Crea un procedure que devuelva el <strong>factorial</strong> de un número dado.</li>
+                            <li class="mb-2">Crea un procedure que indique si un número es <strong>primo o no</strong>.</li>
+                            <li class="mb-2">Crea un procedure que devuelva los <em>N</em> primeros números de la sucesión de <strong>Fibonacci</strong>.</li>
+                            <li class="mb-2">Con la BBDD fifa26, devuelve la lista de jugadores que juegan en una liga indicando el ID de la competición.</li>
+                            <li class="mb-2">A la consulta anterior, añade la nacionalidad. Si viene a NULL, devuelve toda la lista; si no, solo los de esa nacionalidad.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Retos de Funciones -->
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-dark text-success border-bottom border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#funcReto">
+                        <i class="fas fa-subscript me-2"></i> Retos de Funciones
+                    </button>
+                </h2>
+                <div id="funcReto" class="accordion-collapse collapse" data-bs-parent="#accordionEjercicios">
+                    <div class="accordion-body text-light">
+                        <ol>
+                            <li class="mb-2">Crea una función para calcular el <strong>factorial con sumas</strong> en lugar de multiplicaciones (Ej: 4 = 4+3+2+1 = 10).</li>
+                            <li class="mb-2">Crea una función para calcular el IVA pasándole el importe y el %.</li>
+                            <li class="mb-2">Crea una función de <strong>gastos de envío</strong> basada en CP: <br> - <code>410NN</code> -> 3.99€ (Sevilla ciudad)<br> - <code>41NNN</code> -> 6.99€ (Pueblo Sevilla)<br> - Otra cosa numérica -> 9.99€<br> - NULL -> CP no válido</li>
+                            <li class="mb-2">Crea un <strong>Validador</strong> de datos de cliente (CP válido, Email válido, DNI con letra correcta, Nombre mínimo 2 letras).</li>
+                            <li class="mb-2">Crea una tabla con las provincias españolas y los prefijos de CP. Crea una función que valide si el CP coincide con la Provincia indicada por el cliente.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

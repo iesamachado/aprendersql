@@ -1,0 +1,228 @@
+/* ================================================================
+   task-shared.css — Estilos comunes del área de alumnos
+   AprenderSQL · Compartido por todas las páginas task/
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+/* ── Variables ── */
+:root {
+  --bg-main:        #070d1a;
+  --bg-glass:       rgba(15, 25, 50, 0.75);
+  --bg-glass-2:     rgba(255,255,255,0.04);
+  --border-glass:   rgba(255,255,255,0.08);
+  --primary:        #4f8ef7;
+  --primary-glow:   rgba(79,142,247,0.25);
+  --accent:         #a78bfa;
+  --success:        #10b981;
+  --warning:        #f59e0b;
+  --danger:         #ef4444;
+  --gold:           #fbbf24;
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #475569;
+  --navbar-h:       64px;
+  --radius:         12px;
+  --radius-lg:      16px;
+  --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(79,142,247,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(167,139,250,0.1) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* ── Auth Screen ── */
+#auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px);
+  padding: 3rem 2.5rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: authFadeIn 0.6s ease-out;
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.auth-logo {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 8px 24px var(--primary-glow);
+}
+
+.auth-card h1 {
+  font-size: 1.6rem; font-weight: 800;
+  margin-bottom: 0.75rem; color: var(--text-primary);
+}
+
+.auth-card p {
+  color: var(--text-secondary);
+  font-size: 0.9rem; margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; padding: 0.85rem 1.5rem;
+  background: white; color: #1e293b;
+  border: none; border-radius: var(--radius);
+  font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.btn-google img { width: 20px; }
+.btn-google:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+
+.auth-badge {
+  margin-top: 1.5rem;
+  font-size: 0.75rem; color: var(--text-muted);
+}
+
+/* ── Navbar ── */
+.ex-navbar {
+  height: var(--navbar-h);
+  background: rgba(7,13,26,0.9);
+  border-bottom: 1px solid var(--border-glass);
+  backdrop-filter: blur(16px);
+  display: flex; align-items: center;
+  padding: 0 1.5rem; gap: 1rem;
+  position: sticky; top: 0; z-index: 40;
+}
+
+.ex-navbar .brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 1rem;
+  color: var(--text-primary); text-decoration: none;
+}
+.ex-navbar .brand .icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+}
+
+.navbar-spacer { flex: 1; }
+
+.points-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(251,191,36,0.12);
+  border: 1px solid rgba(251,191,36,0.25);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 0.85rem; font-weight: 600; color: var(--gold);
+}
+.points-badge .icon { font-size: 0.9rem; }
+
+.user-info { display: flex; align-items: center; gap: 8px; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-glass); }
+.user-name { font-size: 0.85rem; font-weight: 500; }
+
+.btn-logout {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: var(--danger); border-radius: 8px;
+  padding: 6px 12px; font-size: 0.82rem;
+  cursor: pointer; transition: all 0.2s;
+  text-decoration: none; display: inline-flex; align-items: center;
+}
+.btn-logout:hover { background: rgba(239,68,68,0.2); color: var(--danger); }
+
+/* ── Page wrapper ── */
+.task-page {
+  min-height: calc(100vh - var(--navbar-h));
+  padding: 2rem 1rem;
+}
+
+/* ── Cards de clase / tanda ── */
+.task-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  cursor: pointer;
+}
+.task-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  border-color: rgba(79,142,247,0.3);
+}
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center; padding: 4rem 2rem;
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+.empty-state h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); }
+
+/* ── Toast ── */
+#toast-container {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
+}
+.toast {
+  background: rgba(15,23,42,0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 0.75rem 1.25rem;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.88rem; min-width: 260px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: toastIn 0.3s ease-out;
+}
+.toast.fadeout { animation: toastOut 0.3s ease-in forwards; }
+@keyframes toastIn  { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toastOut { to   { opacity: 0; transform: translateX(20px); } }
+
+/* ── Spinner ── */
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border-glass);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 2rem auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Confetti ── */
+.confetti-piece {
+  position: fixed; top: -20px;
+  animation: confettiFall linear forwards;
+  pointer-events: none; z-index: 9999;
+}
+@keyframes confettiFall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}

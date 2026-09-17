@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tema 3: Seguridad y Control de Acceso (RA3) - MariaDB</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .tema-content {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #4af626;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #0d6efd;
+            overflow-x: auto;
+        }
+        .toc {
+            background-color: #252525;
+            border: 1px solid #333;
+        }
+        .toc a {
+            color: #6ea8fe;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            color: #9ec5fe;
+            text-decoration: underline;
+        }
+        h2 {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="bg-dark text-white">
+
+<div class="container my-5">
+    <div class="tema-content p-4">
+        <h1 class="mb-4 text-center text-primary"><i class="fas fa-shield-halved"></i> Tema 3: Seguridad y Control de Acceso (RA3)</h1>
+        <p class="lead text-center">Guía interactiva sobre la gestión de seguridad en bases de datos MariaDB.</p>
+
+        <!-- Table of Contents -->
+        <div class="toc p-4 rounded mb-5">
+            <h4 class="mb-3"><i class="fas fa-list-ul"></i> Índice de Contenidos</h4>
+            <ul class="fs-5 mb-0">
+                <li><a href="#introduccion">1. Introducción: La Filosofía de la Seguridad</a></li>
+                <li><a href="#usuarios">2. Gestión de Usuarios y Hosts</a></li>
+                <li><a href="#privilegios">3. Privilegios (GRANT y REVOKE)</a></li>
+                <li><a href="#roles">4. Roles (Grupos de Usuarios)</a></li>
+                <li><a href="#vistas">5. Vistas (Views) como Mecanismo de Seguridad</a></li>
+                <li><a href="#sinonimos">6. Sinónimos (Synonyms)</a></li>
+            </ul>
+        </div>
+
+        <!-- 1. Introducción -->
+        <h2 id="introduccion"><i class="fas fa-lock"></i> 1. Introducción: La Filosofía de la Seguridad</h2>
+        <p>En el ámbito de la seguridad de bases de datos, existe una regla de oro: <strong>"Ser rancios"</strong>. No estamos aquí para hacer amigos; debemos ser extremadamente tacaños con los permisos que otorgamos.</p>
+        <div class="alert alert-warning text-dark">
+            <i class="fas fa-exclamation-triangle"></i> <strong>Principio de Mínimo Privilegio:</strong> Si nos piden permisos para que un usuario consulte una tabla, jamás le daremos credenciales de administrador (root). Solo concederemos el acceso estricto y necesario.
+        </div>
+
+        <!-- 2. Usuarios -->
+        <h2 id="usuarios"><i class="fas fa-users"></i> 2. Gestión de Usuarios y Hosts</h2>
+        <p>En MariaDB y MySQL, la gestión de usuarios tiene una particularidad importante respecto a otros sistemas (como SQL Server): a cada usuario se le asocia una <strong>IP o Host</strong> desde la que tiene permitido conectarse.</p>
+        <ul>
+            <li><code>localhost</code>: Solo permite conexiones desde el mismo servidor donde está la base de datos.</li>
+            <li><code>%</code>: Es un comodín que indica que el usuario puede conectarse desde <strong>cualquier máquina</strong>.</li>
+        </ul>
+        <p>Para crear un usuario, utilizamos la instrucción <code>CREATE USER</code>:</p>
+        <pre><code>-- Crear un usuario que puede conectarse desde cualquier lugar
+CREATE USER 'usuario1'@'%' IDENTIFIED BY 'MiContraseñaSegura!';
+
+-- Crear un usuario que solo puede acceder localmente
+CREATE USER 'admin_local'@'localhost' IDENTIFIED BY 'SuperSecreta!';</code></pre>
+        <p>Podemos consultar los usuarios existentes revisando la tabla del sistema:</p>
+        <pre><code>SELECT User, Host FROM mysql.user;</code></pre>
+
+        <!-- 3. Privilegios -->
+        <h2 id="privilegios"><i class="fas fa-key"></i> 3. Privilegios (GRANT y REVOKE)</h2>
+        <p>Una vez creado el usuario, este no tiene permisos para hacer nada. Usamos <code>GRANT</code> para conceder permisos y <code>REVOKE</code> para quitarlos.</p>
+        
+        <h4>Asignar Privilegios</h4>
+        <pre><code>-- Dar permisos específicos sobre una base de datos entera
+GRANT SELECT, INSERT, UPDATE, DELETE ON midb.* TO 'usuario1'@'%';
+
+-- Dar TODOS los privilegios (Solo para administradores)
+GRANT ALL PRIVILEGES ON midb.* TO 'admin_local'@'localhost';</code></pre>
+
+        <h4>Ver los Privilegios de un Usuario</h4>
+        <pre><code>SHOW GRANTS FOR 'usuario1'@'%';</code></pre>
+
+        <h4>Revocar Privilegios</h4>
+        <pre><code>-- Quitar el permiso de borrado
+REVOKE DELETE ON midb.* FROM 'usuario1'@'%';</code></pre>
+
+        <!-- 4. Roles -->
+        <h2 id="roles"><i class="fas fa-user-tag"></i> 4. Roles (Grupos de Usuarios)</h2>
+        <p>Los roles permiten agrupar permisos y asignarlos fácilmente a múltiples usuarios, simplificando la administración (por ejemplo, creando roles como <em>cocineros</em>, <em>camareros</em> o <em>jefes</em>).</p>
+        
+        <h4>Crear y configurar un Rol</h4>
+        <pre><code>-- 1. Crear el Rol
+CREATE ROLE 'developers';
+
+-- 2. Dar permisos al Rol
+GRANT INSERT, UPDATE, DELETE ON mi_empresa.empleados TO 'developers';
+
+-- 3. Asignar el Rol a un usuario
+GRANT 'developers' TO 'usuario1'@'%';</code></pre>
+
+        <h4>Uso de Roles por parte del Usuario</h4>
+        <p>Por defecto, los roles asignados no están activos hasta que el usuario los habilita o se configuran por defecto.</p>
+        <pre><code>-- Activar un rol en la sesión actual
+SET ROLE 'developers';
+
+-- Activar TODOS los roles que tiene el usuario
+SET ROLE ALL;
+
+-- Configurar un rol por defecto para un usuario (requiere admin)
+SET DEFAULT ROLE 'developers' FOR 'usuario1'@'%';
+
+-- Comprobar qué rol está activo actualmente
+SELECT CURRENT_ROLE();</code></pre>
+
+        <!-- 5. Vistas -->
+        <h2 id="vistas"><i class="fas fa-eye"></i> 5. Vistas (Views) como Mecanismo de Seguridad</h2>
+        <p>Las vistas no solo sirven para simplificar consultas complejas, sino que son una potente herramienta de seguridad. Permiten dar acceso de lectura a datos específicos de una tabla sin revelar toda la tabla (por ejemplo, ocultando salarios o contraseñas, o mostrando nombres en lugar de claves foráneas).</p>
+        <pre><code>-- Crear una vista segura que oculta datos sensibles
+CREATE VIEW vista_menu_seguro AS 
+SELECT id_plato, nombre_plato, precio 
+FROM menu 
+WHERE disponible = 1;
+
+-- Dar permiso al usuario SOLO sobre la vista, no sobre la tabla original
+GRANT SELECT ON restaurante.vista_menu_seguro TO 'invitado'@'%';</code></pre>
+
+        <!-- 6. Sinónimos -->
+        <h2 id="sinonimos"><i class="fas fa-link"></i> 6. Sinónimos (Synonyms)</h2>
+        <p>En MariaDB, los sinónimos (introducidos en versiones recientes) permiten crear nombres alternativos para objetos de la base de datos (tablas, vistas, secuencias).</p>
+        <p>Son útiles en seguridad para ocultar la ubicación o el nombre real de un esquema, y para facilitar accesos.</p>
+        <pre><code>-- Crear un sinónimo para una tabla (requiere MariaDB 10.5+)
+CREATE SYNONYM empleados_publico FOR hr_schema.tabla_empleados_real_2023;
+
+-- Ahora podemos dar permisos sobre el sinónimo
+GRANT SELECT ON empleados_publico TO 'usuario_reportes'@'%';</code></pre>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

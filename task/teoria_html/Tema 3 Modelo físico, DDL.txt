@@ -1,0 +1,303 @@
+Tema 3:
+CREANDO
+una BBDD
+con
+MariaDB
+
+3 modelos para crear BBDD
+
+Conceptual
+
+Modelo E-R (Entidad Relacion)
+
+Lógico
+
+Diagrama de tablas
+
+Físico
+
+DDL
+
+¿Qué es DDL?
+
+01
+
+02
+
+03
+
+Es la parte de SQL
+que nos crea,
+modifica y borra
+las tablas y las
+relaciones de
+nuestra BBDD.
+
+Serán esas
+instrucciones SQL
+para manipular la
+estructura de
+nuestras tablas.
+
+No es un diagrama
+como el Modelo ER
+o el Modelo lógico.
+Se escribe en
+texto plano.
+
+MariaDB
+
+Vamos a usar este SGBD en clase de aquí, a final de curso.
+
+Levantaremos el motor de la BD con Docker como hemos visto y
+usaremos dveaber para lanzar nuestras instrucciones SQL contra
+el servidor.
+
+CREAR LA BBDD
+●
+
+Antes de empezar a crear tablas, DEBEMOS
+crear una BBDD.
+○
+
+●
+
+Una vez creada, deberemos indicarle al cliente
+SQL que queremos usar esa bbdd.
+○
+
+●
+
+CREATE DATABASE nombreDeLaBBDD
+
+USE nombreDeLaBBDD
+
+Si vamos a la carpeta data de nuestro ordenador
+vinculada al contenedor docker, veremos que
+han aparecido ﬁcheros nuevos para esa BBDD.
+
+¿Cómo creamos
+una tabla?
+CREATE TABLE nombre_tabla
+(
+nombre_columna1 tipo_dato (
+size ) restricciones,
+nombre_columna2 tipo_dato(
+size ) restricciones,
+nombre_columna3 tipo_dato(
+size ) restricciones,
+....
+)
+
+Restricciones disponibles
+NOT NULL la columna no puede almacenar un valor NULL.
+UNIQUE :la columna debe tener un valor único.
+PRIMARY KEY : (implica NO NULO y único). Identificador único y clave
+principal.
+FOREIGN KEY : los datos deben coincidir con los valores de integridad
+referencial en otra tabla.
+DEFAULT : valor predeterminado de ese atributo. ( por ejemplo,
+predefinir en una tabla Animales de un veterionario la especie a Perro.)
+
+Tipos de Campo más usados
+INT para enteros
+
+BIT para boleanos
+
+VARCHAR(n de caracteres) para TEXTO
+• IMPORTANTE NO OLVIDARSE DE INDICAR LA N. Si no ponemos N, por defecto, será un VARCHAR(1)
+
+DATETIME para fechas
+
+Decimal(18,2) para números decimales.
+• El segundo dígito, indica el numero de numeros detrás de la coma. El primer digito, el num de
+digitos que guardamos a la derecha e izquierda de la coma.
+• 9.999.999.999.999.999,99 -> valor máximo de un decimal (18,2)
+
+Crear una Foreign Key (FKs)
+●
+
+La FK hay que crearla en la tabla donde añadiamos el comentario FK tabla.
+
+●
+
+Hay que añadir una línea adicional por cada FK que tenga esa tabla.
+
+●
+
+La FK Hay que ponerle un nombre único en TODA LA BBDD.
+
+●
+
+Los dos atributos TIENEN QUE TENER EXACTAMENTE EL MISMO DOMINIO
+○
+
+●
+
+Varchar(9) != Varchar(10)
+
+La línea debe contener lo siguiente:
+○
+
+FOREIGN KEY (atributodelamismatabla) REFERENCES
+tablaAlaQueValaFK(atributoDeLaOtraTabla)
+
+¿Cómo creamos
+nuestra primera
+tabla?
+CREATE DATABASE DGT
+CREATE TABLE Persona(
+dni VARCHAR (9) PRIMARY KEY,
+nombre NVARCHAR (250) NOT NUL
+)
+CREATE TABLE Multa(
+id INT PRIMARY KEY,
+precio DECIMAL(18,2) NOT NULL,
+DNI_Persona VARCHAR (9) NOT NULL,
+FOREIGN KEY (DNI_Persona)
+REFERENCES Persona(DNI)
+)
+
+Primary Key doble y tabla NN
+●
+
+Si por ejemplo queremos crear una PK Doble, no podemos deﬁnirla al deﬁnir el campo y se deﬁne al ﬁnal del
+create table.
+
+USE DGT
+CREATE TABLE Coche
+(
+Matricula VARCHAR(7) PRIMARY KEY,
+Es_Gasolina BIT NOT NULL,
+Color Varchar(10) NOT NULL,
+Cilindrada INT NOT NULL
+)
+CREATE TABLE PersonaCoche
+(
+DNI VARCHAR (9),
+Matricula VARCHAR(7),
+CONSTRAINT fkDNI FOREIGN KEY (DNI) REFERENCES Persona(DNI),
+CONSTRAINT fkCocke FOREIGN KEY (Matricula) REFERENCES Coche(Matricula),
+)
+
+PRIMARY KEY (DNI, Matricula)
+
+●
+
+●
+
+●
+
+En el menú de la izquierda del dveaber,
+veremos las bbdd y tablas creadas.
+(darle a actualizar si acabamos de crear una
+tabla o una BBDD).
+Botón derecho sobre una tabla, y podemos
+indicarle edit table. Nos abrirá la tabla en
+modo edición y podremos insertar y modiﬁcar
+datos.
+Con la BBDD de la DGT:
+○
+○
+○
+○
+
+Intenta introducir dos personas con el mismo DNI
+Intenta introducir una multa con un DNI de una
+persona que no exista en la tabla personas
+Intenta introducir una multa con el precio a null
+Introduce 3 personas. 1 con 0 multas, otra con dos
+multas con importes distintos y otra con 1 multa.
+
+Ejercicio
+Probemos las
+restricciones
+
+DROP TABLE NombreTabla
+
+Borrar
+tablas
+
+• CUIDADO CON ESO, borramos la tabla Y TODO SU
+CONTENIDO.
+
+DROP TABLE IF EXIST nombreTabla
+Para borrar una bbdd entera, podemos usar
+DROP DATABASE nombreBBDD.
+• BORRAMOS ABSOLUTAMENTE TODO LO QUE
+CONTENGA ESA BBDD.
+
+Campos
+autoincrementales
+●
+
+●
+
+Para los id's es buena idea tener
+un campo que se autoincremente
+solo. En SQL Server, se crea de la
+siguiente manera:
+CREATE TABLE Peliculas(
+Id int PRIMARY KEY
+AUTO_INCREMENT,
+nombre Varchar(100) NOT NULL
+)
+
+●
+
+Modiﬁcar
+tablas
+
+Comando ALTER TABLE. (
+Seguimos en DDL, modiﬁcamos
+los campos, añadir un campo,
+eliminarlo, añadir una fk,
+modiﬁcar el tipo de datos...
+
+ALTER TABLE <nombre_tabla>
+[ ADD <deﬁnicion_columna> ]
+[ DROP COLUMN
+<nombre_columna> ]
+[ ADD CONSTRAINT
+<restriccion> ]
+
+Modiﬁcar una
+tabla
+CREATE TABLE multa
+(
+Id int IDENTITY(1,1) PRIMARY KEY,
+precio decimal(18,2) not null,
+idCliente int
+)
+ALTER TABLE multa DROP COLUMN idCliente
+ALTER TABLE multa add dni varchar(10)
+ALTER TABLE multa ADD CONSTRAINT
+fkmultapersona FOREIGN key (dni)
+REFERENCES Persona(dni)
+
+Alter sobre Columnas
+
+Añadir nueva columna ( cuidado, va sin column!)
+• alter table jugador add email varchar (150) not null default
+'asdsdaf@asda.es'
+• Acordaros! Si la tabla está rellena, no podemos añadir campo not null
+sin default
+Modificar columna
+• alter table jugador modify column nombre varchar(30)
+Borrar columna
+• alter table jugador drop column apellido
+
+Alter sobre constraints
+¡Las constraints TIENEN NOMBRE!
+
+Una constraint es tanto una FK como una PK
+
+Borrar Constraint
+• alter table categoria drop constraint pkcategoria
+• Alter table tarjeta drop constraint fkcategoria
+Añadir constraint
+• alter table categoria add constraint pkcategoria1 primary key (id)
+• ALTER TABLE Tarjeta ADD CONSTRAINT fkcategoria FOREIGN KEY
+(idcategoria) REFERENCES Categorias(id)
+
+

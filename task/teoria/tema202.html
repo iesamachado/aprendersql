@@ -1,0 +1,144 @@
+<div class="tema-content p-4 bg-dark text-white">
+  <h1 class="mb-4"><i class="fas fa-cogs"></i> Tema 2: Configuración y Arquitectura (RA2)</h1>
+
+  <div class="toc bg-secondary p-3 rounded mb-4">
+    <h2>Tabla de Contenidos</h2>
+    <ul>
+      <li><a href="#motores" class="text-white">Selección de Motores: InnoDB vs MyISAM</a></li>
+      <li><a href="#arranque" class="text-white">Arranque y Parada del Servicio</a></li>
+      <li><a href="#logs" class="text-white">Archivos de Log (Registro)</a></li>
+      <li><a href="#conectividad" class="text-white">Parámetros de Conectividad</a></li>
+    </ul>
+  </div>
+
+  <section id="motores" class="mb-5">
+    <h2><i class="fas fa-database"></i> Selección de Motores: InnoDB vs MyISAM</h2>
+    <p>MariaDB soporta múltiples motores de almacenamiento. Los más comunes son InnoDB y MyISAM.</p>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card bg-dark border-light mb-3">
+          <div class="card-header bg-primary text-white">InnoDB (Predeterminado)</div>
+          <div class="card-body">
+            <ul>
+              <li>Soporta transacciones (ACID).</li>
+              <li>Bloqueo a nivel de fila (Row-level locking).</li>
+              <li>Soporte para claves foráneas (Integridad referencial).</li>
+              <li>Recomendado para la mayoría de las aplicaciones.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-dark border-light mb-3">
+          <div class="card-header bg-info text-white">MyISAM</div>
+          <div class="card-body">
+            <ul>
+              <li>No soporta transacciones.</li>
+              <li>Bloqueo a nivel de tabla (Table-level locking).</li>
+              <li>Rápido para operaciones de lectura intensiva.</li>
+              <li>Útil para tablas de sólo lectura o Data Warehousing.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="arranque" class="mb-5">
+    <h2><i class="fas fa-power-off"></i> Arranque y Parada del Servicio</h2>
+    <p>Para gestionar el servicio de MariaDB en sistemas Linux basados en systemd (como Ubuntu, Debian, CentOS), se utiliza el comando <code>systemctl</code>.</p>
+    <ul>
+      <li><strong>Iniciar el servicio:</strong> <code>sudo systemctl start mariadb</code></li>
+      <li><strong>Detener el servicio:</strong> <code>sudo systemctl stop mariadb</code></li>
+      <li><strong>Reiniciar el servicio:</strong> <code>sudo systemctl restart mariadb</code></li>
+      <li><strong>Verificar el estado:</strong> <code>sudo systemctl status mariadb</code></li>
+      <li><strong>Habilitar inicio automático:</strong> <code>sudo systemctl enable mariadb</code></li>
+    </ul>
+    <div class="alert alert-warning text-dark">
+      <i class="fas fa-exclamation-triangle"></i> Asegúrate de tener privilegios de superusuario (root o sudo) para ejecutar estos comandos.
+    </div>
+  </section>
+
+  <section id="logs" class="mb-5">
+    <h2><i class="fas fa-file-alt"></i> Archivos de Log (Registro)</h2>
+    <p>MariaDB genera diferentes tipos de logs que son cruciales para el monitoreo, la auditoría y la resolución de problemas.</p>
+    <div class="accordion" id="accordionLogs">
+      <div class="accordion-item bg-secondary text-white border-dark">
+        <h2 class="accordion-header" id="headingErrorLog">
+          <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErrorLog" aria-expanded="false" aria-controls="collapseErrorLog">
+            Error Log (Registro de Errores)
+          </button>
+        </h2>
+        <div id="collapseErrorLog" class="accordion-collapse collapse" aria-labelledby="headingErrorLog" data-bs-parent="#accordionLogs">
+          <div class="accordion-body">
+            Contiene información sobre cuándo se inició y se detuvo mysqld y también los errores críticos que ocurren mientras el servidor se está ejecutando. 
+            <br><em>Configuración típica en my.cnf:</em> <code>log_error = /var/log/mysql/error.log</code>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item bg-secondary text-white border-dark">
+        <h2 class="accordion-header" id="headingGeneralLog">
+          <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeneralLog" aria-expanded="false" aria-controls="collapseGeneralLog">
+            General Query Log (Registro General de Consultas)
+          </button>
+        </h2>
+        <div id="collapseGeneralLog" class="accordion-collapse collapse" aria-labelledby="headingGeneralLog" data-bs-parent="#accordionLogs">
+          <div class="accordion-body">
+            Registra todas las consultas SQL recibidas del cliente, así como los inicios y cierres de sesión. Muy útil para depuración, pero consume mucho espacio en disco y recursos.
+            <br><em>Configuración típica en my.cnf:</em> <code>general_log = 1</code>, <code>general_log_file = /var/log/mysql/mysql.log</code>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item bg-secondary text-white border-dark">
+        <h2 class="accordion-header" id="headingSlowLog">
+          <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSlowLog" aria-expanded="false" aria-controls="collapseSlowLog">
+            Slow Query Log (Registro de Consultas Lentas)
+          </button>
+        </h2>
+        <div id="collapseSlowLog" class="accordion-collapse collapse" aria-labelledby="headingSlowLog" data-bs-parent="#accordionLogs">
+          <div class="accordion-body">
+            Registra las consultas que tardan más tiempo en ejecutarse de lo definido en el parámetro <code>long_query_time</code>. Esencial para la optimización del rendimiento.
+            <br><em>Configuración típica en my.cnf:</em> <code>slow_query_log = 1</code>, <code>slow_query_log_file = /var/log/mysql/mariadb-slow.log</code>, <code>long_query_time = 2.0</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="conectividad" class="mb-5">
+    <h2><i class="fas fa-network-wired"></i> Parámetros de Conectividad</h2>
+    <p>La configuración de red y conexión en MariaDB (generalmente en <code>/etc/mysql/my.cnf</code> o <code>/etc/mysql/mariadb.conf.d/50-server.cnf</code>) es fundamental para el rendimiento y la seguridad.</p>
+    <table class="table table-dark table-striped">
+      <thead>
+        <tr>
+          <th>Parámetro</th>
+          <th>Descripción</th>
+          <th>Valor de ejemplo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>bind-address</code></td>
+          <td>Dirección IP a la que el servidor escuchará. <code>127.0.0.1</code> solo permite conexiones locales. <code>0.0.0.0</code> permite conexiones desde cualquier interfaz.</td>
+          <td><code>bind-address = 127.0.0.1</code></td>
+        </tr>
+        <tr>
+          <td><code>max_connections</code></td>
+          <td>El número máximo de conexiones simultáneas permitidas. Si se supera, los nuevos clientes recibirán el error "Too many connections".</td>
+          <td><code>max_connections = 150</code></td>
+        </tr>
+        <tr>
+          <td><code>wait_timeout</code></td>
+          <td>El número de segundos que el servidor espera actividad en una conexión no interactiva antes de cerrarla.</td>
+          <td><code>wait_timeout = 28800</code> (8 horas)</td>
+        </tr>
+        <tr>
+          <td><code>interactive_timeout</code></td>
+          <td>El número de segundos que el servidor espera actividad en una conexión interactiva antes de cerrarla.</td>
+          <td><code>interactive_timeout = 28800</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>

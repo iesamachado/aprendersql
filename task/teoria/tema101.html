@@ -1,0 +1,319 @@
+<div class="tema-content text-white bg-dark p-4">
+  <div class="text-center mb-5">
+    <h1 class="display-4 text-primary"><i class="fas fa-database"></i> Tema 1: Sistemas de Almacenamiento de la Información</h1>
+    <p class="lead">Bernat Costa | <a href="mailto:bernatcosta@iesamachado.org" class="text-info">bernatcosta@iesamachado.org</a></p>
+  </div>
+
+  <div class="card bg-secondary text-white border-secondary mb-4 shadow-sm">
+    <div class="card-header bg-dark border-secondary">
+      <h3 class="card-title mb-0"><i class="fas fa-list-ul"></i> Índice</h3>
+    </div>
+    <div class="card-body bg-dark">
+      <ol class="fs-5">
+        <li>¿Cómo guardamos la información?</li>
+        <li>¿Qué es una bbdd?</li>
+        <li>¿Qué es un Sistema Gestor de bbdd?</li>
+        <li>SQL</li>
+        <li>BBDD Distribuidas</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- 1.1 Cómo guardamos la info -->
+  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">1.1 ¿Cómo guardamos la información en el ordenador?</h2>
+  <p class="fs-5">En informática, tenemos dos tipos de memoria: la <strong>volátil</strong> y la <strong>persistente</strong>.</p>
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="alert alert-warning bg-dark border-warning text-white h-100">
+        <h4><i class="fas fa-memory text-warning"></i> Memoria Volátil (RAM)</h4>
+        <p>Es de más rápido acceso, pero se pierde al apagar el equipo.</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="alert alert-success bg-dark border-success text-white h-100">
+        <h4><i class="fas fa-hdd text-success"></i> Memoria Persistente</h4>
+        <p>Es la que guardamos en el disco duro, pendrive, CD...</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="text-light mt-4">Ficheros</h3>
+  <p>Para guardar la información en disco, usamos los ficheros. Son estructuras de información creadas por los Sistemas Operativos para poder almacenar datos. Según el tipo de fichero, guardaremos la información de una manera u otra.</p>
+
+  <div class="row g-3 my-3">
+    <div class="col-md-4">
+      <div class="card bg-dark border-secondary h-100">
+        <div class="card-body">
+          <h5 class="card-title text-primary"><i class="fas fa-file-alt"></i> Por Contenido</h5>
+          <ul class="list-unstyled">
+            <li><strong>Texto:</strong> Organizado con caracteres alfanuméricos. (Bloc de notas)</li>
+            <li><strong>Binario:</strong> Datos complejos que requieren software (imagen, video, etc.)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-dark border-secondary h-100">
+        <div class="card-body">
+          <h5 class="card-title text-primary"><i class="fas fa-sitemap"></i> Por Organización</h5>
+          <ul class="list-unstyled">
+            <li><strong>Secuenciales:</strong> Recorrer todos los anteriores.</li>
+            <li><strong>Relativos:</strong> Posicionados a X posiciones, permite "saltar".</li>
+            <li><strong>Indexados:</strong> Tienen índice para saltar a cualquier dato.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-dark border-secondary h-100">
+        <div class="card-body">
+          <h5 class="card-title text-primary"><i class="fas fa-cogs"></i> Por Utilidad</h5>
+          <ul class="list-unstyled">
+            <li><strong>Maestro:</strong> Info principal de la app.</li>
+            <li><strong>Histórico:</strong> Transacciones pasadas no necesarias.</li>
+            <li><strong>Temporal:</strong> De uso transitorio.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <h4 class="text-info mt-3"><i class="fas fa-file-code"></i> Ficheros de Texto</h4>
+      <ul>
+        <li><strong>Configuración:</strong> .config, .ini, .inf</li>
+        <li><strong>Código fuente:</strong> .java, .cpp, .py, .js</li>
+        <li><strong>Texto plano:</strong> .txt</li>
+        <li><strong>Marcado:</strong> .xml, .html</li>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <h4 class="text-info mt-3"><i class="fas fa-file-archive"></i> Ficheros Binarios</h4>
+      <ul>
+        <li><strong>Imagen:</strong> .jpg, .png</li>
+        <li><strong>Sonido/Video:</strong> .wav, .mp3, .mov</li>
+        <li><strong>Comprimidos:</strong> .zip, .rar</li>
+        <li><strong>Ejecutables:</strong> .exe, .apk</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 1.2 Qué es una BBDD -->
+  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">1.2 ¿Qué es una BBDD?</h2>
+  <blockquote class="blockquote bg-secondary p-3 rounded border-start border-info border-5">
+    <p class="mb-0">Una base de datos es un conjunto de datos ordenados que están relacionados entre sí y almacenados sistemáticamente para su uso posterior de forma automatizada con un mismo contexto.</p>
+  </blockquote>
+
+  <div class="row g-3 mt-3">
+    <div class="col-sm-6 col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3 h-100 shadow">
+        <i class="fas fa-layer-group fa-2x text-warning mb-2"></i>
+        <h5>Conjunto de Datos</h5>
+        <p class="small text-muted">Información sobre objetos o sucesos. Distintos tipos (fechas, números, texto).</p>
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3 h-100 shadow">
+        <i class="fas fa-project-diagram fa-2x text-warning mb-2"></i>
+        <h5>Relacionados</h5>
+        <p class="small text-muted">Los datos tienen relación entre sí y se define en la estructura.</p>
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3 h-100 shadow">
+        <i class="fas fa-save fa-2x text-warning mb-2"></i>
+        <h5>Almacenados</h5>
+        <p class="small text-muted">Su función es guardar de forma persistente la información.</p>
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3 h-100 shadow">
+        <i class="fas fa-cogs fa-2x text-warning mb-2"></i>
+        <h5>Sistemáticamente</h5>
+        <p class="small text-muted">El proceso de creación está parametrizado. Sigue un patrón.</p>
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3 h-100 shadow">
+        <i class="fas fa-robot fa-2x text-warning mb-2"></i>
+        <h5>Automatizado</h5>
+        <p class="small text-muted">Conjunto de datos digitalizados.</p>
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3 h-100 shadow">
+        <i class="fas fa-search fa-2x text-warning mb-2"></i>
+        <h5>Uso Posterior</h5>
+        <p class="small text-muted">Poder consultar y manipular los datos es su gran potencial.</p>
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-info bg-dark border-info text-white mt-4">
+    <h5><i class="fas fa-info-circle"></i> Contexto</h5>
+    <p class="mb-0">Es primordial. Un campo fecha puede ser de pedido, cumpleaños, registro... Sin contexto (nombre de campo o tabla) no podemos interpretar los datos.</p>
+  </div>
+
+  <!-- 1.3 Sistemas Gestores de BBDD -->
+  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">1.3 Sistemas Gestores de BBDD (SGBD)</h2>
+  <p>En los años 70, aparece el primer software para gestionar BBDD: <strong>Oracle</strong>.</p>
+  <p>Se define un <strong>SGBD</strong> como un conjunto de herramientas que facilitan la consulta, uso y actualización de una Base de Datos.</p>
+  <p class="mb-4">Ejemplos: <em>MySQL, MariaDB, PostgreSQL, Oracle, Microsoft SQL Server, MongoDB</em>.</p>
+
+  <h4 class="text-light">Características de un SGBD:</h4>
+  <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    <div class="col">
+      <ul class="list-group list-group-flush border border-secondary rounded">
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-eye-slash text-primary me-2"></i> <strong>Abstracción:</strong> Nos olvida de cómo y dónde se almacenan físicamente los datos.</li>
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-shield-alt text-primary me-2"></i> <strong>Integridad:</strong> Garantiza tipos correctos y recuperación.</li>
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-lock text-primary me-2"></i> <strong>Seguridad:</strong> Autenticación, usuarios y permisos.</li>
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-info text-primary me-2"></i> <strong>Metadata:</strong> Proporciona estructura y esquema.</li>
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-exchange-alt text-primary me-2"></i> <strong>Transacciones:</strong> Garantiza operaciones completas (todo o nada).</li>
+      </ul>
+    </div>
+    <div class="col">
+      <ul class="list-group list-group-flush border border-secondary rounded">
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-chart-line text-primary me-2"></i> <strong>Monitorización:</strong> Estado, consultas, uso de recursos.</li>
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-users text-primary me-2"></i> <strong>Concurrencia:</strong> N personas a la vez (soluciona problemas de lectura/escritura).</li>
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-code-branch text-primary me-2"></i> <strong>Independencia:</strong> Separa el software del acceso a datos.</li>
+        <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-network-wired text-primary me-2"></i> <strong>Conectividad:</strong> Conexión externa, distribución y replicación.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4 class="text-light mt-4">Un poco de historia</h4>
+  <ul class="text-muted">
+    <li>Desde que el ser humano documenta, almacena datos (Biblioteca Alejandría).</li>
+    <li>1884: Herman Hollerith, tabulador de tarjetas perforadas.</li>
+    <li>1963: Primera vez que se usa el concepto de Base de Datos.</li>
+    <li>Años 60: Charles Bachman desarrolla bases de datos en red.</li>
+    <li>Años 70: Edgar Frank Codd desarrolla el modelo relacional.</li>
+    <li>Larry Ellison (basado en Codd) crea Oracle.</li>
+    <li>Años 80: Creación de SQL (Structured Query Language).</li>
+  </ul>
+
+  <h4 class="text-light mt-4">Tipos de SGBD</h4>
+  <div class="row g-4 mt-2">
+    <div class="col-md-6">
+      <div class="card bg-dark border-success h-100">
+        <div class="card-header border-success text-success"><i class="fab fa-osi"></i> Software Libre</div>
+        <div class="card-body">
+          <p>Libertades: usar, estudiar, distribuir y mejorar.</p>
+          <ul>
+            <li><strong>MySQL:</strong> Muy popular, comprado por Oracle.</li>
+            <li><strong>MariaDB:</strong> Fork comunitario de MySQL.</li>
+            <li><strong>PostgreSQL:</strong> Robusto, ideal BBDD grandes, alta concurrencia.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card bg-dark border-danger h-100">
+        <div class="card-header border-danger text-danger"><i class="fas fa-copyright"></i> Software Propietario</div>
+        <div class="card-body">
+          <p>Dos opciones predominan:</p>
+          <ul>
+            <li><strong>Oracle:</strong> El original.</li>
+            <li><strong>SQL Server:</strong> Microsoft.</li>
+          </ul>
+          <p class="small text-muted">Comparten casi todo SQL, con algunas diferencias.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-secondary bg-dark border-secondary text-white mt-4">
+    <h5><i class="fas fa-leaf text-success"></i> ¿Y MongoDB? (NoSQL)</h5>
+    <p class="mb-0">Existen BBDD No-SQL donde se rompe la estructura relacional. SQL y NoSQL no son incompatibles, se complementan.</p>
+  </div>
+
+  <!-- 1.4 Qué es SQL -->
+  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">1.4 ¿Qué es SQL?</h2>
+  <p><strong>Structured Query Language:</strong> Lenguaje de consulta estructurado para comunicarnos con la BBDD. Tiene 4 sublenguajes:</p>
+
+  <div class="row g-3 text-center mb-4">
+    <div class="col-md-3">
+      <div class="card bg-dark border-primary h-100">
+        <div class="card-body">
+          <h4 class="text-primary">DDL</h4>
+          <p class="small">Data Definition Language</p>
+          <hr class="border-secondary">
+          <p class="small text-muted">Definir BBDD (Crear, borrar, modificar tablas).</p>
+          <code>CREATE, DROP, ALTER</code>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-dark border-success h-100">
+        <div class="card-body">
+          <h4 class="text-success">DML</h4>
+          <p class="small">Data Manipulation Language</p>
+          <hr class="border-secondary">
+          <p class="small text-muted">Trabajar con los datos (consultar, insertar, modificar, borrar).</p>
+          <code>SELECT, INSERT, UPDATE, DELETE</code>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-dark border-warning h-100">
+        <div class="card-body">
+          <h4 class="text-warning">DCL</h4>
+          <p class="small">Data Control Language</p>
+          <hr class="border-secondary">
+          <p class="small text-muted">Control de accesos y permisos a la BBDD.</p>
+          <code>GRANT, REVOKE</code>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-dark border-danger h-100">
+        <div class="card-body">
+          <h4 class="text-danger">TCL</h4>
+          <p class="small">Transaction Control Language</p>
+          <hr class="border-secondary">
+          <p class="small text-muted">Transacciones ("guardar partida", bloque seguro).</p>
+          <code>BEGIN TRAN, ROLLBACK TRAN</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1.5 BBDD Distribuidas -->
+  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">1.5 BBDD Distribuidas</h2>
+  <p>Originalmente centralizadas, hoy es habitual tenerlas distribuidas en la red.</p>
+  <ul>
+    <li><strong>Centralizado:</strong> Simplifica el acceso/escritura, pero hay riesgo ante caída.</li>
+    <li><strong>Distribuido:</strong> Resistente a caídas, pero dificulta la escritura. Formas: Replicación, Centralizada, Particionada, Híbrida.</li>
+  </ul>
+
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card bg-dark border-success mb-3">
+        <div class="card-header border-success text-success"><i class="fas fa-check-circle"></i> Ventajas</div>
+        <div class="card-body">
+          <ul>
+            <li>Autonomía local</li>
+            <li>Mayor disponibilidad</li>
+            <li>Escalabilidad</li>
+            <li>Expansión territorial</li>
+            <li>Más resistente a fallos</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card bg-dark border-danger mb-3">
+        <div class="card-header border-danger text-danger"><i class="fas fa-times-circle"></i> Desventajas</div>
+        <div class="card-body">
+          <ul>
+            <li>Dificultad para garantizar seguridad</li>
+            <li>Errores de red</li>
+            <li>Mayor complejidad</li>
+            <li>Problemas de privacidad</li>
+            <li>Modelos más nuevos = más vulnerables</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

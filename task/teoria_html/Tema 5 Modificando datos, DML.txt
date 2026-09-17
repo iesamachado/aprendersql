@@ -1,0 +1,310 @@
+Tema 5:
+Modiﬁcando
+nuestros datos
+Bernat costa
+
+DML Data Manipulation Language
+Consultar
+
+Select
+
+Insertar
+
+Insert
+
+Modificar
+
+Update
+
+Borrar
+
+Delete
+
+Vamos a
+Modiﬁcar
+datos
+
+Tendremos que tener mucho
+cuidado.
+Nos debe "temblar" el dedo
+antes de darle a ejecutar.
+No siempre tendremos
+un backup para volver al punto
+anterior.
+
+Guardar la
+partida
+BEGIN
+Instrucción SQL para
+modiﬁcar/borrar/insertar datos
+
+ROLLBACK
+Si lanzamos estas lineas juntas,
+NO MODIFICAMOS la BBDD,
+pero sí vemos las lineas afectadas.
+PROBAD SIEMPRE VUESTROS
+DELETES/UPDATES
+
+1º Tatuaje del
+curso
+
+NO QUIERO VER UN
+DELETE/UPDATE SIN
+UN
+BEGIN/ROLLBACK
+
+Insertar DATOS
+Comando INSERT
+
+3 formas de usarlo.
+• Con valores puestos a pelo
+• Insertando datos de otra consulta
+• Insertando desde un csv.
+
+Muy útil si queremos insertar una ﬁla, o insertar ﬁla a
+ﬁla.
+
+Insert con
+valores a
+"pelo"
+
+INSERT INTO nombretabla (campo1,campo2,…..)
+VALUES ('valor1','valor2',….)
+Ejemplo:
+INSERT
+INTO personas (personaid,apellido,nombre,direccio
+n,ciudad,edad,altura)
+VALUES('2','Costa','Miquel','calle falsa
+23','Barcelona',37,183)
+
+Desde una SELECT...
+INSERT INTO personas
+SELECT lastname,firstname, address,cit
+y,age from Person.Person
+
+INSERT
+desde otra
+consulta
+
+Insertará tantas filas, como resultados
+de la consulta (select...).
+
+Muy útil para insertar datos
+masivamente.
+
+¿Y los ids autoincrements?
+
+Si nuestra tabla tiene un campo autoincremental (
+normalmente el id) NO DEBEREMOS AÑADIRLO.
+
+"nos saltamos" ese campo.
+
+Ejemplo
+
+Con Identity
+
+INSERT INTO personas (apellido,nombre,direccion,ciudad,ed
+ad)
+VALUES('costa','Miquel','calle','Barcelona',37,183)
+
+Sin Identity
+
+INSERT INTO personas (personaid,apellido,nombre,direccion
+,ciudad,edad)
+VALUES('2','costa','Miquel','calle','Barcelona',37,183)
+
+Insertar desde un csv
+BULK INSERT equipos FROM
+'/var/opt/mssql/backup/futbol/clubs.csv'
+WITH (
+FIELDTERMINATOR = ',' , ROWTERMINATOR = '0x0a'
+)
+La ruta después del FROM le indicamos la ruta DENTRO del
+contenedor o servidor donde va a encontrar el CSV.
+
+A diferencia de con el DDL, no
+modificaremos un campo de int
+a varchar
+
+MODIFICAR
+UN CAMPO
+
+Cambiaremos el contenido una
+tabla.
+
+También podemos
+hacerlo de varias
+formas:
+
+Modificar un dato a
+pelo
+Modificar un dato
+desde una consulta
+
+Modiﬁcar datos a "pelo"
+
+●
+
+●
+
+Comando UPDATE tabla SET campo='nuevovalor' WHERE
+…
+Ejemplo:
+UPDATE personas SET ciudad = 'Barcelona'
+WHERE ciudad='BCN'
+IMPORTANTE PONER EL WHERE. Sino, modiﬁcariamos
+TODAS las ﬁlas de la tabla poniendo ciudad='Barcelona'
+
+Update
+desde una
+consulta
+
+●
+
+Podemos enlazar una consulta para modiﬁcar un campo desde un
+valor de esa consulta.
+
+●
+
+Ejemplo:
+
+UPDATE pedidos
+SET SubTotal =
+(
+SELECT sum(cantidad*PrecioVentaUnitario)
+FROM pedidos p
+INNER JOIN PedidosLinea l on p.Id=l.IdPedido
+WHERE p.id=1
+)
+WHERE id=1
+
+Más
+ejemplos de
+
+updates
+
+UPDATE PEDIDOS
+SET total= subtotal+gastosEnvio
+
+WHERE id=32
+UPDATE menu
+SET descripcion = REPLACE(descripcion,'baso','vaso')
+
+WHERE descricion like '%baso%'
+UPDATE PedidosLinea SET iva=t.IVA
+FROM PedidosLinea l
+INNER JOIN Menu m ON m.id=l.IdMenu
+INNER JOIN TipoAlimento t on t.id = m.Tipo
+
+WHERE 1=1
+
+Borrado de datos
+●
+
+El temible DELETE.
+
+●
+
+Sirve para borrar datos.
+
+●
+
+●
+
+Borramos tantos datos como queramos
+y le indiquemos en el where.
+NO TE OLVIDES DE PONER EL WHERE
+EN EL DELETE
+DELETE FROM personas
+
+● WHERE
+●
+
+ciudad='Barcelona'
+
+Comando IN en el where
+
+●
+●
+
+●
+
+Es muy útil en el DELETE el where con un IN y una subconsulta
+Podemos localizar todos los Id's con una subconsulta y ponerla en
+un IN para borrar varios registros automáticamente.
+DELETE FROM menu WHERE id IN (
+SELECT id FROM menu m
+LEFT JOIN pedidoslinea l on l.idmenu=m.id
+WHERE l.idpedido IS NULL
+)
+
+●
+
+●
+
+●
+
+JAMÁS ME OLVIDO DE PONER EL
+WHERE EN EL DELETE FROM
+Si quiero borrar la tabla entera, escribire:
+DELETE FROM personas WHERE 1=1
+SIEMPRE PONDRÉ EL WHERE.
+
+2º Tatuaje del
+curso
+
+Y por si no os ha
+quedado claro...
+NO TE OLVIDES DE PONER EL WHERE EN EL DELETE
+FROM
+
+El WHERE también en el update
+
+EN EL UPDATE, también
+escribiré SIEMPRE el where.
+SIEMPRE.
+AUNQUE SEA 1=1
+
+Himno de la asignatura
+
+●
+
+https://www.youtube.com/watch?v=i_cVJgIz_Cs
+
+Podemos enlazar consultas con
+inserts
+
+Y con todo
+esto que
+podemos
+hacer?
+
+Con deletes
+Con updates.
+Podemos usar todo el potencial de
+las consultas, para modificar datos.
+
+●
+
+En la bbdd de StarWars
+○
+
+●
+
+Ejercicio
+
+●
+
+●
+
+Añade un
+
+Borra del Arepazo, los elementos del menú
+que nadie compra
+Borra la bbdd de las olimpiadas, los
+jugadores españoles que no han ganado ni
+una medalla.
+Borra la especie Droid y todo lo que
+necesites para hacerlo
+
+
