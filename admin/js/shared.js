@@ -85,7 +85,7 @@ export function renderAdminSidebar(user, userDoc) {
   document.getElementById('btn-admin-logout')?.addEventListener('click', async () => {
     const { signOut, auth } = window._fb;
     await signOut(auth);
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
   });
 }
 

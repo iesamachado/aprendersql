@@ -3,13 +3,10 @@ import { initAdminPage, showAdminToast, getBadgeForDB } from './shared.js';
 const { db, user, userDoc, fb } = await initAdminPage();
 const isAdmin = userDoc.rol === 'admin';
 
-// Contador total
-const countEl = document.getElementById('total-ex-count');
-if (countEl && typeof EJERCICIOS !== 'undefined') countEl.textContent = EJERCICIOS.length;
+
 
 // Zona admin
 if (isAdmin) {
-  document.getElementById('admin-regenerate-box').style.display = 'block';
   document.getElementById('propuestas-section').style.display = 'block';
   loadPropuestasAdmin();
 }
@@ -111,6 +108,8 @@ window._previewEx = function(id) {
   const ex = window.EJERCICIOS?.find(e => e.id === id);
   if (!ex) return;
   document.getElementById('preview-modal-titulo').innerHTML = `<span class="text-secondary">#${ex.id}</span> ${ex.titulo}`;
+  document.getElementById('preview-modal-test-practica-btn').href = `../task/ejercicio.html?testExId=${ex.id}&modo=practica`;
+  document.getElementById('preview-modal-test-examen-btn').href = `../task/ejercicio.html?testExId=${ex.id}&modo=examen`;
   let html = `
     <div class="mb-3 border-bottom border-secondary pb-3">
       ${getBadgeForDB(ex.bd)}
@@ -255,16 +254,4 @@ window._reviewPropuesta = async function(propuestaId, aprobar) {
 };
 
 // ── Migrar ejercicios a Firebase ─────────────────────────────
-window._regenerarBD = async function() {
-  if (!confirm('⚠️ Esto sobreescribirá todos los ejercicios en Firebase. ¿Continuar?')) return;
-  try {
-    const res = await fetch('../ejercicios.json');
-    const exs = await res.json();
-    for (const ex of exs) {
-      await fb.setDoc(fb.doc(db, 'banco_ejercicios', String(ex.id)), ex);
-    }
-    showAdminToast('✅', `${exs.length} ejercicios subidos a Firestore`);
-  } catch(e) {
-    showAdminToast('❌', e.message, 'error');
-  }
-};
+// (Código de migración inicial borrado)

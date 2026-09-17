@@ -16,20 +16,7 @@
       <i class="fas fa-dumbbell text-warning"></i> Catálogo de Ejercicios
     </div>
 
-    <div class="alert" style="background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:10px">
-      <i class="fas fa-info-circle me-2 text-info"></i>
-      <strong>Total:</strong> <span class="text-primary fw-bold" id="total-ex-count">—</span> ejercicios en el catálogo.
-      Para asignar ejercicios a una clase, abre la clase y configura los bloques activos.
-    </div>
 
-    <!-- Zona peligrosa (admin) -->
-    <div class="alert bg-dark border-danger mt-3" id="admin-regenerate-box" style="display:none">
-      <h6 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Zona de Peligro</h6>
-      <p class="small text-muted mb-2">Sobrescribir la base de datos de ejercicios con variaciones autogeneradas.</p>
-      <button class="btn btn-sm btn-danger" onclick="window._regenerarBD()">
-        <i class="fas fa-upload"></i> Subir Variaciones a Firestore
-      </button>
-    </div>
 
     <!-- Lista de ejercicios por bloque -->
     <div id="ejercicios-admin-list" class="mt-4"></div>
@@ -90,6 +77,8 @@
       </div>
       <div class="modal-body" id="preview-modal-body"></div>
       <div class="modal-footer">
+        <a href="#" id="preview-modal-test-practica-btn" class="btn btn-success" target="_blank"><i class="fas fa-play me-1"></i> Probar (Práctica)</a>
+        <a href="#" id="preview-modal-test-examen-btn" class="btn btn-danger" target="_blank"><i class="fas fa-stopwatch me-1"></i> Probar (Examen)</a>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
@@ -101,5 +90,6 @@
 <script src="../js/ejercicios-data.js"></script>
 <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
 <script type="module" src="js/ejercicios.js"></script>
+<script src="/js/load-footer.js"></script>
 </body>
 </html>

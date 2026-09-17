@@ -34,7 +34,37 @@ async function initEditorPage() {
   const claseId = params.get('claseId');
   const tandaId = params.get('tandaId');
   const bloqueId = params.get('bloqueId'); // Si viene por bloque (nuevo sistema)
+  const testExId = params.get('testExId');
   currentModo = params.get('modo') || 'practica';
+
+  if (testExId && userDoc.rol !== 'alumno') {
+    const ex = window.EJERCICIOS.find(e => e.id == testExId);
+    if (!ex) { alert('Ejercicio no encontrado'); return; }
+    
+    const tandaName = ex.tanda || ex.bd;
+    currentEjercicios = window.EJERCICIOS.filter(e => (e.tanda || e.bd) === tandaName && e.bloque_id === ex.bloque_id);
+    
+    currentTanda = 'Test Docente - ' + (tandaName || 'Tanda');
+    titleBadge.textContent = currentTanda;
+    
+    document.getElementById('btn-volver-tandas').onclick = () => window.close();
+    
+    modoBadge.textContent = currentModo === 'examen' ? 'TEST (EXAMEN)' : 'TEST (PRÁCTICA)';
+    modoBadge.className = currentModo === 'examen' ? 'badge bg-danger text-white' : 'badge bg-warning text-dark';
+    
+    if (currentModo === 'examen') {
+      document.getElementById('btn-submit-tanda').style.display = 'block';
+      document.getElementById('btn-submit-tanda').onclick = () => { alert('En un examen real, aquí se entregarían las respuestas.'); window.close(); };
+      document.getElementById('btn-hint').style.display = 'none';
+    }
+    
+    await updateProgressUI();
+    loadExercise(ex.id);
+    
+    btnRun.onclick = runQuery;
+    document.getElementById('btn-show-schema').onclick = showSchema;
+    return;
+  }
   
   if (!claseId) { window.location.href = 'clases.html'; return; }
   if (!tandaId && !bloqueId) { window.location.href = `tandas.html?claseId=${claseId}`; return; }

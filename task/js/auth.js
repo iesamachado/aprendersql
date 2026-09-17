@@ -55,7 +55,7 @@ export async function initTaskPage() {
         // Logout
         document.getElementById('btn-logout')?.addEventListener('click', async () => {
           await fb.signOut(fb.auth);
-          window.location.href = 'index.html';
+          window.location.href = '../index.html';
         });
 
         // Enlace admin para admin/docente
