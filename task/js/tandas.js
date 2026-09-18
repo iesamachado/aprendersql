@@ -52,37 +52,61 @@ async function loadTandas() {
     let html = '';
     
     // Primero, si hay bloquesActivos (el nuevo sistema de temario general)
-    if (bloquesActivos.length > 0) {
-      html += '<div class="col-12 mt-4 mb-2"><h5 class="text-white border-bottom border-secondary pb-2"><i class="fas fa-layer-group text-primary me-2"></i>Temario General</h5></div>';
-      
-      BLOQUES.forEach(bloque => {
-        if (bloquesActivos.includes(bloque.id)) {
-          const isTheory = bloque.tipo === 'teoria';
-          
-          let buttonsHtml = '';
-          if (isTheory) {
-            buttonsHtml = `<button class="btn btn-sm btn-outline-info w-100" onclick="window.location.href='teoria.html?bloqueId=${bloque.id}&claseId=${claseId}'">
-              <i class="fas fa-book-reader me-1"></i> Ver Teoría
-            </button>`;
-          } else {
-            buttonsHtml = `<button class="btn btn-sm btn-primary text-dark fw-bold w-100" onclick="window.location.href='ejercicio.html?bloqueId=${bloque.id}&claseId=${claseId}&modo=practica'">
-              <i class="fas fa-laptop-code me-1"></i> Practicar Ejercicios
-            </button>`;
-          }
+    // Primero, filtramos por tipos
+    const bloquesEstandar = BLOQUES.filter(b => bloquesActivos.includes(b.id) && b.tipo !== 'tarea');
+    const bloquesTareas = BLOQUES.filter(b => bloquesActivos.includes(b.id) && b.tipo === 'tarea');
 
-          html += `
-            <div class="col-md-6 col-lg-4">
-              <div class="task-card h-100 d-flex flex-column" style="border-top: 3px solid ${isTheory ? '#0dcaf0' : '#0d6efd'}">
-                <div class="icon-circle mb-3"><i class="fas ${isTheory ? 'fa-book-open text-info' : 'fa-laptop-code text-primary'}"></i></div>
-                <h5 class="text-white fw-bold mb-1">${bloque.nombre}</h5>
-                <div class="text-secondary small mb-3 flex-grow-1">RA${bloque.ra} - Módulo ${bloque.modulo}</div>
-                <div class="mt-auto pt-3 border-top" style="border-color:rgba(255,255,255,0.1)!important">
-                  ${buttonsHtml}
-                </div>
+    if (bloquesEstandar.length > 0) {
+      html += '<div class="col-12 mt-4 mb-2"><h5 class="text-white border-bottom border-secondary pb-2"><i class="fas fa-layer-group text-primary me-2"></i>Temario y Ejercicios</h5></div>';
+      
+      bloquesEstandar.forEach(bloque => {
+        const isTheory = bloque.tipo === 'teoria';
+        let buttonsHtml = '';
+        if (isTheory) {
+          buttonsHtml = `<button class="btn btn-sm btn-outline-info w-100" onclick="window.location.href='teoria.html?bloqueId=${bloque.id}&claseId=${claseId}'">
+            <i class="fas fa-book-reader me-1"></i> Ver Teoría
+          </button>`;
+        } else {
+          buttonsHtml = `<button class="btn btn-sm btn-primary text-dark fw-bold w-100" onclick="window.location.href='ejercicio.html?bloqueId=${bloque.id}&claseId=${claseId}&modo=practica'">
+            <i class="fas fa-laptop-code me-1"></i> Practicar Ejercicios
+          </button>`;
+        }
+
+        html += `
+          <div class="col-md-6 col-lg-4">
+            <div class="task-card h-100 d-flex flex-column" style="border-top: 3px solid ${isTheory ? '#0dcaf0' : '#0d6efd'}">
+              <div class="icon-circle mb-3"><i class="fas ${isTheory ? 'fa-book-open text-info' : 'fa-laptop-code text-primary'}"></i></div>
+              <h5 class="text-white fw-bold mb-1">${bloque.nombre}</h5>
+              <div class="text-secondary small mb-3 flex-grow-1">RA${bloque.ra} - Módulo ${bloque.modulo}</div>
+              <div class="mt-auto pt-3 border-top" style="border-color:rgba(255,255,255,0.1)!important">
+                ${buttonsHtml}
               </div>
             </div>
-          `;
-        }
+          </div>
+        `;
+      });
+    }
+
+    if (bloquesTareas.length > 0) {
+      html += '<div class="col-12 mt-5 mb-2"><h5 class="text-warning border-bottom border-secondary pb-2"><i class="fas fa-clipboard-list text-warning me-2"></i>Tareas Fuera de Plataforma</h5></div>';
+      
+      bloquesTareas.forEach(bloque => {
+        let buttonsHtml = `<button class="btn btn-sm btn-outline-warning w-100" onclick="window.location.href='teoria.html?bloqueId=${bloque.id}&claseId=${claseId}'">
+          <i class="fas fa-tasks me-1"></i> Ver Instrucciones
+        </button>`;
+
+        html += `
+          <div class="col-md-6 col-lg-4">
+            <div class="task-card h-100 d-flex flex-column" style="border-top: 3px solid #ffc107">
+              <div class="icon-circle mb-3"><i class="fas fa-clipboard-list text-warning"></i></div>
+              <h5 class="text-white fw-bold mb-1">${bloque.nombre}</h5>
+              <div class="text-secondary small mb-3 flex-grow-1">RA${bloque.ra} - Módulo ${bloque.modulo}</div>
+              <div class="mt-auto pt-3 border-top" style="border-color:rgba(255,255,255,0.1)!important">
+                ${buttonsHtml}
+              </div>
+            </div>
+          </div>
+        `;
       });
     }
 

@@ -2,6 +2,7 @@ const EJERCICIOS_DB = { arepazo: 'arepazo', nba: 'nba', futbol: 'futbol', refugi
 const BLOQUES = [
   // --- TEORÍA (Módulo 0372) ---
   { id: 101, tipo: "teoria", nombre: "Tema 1: Sistemas de almacenamiento", modulo: "0372", curso: "1º ASIR", ra: "1", implementado: true, desc: "Sistemas lógicos de almacenamiento, tipos de bases de datos, SGBD." },
+  { id: 109, tipo: "tarea", nombre: "Tarea: Investigación SGBD", modulo: "0372", curso: "1º ASIR", ra: "1", implementado: true, desc: "Investiga un SGBD relacional alternativo y exponlo en clase (Presentación PDF)." },
   { id: 102, tipo: "teoria", nombre: "Tema 2.1: Diagramas E-R", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, desc: "Conceptos, atributos, relaciones y ejemplos de Diagramas Entidad-Relación." },
   { id: 107, tipo: "teoria", nombre: "Tema 2.2: Diseño Lógico de Tablas", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, desc: "Transformación a modelo relacional y Normalización." },
   { id: 108, tipo: "teoria", nombre: "Tema 2.3: Enunciados de Ejercicios", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, desc: "Batería de ejercicios oficiales para practicar E-R y Tablas." },

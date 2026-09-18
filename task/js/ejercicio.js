@@ -143,8 +143,7 @@ async function updateProgressUI() {
     // Agrupar por BD (útil si vienen varios en modo bloque)
     if (idx === 0 || currentEjercicios[idx-1].bd !== ex.bd) {
       const header = document.createElement('div');
-      header.className = 'text-uppercase text-secondary small fw-bold px-3 py-2 mt-2';
-      header.style.background = '#0f172a';
+      header.className = 'text-uppercase text-secondary small fw-bold px-3 py-2 mt-2 bg-black';
       header.textContent = `BD: ${ex.bd}`;
       exListEl.appendChild(header);
     }

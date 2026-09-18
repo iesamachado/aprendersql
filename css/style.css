@@ -453,3 +453,105 @@ code {
     background-color: #000;
     /* Black background for letterboxing */
 }
+/* LIGHT MODE OVERRIDES */
+[data-bs-theme="light"] {
+    --main-bg-color: #f8fafc;
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(0, 0, 0, 0.15);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+}
+[data-bs-theme="light"] body {
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 20%);
+}
+[data-bs-theme="light"] .bg-glass, [data-bs-theme="light"] .card, [data-bs-theme="light"] .list-group-item {
+    background-color: var(--glass-bg) !important;
+    color: var(--text-primary) !important;
+}
+[data-bs-theme="light"] .bg-dark, [data-bs-theme="light"] .bg-black {
+    background-color: #ffffff !important;
+}
+[data-bs-theme="light"] .text-white, [data-bs-theme="light"] .text-light {
+    color: var(--text-primary) !important;
+}
+[data-bs-theme="light"] .text-muted, [data-bs-theme="light"] .text-secondary {
+    color: var(--text-secondary) !important;
+}
+[data-bs-theme="light"] .border-secondary {
+    border-color: #cbd5e1 !important;
+}
+[data-bs-theme="light"] pre {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+[data-bs-theme="light"] .btn-outline-light {
+    color: #475569 !important;
+    border-color: #cbd5e1 !important;
+}
+[data-bs-theme="light"] .btn-outline-light:hover {
+    color: #0f172a !important;
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+}
+[data-bs-theme="light"] .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(50%) !important;
+}
+
+/* LIGHT MODE TABLE OVERRIDES */
+[data-bs-theme="light"] .table-dark {
+    --bs-table-color: #0f172a !important;
+    --bs-table-bg: transparent !important;
+    --bs-table-border-color: rgba(0, 0, 0, 0.15) !important;
+    color: #0f172a !important;
+}
+[data-bs-theme="light"] .table-dark th {
+    color: #475569 !important;
+}
+[data-bs-theme="light"] .table-dark td {
+    color: #0f172a !important;
+}
+
+/* LIGHT MODE TEXT COLOR ADJUSTMENTS FOR BETTER CONTRAST ON WHITE */
+[data-bs-theme="light"] .text-warning {
+    color: #b45309 !important; /* Dark orange/amber instead of bright yellow */
+}
+[data-bs-theme="light"] .text-info {
+    color: #0284c7 !important; /* Darker blue/cyan instead of bright cyan */
+}
+[data-bs-theme="light"] .text-success {
+    color: #059669 !important; /* Darker green instead of bright green */
+}
+
+/* LIGHT MODE TABLE HOVER & STRIPED OVERRIDES */
+[data-bs-theme="light"] .table-dark.table-hover > tbody > tr:hover > * {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+[data-bs-theme="light"] .table-dark.table-striped > tbody > tr:nth-of-type(odd) > * {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.02) !important;
+    color: #0f172a !important;
+}
+
+/* Fix cyan outline buttons on light background */
+[data-bs-theme="light"] .btn-outline-info {
+    color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+[data-bs-theme="light"] .btn-outline-info:hover {
+    color: #ffffff !important;
+    background-color: #0284c7 !important;
+}
+
+/* LIGHT MODE NAVBAR BRAND & LINKS */
+[data-bs-theme="light"] .navbar-dark .navbar-brand {
+    color: #0f172a !important;
+}
+[data-bs-theme="light"] .navbar-dark .nav-link {
+    color: #475569 !important;
+}
+[data-bs-theme="light"] .navbar-dark .nav-link:hover {
+    color: #0f172a !important;
+}

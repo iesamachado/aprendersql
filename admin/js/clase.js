@@ -105,11 +105,14 @@ async function renderAlumnos(clase) {
 }
 
 function renderBloques(clase) {
-  const container = document.getElementById('bloques-toggles-container');
-  container.innerHTML = '';
+  const containerTeoria = document.getElementById('bloques-toggles-container');
+  const containerTareas = document.getElementById('tareas-toggles-container');
+  
+  containerTeoria.innerHTML = '';
+  containerTareas.innerHTML = '';
   
   if (typeof BLOQUES === 'undefined') {
-    container.innerHTML = '<div class="text-danger p-3">Error: data de bloques no cargada.</div>';
+    containerTeoria.innerHTML = '<div class="text-danger p-3">Error: data de bloques no cargada.</div>';
     return;
   }
 
@@ -124,33 +127,34 @@ function renderBloques(clase) {
   }
   
   if (modBloques.length === 0) {
-    container.innerHTML = '<div class="text-muted p-3">No hay bloques definidos para este módulo.</div>';
+    containerTeoria.innerHTML = '<div class="text-muted p-3">No hay bloques definidos para este módulo.</div>';
     return;
   }
 
-  // Create theory container
-  const theoryContainer = document.createElement('div');
-  theoryContainer.className = 'row g-3 mb-5';
-  // theoryContainer.innerHTML = '<h6 class="text-info border-bottom border-info pb-2 mb-3"><i class="fas fa-book-open me-2"></i>Bloques de Teoría</h6>';
-
   modBloques.forEach(bloque => {
-    if (bloque.tipo !== 'teoria') return; // Solo renderizar teoría
+    if (bloque.tipo !== 'teoria' && bloque.tipo !== 'tarea') return; // Solo renderizar teoría y tareas
     
     const isActive = currentBloquesActivos.includes(bloque.id);
     const disabled = !bloque.implementado ? 'disabled' : '';
     const badgeColor = bloque.implementado ? 'success' : 'secondary';
     const badgeText = bloque.implementado ? 'Implementado' : 'En desarrollo';
     
+    const isTask = bloque.tipo === 'tarea';
+    const cardBorder = isTask ? 'rgba(255, 193, 7, 0.4)' : 'rgba(13,202,240,0.2)';
+    const btnClass = isTask ? 'btn-outline-warning' : 'btn-outline-info';
+    const btnText = isTask ? 'Previsualizar Tarea' : 'Previsualizar Teoría';
+    const iconClass = isTask ? 'fa-clipboard-list' : 'fa-book-open';
+    
     const card = document.createElement('div');
     card.className = 'col-md-6 col-lg-4';
     
     const previewBtn = bloque.implementado ? 
-      `<a href="../task/teoria.html?bloqueId=${bloque.id}&claseId=${claseId}" target="_blank" class="btn btn-sm btn-outline-info mt-3 w-100" style="font-size:0.8rem;">
-         <i class="fas fa-eye me-1"></i> Previsualizar Teoría
+      `<a href="../task/teoria.html?bloqueId=${bloque.id}&claseId=${claseId}" target="_blank" class="btn btn-sm ${btnClass} mt-3 w-100" style="font-size:0.8rem;">
+         <i class="fas fa-eye me-1"></i> ${btnText}
        </a>` : '';
 
     card.innerHTML = `
-      <div class="block-toggle-card ${disabled} h-100 d-flex flex-column" style="border-color: rgba(13,202,240,0.2)">
+      <div class="block-toggle-card ${disabled} h-100 d-flex flex-column" style="border-color: ${cardBorder}">
         <div class="d-flex justify-content-between align-items-start mb-3">
           <div>
             <span class="badge bg-${badgeColor} mb-2">${badgeText}</span>
@@ -158,19 +162,26 @@ function renderBloques(clase) {
             <div class="text-secondary small">RA${bloque.ra}</div>
           </div>
           <div class="form-check form-switch" style="z-index: 10;">
-            <input class="form-check-input block-toggle-input" type="checkbox" role="switch" 
-                   value="${bloque.id}" id="toggle-${bloque.id}" ${isActive ? 'checked' : ''} ${disabled}>
+            <input class="form-check-input block-toggle-input bg-dark border-secondary" type="checkbox" role="switch" 
+                   value="${bloque.id}" ${isActive ? 'checked' : ''} ${disabled}
+                   style="width:2.5em;height:1.25em;cursor:pointer;">
           </div>
         </div>
-        <p class="text-muted mb-0 flex-grow-1" style="font-size:0.8rem">${bloque.desc || 'Sin descripción'}</p>
+        <div class="text-muted small flex-grow-1">${bloque.desc}</div>
         ${previewBtn}
       </div>
     `;
     
-    theoryContainer.appendChild(card);
+    if (isTask) {
+      containerTareas.appendChild(card);
+    } else {
+      containerTeoria.appendChild(card);
+    }
   });
-  
-  container.appendChild(theoryContainer);
+
+  if (containerTareas.children.length === 0) {
+    containerTareas.innerHTML = '<div class="text-muted p-3">No hay tareas fuera de plataforma configuradas para este módulo.</div>';
+  }
 }
 
 async function saveBloques() {

@@ -239,3 +239,170 @@ body {
 @keyframes confettiFall {
   to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
+
+/* LIGHT MODE OVERRIDES */
+[data-bs-theme="light"] {
+  --bg-main:        #f8fafc;
+  --bg-glass:       rgba(255, 255, 255, 0.95);
+  --bg-glass-2:     rgba(0,0,0,0.02);
+  --border-glass:   rgba(0,0,0,0.1);
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #64748b;
+}
+[data-bs-theme="light"] html, [data-bs-theme="light"] body {
+  color: var(--text-primary);
+}
+[data-bs-theme="light"] .task-navbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid var(--border-glass) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+[data-bs-theme="light"] .task-navbar .navbar-brand, [data-bs-theme="light"] .task-navbar .nav-link {
+  color: var(--text-primary) !important;
+}
+[data-bs-theme="light"] .task-card {
+  background: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+[data-bs-theme="light"] .bg-glass, [data-bs-theme="light"] .card {
+  background: #ffffff !important;
+  color: var(--text-primary);
+}
+[data-bs-theme="light"] .bg-dark, [data-bs-theme="light"] .bg-black {
+  background-color: #f1f5f9 !important;
+}
+[data-bs-theme="light"] .text-white { color: var(--text-primary) !important; }
+[data-bs-theme="light"] .text-muted { color: var(--text-muted) !important; }
+[data-bs-theme="light"] .border-secondary { border-color: #e2e8f0 !important; }
+[data-bs-theme="light"] .border-glass { border-color: var(--border-glass) !important; }
+
+[data-bs-theme="light"] .monaco-editor {
+    /* Monaco has its own theme, but the container should blend in */
+    border-color: var(--border-glass) !important;
+}
+[data-bs-theme="light"] .btn-outline-light {
+    color: #475569 !important;
+    border-color: #cbd5e1 !important;
+}
+[data-bs-theme="light"] .btn-outline-light:hover {
+    color: #0f172a !important;
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+}
+[data-bs-theme="light"] .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(50%) !important;
+}
+
+/* LIGHT MODE TEXT COLOR ADJUSTMENTS FOR BETTER CONTRAST ON WHITE */
+[data-bs-theme="light"] .text-warning {
+    color: #b45309 !important; /* Dark orange/amber instead of bright yellow */
+}
+[data-bs-theme="light"] .text-info {
+    color: #0284c7 !important; /* Darker blue/cyan instead of bright cyan */
+}
+[data-bs-theme="light"] .text-success {
+    color: #059669 !important; /* Darker green instead of bright green */
+}
+.bg-main { background-color: var(--bg-main) !important; }
+[data-bs-theme="light"] .text-light { color: var(--text-secondary) !important; }
+[data-bs-theme="light"] .bg-black { background-color: #ffffff !important; }
+
+/* LIGHT MODE TABLE OVERRIDES */
+[data-bs-theme="light"] .table-dark {
+    --bs-table-color: #0f172a !important;
+    --bs-table-bg: transparent !important;
+    --bs-table-border-color: rgba(0, 0, 0, 0.15) !important;
+    --bs-table-striped-bg: rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+[data-bs-theme="light"] .table-dark th {
+    color: #475569 !important;
+}
+[data-bs-theme="light"] .table-dark td {
+    color: #0f172a !important;
+}
+
+/* LIGHT MODE TABLE HOVER & STRIPED OVERRIDES */
+[data-bs-theme="light"] .table-dark.table-hover > tbody > tr:hover > * {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+[data-bs-theme="light"] .table-dark.table-striped > tbody > tr:nth-of-type(odd) > * {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.02) !important;
+    color: #0f172a !important;
+}
+
+/* Fix cyan outline buttons on light background */
+[data-bs-theme="light"] .btn-outline-info {
+    color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+[data-bs-theme="light"] .btn-outline-info:hover {
+    color: #ffffff !important;
+    background-color: #0284c7 !important;
+}
+
+/* LIGHT MODE NAVBAR BRAND & LINKS */
+[data-bs-theme="light"] .navbar-dark .navbar-brand {
+    color: #0f172a !important;
+}
+[data-bs-theme="light"] .navbar-dark .nav-link {
+    color: #475569 !important;
+}
+[data-bs-theme="light"] .navbar-dark .nav-link:hover {
+    color: #0f172a !important;
+}
+
+/* MODO PRESENTACION */
+#presentation-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1040; /* Abajo de modales de bootstrap (1055) */
+    background-color: var(--bg-main);
+    display: flex;
+    flex-direction: column;
+}
+
+#presentation-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 3rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.presentation-slide {
+    width: 100%;
+    max-width: 1100px;
+    font-size: 1.15rem; /* Un poco mas grande para proyector */
+    background: transparent;
+}
+
+.presentation-slide h1, .presentation-slide h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.presentation-slide h2 {
+    border-bottom: 2px solid var(--bs-secondary);
+    padding-bottom: 1rem;
+}
+
+#presentation-controls {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+/* En modo claro, invertimos el color del contador */
+[data-bs-theme="light"] #presentation-counter {
+    color: #0f172a !important;
+}
+
+/* Cuando se activa la presentación, ocultamos el scroll global */
+body.presentation-active {
+    overflow: hidden;
+}
