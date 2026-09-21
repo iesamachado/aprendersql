@@ -2,12 +2,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Evitar poner footer en la vista del editor (que es a pantalla completa)
     if (window.location.pathname.includes('ejercicio.html')) return;
 
-    fetch('/components/footer.html')
+    let basePath = window.location.pathname.includes('/aprendersql/') ? '/aprendersql/' : '/';
+
+    fetch(basePath + 'components/footer.html')
         .then(response => {
             if (!response.ok) throw new Error("No se pudo cargar el footer");
             return response.text();
         })
         .then(html => {
+            // Fix absolute links inside footer
+            html = html.replace(/href="\//g, `href="${basePath}`);
+
             const adminMain = document.querySelector('.admin-main');
             
             if (adminMain) {
