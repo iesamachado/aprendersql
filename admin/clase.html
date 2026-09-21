@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="dark">
 <head>
+  <style>
+    .sticky-left { position: sticky; left: 0; z-index: 2; }
+  </style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detalle de Clase — AprenderSQL Admin</title>
@@ -20,6 +23,30 @@
     .block-toggle-card.disabled { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
     .form-switch .form-check-input { width: 2.5em; height: 1.25em; cursor: pointer; }
     .form-switch .form-check-input:checked { background-color: var(--success); border-color: var(--success); }
+    
+    /* Custom Tabs Styling */
+    .admin-tabs {
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 2rem !important;
+    }
+    .admin-tabs .nav-link {
+      color: var(--bs-secondary);
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      background: transparent;
+    }
+    .admin-tabs .nav-link:hover {
+      color: var(--bs-white);
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+    }
+    .admin-tabs .nav-link.active {
+      color: var(--bs-white);
+      background: transparent;
+      border-bottom-color: var(--bs-primary);
+    }
   </style>
 <script src="/js/theme-switcher.js"></script>
 </head>
@@ -47,9 +74,30 @@
 
     <input type="hidden" id="clase-detalle-id">
 
-    <div class="row g-4">
-      <!-- Alumnos -->
-      <div class="col-12">
+    <ul class="nav nav-tabs admin-tabs mb-4" id="claseTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="alumnos-tab" data-bs-toggle="tab" data-bs-target="#alumnos-pane" type="button" role="tab" aria-controls="alumnos-pane" aria-selected="true"><i class="fas fa-users me-2 text-info"></i>Alumnos</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="teoria-tab" data-bs-toggle="tab" data-bs-target="#teoria-pane" type="button" role="tab" aria-controls="teoria-pane" aria-selected="false"><i class="fas fa-book-open me-2 text-success"></i>Teoría</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tareas-tab" data-bs-toggle="tab" data-bs-target="#tareas-pane" type="button" role="tab" aria-controls="tareas-pane" aria-selected="false"><i class="fas fa-clipboard-list me-2 text-warning"></i>Tareas Offline</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="ejercicios-tab" data-bs-toggle="tab" data-bs-target="#ejercicios-pane" type="button" role="tab" aria-controls="ejercicios-pane" aria-selected="false"><i class="fas fa-tasks me-2 text-primary"></i>Ejercicios</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="examenes-tab" data-bs-toggle="tab" data-bs-target="#examenes-pane" type="button" role="tab" aria-controls="examenes-pane" aria-selected="false"><i class="fas fa-file-signature me-2 text-danger"></i>Exámenes</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="notas-tab" data-bs-toggle="tab" data-bs-target="#notas-pane" type="button" role="tab" aria-controls="notas-pane" aria-selected="false"><i class="fas fa-graduation-cap me-2 text-danger"></i>Cuaderno de Notas</button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="claseTabsContent">
+      <!-- Pestaña: Alumnos -->
+      <div class="tab-pane fade show active" id="alumnos-pane" role="tabpanel" aria-labelledby="alumnos-tab" tabindex="0">
         <div class="admin-table-wrapper h-100">
           <div class="admin-table-header">
             <h5><i class="fas fa-users me-2 text-info"></i>Alumnos Matriculados</h5>
@@ -75,8 +123,8 @@
         </div>
       </div>
 
-      <!-- Configuración de Bloques Activos (Teoría) -->
-      <div class="col-12">
+      <!-- Pestaña: Teoría -->
+      <div class="tab-pane fade" id="teoria-pane" role="tabpanel" aria-labelledby="teoria-tab" tabindex="0">
         <div class="admin-table-wrapper h-100">
           <div class="admin-table-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="fas fa-book-open me-2 text-info"></i>Temario de Teoría Activo</h5>
@@ -91,8 +139,8 @@
         </div>
       </div>
 
-      <!-- Configuración de Tareas Offline -->
-      <div class="col-12 mt-4">
+      <!-- Pestaña: Tareas Offline -->
+      <div class="tab-pane fade" id="tareas-pane" role="tabpanel" aria-labelledby="tareas-tab" tabindex="0">
         <div class="admin-table-wrapper h-100" style="border-color: rgba(255, 193, 7, 0.3);">
           <div class="admin-table-header d-flex justify-content-between align-items-center" style="background: rgba(255, 193, 7, 0.05); border-bottom-color: rgba(255, 193, 7, 0.2);">
             <h5 class="mb-0"><i class="fas fa-clipboard-list me-2 text-warning"></i>Tareas Fuera de Plataforma</h5>
@@ -107,9 +155,8 @@
         </div>
       </div>
       
-      
-      <!-- Configuración de Tandas de Ejercicios (Legacy) -->
-      <div class="col-12">
+      <!-- Pestaña: Ejercicios -->
+      <div class="tab-pane fade" id="ejercicios-pane" role="tabpanel" aria-labelledby="ejercicios-tab" tabindex="0">
         <div class="admin-table-wrapper h-100">
           <div class="admin-table-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="fas fa-tasks me-2 text-primary"></i>Asignar Tandas de Ejercicios (BD específicas)</h5>
@@ -130,7 +177,64 @@
           </div>
         </div>
       </div>
-
+      
+      <!-- Pestaña: Exámenes Oficiales -->
+      <div class="tab-pane fade" id="examenes-pane" role="tabpanel" aria-labelledby="examenes-tab" tabindex="0">
+        <div class="admin-table-wrapper h-100" style="border-color: rgba(220, 53, 69, 0.3);">
+          <div class="admin-table-header d-flex justify-content-between align-items-center" style="background: rgba(220, 53, 69, 0.05); border-bottom-color: rgba(220, 53, 69, 0.2);">
+            <h5 class="mb-0"><i class="fas fa-file-signature me-2 text-danger"></i>Exámenes Oficiales (BOJA)</h5>
+            <button class="btn btn-sm btn-outline-danger" onclick="window._saveExamenes()"><i class="fas fa-save me-1"></i>Guardar Exámenes</button>
+          </div>
+          <div class="p-3">
+            <p class="text-muted small mb-3">Activa los exámenes oficiales que vayas a realizar en esta clase. Solo los exámenes activados aquí aparecerán en el Cuaderno de Notas.</p>
+            <div class="row g-3" id="examenes-toggles-container">
+              <div class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Cargando exámenes del currículum...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Pestaña: Cuaderno de Notas -->
+      <div class="tab-pane fade" id="notas-pane" role="tabpanel" aria-labelledby="notas-tab" tabindex="0">
+        <div class="admin-table-wrapper h-100" style="border-color: rgba(220, 53, 69, 0.3);">
+          <div class="admin-table-header d-flex justify-content-between align-items-center" style="background: rgba(220, 53, 69, 0.05); border-bottom-color: rgba(220, 53, 69, 0.2);">
+            <h5 class="mb-0"><i class="fas fa-graduation-cap me-2 text-danger"></i>Cuaderno de Notas y Evaluación</h5>
+            <div>
+              <button class="btn btn-sm btn-outline-info me-2" onclick="window._toggleGradebookView()"><i class="fas fa-exchange-alt me-1"></i>Ver Resumen RAs</button>
+              <button class="btn btn-sm btn-danger" onclick="window._saveGrades()"><i class="fas fa-save me-1"></i>Guardar Notas</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <div id="gradebook-tasks-view">
+              <p class="text-muted small mb-3">Introduce o modifica las notas (0-10) de las tareas activas. Activa el icono del ojo para publicarlas a los alumnos.</p>
+              <div class="table-responsive">
+                <table class="table table-dark table-sm mb-0 table-bordered text-center align-middle" id="gradebook-table">
+                  <thead>
+                    <tr id="gradebook-header"></tr>
+                  </thead>
+                  <tbody id="gradebook-body">
+                    <tr><td class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando cuaderno de notas...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div id="gradebook-ras-view" style="display:none;">
+              <p class="text-muted small mb-3">Resumen de la evaluación por Resultados de Aprendizaje calculada en base a los criterios ponderados en tu Mapeo Curricular.</p>
+              <div class="table-responsive">
+                <table class="table table-dark table-sm mb-0 table-bordered text-center align-middle" id="ra-summary-table">
+                  <thead>
+                    <tr id="ra-summary-header"></tr>
+                  </thead>
+                  <tbody id="ra-summary-body">
+                    <tr><td class="text-center"><i class="fas fa-spinner fa-spin"></i> Calculando RAs...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -150,6 +254,30 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Publicar Fecha Límite -->
+<div class="modal fade" id="modal-publish-date" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-bottom border-success">
+        <h5 class="modal-title text-success"><i class="fab fa-google me-2"></i>Publicar Tarea</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small">Vas a publicar la tarea <strong id="publish-tanda-name" class="text-light"></strong> en Google Classroom.</p>
+        <div class="mb-3">
+          <label class="form-label text-light">Fecha Límite (Opcional):</label>
+          <input type="date" class="form-control dark-input" id="publish-due-date">
+          <div class="form-text text-muted">Por defecto se entregará a las 23:59 del día seleccionado. Si lo dejas en blanco, la tarea no tendrá fecha límite.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" id="btn-confirm-publish"><i class="fas fa-check me-2"></i>Publicar en Classroom</button>
       </div>
     </div>
   </div>

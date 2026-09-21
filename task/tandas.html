@@ -18,6 +18,7 @@
     <span class="fw-bold d-none d-sm-inline">AprenderSQL</span>
   </div>
   <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-sm btn-outline-info" onclick="window._showMyGrades()" id="btn-my-grades"><i class="fas fa-graduation-cap me-1"></i>Mis Notas</button>
     <div class="points-badge">
       <i class="fas fa-star text-warning"></i> <span id="user-points">0</span> pts
     </div>
@@ -57,5 +58,24 @@
 <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
 <script type="module" src="js/tandas.js"></script>
 <script src="/js/load-footer.js"></script>
+<!-- Modal Mis Notas -->
+<div class="modal fade" id="modal-my-grades" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background:#1e293b; border-color:#334155;">
+      <div class="modal-header border-bottom border-secondary">
+        <h5 class="modal-title text-info"><i class="fas fa-graduation-cap me-2"></i>Mis Calificaciones BOJA</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="list-group list-group-flush" id="my-grades-list">
+          <div class="p-4 text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Cargando tus notas...</div>
+        </div>
+      </div>
+      <div class="modal-footer border-top border-secondary">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -186,12 +186,14 @@ async function importCourse(courseId, courseName, courseSection) {
       snap.forEach(d => alumnosIds.push(d.id));
     }
 
+    const selectedModulo = document.getElementById('classroom-modulo-select').value;
     const nombre = courseSection ? `${courseName} (${courseSection})` : courseName;
     await fb.addDoc(fb.collection(db, 'clases'), {
-      nombre, curso: 'Classroom Import', modulo: '0372',
+      nombre, curso: 'Classroom Import', modulo: selectedModulo,
       docenteId:     currentUser.uid,
       docenteEmail:  currentUser.email,
       alumnosIds, alumnosEmails: students,
+      classroomCourseId: courseId,
       tareasIds: [], bloquesActivos: [],
       createdAt: fb.serverTimestamp()
     });

@@ -1,0 +1,48 @@
+<div class="text-center mb-5">
+  <h1 class="display-4 fw-bold text-warning"><i class="fas fa-table me-3"></i>Tarea: Paso a Tablas (Modelo Relacional)</h1>
+  <p class="lead text-secondary">Módulo: Gestión de Bases de Datos (ASIR) | <span class="badge bg-warning text-dark">RA2</span></p>
+</div>
+
+<div class="card bg-dark border-warning mb-5 shadow">
+  <div class="card-header bg-warning text-dark fw-bold">
+    <i class="fas fa-bullseye me-2"></i> Objetivo de la Tarea
+  </div>
+  <div class="card-body p-4">
+    <p class="fs-5 mb-0">Transformar el diseño conceptual (Diagramas E-R) al <strong>diseño lógico de tablas</strong> aplicando estrictamente las reglas del Modelo Relacional.</p>
+  </div>
+</div>
+
+<h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">1. Pasos a seguir</h2>
+<ul class="list-group list-group-flush bg-transparent mb-4">
+  <li class="list-group-item bg-transparent text-light border-secondary">
+    <i class="fas fa-eraser text-primary me-3"></i><strong>Corregir los E-R:</strong> Antes de empezar, repasa el <em>feedback</em> que obtuviste en la tarea anterior. Si arrastras errores lógicos en el Diagrama E-R, el paso a tablas también estará mal.
+  </li>
+  <li class="list-group-item bg-transparent text-light border-secondary">
+    <i class="fas fa-exchange-alt text-primary me-3"></i><strong>Transformar:</strong> Aplica las reglas vistas en el Tema 2.2. Recuerda cómo se comportan las relaciones 1:N (propagación de la PK) y las N:M (creación de nueva relación/tabla con clave compuesta).
+  </li>
+  <li class="list-group-item bg-transparent text-light border-secondary">
+    <i class="fas fa-pencil-alt text-primary me-3"></i><strong>Formato exigido:</strong> Escribe el modelo usando el formato textual estandarizado. Subraya de forma continua las Claves Primarias y de forma punteada las Claves Foráneas.
+  </li>
+</ul>
+
+<div class="card bg-black border-secondary mb-4">
+  <div class="card-header border-secondary text-info">Ejemplo de formato esperado:</div>
+  <div class="card-body">
+    <code class="text-light">
+      <strong>CLIENTES</strong> (<u>DNI</u>, Nombre, Apellido, Telefono)<br>
+      <strong>PEDIDOS</strong> (<u>IdPedido</u>, Fecha, <span style="border-bottom: 1px dashed white;">DNI_Cliente</span>)<br>
+      <strong>CONTIENE</strong> (<span style="border-bottom: 1px dashed white;"><u>IdPedido</u></span>, <span style="border-bottom: 1px dashed white;"><u>IdProducto</u></span>, Cantidad)
+    </code>
+  </div>
+</div>
+
+<h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">2. Entrega</h2>
+<div class="card bg-dark border-success mb-5 shadow">
+  <div class="card-body">
+    <ul class="mb-0 text-light">
+      <li class="mb-2">Documento en formato <strong>PDF</strong> con los 5 diseños de tablas (indicando el nº de ejercicio).</li>
+      <li class="mb-2">Añade al lado de cada columna un esbozo del tipo de dato lógico (ej: Cadena, Entero, Fecha).</li>
+      <li>El nombre del archivo debe ser: <code class="text-warning bg-black px-2 py-1 rounded">Apellido1_Apellido2_Nombre_Tablas.pdf</code></li>
+    </ul>
+  </div>
+</div>

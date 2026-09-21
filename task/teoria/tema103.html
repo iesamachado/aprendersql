@@ -368,5 +368,104 @@ DROP TABLE IF EXISTS nombreTabla;
 DROP DATABASE nombreBBDD; -- BORRAMOS ABSOLUTAMENTE TODO LO QUE CONTENGA LA BBDD</code></pre>
             <div class="alert alert-warning mt-2"><i class="fas fa-exclamation-triangle"></i> ¡TRUNCATE vs DROP! <br/> <code>TRUNCATE TABLE</code> borra los datos pero deja la tabla vacía. <code>DROP</code> borra todo.</div>
         </article>
+
+        <!-- CRITERIO 3.g BOJA: Diccionario de datos -->
+        <article class="card bg-glass border-0 shadow-sm p-4 mb-4" id="ddl-diccionario">
+            <h3 class="text-warning"><i class="fas fa-book me-2"></i>1.4 Diccionario de Datos <span class="badge bg-warning text-dark ms-2 fs-6">Criterio 3.g BOJA</span></h3>
+            <p class="text-secondary">El <strong class="text-light">diccionario de datos</strong> (también llamado catálogo del sistema) es el documento técnico que describe de forma precisa cada tabla, columna, tipo de dato, restricción y relación de la base de datos. Es la documentación oficial del diseño físico y es obligatorio en proyectos profesionales.</p>
+
+            <div class="alert alert-warning bg-opacity-10 border-warning text-warning">
+                <i class="fas fa-gavel me-2"></i><strong>Normativa BOJA — Criterio 3.g:</strong> «Se ha definido y documentado el diccionario de datos.»
+            </div>
+
+            <h5 class="text-light mt-4 mb-3">¿Qué contiene un diccionario de datos?</h5>
+            <div class="table-responsive">
+                <table class="table table-dark table-sm table-bordered">
+                    <thead class="table-primary">
+                        <tr><th>Campo</th><th>Descripción</th><th>Ejemplo (tabla Pedidos)</th></tr>
+                    </thead>
+                    <tbody class="small text-secondary">
+                        <tr><td><strong class="text-light">Nombre de tabla</strong></td><td>Nombre físico en la BD</td><td><code>Pedidos</code></td></tr>
+                        <tr><td><strong class="text-light">Nombre de columna</strong></td><td>Nombre exacto del campo</td><td><code>pedido_id</code></td></tr>
+                        <tr><td><strong class="text-light">Tipo de dato</strong></td><td>Tipo MariaDB</td><td><code>INT</code></td></tr>
+                        <tr><td><strong class="text-light">Tamaño / Precisión</strong></td><td>Longitud máxima o decimales</td><td><code>—</code></td></tr>
+                        <tr><td><strong class="text-light">¿Permite NULL?</strong></td><td>Obligatorio o no</td><td><code>NOT NULL</code></td></tr>
+                        <tr><td><strong class="text-light">Clave</strong></td><td>PK, FK, UNIQUE o ninguna</td><td><code>PK</code></td></tr>
+                        <tr><td><strong class="text-light">Valor por defecto</strong></td><td>DEFAULT si existe</td><td><code>—</code></td></tr>
+                        <tr><td><strong class="text-light">Descripción</strong></td><td>Significado del campo</td><td>Identificador único del pedido</td></tr>
+                        <tr><td><strong class="text-light">Referencia FK</strong></td><td>Tabla y columna destino</td><td><code>Clientes(cliente_id)</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h5 class="text-light mt-4 mb-3">Ejemplo completo — BD Arepazo (tabla Pedidos)</h5>
+            <div class="table-responsive">
+                <table class="table table-dark table-sm table-bordered small">
+                    <thead class="table-secondary text-dark">
+                        <tr><th>Columna</th><th>Tipo</th><th>Tamaño</th><th>NULL</th><th>Clave</th><th>Default</th><th>Referencia</th><th>Descripción</th></tr>
+                    </thead>
+                    <tbody class="text-secondary">
+                        <tr><td><code>pedido_id</code></td><td>INT</td><td>—</td><td>NO</td><td>PK / AI</td><td>—</td><td>—</td><td>Identificador único del pedido.</td></tr>
+                        <tr><td><code>cliente_id</code></td><td>INT</td><td>—</td><td>NO</td><td>FK</td><td>—</td><td>Clientes(cliente_id)</td><td>Cliente que realizó el pedido.</td></tr>
+                        <tr><td><code>fecha_pedido</code></td><td>TIMESTAMP</td><td>—</td><td>NO</td><td>—</td><td>CURRENT_TIMESTAMP</td><td>—</td><td>Momento exacto en que se creó el pedido.</td></tr>
+                        <tr><td><code>subtotal</code></td><td>DECIMAL</td><td>(10,2)</td><td>NO</td><td>—</td><td>0.00</td><td>—</td><td>Importe de los productos sin gastos de envío.</td></tr>
+                        <tr><td><code>gastos_envio</code></td><td>DECIMAL</td><td>(6,2)</td><td>SÍ</td><td>—</td><td>NULL</td><td>—</td><td>Coste de envío. NULL si es recogida en local.</td></tr>
+                        <tr><td><code>estado</code></td><td>VARCHAR</td><td>20</td><td>NO</td><td>—</td><td>'Pendiente'</td><td>—</td><td>Estado del pedido: Pendiente, Enviado, Entregado.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h5 class="text-light mt-4 mb-3">¿Cómo consultar el diccionario en MariaDB?</h5>
+            <p class="text-secondary">MariaDB guarda automáticamente la estructura de la BD en la base de datos del sistema <code>information_schema</code>. Podemos consultarla con SQL estándar:</p>
+            <pre><code class="language-sql">-- Ver todas las columnas de una tabla con sus tipos y restricciones:
+SELECT
+    COLUMN_NAME        AS Columna,
+    DATA_TYPE          AS Tipo,
+    CHARACTER_MAXIMUM_LENGTH AS Tamaño,
+    IS_NULLABLE        AS Permite_NULL,
+    COLUMN_DEFAULT     AS Valor_Default,
+    COLUMN_KEY         AS Clave,
+    EXTRA              AS Extra,
+    COLUMN_COMMENT     AS Descripcion
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'arepazo'
+  AND TABLE_NAME   = 'Pedidos'
+ORDER BY ORDINAL_POSITION;
+
+-- Ver todas las claves foráneas de la BD:
+SELECT
+    TABLE_NAME     AS Tabla,
+    COLUMN_NAME    AS Columna_FK,
+    REFERENCED_TABLE_NAME  AS Tabla_Referenciada,
+    REFERENCED_COLUMN_NAME AS Columna_Referenciada
+FROM information_schema.KEY_COLUMN_USAGE
+WHERE TABLE_SCHEMA = 'arepazo'
+  AND REFERENCED_TABLE_NAME IS NOT NULL
+ORDER BY TABLE_NAME;</code></pre>
+
+            <div class="alert alert-info bg-opacity-10 border-info text-light small mt-3">
+                <i class="fas fa-lightbulb me-2 text-info"></i><strong>Comando rápido:</strong> <code>DESCRIBE Pedidos;</code> o <code>SHOW CREATE TABLE Pedidos;</code> dan una vista rápida del diccionario de una tabla concreta.
+            </div>
+
+            <h5 class="text-info mt-4"><i class="fas fa-pencil-alt me-2"></i>Ejercicio — Diccionario de datos</h5>
+            <div class="accordion accordion-flush" id="accordionDicc">
+                <div class="accordion-item bg-transparent border-secondary">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-toggle="collapse" data-bs-target="#ex-dicc-1" type="button">Crear el diccionario de tu proyecto DDL</button></h2>
+                    <div id="ex-dicc-1" class="accordion-collapse collapse" data-bs-parent="#accordionDicc">
+                        <div class="accordion-body text-secondary">
+                            <p><strong>Enunciado:</strong> Usando la consulta a <code>information_schema.COLUMNS</code> mostrada arriba, extrae el diccionario de datos completo de la BD que creaste en la tarea DDL. Copia el resultado en una hoja de cálculo (o tabla Markdown) y añade una columna «Descripción» con el significado de negocio de cada campo. Entrega el resultado junto con tu script DDL.</p>
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver consulta base</summary>
+                                <pre class="bg-dark p-2 rounded text-success"><code>SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH,
+       IS_NULLABLE, COLUMN_DEFAULT, COLUMN_KEY, EXTRA
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'TU_BD'
+ORDER BY TABLE_NAME, ORDINAL_POSITION;</code></pre>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
     </section>
 </div>

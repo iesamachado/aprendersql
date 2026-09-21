@@ -101,18 +101,30 @@ window.togglePresentation = function() {
 
 function buildSlides() {
     slides = [];
-    const container = document.getElementById('teoria-content');
+    const container = document.getElementById('teoria-wrapper').firstElementChild || document.getElementById('teoria-wrapper');
     if (!container) return;
     
     let currentSlide = document.createElement('div');
     currentSlide.className = 'presentation-slide';
     
-    // Clonamos cada nodo de nivel superior
+    let elementsToProcess = [];
     Array.from(container.children).forEach(child => {
+        if (child.tagName.toLowerCase() === 'section') {
+            Array.from(child.children).forEach(subchild => elementsToProcess.push(subchild));
+        } else {
+            elementsToProcess.push(child);
+        }
+    });
+
+    // Clonamos cada nodo de nivel superior
+    elementsToProcess.forEach(child => {
         // Ignorar modales para no duplicarlos en DOM
         if (child.classList && child.classList.contains('modal')) return;
         
-        if (child.tagName.toLowerCase() === 'h2') {
+        const splitTags = ['h1', 'h2', 'h3', 'h4'];
+        let shouldSplit = splitTags.includes(child.tagName.toLowerCase());
+        
+        if (shouldSplit) {
             // Guardar la diapositiva anterior si tiene contenido
             if (currentSlide.innerHTML.trim() !== '') {
                 slides.push(currentSlide);

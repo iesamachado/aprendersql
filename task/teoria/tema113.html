@@ -1,0 +1,698 @@
+<div class="tema-content text-white p-4">
+  <div class="text-center mb-5">
+    <h1 class="display-5 text-primary"><i class="fas fa-shield-alt me-3"></i>Tema 6: Aseguramiento de la Información</h1>
+    <p class="lead">Módulo: Gestión de Bases de Datos (ASIR) | <span class="badge bg-danger">RA6 - Cumplimiento Normativa BOJA</span></p>
+    <p class="text-secondary">Copias de seguridad · Restauración · Importación y Exportación · Transferencia entre SGBD · Ficheros de Log</p>
+  </div>
+
+  <!-- Índice -->
+  <div class="card bg-dark border-info mb-5">
+    <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
+      <i class="fas fa-list me-2"></i>Índice del Tema
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <ul class="list-unstyled mb-0" style="line-height: 2.2;">
+            <li><a href="#ra6-intro"    class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>1. ¿Por qué asegurar los datos?</a></li>
+            <li><a href="#ra6-tipos"    class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>2. Tipos de copia de seguridad</a></li>
+            <li><a href="#ra6-dump"     class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>3. Backup con <code>mysqldump</code></a></li>
+            <li><a href="#ra6-restore"  class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>4. Restauración de una copia</a></li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="list-unstyled mb-0" style="line-height: 2.2;">
+            <li><a href="#ra6-import"   class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>5. Importación de datos (CSV)</a></li>
+            <li><a href="#ra6-export"   class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>6. Exportación de datos</a></li>
+            <li><a href="#ra6-logs"     class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>7. Ficheros de log y recuperación de errores</a></li>
+            <li><a href="#ra6-transfer" class="text-decoration-none text-light"><i class="fas fa-angle-right text-info me-2"></i>8. Transferencia entre SGBD</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Criterios de evaluación -->
+  <div class="alert border-danger bg-dark text-white mb-5">
+    <h5 class="text-danger"><i class="fas fa-clipboard-check me-2"></i>Criterios de Evaluación — RA6 (BOJA)</h5>
+    <ul class="mb-0 mt-2">
+      <li><strong>a)</strong> Se han identificado herramientas gráficas y en línea de comandos para la administración de copias de seguridad.</li>
+      <li><strong>b)</strong> Se han realizado copias de seguridad.</li>
+      <li><strong>c)</strong> Se han restaurado copias de seguridad.</li>
+      <li><strong>d)</strong> Se han identificado las herramientas para importar y exportar datos.</li>
+      <li><strong>e)</strong> Se han exportado datos a diversos formatos.</li>
+      <li><strong>f)</strong> Se han importado datos con distintos formatos.</li>
+      <li><strong>g)</strong> Se ha interpretado correctamente la información suministrada por los mensajes de error y los ficheros de registro.</li>
+      <li><strong>h)</strong> Se ha transferido información entre sistemas gestores.</li>
+    </ul>
+  </div>
+
+  <!-- 1. Por qué asegurar -->
+  <section id="ra6-intro" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-exclamation-triangle me-2"></i>1. ¿Por qué asegurar los datos?</h2>
+    <p>Una base de datos en producción puede perderse por múltiples causas: un fallo de hardware, un error humano (un <code>DELETE</code> sin <code>WHERE</code>...), un ataque ransomware o simplemente una migración fallida. Sin una política de copias de seguridad, la empresa puede perder datos irreemplazables.</p>
+
+    <div class="row g-4 mt-2">
+      <div class="col-md-4">
+        <div class="card bg-dark border-danger h-100">
+          <div class="card-header text-danger fw-bold"><i class="fas fa-bug me-2"></i>Error Humano</div>
+          <div class="card-body text-secondary small">Un <code>DELETE FROM pedidos</code> sin <code>WHERE</code>, un <code>DROP TABLE</code> accidental... Es la causa más frecuente de pérdida de datos.</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-dark border-warning h-100">
+          <div class="card-header text-warning fw-bold"><i class="fas fa-hdd me-2"></i>Fallo de Hardware</div>
+          <div class="card-body text-secondary small">Los discos duros tienen una vida útil limitada. Un RAID no es un sustituto de un backup: protege contra fallos de disco, pero no contra borrados lógicos.</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-dark border-info h-100">
+          <div class="card-header text-info fw-bold"><i class="fas fa-virus me-2"></i>Ataque / Ransomware</div>
+          <div class="card-body text-secondary small">Un backup offline o en una ubicación separada es la única defensa efectiva contra el cifrado malicioso de datos.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning bg-opacity-10 border-warning text-warning mt-4">
+      <i class="fas fa-lightbulb me-2"></i><strong>Regla del 3-2-1:</strong> Mantén <strong>3</strong> copias de los datos, en <strong>2</strong> soportes diferentes, con <strong>1</strong> de ellas en una ubicación externa (nube, cinta, disco externo fuera de las instalaciones).
+    </div>
+  </section>
+
+  <!-- 2. Tipos -->
+  <section id="ra6-tipos" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-layer-group me-2"></i>2. Tipos de Copia de Seguridad</h2>
+    <p>Existen distintas estrategias de backup según la frecuencia, el volumen y el tiempo de recuperación que necesitemos:</p>
+
+    <div class="table-responsive mt-3">
+      <table class="table table-dark table-bordered table-hover">
+        <thead class="table-primary">
+          <tr>
+            <th>Tipo</th><th>¿Qué guarda?</th><th>Ventaja</th><th>Desventaja</th><th>Ejemplo de uso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong class="text-success">Completo</strong></td>
+            <td>Toda la base de datos íntegra.</td>
+            <td>Restauración simple y rápida.</td>
+            <td>Ocupa más espacio y tarda más.</td>
+            <td>Cada fin de semana.</td>
+          </tr>
+          <tr>
+            <td><strong class="text-warning">Incremental</strong></td>
+            <td>Solo los cambios desde el <em>último backup</em> (completo o incremental).</td>
+            <td>Muy rápido. Ocupa poco.</td>
+            <td>Para restaurar necesitas el completo + <em>todos</em> los incrementales en orden.</td>
+            <td>Cada noche de lunes a viernes.</td>
+          </tr>
+          <tr>
+            <td><strong class="text-info">Diferencial</strong></td>
+            <td>Los cambios desde el <em>último backup completo</em>.</td>
+            <td>Restauración más simple que incremental (solo 2 ficheros).</td>
+            <td>Crece con el tiempo hasta el próximo completo.</td>
+            <td>Cada noche + completo semanal.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row g-3 mt-2">
+      <div class="col-md-6">
+        <div class="card bg-dark border-secondary">
+          <div class="card-header text-secondary fw-bold"><i class="fas fa-clock me-2"></i>RTO y RPO: los dos parámetros clave</div>
+          <div class="card-body small text-secondary">
+            <p><strong class="text-light">RTO (Recovery Time Objective):</strong> ¿Cuánto tiempo máximo puede estar el sistema caído? (ej. 4 horas)</p>
+            <p class="mb-0"><strong class="text-light">RPO (Recovery Point Objective):</strong> ¿Cuántos datos podemos permitirnos perder? (ej. datos de las últimas 24 horas)</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-dark border-secondary">
+          <div class="card-header text-secondary fw-bold"><i class="fas fa-database me-2"></i>Backup lógico vs. físico</div>
+          <div class="card-body small text-secondary">
+            <p><strong class="text-light">Lógico:</strong> Exporta sentencias SQL (CREATE TABLE, INSERT...). Es legible y portable entre distintos SGBD. Es lo que hace <code>mysqldump</code>.</p>
+            <p class="mb-0"><strong class="text-light">Físico:</strong> Copia binaria de los ficheros del motor. Es más rápido para BD grandes pero menos portable. Lo hace <code>mariabackup</code>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. mysqldump -->
+  <section id="ra6-dump" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-download me-2"></i>3. Backup con <code>mysqldump</code></h2>
+    <p><code>mysqldump</code> es la herramienta de línea de comandos estándar para hacer backups <strong>lógicos</strong> en MariaDB/MySQL. Genera un fichero <code>.sql</code> con todas las sentencias necesarias para recrear la base de datos desde cero.</p>
+
+    <div class="card bg-dark border-secondary mb-4">
+      <div class="card-header text-secondary">Sintaxis general</div>
+      <div class="card-body">
+        <pre><code class="language-bash">mysqldump [opciones] -u USUARIO -p NOMBRE_BD &gt; fichero_backup.sql</code></pre>
+        <p class="text-secondary small mb-0">El símbolo <code>&gt;</code> redirige la salida estándar al fichero. Se ejecuta desde la terminal del servidor o del contenedor Docker.</p>
+      </div>
+    </div>
+
+    <h4 class="text-light mt-4 mb-3">Casos de uso más habituales</h4>
+    <div class="accordion accordion-flush" id="accordionDump">
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#dump-1" type="button">
+            <i class="fas fa-database me-2 text-success"></i>Backup de una base de datos completa
+          </button>
+        </h2>
+        <div id="dump-1" class="accordion-collapse collapse" data-bs-parent="#accordionDump">
+          <div class="accordion-body">
+            <pre><code class="language-bash"># Exporta toda la BBDD "arepazo" al fichero backup_arepazo.sql
+mysqldump -u root -p arepazo &gt; backup_arepazo.sql
+
+# Con fecha en el nombre (buena práctica):
+mysqldump -u root -p arepazo &gt; backup_arepazo_$(date +%Y%m%d).sql</code></pre>
+            <p class="text-secondary small mt-2 mb-0">El fichero resultante contendrá los <code>CREATE TABLE</code> y los <code>INSERT INTO</code> de todos los datos.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#dump-2" type="button">
+            <i class="fas fa-table me-2 text-warning"></i>Backup de una tabla concreta
+          </button>
+        </h2>
+        <div id="dump-2" class="accordion-collapse collapse" data-bs-parent="#accordionDump">
+          <div class="accordion-body">
+            <pre><code class="language-bash"># Solo la tabla "Pedidos" de la BD "arepazo"
+mysqldump -u root -p arepazo Pedidos &gt; backup_pedidos.sql</code></pre>
+            <p class="text-secondary small mt-2 mb-0">Útil cuando solo necesitas recuperar o mover una tabla específica.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#dump-3" type="button">
+            <i class="fas fa-list-ul me-2 text-info"></i>Opciones importantes de mysqldump
+          </button>
+        </h2>
+        <div id="dump-3" class="accordion-collapse collapse" data-bs-parent="#accordionDump">
+          <div class="accordion-body">
+            <table class="table table-dark table-sm table-bordered">
+              <thead class="table-secondary text-dark"><tr><th>Opción</th><th>Efecto</th></tr></thead>
+              <tbody class="small">
+                <tr><td><code>--no-data</code></td><td>Exporta solo la estructura (DDL), sin datos.</td></tr>
+                <tr><td><code>--no-create-info</code></td><td>Exporta solo los datos (INSERT), sin DDL.</td></tr>
+                <tr><td><code>--all-databases</code></td><td>Hace backup de <em>todas</em> las BD del servidor.</td></tr>
+                <tr><td><code>--single-transaction</code></td><td>Backup consistente sin bloquear tablas (InnoDB). Recomendado en producción.</td></tr>
+                <tr><td><code>--routines</code></td><td>Incluye procedimientos almacenados y funciones.</td></tr>
+                <tr><td><code>--triggers</code></td><td>Incluye los triggers (activado por defecto).</td></tr>
+              </tbody>
+            </table>
+            <pre class="mt-2"><code class="language-bash"># Backup completo, consistente, con rutinas, comprimido con gzip:
+mysqldump -u root -p --single-transaction --routines arepazo | gzip &gt; backup_arepazo.sql.gz</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#dump-docker" type="button">
+            <i class="fab fa-docker me-2 text-primary"></i>Backup desde un contenedor Docker
+          </button>
+        </h2>
+        <div id="dump-docker" class="accordion-collapse collapse" data-bs-parent="#accordionDump">
+          <div class="accordion-body">
+            <pre><code class="language-bash"># Ejecutar mysqldump DENTRO del contenedor y guardar en el HOST:
+docker exec NOMBRE_CONTENEDOR mysqldump -u root -pCONTRASEÑA arepazo &gt; backup_arepazo.sql
+
+# Ejemplo real (sustituir nombre y contraseña):
+docker exec mariadb_clase mysqldump -u root -p1234 arepazo &gt; backup_arepazo.sql</code></pre>
+            <p class="text-secondary small mt-2 mb-0"><strong>Atención:</strong> la contraseña va pegada a <code>-p</code> sin espacio cuando se automatiza, para evitar la pregunta interactiva.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-dark border-success mt-4">
+      <div class="card-header bg-success bg-opacity-10 text-success fw-bold">
+        <i class="fas fa-mouse-pointer me-2"></i>Herramienta gráfica: DBeaver — Exportar como SQL dump
+      </div>
+      <div class="card-body">
+        <ol class="text-secondary mb-0">
+          <li>En el panel izquierdo (Database Navigator), haz clic derecho sobre la base de datos que quieres exportar.</li>
+          <li>Selecciona <strong>Tools → Dump database</strong>.</li>
+          <li>Elige las tablas a incluir y las opciones (estructura, datos, rutinas...).</li>
+          <li>Indica la ruta del fichero de salida y haz clic en <strong>Start</strong>.</li>
+        </ol>
+        <p class="text-secondary small mt-3 mb-0"><i class="fas fa-info-circle text-info me-1"></i>DBeaver llama internamente a <code>mysqldump</code>. Es la opción más cómoda si no te sientes seguro con la terminal.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Restauración -->
+  <section id="ra6-restore" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-upload me-2"></i>4. Restauración de una Copia de Seguridad</h2>
+    <p>Restaurar significa aplicar el fichero <code>.sql</code> sobre un servidor MariaDB. El proceso crea las tablas y vuelve a insertar todos los registros.</p>
+
+    <div class="alert alert-danger bg-opacity-10 border-danger text-danger mb-4">
+      <i class="fas fa-skull-crossbones me-2"></i><strong>¡Cuidado!</strong> Si la BD de destino ya tiene datos, la restauración normalmente los sobreescribirá. Asegúrate de que sabes lo que haces antes de restaurar en producción.
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card bg-dark border-secondary h-100">
+          <div class="card-header text-secondary">Desde la terminal</div>
+          <div class="card-body">
+            <pre><code class="language-bash"># 1. Crear la BD si no existe:
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS arepazo;"
+
+# 2. Restaurar el backup:
+mysql -u root -p arepazo &lt; backup_arepazo.sql</code></pre>
+            <p class="text-secondary small mt-2 mb-0">El símbolo <code>&lt;</code> redirige el fichero como entrada estándar del cliente <code>mysql</code>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-dark border-secondary h-100">
+          <div class="card-header text-secondary">Desde un contenedor Docker</div>
+          <div class="card-body">
+            <pre><code class="language-bash"># Restaurar directamente con redirección:
+docker exec -i mariadb_clase mysql -u root -p1234 arepazo &lt; backup_arepazo.sql</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-dark border-success mt-4">
+      <div class="card-header bg-success bg-opacity-10 text-success fw-bold">
+        <i class="fas fa-mouse-pointer me-2"></i>Restaurar con DBeaver
+      </div>
+      <div class="card-body text-secondary">
+        <ol class="mb-0">
+          <li>Clic derecho sobre la base de datos de destino → <strong>Tools → Restore database</strong>.</li>
+          <li>Selecciona el fichero <code>.sql</code> del backup.</li>
+          <li>Haz clic en <strong>Start</strong> y espera a que termine.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Importación CSV -->
+  <section id="ra6-import" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-file-import me-2"></i>5. Importación de Datos desde CSV</h2>
+    <p>Es muy habitual recibir datos desde hojas de cálculo u otras aplicaciones en formato <strong>CSV (Comma-Separated Values)</strong>. MariaDB ofrece dos formas principales de importar CSV:</p>
+
+    <div class="row g-4 mt-1">
+      <div class="col-md-6">
+        <div class="card bg-dark border-warning h-100">
+          <div class="card-header text-warning fw-bold"><i class="fas fa-terminal me-2"></i>LOAD DATA INFILE (SQL)</div>
+          <div class="card-body">
+            <pre><code class="language-sql">LOAD DATA INFILE '/var/lib/mysql-files/clientes.csv'
+INTO TABLE Clientes
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(nombre, apellido, email, telefono);</code></pre>
+            <p class="text-danger small mt-2 mb-0"><i class="fas fa-exclamation-triangle me-1"></i>Requiere el privilegio <code>FILE</code> y que el fichero esté en el directorio permitido (<code>secure_file_priv</code>).</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-dark border-info h-100">
+          <div class="card-header text-info fw-bold"><i class="fas fa-mouse-pointer me-2"></i>DBeaver — Importar CSV (recomendado en clase)</div>
+          <div class="card-body text-secondary small">
+            <ol class="mb-0">
+              <li>Clic derecho sobre la tabla de destino.</li>
+              <li>Selecciona <strong>Import Data</strong>.</li>
+              <li>Elige el formato <strong>CSV</strong>.</li>
+              <li>Selecciona el fichero, confirma el separador y el encoding.</li>
+              <li>Mapea las columnas del CSV con las columnas de la tabla.</li>
+              <li>Haz clic en <strong>Proceed</strong>.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-dark border-secondary mt-4">
+      <div class="card-header text-secondary">Ejemplo completo: importar un CSV de equipos NBA</div>
+      <div class="card-body">
+        <p class="text-secondary small">Supón que tienes el fichero <code>equipos.csv</code> con este contenido:</p>
+        <pre><code class="language-csv">nombre,ciudad,conferencia,fundacion
+Los Angeles Lakers,Los Angeles,Oeste,1946
+Boston Celtics,Boston,Este,1946</code></pre>
+        <pre class="mt-3"><code class="language-sql">CREATE TABLE IF NOT EXISTS equipos_import (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  ciudad VARCHAR(80),
+  conferencia VARCHAR(10),
+  fundacion YEAR
+);
+
+LOAD DATA INFILE '/var/lib/mysql-files/equipos.csv'
+INTO TABLE equipos_import
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(nombre, ciudad, conferencia, fundacion);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Exportación -->
+  <section id="ra6-export" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-file-export me-2"></i>6. Exportación de Datos</h2>
+    <p>Además de exportar como SQL dump, podemos exportar los resultados de una consulta a distintos formatos (CSV, JSON, Excel...) para compartirlos con otras aplicaciones.</p>
+
+    <div class="row g-4 mt-1">
+      <div class="col-md-6">
+        <div class="card bg-dark border-secondary h-100">
+          <div class="card-header text-secondary fw-bold"><i class="fas fa-terminal me-2"></i>SELECT ... INTO OUTFILE (SQL)</div>
+          <div class="card-body">
+            <pre><code class="language-sql">SELECT id, nombre, email
+FROM Clientes
+WHERE activo = TRUE
+INTO OUTFILE '/var/lib/mysql-files/clientes_activos.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-dark border-info h-100">
+          <div class="card-header text-info fw-bold"><i class="fas fa-mouse-pointer me-2"></i>DBeaver — Exportar resultados</div>
+          <div class="card-body text-secondary small">
+            <ol class="mb-0">
+              <li>Ejecuta tu consulta SELECT en DBeaver.</li>
+              <li>En el panel de resultados, clic en el botón <strong>Export results</strong>.</li>
+              <li>Selecciona el formato: CSV, JSON, XLS, HTML...</li>
+              <li>Configura el separador y encoding.</li>
+              <li>Elige la ruta de destino y haz clic en <strong>Proceed</strong>.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Logs -->
+  <section id="ra6-logs" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-scroll me-2"></i>7. Ficheros de Log y Recuperación de Errores</h2>
+    <p>MariaDB mantiene varios ficheros de registro que son esenciales para diagnosticar problemas y, en algunos casos, recuperar datos.</p>
+
+    <div class="row g-4 mt-1">
+      <div class="col-md-6">
+        <div class="card bg-dark border-danger h-100">
+          <div class="card-header text-danger fw-bold"><i class="fas fa-bug me-2"></i>Error Log</div>
+          <div class="card-body small text-secondary">
+            <p>Registra los errores del motor, advertencias y mensajes de inicio/parada.</p>
+            <pre><code class="language-bash">docker exec mariadb_clase tail -f /var/log/mysql/error.log</code></pre>
+            <p class="mb-0">Variable: <code>log_error</code></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-dark border-warning h-100">
+          <div class="card-header text-warning fw-bold"><i class="fas fa-list-alt me-2"></i>General Query Log</div>
+          <div class="card-body small text-secondary">
+            <p>Registra todas las consultas ejecutadas. Útil para depuración, pero muy pesado en producción.</p>
+            <pre><code class="language-sql">SET GLOBAL general_log = 'ON';
+SET GLOBAL general_log_file = '/tmp/mysql_general.log';</code></pre>
+            <p class="mb-0 text-danger"><i class="fas fa-exclamation-triangle me-1"></i>No dejes el general log activo en producción.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-dark border-success h-100">
+          <div class="card-header text-success fw-bold"><i class="fas fa-history me-2"></i>Binary Log (binlog)</div>
+          <div class="card-body small text-secondary">
+            <p>Registra todos los cambios de datos. Permite replicación y recuperación punto en el tiempo.</p>
+            <pre><code class="language-bash">mysql -u root -p -e "SHOW BINARY LOGS;"
+mysqlbinlog /var/lib/mysql/mariadb-bin.000001</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-dark border-info h-100">
+          <div class="card-header text-info fw-bold"><i class="fas fa-stopwatch me-2"></i>Slow Query Log</div>
+          <div class="card-body small text-secondary">
+            <p>Registra las consultas que tardan más de un umbral definido. Imprescindible para detectar cuellos de botella.</p>
+            <pre><code class="language-sql">SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 2;  -- umbral en segundos</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="text-light mt-4 mb-3"><i class="fas fa-search me-2"></i>Errores más comunes y cómo interpretarlos</h4>
+    <div class="table-responsive">
+      <table class="table table-dark table-sm table-bordered">
+        <thead class="table-secondary text-dark">
+          <tr><th>Código</th><th>Mensaje</th><th>Causa</th><th>Solución</th></tr>
+        </thead>
+        <tbody class="small">
+          <tr>
+            <td><code>1062</code></td>
+            <td>Duplicate entry '...' for key 'PRIMARY'</td>
+            <td>ID ya existe en la tabla.</td>
+            <td>Usa <code>INSERT IGNORE</code> o <code>ON DUPLICATE KEY UPDATE</code>.</td>
+          </tr>
+          <tr>
+            <td><code>1451</code></td>
+            <td>Cannot delete or update a parent row (FK)</td>
+            <td>El registro tiene hijos en otra tabla.</td>
+            <td>Borra primero los hijos, o usa <code>ON DELETE CASCADE</code> en la FK.</td>
+          </tr>
+          <tr>
+            <td><code>1452</code></td>
+            <td>Cannot add or update a child row (FK)</td>
+            <td>La FK no existe en la tabla padre.</td>
+            <td>Inserta primero el registro padre.</td>
+          </tr>
+          <tr>
+            <td><code>2002</code></td>
+            <td>Can't connect to local MySQL server</td>
+            <td>El servicio MariaDB no está arrancado.</td>
+            <td><code>docker start mariadb_clase</code></td>
+          </tr>
+          <tr>
+            <td><code>1045</code></td>
+            <td>Access denied for user '...'</td>
+            <td>Usuario/contraseña incorrectos o sin permisos.</td>
+            <td>Revisa credenciales. Admin puede usar <code>GRANT</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 8. Transferencia entre SGBD -->
+  <section id="ra6-transfer" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-exchange-alt me-2"></i>8. Transferencia de Datos entre SGBD</h2>
+    <p>En entornos reales es frecuente necesitar migrar datos entre distintos motores: de MySQL a PostgreSQL, de Access a MariaDB, de SQL Server a MariaDB, etc.</p>
+
+    <div class="row g-4 mt-1">
+      <div class="col-md-4">
+        <div class="card bg-dark border-secondary h-100">
+          <div class="card-header text-secondary fw-bold"><i class="fas fa-code me-2"></i>Vía SQL Dump</div>
+          <div class="card-body text-secondary small">
+            <p>Exportas de origen, adaptas el SQL a la sintaxis del destino y lo importas.</p>
+            <p class="text-warning mb-0"><i class="fas fa-exclamation-triangle me-1"></i>Problema: los dialectos SQL son diferentes.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-dark border-secondary h-100">
+          <div class="card-header text-secondary fw-bold"><i class="fas fa-file-csv me-2"></i>Vía CSV</div>
+          <div class="card-body text-secondary small">
+            <p>Exportas a CSV desde el origen (agnóstico del SGBD) e importas en el destino.</p>
+            <p class="text-success mb-0"><i class="fas fa-check me-1"></i>La más universal. Funciona entre cualquier par de SGBD.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-dark border-secondary h-100">
+          <div class="card-header text-secondary fw-bold"><i class="fas fa-mouse-pointer me-2"></i>Herramientas ETL / DBeaver</div>
+          <div class="card-body text-secondary small">
+            <p>DBeaver permite transferir datos directamente entre dos conexiones activas sin exportar a fichero intermedio.</p>
+            <p class="mb-0">ETL profesionales: <strong>Pentaho</strong>, <strong>Apache NiFi</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-dark border-info mt-4">
+      <div class="card-header text-info fw-bold"><i class="fas fa-wrench me-2"></i>Transferencia con DBeaver (paso a paso)</div>
+      <div class="card-body text-secondary">
+        <ol class="mb-0">
+          <li>Crea <strong>dos conexiones</strong> en DBeaver: una para el SGBD origen y otra para el destino.</li>
+          <li>Abre la conexión de origen, navega hasta la tabla que quieres copiar.</li>
+          <li>Clic derecho → <strong>Export Data</strong>.</li>
+          <li>En «Target container», selecciona la conexión de destino y la BD/tabla de destino.</li>
+          <li>Mapea las columnas (DBeaver lo hace automáticamente si los nombres coinciden).</li>
+          <li>Haz clic en <strong>Proceed</strong>.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card bg-dark border-warning mt-4">
+      <div class="card-header text-warning fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Diferencias de dialecto SQL a tener en cuenta en migraciones</div>
+      <div class="card-body">
+        <table class="table table-dark table-sm table-bordered small">
+          <thead class="table-secondary text-dark">
+            <tr><th>Concepto</th><th>MariaDB / MySQL</th><th>PostgreSQL</th><th>SQL Server</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Autoincremental</td><td><code>AUTO_INCREMENT</code></td><td><code>SERIAL</code></td><td><code>IDENTITY(1,1)</code></td></tr>
+            <tr><td>Limitar resultados</td><td><code>LIMIT n</code></td><td><code>LIMIT n</code></td><td><code>TOP n</code></td></tr>
+            <tr><td>Fecha y hora actual</td><td><code>NOW()</code></td><td><code>NOW()</code></td><td><code>GETDATE()</code></td></tr>
+            <tr><td>Concatenar texto</td><td><code>CONCAT(a, b)</code></td><td><code>a || b</code></td><td><code>a + b</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ejercicios -->
+  <section id="ra6-ejercicios" class="mb-5">
+    <h2 class="text-info border-bottom border-secondary pb-2"><i class="fas fa-pencil-alt me-2"></i>Ejercicios Prácticos del RA6</h2>
+
+    <div class="accordion accordion-flush" id="accordionRA6">
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#ej-ra6-1" type="button">
+            <span class="badge bg-success me-2">Ejercicio 1</span> Backup completo de la BD del Arepazo
+          </button>
+        </h2>
+        <div id="ej-ra6-1" class="accordion-collapse collapse" data-bs-parent="#accordionRA6">
+          <div class="accordion-body text-secondary">
+            <p><strong>Enunciado:</strong> Realiza un backup completo de la base de datos <code>arepazo</code> usando <code>mysqldump</code>. El fichero de salida debe llamarse <code>backup_arepazo_FECHAHOY.sql</code>. Adapta el comando a tu entorno (Docker o instalación directa).</p>
+            <details>
+              <summary class="btn btn-sm btn-outline-light mb-2">Ver solución</summary>
+              <pre class="bg-dark p-2 rounded text-success"><code># Sin Docker:
+mysqldump -u root -p arepazo &gt; backup_arepazo_$(date +%Y%m%d).sql
+
+# Con Docker:
+docker exec mariadb_clase mysqldump -u root -p1234 arepazo &gt; backup_arepazo_$(date +%Y%m%d).sql</code></pre>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#ej-ra6-2" type="button">
+            <span class="badge bg-success me-2">Ejercicio 2</span> Backup solo de estructura (sin datos)
+          </button>
+        </h2>
+        <div id="ej-ra6-2" class="accordion-collapse collapse" data-bs-parent="#accordionRA6">
+          <div class="accordion-body text-secondary">
+            <p><strong>Enunciado:</strong> Genera un fichero SQL que contenga <em>solo la estructura</em> (CREATE TABLE) de la base de datos <code>nba</code>, sin ningún dato.</p>
+            <details>
+              <summary class="btn btn-sm btn-outline-light mb-2">Ver solución</summary>
+              <pre class="bg-dark p-2 rounded text-success"><code>mysqldump -u root -p --no-data nba &gt; estructura_nba.sql</code></pre>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#ej-ra6-3" type="button">
+            <span class="badge bg-warning text-dark me-2">Ejercicio 3</span> Restaurar un backup en una nueva BD
+          </button>
+        </h2>
+        <div id="ej-ra6-3" class="accordion-collapse collapse" data-bs-parent="#accordionRA6">
+          <div class="accordion-body text-secondary">
+            <p><strong>Enunciado:</strong> A partir del backup del ejercicio 1, crea una nueva BD llamada <code>arepazo_restaurada</code> y restaura el backup en ella. Comprueba con <code>SHOW TABLES</code> que todo está correcto.</p>
+            <details>
+              <summary class="btn btn-sm btn-outline-light mb-2">Ver solución</summary>
+              <pre class="bg-dark p-2 rounded text-success"><code>mysql -u root -p -e "CREATE DATABASE arepazo_restaurada;"
+mysql -u root -p arepazo_restaurada &lt; backup_arepazo_FECHAHOY.sql
+mysql -u root -p -e "USE arepazo_restaurada; SHOW TABLES;"</code></pre>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#ej-ra6-4" type="button">
+            <span class="badge bg-warning text-dark me-2">Ejercicio 4</span> Exportar datos de la NBA a CSV
+          </button>
+        </h2>
+        <div id="ej-ra6-4" class="accordion-collapse collapse" data-bs-parent="#accordionRA6">
+          <div class="accordion-body text-secondary">
+            <p><strong>Enunciado:</strong> Exporta el nombre, ciudad y conferencia de todos los equipos de la BD <code>nba</code> a un fichero CSV usando <code>SELECT INTO OUTFILE</code>. Si el servidor no permite OUTFILE, usa DBeaver para exportar el resultado de la misma consulta.</p>
+            <details>
+              <summary class="btn btn-sm btn-outline-light mb-2">Ver solución (SQL)</summary>
+              <pre class="bg-dark p-2 rounded text-success"><code>SELECT nombre, ciudad, conferencia
+FROM nba.equipos
+INTO OUTFILE '/var/lib/mysql-files/equipos_nba.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';</code></pre>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed bg-dark text-light" data-bs-toggle="collapse" data-bs-target="#ej-ra6-5" type="button">
+            <span class="badge bg-danger me-2">Ejercicio 5</span> Diagnóstico: interpreta estos errores
+          </button>
+        </h2>
+        <div id="ej-ra6-5" class="accordion-collapse collapse" data-bs-parent="#accordionRA6">
+          <div class="accordion-body text-secondary">
+            <p><strong>Enunciado:</strong> Para cada mensaje de error, indica la causa y la solución:</p>
+            <ol>
+              <li><code>ERROR 1062 (23000): Duplicate entry '5' for key 'PRIMARY'</code></li>
+              <li><code>ERROR 1451 (23000): Cannot delete or update a parent row: a foreign key constraint fails (`arepazo`.`PedidosLinea`, CONSTRAINT `fk_pedido`...)</code></li>
+              <li><code>ERROR 1045 (28000): Access denied for user 'alumno'@'localhost' (using password: YES)</code></li>
+            </ol>
+            <details>
+              <summary class="btn btn-sm btn-outline-light mb-2">Ver soluciones</summary>
+              <div class="bg-dark p-3 rounded text-success small">
+                <p><strong>1.</strong> Ya existe un registro con id=5. Solución: cambia el id o usa <code>INSERT IGNORE</code> / <code>ON DUPLICATE KEY UPDATE</code>.</p>
+                <p><strong>2.</strong> Intentas borrar un Pedido que tiene líneas asociadas. Solución: borra primero las líneas (<code>DELETE FROM PedidosLinea WHERE pedido_id = X</code>) y luego el pedido.</p>
+                <p class="mb-0"><strong>3.</strong> Contraseña incorrecta o sin permisos. Solución: verifica credenciales. Si eres admin: <code>GRANT ALL ON arepazo.* TO 'alumno'@'localhost';</code></p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Resumen -->
+  <div class="card bg-dark border-primary mt-5">
+    <div class="card-header bg-primary bg-opacity-10 text-primary fw-bold">
+      <i class="fas fa-check-double me-2"></i>Resumen del Tema 6 — Lo esencial
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <ul class="mb-0 text-secondary">
+            <li>Un backup es la única protección real contra pérdida de datos.</li>
+            <li><strong>Regla 3-2-1</strong>: 3 copias, 2 soportes, 1 ubicación externa.</li>
+            <li><strong>mysqldump</strong> genera backups lógicos (SQL) portables y legibles.</li>
+            <li>La restauración usa el cliente <code>mysql</code> con redirección <code>&lt;</code>.</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="mb-0 text-secondary">
+            <li><code>LOAD DATA INFILE</code> / <code>SELECT INTO OUTFILE</code> para CSV.</li>
+            <li><strong>DBeaver</strong> simplifica todas estas operaciones con interfaz gráfica.</li>
+            <li>Los logs (error, binlog, slow query) son fundamentales para el diagnóstico.</li>
+            <li>La transferencia entre SGBD se puede hacer vía CSV o con DBeaver directamente.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

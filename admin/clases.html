@@ -86,7 +86,13 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <p class="text-muted small">Selecciona el curso que deseas importar.</p>
+        <p class="text-muted small mb-2">Selecciona el módulo para el cual es este curso y luego elige la clase a importar.</p>
+        <div class="mb-3">
+            <select id="classroom-modulo-select" class="form-select dark-input border-warning">
+                <option value="0372">0372 — Gestión de BD (1º ASIR)</option>
+                <option value="0377">0377 — Adm. BBDD (2º ASIR)</option>
+            </select>
+        </div>
         <div id="classroom-courses-list" class="list-group list-group-flush bg-transparent">
           <div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
         </div>

@@ -38,8 +38,12 @@
 
   const fb = await initFirebase();
 
+  let isManualLogin = false;
+
   fb.onAuthStateChanged(fb.auth, async (user) => {
     if (!user) return; // Esperar login
+    if (isManualLogin) return; // Si es login manual, el click handler gestionará la redirección
+    
     const snap = await fb.getDoc(fb.doc(fb.db, 'usuarios', user.uid));
     if (snap.exists() && ['admin','docente'].includes(snap.data().rol)) {
       window.location.href = 'dashboard.html';
@@ -69,9 +73,51 @@
   });
 
   document.getElementById('btn-google-admin').addEventListener('click', async () => {
+    isManualLogin = true;
     const provider = new fb.GoogleAuthProvider();
-    try { await fb.signInWithPopup(fb.auth, provider); }
-    catch(e) { console.error(e); }
+    // Añadimos scopes para Google Classroom
+    provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
+    provider.addScope('https://www.googleapis.com/auth/classroom.coursework.students');
+    provider.addScope('https://www.googleapis.com/auth/classroom.coursework.me');
+    provider.addScope('https://www.googleapis.com/auth/classroom.topics');
+    
+    try { 
+      const result = await fb.signInWithPopup(fb.auth, provider);
+      // Guardar el Access Token para poder hacer peticiones a la API de Classroom
+      const credential = fb.GoogleAuthProvider.credentialFromResult(result);
+      if (credential && credential.accessToken) {
+        localStorage.setItem('gclassroom_token', credential.accessToken);
+      }
+      
+      // Comprobar rol y redirigir
+      const user = result.user;
+      const snap = await fb.getDoc(fb.doc(fb.db, 'usuarios', user.uid));
+      if (snap.exists() && ['admin','docente'].includes(snap.data().rol)) {
+        window.location.href = 'dashboard.html';
+      } else if (!snap.exists()) {
+        const pending = await fb.getDocs(
+          fb.query(fb.collection(fb.db, 'usuarios_pendientes'), fb.where('email','==', user.email))
+        );
+        if (!pending.empty) {
+          await fb.setDoc(fb.doc(fb.db, 'usuarios', user.uid), {
+            nombre: user.displayName, email: user.email, foto: user.photoURL,
+            rol: 'docente', createdAt: fb.serverTimestamp()
+          });
+          window.location.href = 'dashboard.html';
+          return;
+        }
+        await fb.signOut(fb.auth);
+        alert('No tienes permisos de acceso al panel.');
+        isManualLogin = false;
+      } else {
+        await fb.signOut(fb.auth);
+        window.location.href = '../task/clases.html';
+      }
+    }
+    catch(e) { 
+      console.error(e); 
+      isManualLogin = false;
+    }
   });
 </script>
 <script src="/js/load-footer.js"></script>

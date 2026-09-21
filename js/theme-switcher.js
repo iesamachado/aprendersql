@@ -1,6 +1,10 @@
 (function() {
-    // 1. Initial theme load (blocking, to prevent flash)
-    const storedTheme = localStorage.getItem('aprendersql_theme') || 'dark';
+    let storedTheme = 'dark';
+    try {
+        storedTheme = localStorage.getItem('aprendersql_theme') || 'dark';
+    } catch (e) {
+        console.warn('localStorage not accessible, defaulting to dark');
+    }
     document.documentElement.setAttribute('data-bs-theme', storedTheme);
 
     // 2. Add floating toggle button on DOMContentLoaded
@@ -48,7 +52,10 @@
             const current = document.documentElement.getAttribute('data-bs-theme');
             const next = current === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-bs-theme', next);
-            localStorage.setItem('aprendersql_theme', next);
+            try {
+                localStorage.setItem('aprendersql_theme', next);
+            } catch (e) {}
+            
             updateIcon();
             
             // Dispatch event for any custom logic (like code editor themes)

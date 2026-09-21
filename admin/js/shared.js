@@ -29,6 +29,7 @@ const NAV_SECTIONS = [
     items: [
       { icon: 'fa-dumbbell',  label: 'Ejercicios',         href: 'ejercicios.html' },
       { icon: 'fa-map-signs', label: 'Roadmap Curricular', href: 'roadmap.html'    },
+      { icon: 'fa-balance-scale', label: 'Criterios Evaluación', href: 'criterios.html' }
     ]
   },
 

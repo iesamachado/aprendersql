@@ -2,7 +2,15 @@ const EJERCICIOS_DB = { arepazo: 'arepazo', nba: 'nba', futbol: 'futbol', refugi
 const BLOQUES = [
   // --- TEORÍA (Módulo 0372) ---
   { id: 101, tipo: "teoria", nombre: "Tema 1: Sistemas de almacenamiento", modulo: "0372", curso: "1º ASIR", ra: "1", implementado: true, desc: "Sistemas lógicos de almacenamiento, tipos de bases de datos, SGBD." },
-  { id: 109, tipo: "tarea", nombre: "Tarea: Investigación SGBD", modulo: "0372", curso: "1º ASIR", ra: "1", implementado: true, desc: "Investiga un SGBD relacional alternativo y exponlo en clase (Presentación PDF)." },
+  { 
+    id: 109, tipo: "tarea", nombre: "Tema 1: Tarea - Investigación SGBD", modulo: "0372", curso: "1º ASIR", ra: "1", implementado: true, temaRef: 101,
+    desc: "Investiga un SGBD relacional alternativo (PostgreSQL, SQL Server, Oracle, etc.) y compáralo con MySQL/MariaDB. Prepara una presentación en PDF (10-15 diapositivas) y exponlo en clase.",
+    rubricaDocente: [
+      "Contenido (4 pts): Profundidad de la investigación y características del SGBD.",
+      "Comparativa (3 pts): Cuadro comparativo claro frente a MariaDB (licencias, rendimiento, casos de uso).",
+      "Presentación (3 pts): Claridad, formato visual del PDF y soltura en la exposición oral."
+    ]
+  },
   { id: 102, tipo: "teoria", nombre: "Tema 2.1: Diagramas E-R", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, desc: "Conceptos, atributos, relaciones y ejemplos de Diagramas Entidad-Relación." },
   { id: 107, tipo: "teoria", nombre: "Tema 2.2: Diseño Lógico de Tablas", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, desc: "Transformación a modelo relacional y Normalización." },
   { id: 108, tipo: "teoria", nombre: "Tema 2.3: Enunciados de Ejercicios", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, desc: "Batería de ejercicios oficiales para practicar E-R y Tablas." },
@@ -10,6 +18,79 @@ const BLOQUES = [
   { id: 104, tipo: "teoria", nombre: "Tema 4: Consultas (DML SELECT)", modulo: "0372", curso: "1º ASIR", ra: "4", implementado: true, desc: "SELECT simple, WHERE, JOINs, Subconsultas." },
   { id: 105, tipo: "teoria", nombre: "Tema 5.1: Modificando datos (DML)", modulo: "0372", curso: "1º ASIR", ra: "5", implementado: true, desc: "INSERT, UPDATE, DELETE, Transacciones." },
   { id: 106, tipo: "teoria", nombre: "Tema 5.2: Procedimientos y Funciones", modulo: "0372", curso: "1º ASIR", ra: "5", implementado: true, desc: "Programación de scripts y guiones." },
+  { id: 113, tipo: "teoria", nombre: "Tema 6: Aseguramiento de la Información", modulo: "0372", curso: "1º ASIR", ra: "6", implementado: true, desc: "Copias de seguridad (mysqldump), restauración, importación/exportación CSV, ficheros de log y transferencia entre SGBD." },
+  {
+    id: 117, tipo: "tarea", nombre: "Tema 6: Tarea - Backup, Restauración y Exportación", modulo: "0372", curso: "1º ASIR", ra: "6", implementado: true, temaRef: 113,
+    desc: "Demuestra que dominas el aseguramiento de datos en MariaDB. La tarea tiene tres partes: (1) Realiza un backup completo de la BD 'arepazo' con mysqldump e incluye el fichero .sql generado. (2) Restaura ese backup en una nueva BD llamada 'arepazo_bak' y adjunta una captura de pantalla con SHOW TABLES que confirme la restauración. (3) Exporta a CSV los 10 pedidos de mayor importe usando SELECT INTO OUTFILE o DBeaver, e incluye el fichero resultante.",
+    rubricaDocente: [
+      "Backup (3 pts): El fichero .sql es válido, incluye tanto DDL como datos (INSERT), y el nombre lleva la fecha.",
+      "Restauración (3 pts): Captura de SHOW TABLES que confirma que todas las tablas existen en la BD 'arepazo_bak' con datos correctos.",
+      "Exportación CSV (2 pts): El CSV contiene exactamente los 10 pedidos de mayor importe con las columnas correctas.",
+      "Calidad técnica (2 pts): Uso correcto de opciones --single-transaction en mysqldump y manejo adecuado de comillas y separadores en el CSV."
+    ]
+  },
+
+  // --- TAREAS OFFLINE (Módulo 0372) ---
+  { 
+    id: 110, tipo: "tarea", nombre: "Tema 2: Tarea - 5 Diagramas E-R", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, 
+    desc: "Selecciona 5 de los 9 enunciados finales del tema. Extrae las entidades, atributos y relaciones (con cardinalidades). Dibuja los Diagramas E-R (en draw.io o similar) y entrégalos en un PDF.",
+    rubricaDocente: [
+      "Entidades y Atributos (3 pts): Identificación correcta, claves principales definidas.",
+      "Relaciones (4 pts): Identificación de verbos lógicos entre entidades.",
+      "Cardinalidad (3 pts): Lógica correcta en las cardinalidades (1:1, 1:N, N:M) y participación total/parcial."
+    ]
+  },
+  { 
+    id: 114, tipo: "tarea", nombre: "Tema 5: Proyecto Final Integrado", modulo: "0372", curso: "1º ASIR", ra: "2,3,4,5", implementado: true, temaRef: 105,
+    desc: "Elaborar un proyecto completo de Base de Datos. El proyecto incluye: diseño del diagrama E-R, modelo lógico relacional, sentencias DDL (CREATE TABLES), DML para inserción de datos de prueba y un conjunto de 10 consultas SQL complejas resueltas.",
+    rubricaDocente: [
+      "Diseño Conceptual y Lógico (RA 2) (3 pts): Corrección del diagrama E-R y normalización correcta de las tablas.",
+      "Diseño Físico (RA 3) (2 pts): Tipos de datos correctos y restricciones clave/foráneas bien aplicadas.",
+      "Consultas DQL (RA 4) (3 pts): Complejidad y corrección de las 10 sentencias SELECT exigidas.",
+      "Inserción de datos (RA 5) (2 pts): Batería de pruebas e integridad referencial mantenida en los INSERTs."
+    ]
+  },
+  {
+    id: 115, tipo: "tarea", nombre: "Fase DUAL / Entregable: Memoria de Aseguramiento", modulo: "0372", curso: "1º ASIR", ra: "6", implementado: true, temaRef: 113,
+    desc: "Analiza y documenta los mecanismos de salvaguarda y transferencia de información utilizados en tu empresa de prácticas (Fase DUAL/FFEOE). Debes entregar una memoria técnica describiendo las políticas de copias de seguridad y cómo gestionan la importación/exportación de datos.",
+    rubricaDocente: [
+      "Nivel 1 (Insuficiente): Análisis superficial, faltan políticas clave o no detalla herramientas.",
+      "Nivel 2 (Suficiente): Describe por encima el sistema de copias de seguridad.",
+      "Nivel 3 (Bien): Describe herramientas, políticas de backup y sistemas de exportación de datos.",
+      "Nivel 4 (Notable): Detalla procedimientos técnicos concretos de backup y restauración.",
+      "Nivel 5 (Excelente): Análisis crítico profundo, incluye esquemas, capturas o flujos de trabajo detallados demostrando gran comprensión de la infraestructura."
+    ]
+  },
+  {
+    id: 116, tipo: "tarea", nombre: "Fase DUAL / Empresa: Valoración del Tutor Laboral", modulo: "0372", curso: "1º ASIR", ra: "6", implementado: true, temaRef: 113,
+    desc: "Valoración directa emitida por el tutor de la empresa respecto a tu desempeño y autonomía realizando tareas de aseguramiento de la información y salvaguarda de datos en el entorno productivo real.",
+    rubricaDocente: [
+      "Nivel 1 (Insuficiente): No alcanza los mínimos requeridos de autonomía o calidad técnica.",
+      "Nivel 2 (Suficiente): Realiza tareas básicas bajo mucha supervisión.",
+      "Nivel 3 (Bien): Realiza tareas operativas de forma correcta con supervisión puntual.",
+      "Nivel 4 (Notable): Alta autonomía técnica y buen desempeño en las operaciones de salvaguarda.",
+      "Nivel 5 (Excelente): Proactividad, autonomía total y nivel técnico equiparable a un empleado junior del departamento."
+    ]
+  },
+  { 
+    id: 111, tipo: "tarea", nombre: "Tema 2: Tarea - Paso a Tablas (Modelo Relacional)", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, 
+    desc: "Partiendo de tus 5 Diagramas E-R anteriores (corrigiendo los fallos comentados), aplica las reglas de transformación al Modelo Relacional. Entrega el esquema lógico completo de cada ejercicio.",
+    rubricaDocente: [
+      "Transformación 1:N (3 pts): Propagación correcta de claves primarias a foráneas.",
+      "Transformación N:M (3 pts): Creación correcta de tablas intermedias con PK compuestas.",
+      "Evolución (2 pts): Aplicó las correcciones del feedback anterior de los E-R.",
+      "Normalización (2 pts): Esbozo de tipos de datos lógicos y tablas en 3FN."
+    ]
+  },
+  { 
+    id: 112, tipo: "tarea", nombre: "Tema 3: Tarea - Implementación en SQL (DDL)", modulo: "0372", curso: "1º ASIR", ra: "3", implementado: true, 
+    desc: "Con los esquemas lógicos corregidos, redacta un único script (.sql) que contenga todas las sentencias CREATE TABLE. Define explícitamente tipos de datos, PRIMARY KEY y FOREIGN KEY.",
+    rubricaDocente: [
+      "Sintaxis DDL (3 pts): Sentencias CREATE TABLE sintácticamente válidas.",
+      "Tipos de Datos (2 pts): Elección óptima de tipos (ej. VARCHAR vs CHAR, formato de numéricos).",
+      "Integridad (5 pts): Restricciones PK, FK, NOT NULL y UNIQUE correctamente implementadas."
+    ]
+  },
   
   // --- EJERCICIOS (Módulo 0372) ---
   { id: 1, tipo: "ejercicios", temaRef: 103, nombre: "Ejercicios: Modelo Físico (DDL)", modulo: "0372", curso: "1º ASIR", ra: "3", implementado: true, desc: "Ejercicios de CREATE, ALTER, DROP." },
@@ -15891,4 +15972,4 @@ window.loadGlobalExercisesDB = async function() {
     console.error(e);
   }
 };
-window.BLOQUES = BLOQUES; window.EJERCICIOS = EJERCICIOS;
+window.BLOQUES = BLOQUES; window.EJERCICIOS = EJERCICIOS; window.EJERCICIOS_DB = EJERCICIOS_DB;

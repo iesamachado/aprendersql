@@ -37,6 +37,7 @@ html, body {
   background: var(--bg-main);
   color: var(--text-primary);
   overflow-x: hidden;
+  color-scheme: dark;
 }
 
 body {
@@ -252,6 +253,7 @@ body {
 }
 [data-bs-theme="light"] html, [data-bs-theme="light"] body {
   color: var(--text-primary);
+  color-scheme: light;
 }
 [data-bs-theme="light"] .task-navbar {
   background: rgba(255, 255, 255, 0.95) !important;

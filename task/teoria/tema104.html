@@ -2281,4 +2281,182 @@ ORDER BY total_doble_dobles DESC;</code></pre>
                         </article>
 
                     </section>
+
+            <!-- CRITERIO 4.g BOJA: Análisis comparativo de consultas -->
+            <section id="select-comparativo" class="mb-5 mt-5">
+                <h2 class="text-info border-bottom border-secondary pb-2">
+                    <i class="fas fa-balance-scale me-2"></i>5. Comparativa de Soluciones para una Misma Consulta
+                    <span class="badge bg-info text-dark ms-2 fs-6">Criterio 4.g BOJA</span>
+                </h2>
+                <p class="text-secondary">Para una misma pregunta de negocio existen frecuentemente varias consultas SQL válidas. Un profesional debe saber <strong class="text-light">elegir razonadamente la mejor opción</strong> según legibilidad, rendimiento y mantenibilidad.</p>
+
+                <div class="alert alert-info bg-opacity-10 border-info text-light">
+                    <i class="fas fa-gavel me-2"></i><strong>Normativa BOJA — Criterio 4.g:</strong> «Se han valorado las ventajas e inconvenientes de las distintas opciones válidas para llevar a cabo una consulta determinada.»
+                </div>
+
+                <h4 class="text-light mt-4 mb-3">Caso 1: JOIN vs. Subconsulta correlacionada</h4>
+                <p class="text-secondary">Pregunta: <em>«¿Qué clientes han hecho algún pedido?»</em></p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card bg-dark border-success h-100">
+                            <div class="card-header bg-success bg-opacity-10 text-success fw-bold"><i class="fas fa-link me-2"></i>Opción A — INNER JOIN</div>
+                            <div class="card-body">
+                                <pre><code class="language-sql">SELECT DISTINCT c.nombre, c.email
+FROM Clientes c
+INNER JOIN Pedidos p ON c.cliente_id = p.cliente_id;</code></pre>
+                                <ul class="small text-secondary mt-2 mb-0">
+                                    <li>✅ Muy legible y estándar.</li>
+                                    <li>✅ El optimizador lo ejecuta eficientemente con índices.</li>
+                                    <li>⚠️ El <code>DISTINCT</code> es necesario si hay múltiples pedidos por cliente.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-dark border-warning h-100">
+                            <div class="card-header bg-warning bg-opacity-10 text-warning fw-bold"><i class="fas fa-code me-2"></i>Opción B — Subconsulta EXISTS</div>
+                            <div class="card-body">
+                                <pre><code class="language-sql">SELECT c.nombre, c.email
+FROM Clientes c
+WHERE EXISTS (
+    SELECT 1 FROM Pedidos p
+    WHERE p.cliente_id = c.cliente_id
+);</code></pre>
+                                <ul class="small text-secondary mt-2 mb-0">
+                                    <li>✅ No necesita <code>DISTINCT</code> (devuelve un cliente aunque tenga 100 pedidos).</li>
+                                    <li>✅ Más semántico: «existe al menos un pedido».</li>
+                                    <li>⚠️ Más difícil de leer para principiantes.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-secondary bg-dark border-secondary small mt-3">
+                    <i class="fas fa-trophy text-success me-2"></i><strong>¿Cuál elegir?</strong> En este caso, <strong>ambas son válidas</strong>. El JOIN con DISTINCT es preferido por legibilidad. EXISTS es más semántico y puede ser más eficiente cuando la tabla Pedidos es muy grande (para en cuanto encuentra la primera coincidencia).
+                </div>
+
+                <h4 class="text-light mt-4 mb-3">Caso 2: Subconsulta en WHERE vs. JOIN para filtrar</h4>
+                <p class="text-secondary">Pregunta: <em>«¿Qué jugadores de la NBA tienen la media de puntos más alta de su equipo?»</em></p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card bg-dark border-secondary h-100">
+                            <div class="card-header text-secondary fw-bold"><i class="fas fa-code me-2"></i>Opción A — Subconsulta en WHERE</div>
+                            <div class="card-body">
+                                <pre><code class="language-sql">SELECT nombre, equipo_id, puntos_por_partido
+FROM jugadores j
+WHERE puntos_por_partido = (
+    SELECT MAX(puntos_por_partido)
+    FROM jugadores
+    WHERE equipo_id = j.equipo_id
+);</code></pre>
+                                <ul class="small text-secondary mt-2 mb-0">
+                                    <li>✅ Intuitivo de leer.</li>
+                                    <li>🔴 Subconsulta <em>correlacionada</em>: se ejecuta una vez por cada fila de la tabla exterior. Muy lento en tablas grandes.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-dark border-success h-100">
+                            <div class="card-header bg-success bg-opacity-10 text-success fw-bold"><i class="fas fa-rocket me-2"></i>Opción B — JOIN con subconsulta agrupada</div>
+                            <div class="card-body">
+                                <pre><code class="language-sql">SELECT j.nombre, j.equipo_id, j.puntos_por_partido
+FROM jugadores j
+INNER JOIN (
+    SELECT equipo_id, MAX(puntos_por_partido) AS max_pts
+    FROM jugadores
+    GROUP BY equipo_id
+) AS maximos ON j.equipo_id = maximos.equipo_id
+           AND j.puntos_por_partido = maximos.max_pts;</code></pre>
+                                <ul class="small text-secondary mt-2 mb-0">
+                                    <li>✅ La subconsulta se ejecuta <strong>una sola vez</strong>.</li>
+                                    <li>✅ Mucho más eficiente en tablas con miles de filas.</li>
+                                    <li>⚠️ Más compleja visualmente.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-secondary bg-dark border-secondary small mt-3">
+                    <i class="fas fa-trophy text-success me-2"></i><strong>¿Cuál elegir?</strong> La <strong>Opción B</strong> es claramente superior en rendimiento. La Opción A puede usarse en bases de datos pequeñas o cuando la legibilidad sea prioritaria en un entorno de aprendizaje.
+                </div>
+
+                <h4 class="text-light mt-4 mb-3">Caso 3: UNION vs. OR en WHERE</h4>
+                <p class="text-secondary">Pregunta: <em>«¿Qué equipos son de Los Ángeles o tienen más de 10 títulos?»</em></p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card bg-dark border-secondary h-100">
+                            <div class="card-header text-secondary fw-bold"><i class="fas fa-code me-2"></i>Opción A — OR en WHERE</div>
+                            <div class="card-body">
+                                <pre><code class="language-sql">SELECT nombre, ciudad, titulos
+FROM equipos
+WHERE ciudad = 'Los Angeles'
+   OR titulos > 10;</code></pre>
+                                <ul class="small text-secondary mt-2 mb-0">
+                                    <li>✅ Más simple y directo.</li>
+                                    <li>✅ Un solo paso de lectura de tabla.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-dark border-secondary h-100">
+                            <div class="card-header text-secondary fw-bold"><i class="fas fa-code me-2"></i>Opción B — UNION</div>
+                            <div class="card-body">
+                                <pre><code class="language-sql">SELECT nombre, ciudad, titulos FROM equipos
+WHERE ciudad = 'Los Angeles'
+UNION
+SELECT nombre, ciudad, titulos FROM equipos
+WHERE titulos > 10;</code></pre>
+                                <ul class="small text-secondary mt-2 mb-0">
+                                    <li>⚠️ Dos lecturas de tabla. Más lento.</li>
+                                    <li>✅ Útil cuando las dos partes vienen de <strong>tablas diferentes</strong>.</li>
+                                    <li>⚠️ Innecesariamente complejo en este caso.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-secondary bg-dark border-secondary small mt-3">
+                    <i class="fas fa-trophy text-success me-2"></i><strong>¿Cuál elegir?</strong> La <strong>Opción A (OR)</strong> es mejor aquí. El UNION tiene sentido cuando combinas resultados de <em>tablas distintas</em> o cuando los conjuntos son conceptualmente independientes.
+                </div>
+
+                <h4 class="text-info mt-5 mb-3"><i class="fas fa-pencil-alt me-2"></i>Ejercicio — Compara y justifica</h4>
+                <div class="accordion accordion-flush" id="accordionCompar">
+                    <div class="accordion-item bg-transparent border-secondary">
+                        <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-toggle="collapse" data-bs-target="#ex-comp-1" type="button">Ejercicio: ¿Qué jugadores han marcado en todos los partidos de esta temporada?</button></h2>
+                        <div id="ex-comp-1" class="accordion-collapse collapse" data-bs-parent="#accordionCompar">
+                            <div class="accordion-body text-secondary">
+                                <p><strong>Enunciado:</strong> Escribe <em>dos versiones distintas</em> de la consulta (una con subconsulta y otra con JOIN + GROUP BY / HAVING) y razona en un comentario SQL cuál es más eficiente y por qué.</p>
+                                <p class="text-secondary small"><span class="badge bg-primary me-1">Contexto: NBA</span> Tabla <code>estadisticasPartido(id_jugador, id_partido, puntos)</code> y tabla <code>partidos(id, temporada)</code>.</p>
+                                <details>
+                                    <summary class="btn btn-sm btn-outline-light mb-2">Ver una posible solución</summary>
+                                    <pre class="bg-dark p-2 rounded text-success"><code>-- Versión A: NOT EXISTS (el que NO tiene ningún partido donde NO marcó)
+SELECT j.nombre FROM jugadores j
+WHERE NOT EXISTS (
+    SELECT 1 FROM partidos p
+    WHERE p.temporada = 2024
+    AND NOT EXISTS (
+        SELECT 1 FROM estadisticasPartido ep
+        WHERE ep.id_jugador = j.id AND ep.id_partido = p.id AND ep.puntos > 0
+    )
+);
+
+-- Versión B: COUNT + HAVING (más eficiente y legible)
+SELECT j.nombre
+FROM jugadores j
+JOIN estadisticasPartido ep ON j.id = ep.id_jugador
+JOIN partidos p ON ep.id_partido = p.id AND p.temporada = 2024
+WHERE ep.puntos > 0
+GROUP BY j.id, j.nombre
+HAVING COUNT(DISTINCT ep.id_partido) = (
+    SELECT COUNT(*) FROM partidos WHERE temporada = 2024
+);
+-- La Versión B es preferible: una sola subconsulta no correlacionada.</code></pre>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 </div>

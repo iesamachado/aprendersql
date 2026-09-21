@@ -868,5 +868,143 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </ul>
 </div>
 </article>
+
+<!-- CRITERIO 5.h BOJA: Bloqueos de registros -->
+<article class="card bg-glass border-0 shadow-sm p-4 mb-4" id="dml-bloqueos">
+<h3 class="text-warning"><i class="fas fa-lock me-2"></i>4. Bloqueos de Registros (Locking)
+    <span class="badge bg-warning text-dark ms-2 fs-6">Criterio 5.h BOJA</span>
+</h3>
+<p class="text-secondary">En un entorno multiusuario varios procesos pueden intentar modificar el mismo registro al mismo tiempo. MariaDB utiliza un sistema de <strong class="text-light">bloqueos</strong> para garantizar que las modificaciones sean seguras y coherentes.</p>
+
+<div class="alert alert-warning bg-opacity-10 border-warning text-warning">
+    <i class="fas fa-gavel me-2"></i><strong>Normativa BOJA — Criterio 5.h:</strong> «Se han identificado los efectos de las distintas políticas de bloqueo de registros.»
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-md-6">
+        <div class="card bg-dark border-info h-100">
+            <div class="card-header text-info fw-bold"><i class="fas fa-eye me-2"></i>Bloqueo Compartido (Shared Lock / READ)</div>
+            <div class="card-body text-secondary small">
+                <p>Varios procesos pueden <strong class="text-light">leer</strong> el mismo registro a la vez. Ninguno puede modificarlo mientras el bloqueo compartido está activo.</p>
+                <pre><code class="language-sql">-- Adquirir bloqueo de lectura sobre una tabla:
+LOCK TABLES Pedidos READ;
+
+SELECT * FROM Pedidos WHERE estado = 'Pendiente';
+
+-- Liberar el bloqueo:
+UNLOCK TABLES;</code></pre>
+                <p class="mb-0 text-info">✅ Útil para obtener una «foto» consistente sin impedir que otros lean.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-dark border-danger h-100">
+            <div class="card-header text-danger fw-bold"><i class="fas fa-lock me-2"></i>Bloqueo Exclusivo (Exclusive Lock / WRITE)</div>
+            <div class="card-body text-secondary small">
+                <p>Solo <strong class="text-light">un proceso</strong> puede escribir en el recurso bloqueado. Ningún otro puede leer ni escribir hasta que se libere.</p>
+                <pre><code class="language-sql">LOCK TABLES Pedidos WRITE;
+
+UPDATE Pedidos SET estado = 'Enviado'
+WHERE pedido_id = 42;
+
+UNLOCK TABLES;</code></pre>
+                <p class="mb-0 text-danger">⚠️ Si no liberas el bloqueo, otros procesos quedarán esperando indefinidamente.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h5 class="text-light mt-4 mb-3">Bloqueo a nivel de fila con SELECT ... FOR UPDATE (InnoDB)</h5>
+<p class="text-secondary">El motor <strong>InnoDB</strong> soporta bloqueos a nivel de <em>fila</em>, mucho más granulares y eficientes que los bloqueos de tabla:</p>
+<pre><code class="language-sql">-- Ejemplo: proceso de compra que bloquea el stock de un producto
+BEGIN;
+
+-- Bloquear solo la fila del producto (otros procesos siguen trabajando con el resto):
+SELECT stock FROM Platos WHERE plato_id = 7 FOR UPDATE;
+
+-- Si hay stock, decrementar:
+UPDATE Platos SET stock = stock - 1 WHERE plato_id = 7;
+
+COMMIT;  -- Libera el bloqueo de fila automáticamente</code></pre>
+
+<div class="alert alert-info bg-opacity-10 border-info text-light small mt-2">
+    <i class="fas fa-info-circle me-2"></i><code>FOR UPDATE</code> bloquea <em>solo las filas del resultado</em>, no la tabla entera. Es el enfoque correcto en aplicaciones de producción.
+</div>
+
+<h5 class="text-light mt-4 mb-3">Problemas clásicos de concurrencia sin bloqueos</h5>
+<div class="table-responsive">
+    <table class="table table-dark table-sm table-bordered small">
+        <thead class="table-secondary text-dark">
+            <tr><th>Problema</th><th>¿Qué ocurre?</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody class="text-secondary">
+            <tr>
+                <td><strong class="text-warning">Lectura sucia</strong><br><em>(Dirty Read)</em></td>
+                <td>Un proceso lee datos que otro ha modificado pero aún no ha hecho COMMIT.</td>
+                <td>Proceso A reduce stock a 0 (sin COMMIT). Proceso B ve stock=0 y rechaza la venta. Proceso A hace ROLLBACK: el stock sigue siendo 1.</td>
+            </tr>
+            <tr>
+                <td><strong class="text-warning">Lectura no repetible</strong><br><em>(Non-Repeatable Read)</em></td>
+                <td>Un proceso lee el mismo dato dos veces y obtiene valores distintos.</td>
+                <td>Proceso A lee precio=5€. Proceso B cambia precio a 6€ y hace COMMIT. Proceso A vuelve a leer: 6€.</td>
+            </tr>
+            <tr>
+                <td><strong class="text-danger">Escritura fantasma</strong><br><em>(Phantom Read)</em></td>
+                <td>Una misma consulta devuelve filas distintas en dos ejecuciones dentro de la misma transacción.</td>
+                <td>Proceso A consulta 10 pedidos pendientes. Proceso B inserta 3 más. Proceso A vuelve a consultar: 13.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<h5 class="text-light mt-4 mb-3">Niveles de aislamiento en MariaDB</h5>
+<div class="table-responsive">
+    <table class="table table-dark table-sm table-bordered small">
+        <thead class="table-secondary text-dark">
+            <tr><th>Nivel</th><th>Lectura sucia</th><th>No repetible</th><th>Fantasma</th><th>Rendimiento</th></tr>
+        </thead>
+        <tbody class="text-secondary">
+            <tr><td><code>READ UNCOMMITTED</code></td><td class="text-danger">Posible</td><td class="text-danger">Posible</td><td class="text-danger">Posible</td><td class="text-success">Máximo</td></tr>
+            <tr><td><code>READ COMMITTED</code></td><td class="text-success">Evitada</td><td class="text-danger">Posible</td><td class="text-danger">Posible</td><td class="text-success">Alto</td></tr>
+            <tr><td><code>REPEATABLE READ</code> <span class="badge bg-primary ms-1">Default</span></td><td class="text-success">Evitada</td><td class="text-success">Evitada</td><td class="text-warning">Parcial</td><td class="text-warning">Medio</td></tr>
+            <tr><td><code>SERIALIZABLE</code></td><td class="text-success">Evitada</td><td class="text-success">Evitada</td><td class="text-success">Evitada</td><td class="text-danger">Mínimo</td></tr>
+        </tbody>
+    </table>
+</div>
+<pre><code class="language-sql">-- Ver el nivel de aislamiento actual:
+SHOW VARIABLES LIKE 'transaction_isolation';
+
+-- Cambiar el nivel para la sesión actual:
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;</code></pre>
+
+<h5 class="text-info mt-4"><i class="fas fa-pencil-alt me-2"></i>Ejercicio — Bloqueos</h5>
+<div class="accordion accordion-flush" id="accordionBloqueos">
+    <div class="accordion-item bg-transparent border-secondary">
+        <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-toggle="collapse" data-bs-target="#ex-blq-1" type="button">Simula un proceso de compra con bloqueo de fila</button></h2>
+        <div id="ex-blq-1" class="accordion-collapse collapse" data-bs-parent="#accordionBloqueos">
+            <div class="accordion-body text-secondary">
+                <p><strong>Enunciado:</strong> Abre <em>dos pestañas</em> de DBeaver conectadas a la BD del Arepazo. En la pestaña 1, inicia una transacción y bloquea con <code>FOR UPDATE</code> el plato con <code>plato_id = 1</code>. Sin hacer COMMIT, intenta desde la pestaña 2 hacer un UPDATE sobre ese mismo plato. Observa qué ocurre. Luego haz COMMIT en la pestaña 1 y comprueba que la pestaña 2 continúa.</p>
+                <details>
+                    <summary class="btn btn-sm btn-outline-light mb-2">Ver script para pestaña 1</summary>
+                    <pre class="bg-dark p-2 rounded text-success"><code>-- PESTAÑA 1: bloquear y esperar
+BEGIN;
+SELECT plato_id, nombre, precio FROM Platos WHERE plato_id = 1 FOR UPDATE;
+-- NO hagas COMMIT todavía. Ahora ejecuta el script en la pestaña 2.
+-- Cuando quieras liberar el bloqueo:
+COMMIT;</code></pre>
+                </details>
+                <details>
+                    <summary class="btn btn-sm btn-outline-light mb-2">Ver script para pestaña 2</summary>
+                    <pre class="bg-dark p-2 rounded text-success"><code>-- PESTAÑA 2: intentar modificar el registro bloqueado
+BEGIN;
+UPDATE Platos SET precio = 9.99 WHERE plato_id = 1;
+-- Este UPDATE quedará ESPERANDO hasta que la pestaña 1 haga COMMIT o ROLLBACK
+COMMIT;</code></pre>
+                </details>
+            </div>
+        </div>
+    </div>
+</div>
+</article>
 </section>
 </div>

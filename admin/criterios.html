@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criterios de Evaluación — AprenderSQL Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/shared-admin.css">
+  <style>
+    .nav-tabs .nav-link { color: var(--text-secondary); }
+    .nav-tabs .nav-link.active { background-color: var(--bg-card); color: var(--text-primary); border-color: var(--border-color) var(--border-color) var(--bg-card); }
+    .criteria-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1rem; padding: 1rem; }
+    .ra-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem; }
+    .crit-row { display: flex; gap: 1rem; align-items: flex-start; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .crit-row:last-child { border-bottom: none; }
+    .crit-id { font-weight: bold; color: var(--accent); min-width: 30px; }
+    .crit-desc { flex-grow: 1; font-size: 0.9rem; color: var(--text-secondary); }
+    .crit-mapping { min-width: 250px; }
+    .select2-container--bootstrap-5 .select2-selection { background-color: var(--bg-dark); border-color: var(--border-color); color: var(--text-primary); }
+  </style>
+  <script src="/js/theme-switcher.js"></script>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="admin-sidebar" id="admin-sidebar"></aside>
+  <main class="admin-main">
+    <div class="admin-page-title d-flex justify-content-between align-items-center">
+      <div>
+        <i class="fas fa-balance-scale" style="color:var(--accent)"></i> Criterios de Evaluación y Mapeo
+      </div>
+      <div>
+        <button class="btn btn-sm btn-primary" id="btn-save-curriculum"><i class="fas fa-save me-1"></i> Guardar Cambios</button>
+      </div>
+    </div>
+
+    <div class="card bg-dark border-secondary mb-4">
+      <div class="card-body d-flex gap-3 align-items-center flex-wrap">
+        <div>
+          <label class="form-label text-secondary small mb-1">Contexto Curricular:</label>
+          <select id="context-selector" class="form-select bg-black text-light border-secondary" style="min-width:250px;">
+            <option value="template">📝 Mi Plantilla Global (Docente)</option>
+            <!-- Clases se cargarán aquí -->
+          </select>
+        </div>
+        <div>
+          <label class="form-label text-secondary small mb-1">Módulo BOJA:</label>
+          <select id="module-selector" class="form-select bg-black text-light border-secondary">
+            <option value="0372">0372 - Gestión de Bases de Datos</option>
+            <option value="0377">0377 - Administración de SGBD</option>
+          </select>
+        </div>
+        <div class="ms-auto" id="context-info">
+          <!-- Info de carga -->
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav nav-tabs" id="criteriosTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="weights-tab" data-bs-toggle="tab" data-bs-target="#weights-pane" type="button" role="tab">1. Ponderación de RAs</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="mapping-tab" data-bs-toggle="tab" data-bs-target="#mapping-pane" type="button" role="tab">2. Asignación de Tareas</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-pane" type="button" role="tab">3. Resumen de Cobertura</button>
+      </li>
+    </ul>
+
+    <div class="tab-content pt-4" id="criteriosTabsContent">
+      
+      <!-- Pestaña 1: Ponderaciones -->
+      <div class="tab-pane fade show active" id="weights-pane" role="tabpanel">
+        <p class="text-muted small">Establece qué porcentaje de la nota final vale cada Resultado de Aprendizaje. La suma debería ser 100%.</p>
+        <div id="weights-container"></div>
+        <div class="mt-3 text-end fw-bold" id="weights-total">Total: 0%</div>
+      </div>
+
+      <!-- Pestaña 2: Mapeo -->
+      <div class="tab-pane fade" id="mapping-pane" role="tabpanel">
+        <p class="text-muted small">Asigna qué Tareas, Exámenes o Tandas de Ejercicios evalúan cada uno de los criterios del BOJA.</p>
+        
+        <div class="card bg-dark border-secondary mb-4">
+          <div class="card-body">
+            <h6 class="text-warning mb-2"><i class="fas fa-plus-circle me-1"></i> Tareas Personalizadas (Offline)</h6>
+            <p class="text-muted small mb-2">Añade tareas o exámenes en papel que no se hagan en la plataforma para poder asignarles criterios.</p>
+            <div class="input-group input-group-sm" style="max-width: 400px;">
+              <input type="text" id="custom-task-name" class="form-control bg-black text-light border-secondary" placeholder="Ej: Examen Teórico Papel">
+              <button class="btn btn-outline-warning" type="button" id="btn-add-custom-task">Añadir</button>
+            </div>
+            <div id="custom-tasks-list" class="mt-2 d-flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+
+        <div id="mapping-container"></div>
+      </div>
+
+      <!-- Pestaña 3: Resumen -->
+      <div class="tab-pane fade" id="summary-pane" role="tabpanel">
+        <p class="text-muted small">Estado global del módulo: verifica que no haya RAs huérfanos ni criterios sin cubrir.</p>
+        <div id="summary-container" class="row g-3"></div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/ejercicios-data.js"></script>
+<script src="js/boja-data.js"></script>
+<script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
+<script type="module" src="js/criterios.js"></script>
+<script src="/js/load-footer.js"></script>
+</body>
+</html>

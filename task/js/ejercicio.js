@@ -63,6 +63,8 @@ async function initEditorPage() {
     
     btnRun.onclick = runQuery;
     document.getElementById('btn-show-schema').onclick = showSchema;
+    const nomnomlBtnTest = document.getElementById('btn-show-nomnoml');
+    if (nomnomlBtnTest) nomnomlBtnTest.onclick = showSchema;
     return;
   }
   
@@ -90,6 +92,7 @@ async function initEditorPage() {
   
   if (currentModo === 'examen') {
     document.getElementById('btn-submit-tanda').style.display = 'block';
+    document.getElementById('btn-submit-tanda').onclick = submitExam;
     document.getElementById('btn-hint').style.display = 'none';
   }
 
@@ -104,15 +107,43 @@ async function initEditorPage() {
   } else if (tandaId) {
     // Sistema legacy: por bd (ej: "1:nba")
     const [bId, bd] = tandaId.split(':');
-    const bloque = window.BLOQUES?.find(b => b.id == parseInt(bId));
     currentTanda = `Bloque ${bId} - ${bd.toUpperCase()}`;
     titleBadge.textContent = currentTanda;
-    currentEjercicios = window.EJERCICIOS.filter(e => e.grupo === bloque?.nombre && (e.bd === bd || e.tanda === bd));
+    currentEjercicios = window.EJERCICIOS.filter(e => e.bloque_id == parseInt(bId) && (e.bd === bd || e.tanda === bd));
   }
 
   if (currentEjercicios.length === 0) {
     exListEl.innerHTML = '<div class="p-3 text-warning">No hay ejercicios para esta selección.</div>';
     return;
+  }
+  
+  if (currentModo === 'examen' && userDoc.rol === 'alumno') {
+    try {
+      const qEx = fb.query(fb.collection(db, 'usuarios', user.uid, 'examenes'), fb.where('tandaId', '==', currentTanda));
+      const snapEx = await fb.getDocs(qEx);
+      if (!snapEx.empty) {
+        // Ya lo entregó
+        const lastExam = snapEx.docs.sort((a,b) => b.data().fecha.localeCompare(a.data().fecha))[0].data();
+        window.examAnswers = lastExam.respuestas || {};
+        const btnSubmit = document.getElementById('btn-submit-tanda');
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-lock"></i> Examen Entregado';
+        btnSubmit.classList.replace('btn-success', 'btn-secondary');
+        showToast('ℹ️', 'Estás revisando un examen ya entregado.', 'info');
+      }
+    } catch(e) { console.error('Error cargando examen previo:', e); }
+  }
+
+  if (currentModo === 'examen') {
+    // Si son ejercicios de DDL (bloque 1), el orden es estricto porque unas tablas dependen de otras.
+    const isDDL = currentEjercicios.some(e => e.bloque_id == 1 || e.grupo === 'DDL');
+    if (!isDDL) {
+      // Barajar aleatoriamente los ejercicios en modo examen
+      for (let i = currentEjercicios.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [currentEjercicios[i], currentEjercicios[j]] = [currentEjercicios[j], currentEjercicios[i]];
+      }
+    }
   }
 
   // Comprobar estado del usuario en estos ejercicios (si ya superó alguno)
@@ -124,6 +155,9 @@ async function initEditorPage() {
 
   btnRun.onclick = runQuery;
   document.getElementById('btn-show-schema').onclick = showSchema;
+  
+  const nomnomlBtn = document.getElementById('btn-show-nomnoml');
+  if(nomnomlBtn) nomnomlBtn.onclick = showSchema;
 }
 
 async function updateProgressUI() {
@@ -138,6 +172,7 @@ async function updateProgressUI() {
   currentEjercicios.forEach((ex, idx) => {
     const estado = userExs[ex.id];
     ex._superado = estado?.superado || false;
+    ex._respuesta_sql = estado?.respuesta_sql || '';
     if (ex._superado) completados++;
     
     // Agrupar por BD (útil si vienen varios en modo bloque)
@@ -153,12 +188,13 @@ async function updateProgressUI() {
     btn.id = `btn-ex-${ex.id}`;
     btn.onclick = () => loadExercise(ex.id);
     
+    const displayTitle = currentModo === 'examen' ? `Ejercicio ${idx + 1}` : `#${ex.id} - ${ex.titulo}`;
     const icon = ex._superado ? '<i class="fas fa-check-circle text-success me-2"></i>' : '<i class="far fa-circle text-secondary me-2"></i>';
     btn.innerHTML = `
       <div class="d-flex align-items-start">
         ${icon}
         <div>
-          <div class="small fw-bold mb-1">#${ex.id} - ${ex.titulo}</div>
+          <div class="small fw-bold mb-1">${displayTitle}</div>
           <div class="text-muted" style="font-size:0.7rem">${ex.tema || ''}</div>
         </div>
       </div>
@@ -183,10 +219,17 @@ async function loadExercise(id) {
   if (activeBtn) activeBtn.classList.add('active');
 
   // UI
-  exTitleEl.textContent = ex.titulo;
-  exBadgeEl.textContent = `Ejercicio #${ex.id}`;
+  const idx = currentEjercicios.findIndex(e => e.id === id);
+  exTitleEl.textContent = currentModo === 'examen' ? `Ejercicio ${idx + 1}` : ex.titulo;
+  exBadgeEl.textContent = currentModo === 'examen' ? `Oculto` : `Ejercicio #${ex.id}`;
   exTextEl.innerHTML = ex.enunciado;
-  sqlEditor.value = '';
+  let previousSql = '';
+  if (currentModo === 'examen' && window.examAnswers && window.examAnswers[ex.id]) {
+    previousSql = window.examAnswers[ex.id].sql || '';
+  } else if (currentModo === 'practica' && ex._respuesta_sql) {
+    previousSql = ex._respuesta_sql;
+  }
+  sqlEditor.value = previousSql;
   resultsContainer.innerHTML = '<div class="text-center text-muted mt-4 small">Ejecuta tu consulta SQL.</div>';
   rowCountBadge.textContent = '0 filas';
   document.getElementById('feedback-panel').style.display = 'none';
@@ -209,27 +252,102 @@ async function loadDatabase(bdName) {
     if (!window.initSqlJs) throw new Error('sql.js no cargado');
     const SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
     
-    const bdMap = {
-      'arepazo': 'bd/arepazo.sqlite',
-      'nba': 'bd/nba.sqlite',
-      'alquiler': 'bd/alquiler.sqlite',
-      'pokemon': 'bd/pokemon.sqlite'
-    };
-    
-    const path = bdMap[bdName];
-    if (!path) throw new Error('Ruta DB desconocida: ' + bdName);
+    // Cargar desde los scripts .sql en la carpeta bds
+    const path = `bds/${bdName}.sql`;
     
     const res = await fetch(`../${path}`);
-    const buf = await res.arrayBuffer();
-    sqlDb = new SQL.Database(new Uint8Array(buf));
+    sqlDb = new SQL.Database(); // Siempre inicializar vacía
+    
+    if (!res.ok) {
+      console.warn(`No se encontró el script ${path}, iniciando la BD totalmente vacía (ideal para DDL).`);
+    } else {
+      let sqlText = await res.text();
+      
+      // Adaptar sintaxis MySQL a SQLite
+      sqlText = sqlText
+        .replace(/drop\s+database\s+if\s+exists\s+\w+\s*;/gi, '')
+        .replace(/CREATE\s+DATABASE\s+(IF\s+NOT\s+EXISTS\s+)?\w+\s*;/gi, '')
+        .replace(/use\s+\w+\s*;/gi, '')
+        .replace(/INT\s+AUTO_INCREMENT\s+PRIMARY\s+KEY/gi, 'INTEGER PRIMARY KEY AUTOINCREMENT')
+        .replace(/UNIQUE\s+KEY\s+\w+\s*\(([^)]+)\)/gi, 'UNIQUE($1)');
+
+      try {
+        sqlDb.run(sqlText); // Volcar el script SQL a la base de datos en memoria
+      } catch (sqlErr) {
+        console.error(`Error ejecutando el script ${path}:`, sqlErr);
+      }
+    }
+    
+    updateSchemaSidebar();
   } catch (e) {
     showToast('❌', 'Error cargando BD: ' + e.message, 'error');
   }
 }
 
+let currentNomnomlSource = '';
+
+function updateSchemaSidebar() {
+  if (!sqlDb) return;
+  const listEl = document.getElementById('schema-tables-list');
+  if(!listEl) return;
+  
+  listEl.innerHTML = '';
+  currentNomnomlSource = '#direction: right\n#spacing: 40\n#padding: 12\n#fill: #ffffff\n#stroke: #333333\n';
+
+  const tablesRes = sqlDb.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+  if (!tablesRes.length) {
+    listEl.innerHTML = '<div class="text-center text-muted p-3">Base de datos vacía</div>';
+    return;
+  }
+
+  const tables = tablesRes[0].values.map(row => row[0]);
+  
+  tables.forEach(tableName => {
+    const colRes = sqlDb.exec(`PRAGMA table_info('${tableName}')`);
+    if (!colRes.length) return;
+    
+    const tableDiv = document.createElement('div');
+    tableDiv.className = 'mb-3';
+    let html = `<div class="fw-bold text-info border-bottom border-secondary mb-1 pb-1"><i class="fas fa-table me-1"></i>${tableName}</div>`;
+    
+    currentNomnomlSource += `[${tableName}|\n`;
+    
+    const cols = colRes[0].values;
+    cols.forEach((col, idx) => {
+      const name = col[1];
+      const type = col[2];
+      const isPk = col[5] > 0;
+      
+      html += `<div class="d-flex justify-content-between text-light px-1">
+                 <span>${isPk ? '<i class="fas fa-key text-warning me-1" style="font-size:0.7rem"></i>' : '<span style="width:14px;display:inline-block"></span>'} ${name}</span>
+                 <span class="text-secondary" style="font-size:0.75rem">${type.toLowerCase()}</span>
+               </div>`;
+      
+      currentNomnomlSource += `  ${isPk ? '*' : ''}${name}: ${type}${idx < cols.length - 1 ? ';\n' : ''}`;
+    });
+    
+    currentNomnomlSource += ']\n';
+    tableDiv.innerHTML = html;
+    listEl.appendChild(tableDiv);
+    
+    const fkRes = sqlDb.exec(`PRAGMA foreign_key_list('${tableName}')`);
+    if (fkRes.length) {
+      fkRes[0].values.forEach(fk => {
+        const targetTable = fk[2];
+        currentNomnomlSource += `[${tableName}] -:> [${targetTable}]\n`;
+      });
+    }
+  });
+}
+
 function showSchema() {
-  if (!currentDatabaseName) return;
-  document.getElementById('schema-img').src = `../img/schema_${currentDatabaseName}.png`;
+  if (!currentNomnomlSource) return;
+  const canvas = document.getElementById('schema-canvas');
+  try {
+    nomnoml.draw(canvas, currentNomnomlSource);
+  } catch(e) {
+    console.error("Nomnoml error", e);
+  }
   new bootstrap.Modal(document.getElementById('schema-modal')).show();
 }
 
@@ -254,16 +372,15 @@ async function runQuery() {
     
     renderResults(resAlumno);
 
-    // 2. Validar (solo en modo práctica por ahora, en examen se hace al final)
-    if (currentModo === 'practica') {
-      const dbCopy = new sqlDb.constructor(sqlDb.export()); // Clonar DB para probar solución ideal
-      let resSolucion = [];
-      try {
-        resSolucion = dbCopy.exec(ex.query_solucion);
-      } catch(e) { console.error('Error en solución oficial:', e); }
+    const dbCopy = new sqlDb.constructor(sqlDb.export());
+    let resSolucion = [];
+    try {
+      resSolucion = dbCopy.exec(ex.query_solucion);
+    } catch(e) { console.error('Error en solución oficial:', e); }
 
-      const isCorrect = compareResults(resAlumno, resSolucion, isDML, dbCopy);
-      
+    const isCorrect = compareResults(resAlumno, resSolucion, isDML, dbCopy);
+    
+    if (currentModo === 'practica') {
       if (isCorrect) {
         showFeedback(true, '¡Consulta Correcta!', 'Buen trabajo.');
         if (!ex._superado && userDoc.rol === 'alumno') {
@@ -274,13 +391,28 @@ async function runQuery() {
         showFeedback(false, 'Consulta Incorrecta', 'Revisa tu sintaxis y los datos devueltos.');
         if (userDoc.rol === 'alumno') await registerAttempt(false);
       }
+    } else if (currentModo === 'examen') {
+      if (!window.examAnswers) window.examAnswers = {};
+      window.examAnswers[ex.id] = { query, isCorrect, puntos: isCorrect ? (ex.puntos || 10) : 0 };
+      showToast('💾', 'Respuesta guardada temporalmente', 'success');
+      const btnLista = document.getElementById(`btn-ex-${ex.id}`);
+      if(btnLista) btnLista.classList.add('border-primary', 'border-2');
     }
     
   } catch (e) {
     renderError(e.message);
-    showFeedback(false, 'Error SQL', e.message);
-    if (userDoc.rol === 'alumno') await registerAttempt(false);
+    if (currentModo === 'practica') {
+      showFeedback(false, 'Error SQL', e.message);
+      if (userDoc.rol === 'alumno') await registerAttempt(false);
+    } else {
+      if (!window.examAnswers) window.examAnswers = {};
+      window.examAnswers[currentExId] = { query, isCorrect: false, puntos: 0 };
+      showToast('💾', 'Respuesta guardada con error sintáctico', 'warning');
+      const btnLista = document.getElementById(`btn-ex-${currentExId}`);
+      if(btnLista) btnLista.classList.add('border-warning', 'border-2');
+    }
   } finally {
+    if (isDML) updateSchemaSidebar();
     btnRun.disabled = false;
   }
 }
@@ -356,7 +488,7 @@ async function registerAttempt(isSuccess) {
     if (isSuccess) {
       // Actualizar estado usuario
       const exRef = fb.doc(db, 'usuarios', user.uid, 'ejercicios', String(currentExId));
-      await fb.setDoc(exRef, { superado: true, puntosObtenidos: pts, fecha: ts }, { merge:true });
+      await fb.setDoc(exRef, { superado: true, puntosObtenidos: pts, fecha: ts, respuesta_sql: sqlEditor.value.trim() }, { merge:true });
       
       const incrPts = (userDoc.puntosTotal || 0) + pts;
       const incrExs = (userDoc.ejerciciosOK || 0) + 1;
@@ -379,4 +511,71 @@ function showConfetti() {
     const idx = currentEjercicios.findIndex(e => e.id === currentExId);
     if (idx < currentEjercicios.length - 1) loadExercise(currentEjercicios[idx+1].id);
   };
+}
+
+async function submitExam() {
+  if (!window.examAnswers) window.examAnswers = {};
+  
+  let totalPuntosPosibles = 0;
+  let puntosConseguidos = 0;
+  let respondidas = 0;
+  
+  currentEjercicios.forEach(ex => {
+    totalPuntosPosibles += (ex.puntos || 10);
+    const ans = window.examAnswers[ex.id];
+    if (ans) {
+      respondidas++;
+      if (ans.isCorrect) puntosConseguidos += ans.puntos;
+    }
+  });
+
+  if (respondidas < currentEjercicios.length) {
+    if (!confirm(`Faltan ${currentEjercicios.length - respondidas} preguntas por responder. ¿Seguro que quieres entregar?`)) {
+      return;
+    }
+  }
+
+  const btnSubmit = document.getElementById('btn-submit-tanda');
+  btnSubmit.disabled = true;
+  btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entregando...';
+
+  // Guardar en firestore si es alumno
+  if (userDoc.rol === 'alumno') {
+    try {
+      const claseIdParam = new URLSearchParams(window.location.search).get('claseId');
+      const examData = {
+        claseId: claseIdParam,
+        tandaId: currentTanda,
+        fecha: new Date().toISOString(),
+        respuestas: window.examAnswers,
+        puntuacion: puntosConseguidos,
+        puntosMaximos: totalPuntosPosibles
+      };
+      await fb.setDoc(fb.doc(db, 'usuarios', user.uid, 'examenes', `examen_${Date.now()}`), examData);
+      
+      // Actualizar puntos totales
+      await fb.updateDoc(fb.doc(db, 'usuarios', user.uid), {
+        puntosTotal: (userDoc.puntosTotal || 0) + puntosConseguidos
+      });
+    } catch(e) {
+      console.error(e);
+      alert('Error guardando el examen: ' + e.message);
+    }
+  }
+
+  // Mostrar nota final
+  const nota = (puntosConseguidos / totalPuntosPosibles) * 10;
+  const overlay = document.getElementById('success-overlay');
+  
+  overlay.innerHTML = `
+      <i class="fas fa-clipboard-check text-white mb-3" style="font-size: 5rem; text-shadow: 0 4px 15px rgba(0,0,0,0.2)"></i>
+      <h2 class="text-white fw-bold">Examen Entregado</h2>
+      <p class="text-white-50 fs-4 mb-2">Nota: ${nota.toFixed(1)} / 10</p>
+      <p class="text-white-50 mb-4">${puntosConseguidos} de ${totalPuntosPosibles} puntos</p>
+      <button class="btn btn-light btn-lg fw-bold px-5 rounded-pill shadow" onclick="window.close(); window.location.href='tandas.html?claseId=${new URLSearchParams(window.location.search).get('claseId')}'">
+        Volver a la clase <i class="fas fa-arrow-right ms-2"></i>
+      </button>
+  `;
+  overlay.style.background = 'rgba(15, 23, 42, 0.95)';
+  overlay.style.setProperty('display', 'flex', 'important');
 }
