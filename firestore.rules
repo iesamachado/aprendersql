@@ -151,7 +151,7 @@ service cloud.firestore {
     // COLECCIÓN: intentos_tandas (intentos completos de tandas en modo examen/practica)
     // ─────────────────────────────────────────────────────────
     match /intentos_tandas/{intentoId} {
-      allow read: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid);
+      allow read: if isDocente() || (isAuth() allow read: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid);allow read: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid); (resource == null || resource.data.uid == request.auth.uid));
       allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
       allow update: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid && !('nota' in request.resource.data.diff(resource.data).affectedKeys()));
       allow delete: if isAdmin();
@@ -190,5 +190,34 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // ─────────────────────────────────────────────────────────
+    // COLECCIONES SISTEMA EXÁMENES TEST
+    // ─────────────────────────────────────────────────────────
+    
+    // Banco de preguntas: solo accesible para docentes y admin. Los alumnos no pueden ni leerlas.
+    match /preguntas/{preguntaId} {
+      allow read, write: if isDocente();
+    }
+
+    // Definición de exámenes test lanzados a una clase
+    match /examenes_test/{examenId} {
+      // Los alumnos pueden leer el examen (no contiene las respuestas correctas, solo la config y ref a preguntas)
+      allow read: if isAuth(); 
+      // Solo docentes pueden crear, editar, borrar
+      allow write: if isDocente();
+    }
+
+    // Respuestas entregadas por los alumnos a un examen test
+    match /respuestas_test/{respuestaId} {
+      // El alumno solo lee lo suyo, el docente lee todo
+      allow read: if isDocente() || (isAuth() && respuestaId.matches('.*_' + request.auth.uid));
+      // El alumno crea/actualiza su propio documento
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      // Permite actualizar sus respuestas mientras no esté cerrado, pero la validación final la hace el cliente/backend
+      allow update: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
   }
 }
+

@@ -1,38 +1,30 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tema 5: Optimización de Rendimiento (RA5)</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #212529; color: #fff; }
-        .toc a { color: #0d6efd; text-decoration: none; }
-        .toc a:hover { text-decoration: underline; }
-        pre { background-color: #343a40; padding: 15px; border-radius: 5px; color: #f8f9fa; }
-        .concept-card { background-color: #2c3034; border: 1px solid #495057; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-    </style>
-<script src="../../js/theme-switcher.js"></script>
-</head>
-<body class="bg-dark text-white">
-
 <div class="tema-content p-4">
-    <h1 class="mb-4 text-center text-primary"><i class="fas fa-tachometer-alt me-2"></i>Tema 5: Optimización de Rendimiento (RA5)</h1>
-    
-    <div class="concept-card mb-5">
-        <h4 class="mb-3"><i class="fas fa-list-ul me-2"></i>Índice de Contenidos</h4>
-        <ul class="toc list-unstyled fs-5">
-            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#factores-rendimiento">1. Factores que Afectan al Rendimiento</a></li>
-            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#que-no-hacer">2. Qué NO hacer en una consulta (Buenas Prácticas)</a></li>
-            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#indices">3. Índices (Clustered vs Non-Clustered)</a></li>
-            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#comando-explain">4. El Comando EXPLAIN en MariaDB</a></li>
-            <li><i class="fas fa-chevron-right me-2 fa-sm"></i><a href="#monitorizacion-logs">5. Monitorización y Optimización (Binary Logs)</a></li>
-        </ul>
-    </div>
+  <div class="text-center mb-5">
+    <h1 class="display-5 text-primary"><i class="fas fa-database me-3"></i>Tema 5: Optimización de Rendimiento</h1>
+    <p class="lead">Módulo: Administración de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA5</span></p>
+    <p class="text-secondary">Monitorización · Diseño e Índices · Profiling</p>
+  </div>
 
-    <!-- 1. Factores -->
-    <h2 id="factores-rendimiento" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-chart-line me-2"></i>1. Factores que Afectan al Rendimiento</h2>
+
+  <!-- Índice -->
+  <div class="card border-info mb-5">
+    <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
+      <i class="fas fa-list me-2"></i>Índice del Tema
+    </div>
+    <div class="card-body">
+      <ul class="list-unstyled mb-0" style="line-height: 2.2;">
+        <li><a href="#factores-rendimiento" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. Factores que Afectan al Rendimiento</a></li>
+        <li><a href="#que-no-hacer" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Qué NO hacer en una consulta (Buenas Prácticas)</a></li>
+        <li><a href="#indices" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. Índices (Clustered vs Non-Clustered)</a></li>
+        <li><a href="#comando-explain" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. El Comando EXPLAIN en MariaDB</a></li>
+        <li><a href="#monitorizacion-logs" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>5. Monitorización y Optimización (Binary Logs)</a></li>
+      </ul>
+    </div>
+  </div>
+  
+
+<!-- 1. Factores -->
+    <h2 id="factores-rendimiento" class="text-info border-bottom pb-2 mt-5"><i class="fas fa-chart-line me-2"></i>1. Factores que Afectan al Rendimiento</h2>
     <p class="fs-5">El rendimiento de una base de datos depende principalmente de dos grandes factores:</p>
     <ul>
         <li><strong>Consultas bien escritas y optimizadas:</strong> La forma en que pedimos los datos impacta enormemente en el tiempo de respuesta.</li>
@@ -40,7 +32,7 @@
     </ul>
 
     <!-- 2. Buenas prácticas -->
-    <h2 id="que-no-hacer" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>2. Qué NO hacer en una consulta (Buenas Prácticas)</h2>
+    <h2 id="que-no-hacer" class="text-info border-bottom pb-2 mt-5"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>2. Qué NO hacer en una consulta (Buenas Prácticas)</h2>
     
     <div class="row mt-4">
         <div class="col-md-6 mb-3">
@@ -88,7 +80,7 @@
     </div>
 
     <!-- 3. Índices -->
-    <h2 id="indices" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-book me-2"></i>3. Índices (Clustered vs Non-Clustered)</h2>
+    <h2 id="indices" class="text-info border-bottom pb-2 mt-5"><i class="fas fa-book me-2"></i>3. Índices (Clustered vs Non-Clustered)</h2>
     <p class="fs-5">Los índices son estructuras de datos que mejoran la velocidad de las operaciones, permitiendo búsquedas y ordenamientos rápidos a costa de algo de espacio en disco y tiempo en las inserciones/modificaciones.</p>
     
     <div class="row mt-4">
@@ -131,7 +123,7 @@ SHOW INDEX FROM nombre_tabla;
 DROP INDEX nombre_indice ON tabla;</code></pre>
 
     <!-- 4. EXPLAIN -->
-    <h2 id="comando-explain" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-search me-2"></i>4. El Comando EXPLAIN en MariaDB</h2>
+    <h2 id="comando-explain" class="text-info border-bottom pb-2 mt-5"><i class="fas fa-search me-2"></i>4. El Comando EXPLAIN en MariaDB</h2>
     <p class="fs-5">El comando <code>EXPLAIN</code> es fundamental para la monitorización y optimización de consultas. Nos permite ver el <strong>plan de ejecución</strong> que MariaDB utilizará para resolver nuestra consulta, mostrando si está utilizando índices o haciendo escaneos completos de tabla.</p>
     
     <pre><code>EXPLAIN SELECT * FROM clientes c JOIN pedidos p ON c.id = p.cliente_id WHERE c.pais = 'España';</code></pre>
@@ -171,7 +163,7 @@ DROP INDEX nombre_indice ON tabla;</code></pre>
     </div>
 
     <!-- 5. Binary Log -->
-    <h2 id="monitorizacion-logs" class="text-info border-bottom border-secondary pb-2 mt-5"><i class="fas fa-server me-2"></i>5. Monitorización y Optimización (Binary Logs)</h2>
+    <h2 id="monitorizacion-logs" class="text-info border-bottom pb-2 mt-5"><i class="fas fa-server me-2"></i>5. Monitorización y Optimización (Binary Logs)</h2>
     <p class="fs-5">Los <strong>Binary Logs (binlog)</strong> de MariaDB registran todas las operaciones (cambios) realizadas en la base de datos. Son fundamentales para la replicación y para reconstruir la BBDD desde un backup en caso de desastre.</p>
 
     <div class="concept-card">
@@ -198,10 +190,177 @@ PURGE BINARY LOGS TO 'mysql-bin.000006';
 -- Rotar el log (cierra el actual y crea uno nuevo)
 FLUSH LOGS;</code></pre>
     </div>
-
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../../js/load-footer.js"></script>
-</body>
-</html>
+<section id="performance-schema" class="mb-5">
+  <h2><i class="fas fa-tachometer-alt section-icon"></i>6. Monitorización Avanzada: <code>performance_schema</code> y <code>sys</code></h2>
+  <p>Los índices y el <code>EXPLAIN</code> son el primer nivel de optimización. El <strong>siguiente nivel</strong> es saber en tiempo real qué está haciendo el servidor, qué consultas consumen más recursos y dónde están los cuellos de botella. Para eso existen dos herramientas integradas en MariaDB/MySQL.</p>
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      <div class="card border-primary h-100">
+        <div class="card-header bg-primary bg-opacity-10 text-primary fw-bold"><i class="fas fa-microchip me-2"></i>performance_schema</div>
+        <div class="card-body">
+          <p>Una base de datos virtual que el motor rellena automáticamente con estadísticas de bajo nivel: tiempo de ejecución de consultas, bloqueos, uso de memoria, accesos a disco...</p>
+          <p class="mb-0"><strong>Nivel:</strong> Bajo (datos crudos). Muy potente pero verboso.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card border-success h-100">
+        <div class="card-header bg-success bg-opacity-10 text-success fw-bold"><i class="fas fa-filter me-2"></i>sys schema</div>
+        <div class="card-body">
+          <p>Una capa de vistas construida sobre <code>performance_schema</code> que presenta los datos de forma <strong>legible para humanos</strong>. Es como un panel de control pre-montado.</p>
+          <p class="mb-0"><strong>Nivel:</strong> Alto (resúmenes útiles). Recomendado para el día a día.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="mt-4">Verificar que están activos</h3>
+  <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Verificar si performance_schema está habilitado
+SHOW VARIABLES LIKE 'performance_schema';
+-- Si devuelve OFF, añadir "performance_schema = ON" al [mysqld] del my.cnf y reiniciar
+
+-- Ver las bases de datos especiales disponibles
+SHOW DATABASES;
+-- Deberías ver: performance_schema  y  sys</code></pre>
+
+  <h3 class="mt-4">Consultas de diagnóstico más útiles del <code>sys</code> schema</h3>
+  <div class="accordion" id="accordionSys">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sysTopQueries">
+          <i class="fas fa-fire me-2 text-danger"></i>¿Cuáles son las consultas más lentas del servidor?
+        </button>
+      </h2>
+      <div id="sysTopQueries" class="accordion-collapse collapse" data-bs-parent="#accordionSys">
+        <div class="accordion-body">
+          <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Top 10 consultas más costosas (tiempo total acumulado)
+SELECT
+  query,
+  exec_count             AS 'Veces ejecutada',
+  avg_latency            AS 'Latencia media',
+  total_latency          AS 'Tiempo total',
+  rows_examined_avg      AS 'Filas examinadas (media)'
+FROM sys.statements_with_runtimes_in_95th_percentile
+LIMIT 10;</code></pre>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sysFullScans">
+          <i class="fas fa-exclamation-triangle me-2 text-warning"></i>¿Qué consultas hacen full table scans (sin índice)?
+        </button>
+      </h2>
+      <div id="sysFullScans" class="accordion-collapse collapse" data-bs-parent="#accordionSys">
+        <div class="accordion-body">
+          <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Consultas que NO usan índices (candidatas a necesitar uno urgente)
+SELECT
+  query,
+  exec_count,
+  total_latency,
+  no_index_used_count    AS 'Veces sin índice'
+FROM sys.statements_with_full_table_scans
+ORDER BY no_index_used_count DESC
+LIMIT 10;</code></pre>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sysConnections">
+          <i class="fas fa-users me-2 text-info"></i>¿Quién está conectado y qué está haciendo?
+        </button>
+      </h2>
+      <div id="sysConnections" class="accordion-collapse collapse" data-bs-parent="#accordionSys">
+        <div class="accordion-body">
+          <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Ver conexiones activas con su consulta en curso
+SELECT * FROM sys.processlist;
+
+-- Equivalente clásico (más básico)
+SHOW FULL PROCESSLIST;</code></pre>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sysIndexUsage">
+          <i class="fas fa-key me-2 text-success"></i>¿Qué índices no se están usando para nada?
+        </button>
+      </h2>
+      <div id="sysIndexUsage" class="accordion-collapse collapse" data-bs-parent="#accordionSys">
+        <div class="accordion-body">
+          <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Índices que existen pero nadie ha consultado nunca (candidatos a borrar)
+SELECT * FROM sys.schema_unused_indexes
+WHERE object_schema NOT IN ('performance_schema', 'sys', 'information_schema', 'mysql');</code></pre>
+          <div class="alert alert-warning mt-2 mb-0">
+            <i class="fas fa-trash-alt me-2"></i>Los índices innecesarios ralentizan los INSERT/UPDATE/DELETE. Esta vista te ayuda a limpiarlos.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="os-optimization" class="mb-5">
+  <h2><i class="fas fa-server section-icon"></i>7. Optimización del Sistema Operativo</h2>
+  <p>El rendimiento de MariaDB no depende solo de la configuración SQL. El SO que hay debajo tiene una influencia enorme. Un administrador ASIR debe conocer los ajustes del kernel y del filesystem que afectan al gestor.</p>
+
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>Estos ajustes son para servidores Linux en producción. En un Docker de desarrollo son menos relevantes, pero en un servidor real marcan la diferencia.
+  </div>
+
+  <h3 class="mt-4">Parámetros clave del kernel</h3>
+  <div class="table-responsive">
+    <table class="table table-dark table-striped table-bordered">
+      <thead class="table-warning">
+        <tr><th>Parámetro</th><th>¿Qué hace?</th><th>Valor recomendado para BBDD</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>vm.swappiness</code></td>
+          <td>Controla cuánto tiende el kernel a mover páginas de memoria RAM al swap del disco. A mayor valor, más agresivo con el swap.</td>
+          <td><code>1</code> — Evitar swap casi al máximo. Si MariaDB empieza a swappear, el rendimiento cae brutalmente.</td>
+        </tr>
+        <tr>
+          <td><code>vm.dirty_ratio</code></td>
+          <td>Porcentaje de RAM que puede estar "sucia" (pendiente de escribir en disco) antes de forzar un flush.</td>
+          <td><code>10</code> — En servidores BBDD, mejor writes frecuentes que un flush masivo que bloquee el servidor.</td>
+        </tr>
+        <tr>
+          <td>I/O Scheduler</td>
+          <td>Algoritmo que el kernel usa para ordenar las escrituras en disco.</td>
+          <td><code>none</code> o <code>mq-deadline</code> para SSD. <code>cfq</code> para HDD mecánicos.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="mt-4">Comandos de ajuste del SO</h3>
+  <pre><code class="language-bash bg-black p-3 rounded d-block text-success"># Ver el valor actual de swappiness
+cat /proc/sys/vm/swappiness
+
+# Cambiarlo temporalmente (se pierde al reiniciar)
+sudo sysctl -w vm.swappiness=1
+
+# Hacerlo permanente (editar sysctl.conf)
+echo "vm.swappiness=1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p   # Aplicar los cambios sin reiniciar
+
+# Ver qué scheduler usa un disco
+cat /sys/block/sda/queue/scheduler
+
+# Ver el uso de memoria en tiempo real
+free -h
+top    # O mejor: htop (instalar con apt install htop)
+
+# Ver qué proceso consume más I/O de disco
+iotop  # Requiere: apt install iotop (muy útil para ver si mariadb está 'reventando' el disco)</code></pre>
+
+  <div class="alert alert-warning mt-3">
+    <i class="fas fa-exclamation-triangle me-2"></i><strong>Regla de oro:</strong> Antes de tocar parámetros del SO, anota el valor original y el motivo del cambio. Un <code>sysctl -p</code> mal ejecutado puede dejar el servidor inaccesible.
+  </div>
+</section>
+

@@ -1,14 +1,14 @@
-<div class="tema-content text-white bg-dark p-4">
+<div class="tema-content p-4">
   <div class="text-center mb-5">
     <h1 class="display-4 text-primary"><i class="fas fa-database"></i> Tema 1: Sistemas de Almacenamiento de la Información</h1>
     <p class="lead">Módulo: Gestión de Bases de Datos (ASIR) | <span class="badge bg-warning text-dark">RA1 - Cumplimiento Normativa BOJA</span></p>
   </div>
 
-  <div class="card bg-secondary text-white border-secondary mb-4 shadow-sm">
-    <div class="card-header bg-dark border-secondary">
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header">
       <h3 class="card-title mb-0"><i class="fas fa-list-ul"></i> Índice de Contenidos</h3>
     </div>
-    <div class="card-body bg-dark">
+    <div class="card-body">
       <ol class="fs-5">
         <li>Sistemas lógicos de almacenamiento (Ficheros)</li>
         <li>Tipos de Bases de Datos según su Modelo</li>
@@ -21,12 +21,12 @@
   </div>
 
   <!-- 1. Ficheros -->
-  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">1. Sistemas Lógicos de Almacenamiento</h2>
+  <h2 class="text-info mt-5 mb-3 border-bottom pb-2">1. Sistemas Lógicos de Almacenamiento</h2>
   <p class="fs-5">Antes de las bases de datos, la información persistente se guardaba exclusivamente mediante el sistema de ficheros del Sistema Operativo.</p>
   
   <div class="row g-3 my-3">
     <div class="col-md-6">
-      <div class="card bg-dark border-secondary h-100">
+      <div class="card h-100">
         <div class="card-body">
           <h5 class="card-title text-primary"><i class="fas fa-file-alt"></i> Según Contenido</h5>
           <ul class="list-unstyled">
@@ -37,7 +37,7 @@
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card bg-dark border-secondary h-100">
+      <div class="card h-100">
         <div class="card-body">
           <h5 class="card-title text-primary"><i class="fas fa-sitemap"></i> Según Organización</h5>
           <ul class="list-unstyled">
@@ -50,21 +50,21 @@
     </div>
   </div>
 
-  <div class="alert alert-danger bg-dark border-danger text-white mt-4 mb-5">
+  <div class="alert alert-danger border-danger mt-4 mb-5">
     <h5><i class="fas fa-exclamation-triangle text-danger"></i> Problemas de usar solo ficheros clásicos</h5>
     <p class="mb-0">Redundancia (datos duplicados), inconsistencia (datos que no coinciden en distintos ficheros), dificultad de acceso concurrente, y dependencia estricta entre el programa y la estructura del fichero.</p>
   </div>
 
-  <h3 class="text-light mt-4"><i class="fas fa-exchange-alt text-warning"></i> Formatos de Intercambio: XML y JSON</h3>
+  <h3 class="mt-4"><i class="fas fa-exchange-alt text-warning"></i> Formatos de Intercambio: XML y JSON</h3>
   <p>Para solucionar parte de los problemas de los ficheros de texto plano y facilitar la comunicación entre aplicaciones (APIs, servicios web), nacieron formatos estructurados. No sustituyen a una Base de Datos para grandes volúmenes, pero son esenciales hoy en día.</p>
   
   <div class="row g-4 mb-4">
     <div class="col-md-6">
-      <div class="card border-secondary bg-dark h-100">
-        <div class="card-header border-secondary text-info fw-bold"><i class="fas fa-code"></i> XML (eXtensible Markup Language)</div>
+      <div class="card h-100">
+        <div class="card-header text-info fw-bold"><i class="fas fa-code"></i> XML (eXtensible Markup Language)</div>
         <div class="card-body">
           <p class="small text-secondary">Basado en etiquetas jerárquicas (similar al HTML). Es muy descriptivo pero ocupa más espacio (verboso).</p>
-          <pre class="bg-black p-3 rounded border border-secondary text-light small"><code>&lt;alumno&gt;
+          <pre class="bg-black p-3 rounded border small"><code>&lt;alumno&gt;
   &lt;id&gt;101&lt;/id&gt;
   &lt;nombre&gt;Ana Pérez&lt;/nombre&gt;
   &lt;curso&gt;ASIR&lt;/curso&gt;
@@ -73,11 +73,11 @@
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card border-secondary bg-dark h-100">
-        <div class="card-header border-secondary text-warning fw-bold"><i class="fas fa-brackets-curly"></i> JSON (JavaScript Object Notation)</div>
+      <div class="card h-100">
+        <div class="card-header text-warning fw-bold"><i class="fas fa-brackets-curly"></i> JSON (JavaScript Object Notation)</div>
         <div class="card-body">
           <p class="small text-secondary">Basado en pares de "clave-valor". Es más ligero, rápido de procesar y el estándar actual en desarrollo web.</p>
-          <pre class="bg-black p-3 rounded border border-secondary text-light small"><code>{
+          <pre class="bg-black p-3 rounded border small"><code>{
   "alumno": {
     "id": 101,
     "nombre": "Ana Pérez",
@@ -90,12 +90,12 @@
   </div>
 
   <!-- 2. Tipos de BD según Modelo -->
-  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">2. Tipos de Bases de Datos según el Modelo de Datos</h2>
+  <h2 class="text-info mt-5 mb-3 border-bottom pb-2">2. Tipos de Bases de Datos según el Modelo de Datos</h2>
   <p>A lo largo de la historia, las bases de datos han evolucionado para organizar la información de distintas formas lógicas.</p>
 
   <div class="row g-4 mt-2 mb-4">
     <div class="col-md-6">
-      <div class="card bg-dark border-secondary h-100">
+      <div class="card h-100">
         <div class="card-body">
           <h5 class="text-warning"><i class="fas fa-tree"></i> Jerárquicas y en Red (Históricas)</h5>
           <p class="small">Primeros modelos (años 60). Los datos se organizan como un árbol invertido (jerárquico, como carpetas) o como un grafo multidireccional (red, CODASYL). Muy rígidas y complejas de programar.</p>
@@ -103,7 +103,7 @@
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card bg-dark border-primary h-100 shadow">
+      <div class="card border-primary h-100 shadow">
         <div class="card-body">
           <h5 class="text-primary"><i class="fas fa-table"></i> Relacionales (SQL)</h5>
           <p class="small">El estándar de la industria (años 70, E.F. Codd). La información se estructura en <strong>tablas</strong> (relaciones) bidimensionales de filas y columnas. Se enlazan mediante claves primarias y foráneas. Son muy robustas y aseguran la consistencia (ACID).</p>
@@ -111,7 +111,7 @@
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card bg-dark border-success h-100">
+      <div class="card border-success h-100">
         <div class="card-body">
           <h5 class="text-success"><i class="fas fa-box-open"></i> Orientadas a Objetos</h5>
           <p class="small">Almacenan objetos completos (estado y comportamiento), similares a la programación orientada a objetos (Java, C++). Evitan la conversión entre tablas y objetos en memoria, aunque su uso es de nicho.</p>
@@ -119,7 +119,7 @@
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card bg-dark border-info h-100">
+      <div class="card border-info h-100">
         <div class="card-body">
           <h5 class="text-info"><i class="fas fa-leaf"></i> NoSQL (Documentales, Clave-Valor...)</h5>
           <p class="small">Sistemas modernos para Big Data (MongoDB, Redis, Neo4j). Rompen el esquema de tablas rígidas. Son altamente escalables y flexibles. Complementan a las BD relacionales, no las sustituyen.</p>
@@ -129,49 +129,49 @@
   </div>
 
   <!-- 3. Qué es un SGBD -->
-  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">3. ¿Qué es una BBDD y un SGBD?</h2>
+  <h2 class="text-info mt-5 mb-3 border-bottom pb-2">3. ¿Qué es una BBDD y un SGBD?</h2>
   <div class="row g-4 mb-4">
     <div class="col-md-6">
-      <blockquote class="blockquote bg-dark p-4 rounded border-start border-success border-5 h-100 shadow">
+      <blockquote class="blockquote p-4 rounded border-start border-success border-5 h-100 shadow">
         <h5 class="text-success fw-bold"><i class="fas fa-database me-2"></i>Base de Datos (BD)</h5>
         <p class="mb-0 fs-6 text-secondary" style="line-height: 1.6;">Es un conjunto de <strong>datos estructurados</strong>, <strong>relacionados</strong> entre sí y almacenados bajo un <strong>mismo contexto</strong>.</p>
       </blockquote>
     </div>
     <div class="col-md-6">
-      <blockquote class="blockquote bg-dark p-4 rounded border-start border-warning border-5 h-100 shadow">
+      <blockquote class="blockquote p-4 rounded border-start border-warning border-5 h-100 shadow">
         <h5 class="text-warning fw-bold"><i class="fas fa-cogs me-2"></i>Sistema Gestor (SGBD)</h5>
         <p class="mb-0 fs-6 text-secondary" style="line-height: 1.6;">Es el <strong>software especializado</strong> que ejerce de <strong>intermediario</strong> absoluto entre los usuarios (o aplicaciones) y esos datos físicos.</p>
       </blockquote>
     </div>
   </div>
 
-  <div class="card bg-black border-secondary mb-5 shadow-sm">
-    <div class="card-header bg-dark border-secondary text-info fw-bold">
+  <div class="card bg-black mb-5 shadow-sm">
+    <div class="card-header text-info fw-bold">
       <i class="fas fa-microscope me-2"></i> Diseccionando la definición
     </div>
     <div class="card-body">
       <div class="row g-4">
         <div class="col-md-3">
-          <h6 class="text-primary fw-bold border-bottom border-secondary pb-2">1. Datos</h6>
+          <h6 class="text-primary fw-bold border-bottom pb-2">1. Datos</h6>
           <p class="small text-secondary mb-0">Es la materia prima en bruto. Puede ser texto (un nombre), números (un precio) o fechas. Por sí solos, descontextualizados, no dicen mucho.</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-primary fw-bold border-bottom border-secondary pb-2">2. Estructurados y Relacionados</h6>
+          <h6 class="text-primary fw-bold border-bottom pb-2">2. Estructurados y Relacionados</h6>
           <p class="small text-secondary mb-0">No están tirados al azar en un texto. Siguen un orden estricto (filas y columnas) y se conectan lógicamente (ej: un "Alumno" se relaciona con sus "Asignaturas").</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-primary fw-bold border-bottom border-secondary pb-2">3. Mismo Contexto</h6>
+          <h6 class="text-primary fw-bold border-bottom pb-2">3. Mismo Contexto</h6>
           <p class="small text-secondary mb-0">Tienen un propósito y ámbito común. Jamás mezclamos las recetas médicas de un hospital con el inventario de una ferretería en la misma base de datos.</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-primary fw-bold border-bottom border-secondary pb-2">4. SGBD (Intermediario)</h6>
+          <h6 class="text-primary fw-bold border-bottom pb-2">4. SGBD (Intermediario)</h6>
           <p class="small text-secondary mb-0">Tú nunca tocas los bits de los datos directamente en el disco. Le pides las cosas al SGBD hablando en SQL, y él los busca, ordena y te los entrega de forma segura.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="card border-warning bg-dark shadow mb-5">
+  <div class="card border-warning shadow mb-5">
     <div class="card-header bg-warning text-dark fw-bold">
       <i class="fas fa-exclamation-circle"></i> Aclaración vital: Cliente vs Motor vs Datos
     </div>
@@ -180,7 +180,7 @@
       
       <div class="row mb-4">
         <div class="col-12 text-center">
-          <div class="bg-black p-4 rounded border border-secondary w-100 overflow-hidden">
+          <div class="bg-black p-4 rounded border w-100 overflow-hidden">
             <pre class="mermaid mb-0" style="background: transparent;">
 graph LR
     A[Cliente SQL&lt;br&gt;&lt;i&gt;DBeaver / Workbench&lt;/i&gt;] --&gt;|Envía Consulta SQL| B(SGBD / Motor&lt;br&gt;&lt;i&gt;MySQL / PostgreSQL&lt;/i&gt;)
@@ -196,7 +196,7 @@ graph LR
       
       <div class="row g-3">
         <div class="col-md-4">
-          <div class="card bg-dark border-secondary h-100 shadow-sm">
+          <div class="card h-100 shadow-sm">
             <div class="card-body">
               <h6 class="text-primary fw-bold mb-2"><i class="fas fa-laptop-code me-2"></i>1. Cliente SQL</h6>
               <p class="small text-secondary mb-2">Es la herramienta gráfica (o consola) que utilizas tú para escribir las consultas. <strong>No guarda ni gestiona los datos</strong>, solo se conecta al motor para pedírselos.</p>
@@ -205,7 +205,7 @@ graph LR
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card bg-dark border-secondary h-100 shadow-sm">
+          <div class="card h-100 shadow-sm">
             <div class="card-body">
               <h6 class="text-warning fw-bold mb-2"><i class="fas fa-cogs me-2"></i>2. SGBD (Motor)</h6>
               <p class="small text-secondary mb-2">Es el "cerebro" (servicio en el servidor). Recibe la petición del Cliente, procesa la consulta y decide cómo buscar o guardar la información de forma segura.</p>
@@ -214,7 +214,7 @@ graph LR
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card bg-dark border-secondary h-100 shadow-sm">
+          <div class="card h-100 shadow-sm">
             <div class="card-body">
               <h6 class="text-success fw-bold mb-2"><i class="fas fa-database me-2"></i>3. Base de Datos</h6>
               <p class="small text-secondary mb-2">Ficheros físicos reales en el disco duro del servidor donde residen los datos puros. Tú nunca los tocas directamente, solo el SGBD tiene permiso.</p>
@@ -226,11 +226,11 @@ graph LR
     </div>
   </div>
 
-  <h4 class="text-light">Características y Utilidad de un SGBD:</h4>
+  <h4 >Características y Utilidad de un SGBD:</h4>
   <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
     <div class="col">
-      <ul class="list-group list-group-flush border border-secondary rounded h-100">
-        <li class="list-group-item bg-dark text-white border-secondary">
+      <ul class="list-group list-group-flush border rounded h-100">
+        <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
             <div><i class="fas fa-eye-slash text-primary me-2"></i> <strong>Abstracción e Independencia:</strong> El programador no necesita saber cómo se guardan físicamente los bytes en el disco.</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalAbstraccion">
@@ -238,7 +238,7 @@ graph LR
             </button>
           </div>
         </li>
-        <li class="list-group-item bg-dark text-white border-secondary">
+        <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
             <div><i class="fas fa-shield-alt text-primary me-2"></i> <strong>Integridad:</strong> Mecanismos que impiden meter una letra en un campo numérico (reglas, restricciones).</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalIntegridad">
@@ -246,7 +246,7 @@ graph LR
             </button>
           </div>
         </li>
-        <li class="list-group-item bg-dark text-white border-secondary">
+        <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
             <div><i class="fas fa-lock text-primary me-2"></i> <strong>Seguridad:</strong> Autenticación, roles y permisos de lectura/escritura por tabla.</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalSeguridad">
@@ -257,8 +257,8 @@ graph LR
       </ul>
     </div>
     <div class="col">
-      <ul class="list-group list-group-flush border border-secondary rounded h-100">
-        <li class="list-group-item bg-dark text-white border-secondary">
+      <ul class="list-group list-group-flush border rounded h-100">
+        <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
             <div><i class="fas fa-exchange-alt text-primary me-2"></i> <strong>Transacciones (ACID):</strong> Operaciones en bloque seguras ("todo o nada").</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalTransacciones">
@@ -266,7 +266,7 @@ graph LR
             </button>
           </div>
         </li>
-        <li class="list-group-item bg-dark text-white border-secondary">
+        <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
             <div><i class="fas fa-users text-primary me-2"></i> <strong>Concurrencia:</strong> Controla bloqueos para que miles de usuarios lean/escriban a la vez sin corromper datos.</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalFilosofos">
@@ -274,7 +274,7 @@ graph LR
             </button>
           </div>
         </li>
-        <li class="list-group-item bg-dark text-white border-secondary">
+        <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
             <div><i class="fas fa-undo text-primary me-2"></i> <strong>Recuperación:</strong> Backups y logs para restaurar el sistema tras una caída o fallo eléctrico.</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalRecuperacion">
@@ -286,7 +286,7 @@ graph LR
     </div>
   </div>
 
-  <div class="card border-info bg-dark shadow-sm mb-5">
+  <div class="card border-info shadow-sm mb-5">
     <div class="card-header bg-info text-dark fw-bold">
       <i class="fas fa-atom"></i> ¿Qué son las siglas ACID en una Base de Datos?
     </div>
@@ -294,19 +294,19 @@ graph LR
       <p class="small text-muted mb-3">Las bases de datos relacionales garantizan la fiabilidad de las operaciones mediante cuatro propiedades fundamentales agrupadas bajo las siglas <strong>ACID</strong>:</p>
       <div class="row g-3">
         <div class="col-md-3">
-          <h6 class="text-info fw-bold mb-1">A <span class="text-white fw-normal"> - Atomicidad</span></h6>
+          <h6 class="text-info fw-bold mb-1">A <span class="fw-normal"> - Atomicidad</span></h6>
           <p class="small text-secondary mb-0"><strong>"Todo o nada"</strong>. Una transacción se ejecuta por completo o falla por completo. Si se cae la luz a mitad de una transferencia bancaria, no se descuenta el dinero sin haberlo ingresado en la otra cuenta.</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-info fw-bold mb-1">C <span class="text-white fw-normal"> - Consistencia</span></h6>
+          <h6 class="text-info fw-bold mb-1">C <span class="fw-normal"> - Consistencia</span></h6>
           <p class="small text-secondary mb-0">Asegura que la base de datos pase de un estado válido a otro estado válido, cumpliendo siempre las reglas y restricciones (ej. que una cuenta no pueda quedar con saldo negativo si la regla lo prohíbe).</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-info fw-bold mb-1">I <span class="text-white fw-normal"> - Aislamiento (Isolation)</span></h6>
+          <h6 class="text-info fw-bold mb-1">I <span class="fw-normal"> - Aislamiento (Isolation)</span></h6>
           <p class="small text-secondary mb-0">Varias transacciones ocurriendo a la vez no interfieren entre sí. El resultado de ejecutar dos operaciones a la vez debe ser el mismo que si se ejecutaran una tras otra.</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-info fw-bold mb-1">D <span class="text-white fw-normal"> - Durabilidad</span></h6>
+          <h6 class="text-info fw-bold mb-1">D <span class="fw-normal"> - Durabilidad</span></h6>
           <p class="small text-secondary mb-0">Una vez que el SGBD confirma que la transacción ha sido exitosa (commit), los cambios son permanentes y no se perderán, incluso si el servidor sufre un apagón inmediatamente después.</p>
         </div>
       </div>
@@ -314,33 +314,33 @@ graph LR
   </div>
 
   <!-- 4. Elementos de SGBD -->
-  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">4. Arquitectura y Elementos de un SGBD</h2>
+  <h2 class="text-info mt-5 mb-3 border-bottom pb-2">4. Arquitectura y Elementos de un SGBD</h2>
   <p>Internamente, un SGBD es un software muy complejo dividido en varios componentes o capas (elementos funcionales):</p>
   
   <div class="row g-3 mb-4">
     <div class="col-md-3 text-center">
-      <div class="p-3 border border-secondary rounded bg-dark h-100 shadow-sm">
+      <div class="p-3 border rounded h-100 shadow-sm">
         <i class="fas fa-language fa-2x text-info mb-2"></i>
         <h6>Procesador de Consultas</h6>
         <p class="small text-muted">Recibe las instrucciones SQL, las analiza (parser) y decide el plan de ejecución más óptimo para devolver resultados rápido.</p>
       </div>
     </div>
     <div class="col-md-3 text-center">
-      <div class="p-3 border border-secondary rounded bg-dark h-100 shadow-sm">
+      <div class="p-3 border rounded h-100 shadow-sm">
         <i class="fas fa-hdd fa-2x text-warning mb-2"></i>
         <h6>Gestor de Almacenamiento</h6>
         <p class="small text-muted">Controla el acceso al disco del Sistema Operativo, guardando las tablas e índices en bloques de ficheros físicos.</p>
       </div>
     </div>
     <div class="col-md-3 text-center">
-      <div class="p-3 border border-secondary rounded bg-dark h-100 shadow-sm">
+      <div class="p-3 border rounded h-100 shadow-sm">
         <i class="fas fa-random fa-2x text-danger mb-2"></i>
         <h6>Gestor de Transacciones</h6>
         <p class="small text-muted">Garantiza las propiedades ACID. Se encarga de los bloqueos de concurrencia y la escritura del log de recuperación.</p>
       </div>
     </div>
     <div class="col-md-3 text-center">
-      <div class="p-3 border border-secondary rounded bg-dark h-100 shadow-sm">
+      <div class="p-3 border rounded h-100 shadow-sm">
         <i class="fas fa-book fa-2x text-success mb-2"></i>
         <h6>Diccionario de Datos</h6>
         <p class="small text-muted">Contiene los "Metadatos": descripciones de todas las tablas, columnas, tipos de datos y permisos existentes.</p>
@@ -348,62 +348,62 @@ graph LR
     </div>
   </div>
 
-  <h4 class="text-light mt-5"><i class="fas fa-terminal text-primary"></i> El Lenguaje SQL (Sublenguajes)</h4>
+  <h4 class="mt-5"><i class="fas fa-terminal text-primary"></i> El Lenguaje SQL (Sublenguajes)</h4>
   <p>El lenguaje SQL es la interfaz estándar mediante la cual nos comunicamos con cualquier SGBD relacional. Según la función que queramos realizar, sus comandos se dividen en cuatro sublenguajes:</p>
   
   <div class="row g-3 text-center mb-4">
     <div class="col-md-3">
-      <div class="card bg-dark border-primary h-100 shadow-sm">
+      <div class="card border-primary h-100 shadow-sm">
         <div class="card-body">
           <h4 class="text-primary fw-bold mb-0">DDL</h4>
           <p class="small text-secondary mb-1" style="font-size: 0.75rem;">Data Definition Language</p>
-          <hr class="border-secondary my-2">
+          <hr class="my-2">
           <p class="small text-muted mb-3">Sirve para definir y modificar la <strong>estructura</strong> de la base de datos (crear, borrar o alterar tablas y esquemas).</p>
-          <code class="bg-black px-2 py-1 rounded border border-secondary text-light">CREATE, DROP, ALTER</code>
+          <code class="bg-black px-2 py-1 rounded border">CREATE, DROP, ALTER</code>
         </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card bg-dark border-success h-100 shadow-sm">
+      <div class="card border-success h-100 shadow-sm">
         <div class="card-body">
           <h4 class="text-success fw-bold mb-0">DML</h4>
           <p class="small text-secondary mb-1" style="font-size: 0.75rem;">Data Manipulation Language</p>
-          <hr class="border-secondary my-2">
+          <hr class="my-2">
           <p class="small text-muted mb-3">Se utiliza para interactuar con los <strong>datos</strong> (consultar, insertar, modificar o borrar registros existentes).</p>
-          <code class="bg-black px-2 py-1 rounded border border-secondary text-light">SELECT, INSERT, UPDATE, DELETE</code>
+          <code class="bg-black px-2 py-1 rounded border">SELECT, INSERT, UPDATE, DELETE</code>
         </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card bg-dark border-warning h-100 shadow-sm">
+      <div class="card border-warning h-100 shadow-sm">
         <div class="card-body">
           <h4 class="text-warning fw-bold mb-0">DCL</h4>
           <p class="small text-secondary mb-1" style="font-size: 0.75rem;">Data Control Language</p>
-          <hr class="border-secondary my-2">
+          <hr class="my-2">
           <p class="small text-muted mb-3">Instrucciones para la <strong>seguridad</strong> y el control de accesos (dar o quitar permisos a los usuarios).</p>
-          <code class="bg-black px-2 py-1 rounded border border-secondary text-light">GRANT, REVOKE</code>
+          <code class="bg-black px-2 py-1 rounded border">GRANT, REVOKE</code>
         </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card bg-dark border-danger h-100 shadow-sm">
+      <div class="card border-danger h-100 shadow-sm">
         <div class="card-body">
           <h4 class="text-danger fw-bold mb-0">TCL</h4>
           <p class="small text-secondary mb-1" style="font-size: 0.75rem;">Transaction Control Language</p>
-          <hr class="border-secondary my-2">
+          <hr class="my-2">
           <p class="small text-muted mb-3">Manejo de <strong>transacciones</strong> para confirmar o deshacer bloques de operaciones y asegurar las propiedades ACID.</p>
-          <code class="bg-black px-2 py-1 rounded border border-secondary text-light">COMMIT, ROLLBACK</code>
+          <code class="bg-black px-2 py-1 rounded border">COMMIT, ROLLBACK</code>
         </div>
       </div>
     </div>
   </div>
 
   <!-- 5. Clasificación Libres/Prop -->
-  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">5. Clasificación de SGBD (Mercado)</h2>
+  <h2 class="text-info mt-5 mb-3 border-bottom pb-2">5. Clasificación de SGBD (Mercado)</h2>
   
   <div class="row g-4 mt-2">
     <div class="col-md-6">
-      <div class="card bg-dark border-success h-100">
+      <div class="card border-success h-100">
         <div class="card-header border-success text-success fw-bold"><i class="fab fa-osi"></i> SGBD Libres / Open Source</div>
         <div class="card-body">
           <p class="small">Su código es público. Tienen un inmenso soporte comunitario y no requieren pago por licencia base.</p>
@@ -416,7 +416,7 @@ graph LR
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card bg-dark border-danger h-100">
+      <div class="card border-danger h-100">
         <div class="card-header border-danger text-danger fw-bold"><i class="fas fa-copyright"></i> SGBD Propietarios (Comerciales)</div>
         <div class="card-body">
           <p class="small">Líderes históricos en el mundo corporativo. Requieren licencias costosas pero ofrecen ecosistemas cerrados muy potentes.</p>
@@ -430,14 +430,14 @@ graph LR
   </div>
 
   <!-- 6. Distribución -->
-  <h2 class="text-info mt-5 mb-3 border-bottom border-secondary pb-2">6. Ubicación: Centralizadas vs Distribuidas</h2>
+  <h2 class="text-info mt-5 mb-3 border-bottom pb-2">6. Ubicación: Centralizadas vs Distribuidas</h2>
   <p>Las bases de datos se clasifican también en función de cómo se reparte su arquitectura física y de red a través de los servidores:</p>
 
   <div class="row g-4 mt-2">
     <!-- Centralizadas -->
     <div class="col-md-6">
-      <div class="card bg-dark border-primary h-100 shadow">
-        <div class="card-header bg-primary text-white fw-bold">
+      <div class="card border-primary h-100 shadow">
+        <div class="card-header bg-primary fw-bold">
           <i class="fas fa-server me-2"></i> Sistemas Centralizados
         </div>
         <div class="card-body">
@@ -446,16 +446,16 @@ graph LR
             <li><span class="text-success"><i class="fas fa-check"></i> Ventajas:</span> Mantenimiento simple, control de seguridad en un solo punto, operaciones muy rápidas al no depender de la red externa.</li>
             <li><span class="text-danger"><i class="fas fa-times"></i> Inconvenientes:</span> "Punto único de fallo". Si el servidor se apaga o se rompe el disco, el sistema entero se cae. Cuellos de botella si hay muchos usuarios a la vez.</li>
           </ul>
-          <hr class="border-secondary">
+          <hr >
           <h6 class="text-primary fw-bold"><i class="fas fa-search me-2"></i>Ejemplo del mundo real:</h6>
-          <p class="text-light small fst-italic mb-0">El sistema de gestión del inventario de una farmacia local, o el servidor de matriculaciones de un instituto pequeño, donde una sola torre de ordenador en la trastienda aloja todos los datos con MySQL.</p>
+          <p class="small fst-italic mb-0">El sistema de gestión del inventario de una farmacia local, o el servidor de matriculaciones de un instituto pequeño, donde una sola torre de ordenador en la trastienda aloja todos los datos con MySQL.</p>
         </div>
       </div>
     </div>
 
     <!-- Distribuidas -->
     <div class="col-md-6">
-      <div class="card bg-dark border-warning h-100 shadow">
+      <div class="card border-warning h-100 shadow">
         <div class="card-header bg-warning text-dark fw-bold">
           <i class="fas fa-network-wired me-2"></i> Bases de Datos Distribuidas
         </div>
@@ -465,9 +465,9 @@ graph LR
             <li><span class="text-success"><i class="fas fa-check"></i> Ventajas:</span> Alta disponibilidad (si cae un nodo, responden los demás), escalabilidad enorme (se añaden más servidores), velocidad global (los datos están físicamente más cerca del usuario).</li>
             <li><span class="text-danger"><i class="fas fa-times"></i> Inconvenientes:</span> Muy complejas de configurar, caras, y sufren latencia de red para mantener todo sincronizado (consenso).</li>
           </ul>
-          <hr class="border-secondary">
+          <hr >
           <h6 class="text-warning fw-bold"><i class="fas fa-search me-2"></i>Ejemplos del mundo real:</h6>
-          <p class="text-light small fst-italic mb-0"><strong>Netflix</strong> usa <em>Apache Cassandra</em> distribuido globalmente: tu cuenta existe tanto en servidores de Europa como de EE.UU. para que siempre cargue rápido estés donde estés. <strong>WhatsApp</strong> usa bases de datos distribuidas para manejar millones de mensajes sin caerse nunca.</p>
+          <p class="small fst-italic mb-0"><strong>Netflix</strong> usa <em>Apache Cassandra</em> distribuido globalmente: tu cuenta existe tanto en servidores de Europa como de EE.UU. para que siempre cargue rápido estés donde estés. <strong>WhatsApp</strong> usa bases de datos distribuidas para manejar millones de mensajes sin caerse nunca.</p>
         </div>
       </div>
     </div>
@@ -475,7 +475,7 @@ graph LR
 
   <div class="row mt-4">
     <div class="col-md-6">
-      <div class="card bg-dark border-success mb-3 h-100">
+      <div class="card border-success mb-3 h-100">
         <div class="card-header border-success text-success"><i class="fas fa-check-circle"></i> Ventajas Distribuidas</div>
         <div class="card-body small">
           <ul class="mb-0">
@@ -487,7 +487,7 @@ graph LR
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card bg-dark border-danger mb-3 h-100">
+      <div class="card border-danger mb-3 h-100">
         <div class="card-header border-danger text-danger"><i class="fas fa-times-circle"></i> Desventajas Distribuidas</div>
         <div class="card-body small">
           <ul class="mb-0">
@@ -503,8 +503,8 @@ graph LR
   <!-- Modal Filósofos -->
   <div class="modal fade" id="modalFilosofos" tabindex="-1" aria-labelledby="modalFilosofosLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content bg-dark border-info text-white">
-        <div class="modal-header border-secondary bg-black">
+      <div class="modal-content border-info">
+        <div class="modal-header bg-black">
           <h5 class="modal-title text-info fw-bold" id="modalFilosofosLabel"><i class="fas fa-utensils me-2"></i>El problema de la cena de los filósofos</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -512,20 +512,20 @@ graph LR
           <p class="fs-6 text-secondary mb-4">Es un problema clásico propuesto por Edsger Dijkstra para representar los retos de sincronización (concurrencia) en sistemas como los SGBD.</p>
           <div class="row align-items-center">
             <div class="col-md-5 text-center">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/7/7b/An_illustration_of_the_dining_philosophers_problem.png" alt="Cena de los filósofos" class="img-fluid rounded border border-secondary bg-white p-2 mb-4 mb-md-0 w-100" style="object-fit: contain;">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/7/7b/An_illustration_of_the_dining_philosophers_problem.png" alt="Cena de los filósofos" class="img-fluid rounded border bg-white p-2 mb-4 mb-md-0 w-100" style="object-fit: contain;">
             </div>
             <div class="col-md-7">
-              <div class="bg-black p-3 rounded border border-secondary h-100">
-                <p class="text-light mb-3">Imagina a 5 filósofos sentados en una mesa redonda. Tienen un plato de arroz, pero <strong>solo hay 5 palillos</strong> en total (uno entre cada filósofo).</p>
-                <p class="text-light mb-3">Para comer, un filósofo necesita <strong>dos palillos</strong> (el de su izquierda y el de su derecha). Si todos los filósofos deciden comer exactamente al mismo tiempo y cada uno coge el palillo de su derecha, <strong>todos se quedarán esperando infinitamente</strong> a que el otro suelte su palillo izquierdo.</p>
+              <div class="bg-black p-3 rounded border h-100">
+                <p class="mb-3">Imagina a 5 filósofos sentados en una mesa redonda. Tienen un plato de arroz, pero <strong>solo hay 5 palillos</strong> en total (uno entre cada filósofo).</p>
+                <p class="mb-3">Para comer, un filósofo necesita <strong>dos palillos</strong> (el de su izquierda y el de su derecha). Si todos los filósofos deciden comer exactamente al mismo tiempo y cada uno coge el palillo de su derecha, <strong>todos se quedarán esperando infinitamente</strong> a que el otro suelte su palillo izquierdo.</p>
                 <p class="text-danger fw-bold mb-3"><i class="fas fa-ban me-2"></i>Esto se llama <em>Interbloqueo (Deadlock)</em>.</p>
-                <hr class="border-secondary">
+                <hr >
                 <p class="text-info small mb-0"><i class="fas fa-database me-2"></i><strong>En Bases de Datos:</strong> Los filósofos son los usuarios intentando leer/escribir y los palillos son los datos. El SGBD aplica algoritmos para evitar que la base de datos se quede bloqueada para siempre, decidiendo quién coge el dato primero.</p>
               </div>
             </div>
           </div>
         </div>
-        <div class="modal-footer border-secondary">
+        <div class="modal-footer">
           <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Entendido</button>
         </div>
       </div>
@@ -535,8 +535,8 @@ graph LR
   <!-- Modal Transacciones -->
   <div class="modal fade" id="modalTransacciones" tabindex="-1" aria-labelledby="modalTransaccionesLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content bg-dark border-primary text-white">
-        <div class="modal-header border-secondary bg-black">
+      <div class="modal-content border-primary">
+        <div class="modal-header bg-black">
           <h5 class="modal-title text-primary fw-bold" id="modalTransaccionesLabel"><i class="fas fa-gamepad me-2"></i>Transacciones: Guardar la partida</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -550,21 +550,21 @@ graph LR
               </div>
             </div>
             <div class="col-md-7">
-              <div class="bg-black p-3 rounded border border-secondary h-100">
-                <p class="text-light mb-3">Imagina que estás jugando a un videojuego y vas a enfrentarte al monstruo final.</p>
+              <div class="bg-black p-3 rounded border h-100">
+                <p class="mb-3">Imagina que estás jugando a un videojuego y vas a enfrentarte al monstruo final.</p>
                 <ul class="text-secondary small mb-3">
                   <li><strong class="text-primary">START TRANSACTION:</strong> Decides <strong>Guardar la Partida</strong> antes de cruzar la puerta.</li>
                   <li>A partir de ahí empiezas a luchar (insertar, borrar, actualizar datos en la BBDD).</li>
                   <li><strong class="text-success">COMMIT:</strong> Si vences al jefe, guardas la partida de nuevo. Tus progresos (y tus datos) se hacen permanentes.</li>
                   <li><strong class="text-danger">ROLLBACK:</strong> Si el jefe te elimina (o hay un error de red en la BBDD), el sistema carga automáticamente la partida guardada. ¡Vuelves al punto inicial sin perder nada!</li>
                 </ul>
-                <hr class="border-secondary">
+                <hr >
                 <p class="text-info small mb-0"><i class="fas fa-lightbulb me-2"></i>Así el SGBD garantiza que una transferencia bancaria no descuente el dinero de tu cuenta si luego falla al ingresarlo en la otra. O se hace todo (COMMIT), o no se hace nada (ROLLBACK).</p>
               </div>
             </div>
           </div>
         </div>
-        <div class="modal-footer border-secondary">
+        <div class="modal-footer">
           <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Entendido</button>
         </div>
       </div>
@@ -574,8 +574,8 @@ graph LR
   <!-- Modal Abstraccion -->
   <div class="modal fade" id="modalAbstraccion" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content bg-dark border-primary text-white">
-        <div class="modal-header border-secondary bg-black">
+      <div class="modal-content border-primary">
+        <div class="modal-header bg-black">
           <h5 class="modal-title text-primary fw-bold"><i class="fas fa-car me-2"></i>Abstracción: Conducir un coche</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
@@ -585,10 +585,10 @@ graph LR
               <i class="fas fa-car text-primary fa-5x mb-3"></i>
             </div>
             <div class="col-md-8">
-              <div class="bg-black p-3 rounded border border-secondary">
-                <p class="text-light mb-3">Piensa en cómo conduces un coche. Tú solo necesitas saber usar el volante, los pedales y la palanca de cambios.</p>
+              <div class="bg-black p-3 rounded border">
+                <p class="mb-3">Piensa en cómo conduces un coche. Tú solo necesitas saber usar el volante, los pedales y la palanca de cambios.</p>
                 <p class="text-secondary small mb-3">No necesitas saber cómo funciona la inyección de combustible en el motor, ni cómo los engranajes de la caja de cambios se acoplan físicamente. El coche <strong>abstrae</strong> toda esa complejidad mecánica y te ofrece una interfaz sencilla (los pedales).</p>
-                <hr class="border-secondary">
+                <hr >
                 <p class="text-info small mb-0"><i class="fas fa-database me-2"></i><strong>En Bases de Datos:</strong> El SGBD es el coche. Tú usas el "volante" (comandos SQL como SELECT) y el SGBD se encarga de la complejidad de buscar los datos en los cilindros físicos del disco duro.</p>
               </div>
             </div>
@@ -601,8 +601,8 @@ graph LR
   <!-- Modal Integridad -->
   <div class="modal fade" id="modalIntegridad" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content bg-dark border-primary text-white">
-        <div class="modal-header border-secondary bg-black">
+      <div class="modal-content border-primary">
+        <div class="modal-header bg-black">
           <h5 class="modal-title text-primary fw-bold"><i class="fas fa-user-shield me-2"></i>Integridad: El portero de discoteca</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
@@ -612,10 +612,10 @@ graph LR
               <i class="fas fa-user-shield text-primary fa-5x mb-3"></i>
             </div>
             <div class="col-md-8">
-              <div class="bg-black p-3 rounded border border-secondary">
-                <p class="text-light mb-3">Imagina un portero estricto en la puerta de un club nocturno. Tiene unas reglas muy claras establecidas por el dueño.</p>
+              <div class="bg-black p-3 rounded border">
+                <p class="mb-3">Imagina un portero estricto en la puerta de un club nocturno. Tiene unas reglas muy claras establecidas por el dueño.</p>
                 <p class="text-secondary small mb-3">Si la regla dice "Solo mayores de 18", el portero pide el DNI. Si tienes 17, no pasas. No hay excepciones ni errores posibles. Él garantiza que dentro del club solo haya gente que cumpla las normas.</p>
-                <hr class="border-secondary">
+                <hr >
                 <p class="text-info small mb-0"><i class="fas fa-database me-2"></i><strong>En Bases de Datos:</strong> El SGBD es el portero. Si tú defines que una columna "Edad" debe ser un número entero mayor que 0, y alguien intenta guardar el texto "Veinte", el SGBD lo rechazará instantáneamente protegiendo la integridad de tus datos.</p>
               </div>
             </div>
@@ -628,8 +628,8 @@ graph LR
   <!-- Modal Seguridad -->
   <div class="modal fade" id="modalSeguridad" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content bg-dark border-primary text-white">
-        <div class="modal-header border-secondary bg-black">
+      <div class="modal-content border-primary">
+        <div class="modal-header bg-black">
           <h5 class="modal-title text-primary fw-bold"><i class="fas fa-id-card me-2"></i>Seguridad: Llaves magnéticas de hotel</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
@@ -639,10 +639,10 @@ graph LR
               <i class="fas fa-hotel text-primary fa-5x mb-3"></i>
             </div>
             <div class="col-md-8">
-              <div class="bg-black p-3 rounded border border-secondary">
-                <p class="text-light mb-3">Cuando te alojas en un hotel grande, te dan una tarjeta magnética configurada específicamente para ti.</p>
+              <div class="bg-black p-3 rounded border">
+                <p class="mb-3">Cuando te alojas en un hotel grande, te dan una tarjeta magnética configurada específicamente para ti.</p>
                 <p class="text-secondary small mb-3">Tu tarjeta abre la puerta principal y la puerta de tu habitación (rol de cliente). Sin embargo, la tarjeta del personal de limpieza abre todas las habitaciones (rol de mantenimiento), y la del director abre hasta la caja fuerte (rol administrador).</p>
-                <hr class="border-secondary">
+                <hr >
                 <p class="text-info small mb-0"><i class="fas fa-database me-2"></i><strong>En Bases de Datos:</strong> El SGBD permite crear usuarios con diferentes niveles de privilegios (tarjetas). Un usuario normal solo podrá hacer SELECT en ciertas tablas, mientras que el administrador (DBA) podrá borrar o modificar estructuras.</p>
               </div>
             </div>
@@ -655,8 +655,8 @@ graph LR
   <!-- Modal Recuperacion -->
   <div class="modal fade" id="modalRecuperacion" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content bg-dark border-primary text-white">
-        <div class="modal-header border-secondary bg-black">
+      <div class="modal-content border-primary">
+        <div class="modal-header bg-black">
           <h5 class="modal-title text-primary fw-bold"><i class="fas fa-plane me-2"></i>Recuperación: La caja negra del avión</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
@@ -666,10 +666,10 @@ graph LR
               <i class="fas fa-plane text-primary fa-5x mb-3"></i>
             </div>
             <div class="col-md-8">
-              <div class="bg-black p-3 rounded border border-secondary">
-                <p class="text-light mb-3">Todos los aviones comerciales llevan instalada una caja negra (Flight Data Recorder).</p>
+              <div class="bg-black p-3 rounded border">
+                <p class="mb-3">Todos los aviones comerciales llevan instalada una caja negra (Flight Data Recorder).</p>
                 <p class="text-secondary small mb-3">Este dispositivo es indestructible y va grabando meticulosamente cada acción del piloto, cada cambio de altitud y cada parámetro del motor milisegundo a milisegundo. Si ocurre un accidente fatal, los ingenieros pueden leer la caja negra y reconstruir exactamente qué pasó.</p>
-                <hr class="border-secondary">
+                <hr >
                 <p class="text-info small mb-0"><i class="fas fa-database me-2"></i><strong>En Bases de Datos:</strong> El SGBD guarda una caja negra llamada <em>Transaction Log</em> (Registro de transacciones). Si se va la luz mientras se guardaban datos y los ficheros se corrompen, el motor lee el log al arrancar y es capaz de reconstruir y recuperar la base de datos hasta el último milisegundo válido.</p>
               </div>
             </div>

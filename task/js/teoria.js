@@ -37,9 +37,23 @@ function loadTeoria() {
     return;
   }
   
-  document.getElementById('header-bloque-nombre').textContent = 'Teoría: ' + bloqueData.nombre;
+  document.getElementById('header-bloque-nombre').textContent = (bloqueData.tipo === 'tarea' ? 'Tarea: ' : 'Teoría: ') + bloqueData.nombre;
   
-  // Fetch the HTML file for the block
+  // Si es una tarea offline (no tiene archivo de teoría propio)
+  if (bloqueData.tipo === 'tarea') {
+    document.getElementById('teoria-wrapper').innerHTML = `
+      <div class="container-fluid py-2">
+        <div class="card bg-black text-light border-secondary">
+          <div class="card-body fs-5 px-md-5 py-md-4" style="line-height: 1.6;">
+            ${bloqueData.desc}
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  // Si es teoría, cargamos el archivo HTML
   const url = `teoria/tema${bloqueId}.html?v=${new Date().getTime()}`;
   
   fetch(url)

@@ -276,8 +276,12 @@ function getTopicNameForClassroom(bloque) {
   if (bloque.tipo === 'tarea') return 'Proyectos y Tareas';
   return 'Ejercicios Prácticos';
 }
-
-window._publishTaskToClassroom = async (bloqueId, bloqueNombre, bloqueDesc, tipo) => {
+window._publishTaskToClassroom = async (bloqueId) => {
+  const bloque = window.BLOQUES.find(b => b.id == bloqueId);
+  if (!bloque) return;
+  const bloqueNombre = bloque.nombre;
+  const bloqueDesc = bloque.desc;
+  const tipo = bloque.tipo;
   const token = localStorage.getItem('gclassroom_token');
   if (!token) {
     showAdminToast('⚠️', 'Inicia sesión con Google para usar Classroom.', 'warning');
@@ -585,13 +589,42 @@ function renderBloques(clase) {
         const titleFontSize = isRepaso ? 'font-size: 0.95rem;' : '';
         
         let rubricaHtml = '';
-        if (bloque.rubricaDocente && bloque.rubricaDocente.length > 0) {
-          rubricaHtml = `
-            <div class="mt-2 pt-2 border-top border-secondary small" style="border-color: rgba(255,255,255,0.1)!important;">
-              <strong class="text-warning"><i class="fas fa-clipboard-check me-1"></i> Rúbrica sugerida (Sólo visible para ti):</strong>
-              <ul class="mb-0 ps-3 mt-1 text-muted" style="list-style-type: square;">
-                ${bloque.rubricaDocente.map(r => `<li>${r}</li>`).join('')}
-              </ul>
+        if ((bloque.rubricaDocente && bloque.rubricaDocente.length > 0) || bloque.solucionDocente) {
+          const uniqueId = 'docenteContent_' + bloque.id;
+          rubricaHtml += `
+            <div class="mt-3">
+              <button class="btn btn-sm btn-outline-secondary w-100 mb-2 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#${uniqueId}" aria-expanded="false" aria-controls="${uniqueId}">
+                <i class="fas fa-user-shield me-2"></i>Mostrar/Ocultar Info Docente
+              </button>
+              <div class="collapse" id="${uniqueId}">
+                <div class="card card-body bg-black border-secondary p-3">
+          `;
+
+          if (bloque.rubricaDocente && bloque.rubricaDocente.length > 0) {
+            rubricaHtml += `
+              <div class="mb-3 small">
+                <strong class="text-warning"><i class="fas fa-clipboard-check me-1"></i> Rúbrica sugerida:</strong>
+                <ul class="mb-0 ps-3 mt-2 text-light opacity-75" style="list-style-type: square;">
+                  ${bloque.rubricaDocente.map(r => `<li class="mb-1">${r}</li>`).join('')}
+                </ul>
+              </div>
+            `;
+          }
+          
+          if (bloque.solucionDocente) {
+            rubricaHtml += `
+              <div class="small">
+                <strong class="text-info"><i class="fas fa-lightbulb me-1"></i> Solución sugerida:</strong>
+                <div class="mt-2 text-light opacity-75 p-3 bg-dark rounded border border-secondary" style="font-family: monospace; white-space: pre-wrap; font-size: 0.85em; overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                  ${bloque.solucionDocente.trim()}
+                </div>
+              </div>
+            `;
+          }
+
+          rubricaHtml += `
+                </div>
+              </div>
             </div>
           `;
         }
@@ -602,7 +635,7 @@ function renderBloques(clase) {
            </a>` : '';
            
         const classroomBtn = (bloque.implementado) ? 
-          `<button class="btn btn-sm btn-outline-success text-nowrap ms-2" onclick="window._publishTaskToClassroom('${bloque.id}', '${bloque.nombre.replace(/'/g, "\\'")}', '${bloque.desc.replace(/'/g, "\\'")}', '${bloque.tipo}')" title="Publicar en Classroom">
+          `<button class="btn btn-sm btn-outline-success text-nowrap ms-2" onclick="window._publishTaskToClassroom('${bloque.id}')" title="Publicar en Classroom">
              <i class="fab fa-google"></i> Publicar
            </button>` : '';
 

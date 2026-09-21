@@ -1,4 +1,4 @@
-<div class="tema-content text-light">
+<div class="tema-content">
     <h1 class="display-4 text-primary mb-4">Tema 3: Modelo físico, DDL</h1>
     
     <p class="lead">De los 3 modelos para crear BBDD (Conceptual, Lógico, Físico), nos centraremos en el <strong>Físico (DDL)</strong>.</p>
@@ -6,14 +6,14 @@
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card bg-glass border-0 shadow-sm p-4 h-100">
-                <h3 class="text-white"><i class="fas fa-book me-2 text-info"></i>¿Qué es DDL?</h3>
+                <h3 ><i class="fas fa-book me-2 text-info"></i>¿Qué es DDL?</h3>
                 <p>Es la parte de SQL que nos <strong>crea, modifica y borra</strong> las tablas y las relaciones de nuestra BBDD.</p>
                 <p>Serán esas instrucciones SQL para manipular la estructura de nuestras tablas. No es un diagrama como el Modelo ER o el Modelo lógico. Se escribe en texto plano.</p>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card bg-glass border-0 shadow-sm p-4 h-100">
-                <h3 class="text-white"><i class="fas fa-server me-2 text-info"></i>Entorno: MariaDB</h3>
+                <h3 ><i class="fas fa-server me-2 text-info"></i>Entorno: MariaDB</h3>
                 <p>Vamos a usar este SGBD en clase. Levantaremos el motor de la BD con Docker y usaremos DBeaver para lanzar nuestras instrucciones SQL contra el servidor.</p>
             </div>
         </div>
@@ -24,7 +24,7 @@
         
         <!-- 1.1 Create DB & Tables -->
         <article class="card bg-glass border-0 shadow-sm p-4 mb-4" id="ddl-create">
-            <h3 class="text-white"><i class="fas fa-plus-circle me-2 text-success"></i>1.1 Creación de Base de Datos y Tablas</h3>
+            <h3 ><i class="fas fa-plus-circle me-2 text-success"></i>1.1 Creación de Base de Datos y Tablas</h3>
             <p>El DDL (Data Definition Language) nos permite crear la estructura donde se almacenarán nuestros datos. Antes de empezar a crear tablas, DEBEMOS crear una BBDD.</p>
             
             <div class="code-block-wrapper mb-4">
@@ -36,7 +36,7 @@ USE nombreDeLaBBDD; -- Indicamos al cliente SQL que queremos usar esa bbdd</code
             <div class="row">
                 <div class="col-md-6">
                     <p class="small text-muted mb-2">Tipos de Campo más usados:</p>
-                    <ul class="text-light small">
+                    <ul class="small">
                         <li><code>INT</code>: Para enteros (ej. IDs). Suelen usar <code>AUTO_INCREMENT</code>.</li>
                         <li><code>BIT</code>: Para booleanos.</li>
                         <li><code>VARCHAR(n)</code>: Para texto variable. IMPORTANTE: Indicar la N (ej. VARCHAR(50)).</li>
@@ -46,7 +46,7 @@ USE nombreDeLaBBDD; -- Indicamos al cliente SQL que queremos usar esa bbdd</code
                 </div>
                 <div class="col-md-6">
                     <p class="small text-muted mb-2">Restricciones disponibles:</p>
-                    <ul class="text-light small">
+                    <ul class="small">
                         <li><code>NOT NULL</code>: la columna no puede ser nula.</li>
                         <li><code>UNIQUE</code>: el valor debe ser único.</li>
                         <li><code>PRIMARY KEY</code>: Identificador único (implica NOT NULL y UNIQUE).</li>
@@ -85,15 +85,15 @@ CREATE TABLE PersonaCoche (
             <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de Creación (1-10)</h5>
             <div class="accordion accordion-flush bg-transparent" id="accordionDDL">
                 <!-- Ej 1 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-1" data-bs-toggle="collapse" type="button">1. Tabla de Usuarios Básica</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-1" data-bs-toggle="collapse" type="button">1. Tabla de Usuarios Básica</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-1">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Escribe la sentencia SQL para crear una tabla llamada <code>Usuarios</code>. Debe tener un identificador único, un nombre de usuario obligatorio y una contraseña.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: General / Arepazo</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Usuarios (
+                                <pre class="p-2 rounded text-success">CREATE TABLE Usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     password VARCHAR(100)
@@ -103,15 +103,15 @@ CREATE TABLE PersonaCoche (
                     </div>
                 </div>
                 <!-- Ej 2 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-2" data-bs-toggle="collapse" type="button">2. Tabla de Libros (Biblioteca)</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-2" data-bs-toggle="collapse" type="button">2. Tabla de Libros (Biblioteca)</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-2">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Diseña una tabla para una <code>Biblioteca</code>. La tabla <code>Libros</code> debe usar el ISBN como clave primaria (texto 13 chars), y almacenar título, autor y número de páginas.<br/>
-                            <span class="badge bg-secondary mb-2">Contexto: Biblioteca (Nueva)</span></p>
+                            <span class="badge mb-2">Contexto: Biblioteca (Nueva)</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Libros (
+                                <pre class="p-2 rounded text-success">CREATE TABLE Libros (
     isbn VARCHAR(13) PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
     autor VARCHAR(100),
@@ -122,15 +122,15 @@ CREATE TABLE PersonaCoche (
                     </div>
                 </div>
                 <!-- Ej 3 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-3" data-bs-toggle="collapse" type="button">3. Tabla de Empleados con Fechas</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-3" data-bs-toggle="collapse" type="button">3. Tabla de Empleados con Fechas</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-3">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Crea una tabla <code>Empleados</code> que registre el nombre, la fecha exacta de nacimiento y su salario con precisión de centavos.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Empleados (
+                                <pre class="p-2 rounded text-success">CREATE TABLE Empleados (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100),
     fecha_nacimiento DATE,
@@ -141,15 +141,15 @@ CREATE TABLE PersonaCoche (
                     </div>
                 </div>
                 <!-- Ej 4 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-4" data-bs-toggle="collapse" type="button">4. Restricción UNIQUE</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-4" data-bs-toggle="collapse" type="button">4. Restricción UNIQUE</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-4">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Necesitamos una lista de <code>Paises</code>. Asegúrate de que no se puedan insertar dos países con el mismo nombre usando una restricción.<br/>
-                            <span class="badge bg-secondary mb-2">Contexto: Geografía</span></p>
+                            <span class="badge mb-2">Contexto: Geografía</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Paises (
+                                <pre class="p-2 rounded text-success">CREATE TABLE Paises (
     id INT PRIMARY KEY,
     nombre_pais VARCHAR(100) UNIQUE
 );</pre>
@@ -158,15 +158,15 @@ CREATE TABLE PersonaCoche (
                     </div>
                 </div>
                 <!-- Ej 5 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-5" data-bs-toggle="collapse" type="button">5. Valor por Defecto (DEFAULT)</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-5" data-bs-toggle="collapse" type="button">5. Valor por Defecto (DEFAULT)</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-5">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Crea una tabla <code>Tareas</code> donde el campo 'estado' se rellene automáticamente con el valor 'Pendiente' si el usuario no especifica nada.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: General</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Tareas (
+                                <pre class="p-2 rounded text-success">CREATE TABLE Tareas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     descripcion TEXT,
     estado VARCHAR(20) DEFAULT 'Pendiente'
@@ -176,15 +176,15 @@ CREATE TABLE PersonaCoche (
                     </div>
                 </div>
                 <!-- Ej 6 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-6" data-bs-toggle="collapse" type="button">6. Clave Primaria Compuesta</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-6" data-bs-toggle="collapse" type="button">6. Clave Primaria Compuesta</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-6">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Crea la tabla intermedia <code>Matriculas</code>. Un alumno puede estar en varios cursos, y un curso tiene varios alumnos. La clave primaria debe ser la combinación de ambos IDs.<br/>
-                            <span class="badge bg-secondary mb-2">Contexto: Educación</span></p>
+                            <span class="badge mb-2">Contexto: Educación</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Matriculas (
+                                <pre class="p-2 rounded text-success">CREATE TABLE Matriculas (
     alumno_id INT,
     curso_id INT,
     año INT,
@@ -195,29 +195,29 @@ CREATE TABLE PersonaCoche (
                     </div>
                 </div>
                 <!-- Ej 7 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-7" data-bs-toggle="collapse" type="button">7. Crear Tabla desde Select (Backup)</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-7" data-bs-toggle="collapse" type="button">7. Crear Tabla desde Select (Backup)</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-7">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> (Avanzado) Crea una nueva tabla `Usuarios_Backup` y llénala automáticamente con todos los datos que ya existen en la tabla `Usuarios`.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Usuarios_Backup AS SELECT * FROM Usuarios;</pre>
+                                <pre class="p-2 rounded text-success">CREATE TABLE Usuarios_Backup AS SELECT * FROM Usuarios;</pre>
                             </details>
                         </div>
                     </div>
                 </div>
                 <!-- Ej 8 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-8" data-bs-toggle="collapse" type="button">8. Tabla con Foreign Key (Categoria)</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-8" data-bs-toggle="collapse" type="button">8. Tabla con Foreign Key (Categoria)</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-8">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Crea una tabla <code>Productos</code> que tenga una referencia (Foreign Key) a la tabla <code>Categoria</code> (campo id). Esto asegura integridad referencial.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Productos (
+                                <pre class="p-2 rounded text-success">CREATE TABLE Productos (
     id INT PRIMARY KEY,
     nombre VARCHAR(50),
     cat_id INT,
@@ -228,15 +228,15 @@ CREATE TABLE PersonaCoche (
                     </div>
                 </div>
                 <!-- Ej 9 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-9" data-bs-toggle="collapse" type="button">9. Tabla Temporal (Memory)</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-9" data-bs-toggle="collapse" type="button">9. Tabla Temporal (Memory)</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-9">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Crea una tabla temporal <code>Calculos</code> que solo exista durante tu sesión actual. Útil para almacenar resultados intermedios.<br/>
-                            <span class="badge bg-secondary mb-2">Contexto: Sesión / Scripts</span></p>
+                            <span class="badge mb-2">Contexto: Sesión / Scripts</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TEMPORARY TABLE Calculos (
+                                <pre class="p-2 rounded text-success">CREATE TEMPORARY TABLE Calculos (
     resultado DECIMAL(10,2)
 );</pre>
                             </details>
@@ -244,15 +244,15 @@ CREATE TABLE PersonaCoche (
                     </div>
                 </div>
                 <!-- Ej 10 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-10" data-bs-toggle="collapse" type="button">10. Tabla con Check (Validación)</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-10" data-bs-toggle="collapse" type="button">10. Tabla con Check (Validación)</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL" id="ex-ddl-10">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Crea una tabla <code>Personas</code> con una restricción CHECK que impida insertar registros si la edad es menor de 18 años.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: General</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">CREATE TABLE Personas (
+                                <pre class="p-2 rounded text-success">CREATE TABLE Personas (
     nombre VARCHAR(50),
     edad INT CHECK (edad &gt;= 18)
 );</pre>
@@ -265,7 +265,7 @@ CREATE TABLE PersonaCoche (
 
         <!-- 1.2 Modify Tables -->
         <article class="card bg-glass border-0 shadow-sm p-4 mb-4" id="ddl-modify">
-            <h3 class="text-white"><i class="fas fa-edit me-2 text-warning"></i>1.2 Modificación de Tablas (ALTER)</h3>
+            <h3 ><i class="fas fa-edit me-2 text-warning"></i>1.2 Modificación de Tablas (ALTER)</h3>
             <p>Comando <code>ALTER TABLE</code>. Nos permite añadir campos, eliminarlos, añadir claves foráneas, o modificar tipos de datos una vez que la tabla ya está creada.</p>
             
             <div class="code-block-wrapper mb-4">
@@ -287,71 +287,71 @@ ALTER TABLE categoria DROP CONSTRAINT pkcategoria;</code></pre>
             <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de Modificación (1-5)</h5>
             <div class="accordion accordion-flush bg-transparent" id="accordionDDL-Mod">
                 <!-- Ej Mod 1 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-m1" data-bs-toggle="collapse" type="button">1. Añadir Teléfono</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m1" data-bs-toggle="collapse" type="button">1. Añadir Teléfono</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m1">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Modifica la tabla <code>Clientes</code> para añadir una nueva columna llamada <code>telefono</code> que pueda almacenar hasta 15 caracteres.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">ALTER TABLE Clientes ADD COLUMN telefono VARCHAR(15);</pre>
+                                <pre class="p-2 rounded text-success">ALTER TABLE Clientes ADD COLUMN telefono VARCHAR(15);</pre>
                             </details>
                         </div>
                     </div>
                 </div>
                 <!-- Ej Mod 2 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-m2" data-bs-toggle="collapse" type="button">2. Hacer campo obligatorio</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m2" data-bs-toggle="collapse" type="button">2. Hacer campo obligatorio</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m2">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Cambia la columna <code>email</code> de la tabla <code>Usuarios</code> para que no acepte valores nulos (NOT NULL).<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: General</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">ALTER TABLE Usuarios MODIFY COLUMN email VARCHAR(100) NOT NULL;</pre>
+                                <pre class="p-2 rounded text-success">ALTER TABLE Usuarios MODIFY COLUMN email VARCHAR(100) NOT NULL;</pre>
                             </details>
                         </div>
                     </div>
                 </div>
                 <!-- Ej Mod 3 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-m3" data-bs-toggle="collapse" type="button">3. Añadir Clave Primaria a tabla existente</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m3" data-bs-toggle="collapse" type="button">3. Añadir Clave Primaria a tabla existente</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m3">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Tienes una tabla llamada <code>MiTabla</code> que se creó sin clave primaria. Modifícala para que la columna <code>id</code> sea la PRIMARY KEY.<br/>
-                            <span class="badge bg-secondary mb-2">Contexto: General</span></p>
+                            <span class="badge mb-2">Contexto: General</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">ALTER TABLE MiTabla ADD PRIMARY KEY (id);</pre>
+                                <pre class="p-2 rounded text-success">ALTER TABLE MiTabla ADD PRIMARY KEY (id);</pre>
                             </details>
                         </div>
                     </div>
                 </div>
                 <!-- Ej Mod 4 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-m4" data-bs-toggle="collapse" type="button">4. Añadir valor por defecto</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m4" data-bs-toggle="collapse" type="button">4. Añadir valor por defecto</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m4">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Define un valor por defecto (1) para la columna <code>activo</code> en la tabla <code>Usuarios</code>.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: General</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">ALTER TABLE Usuarios ALTER COLUMN activo SET DEFAULT 1;</pre>
+                                <pre class="p-2 rounded text-success">ALTER TABLE Usuarios ALTER COLUMN activo SET DEFAULT 1;</pre>
                             </details>
                         </div>
                     </div>
                 </div>
                 <!-- Ej Mod 5 -->
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ddl-m5" data-bs-toggle="collapse" type="button">5. Borrar la FK</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m5" data-bs-toggle="collapse" type="button">5. Borrar la FK</button></h2>
                     <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m5">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Elimina la restricción de clave foránea llamada <code>fk_categoria</code> de la tabla <code>Productos</code>.<br/>
                             <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span></p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
-                                <pre class="bg-dark p-2 rounded text-success">ALTER TABLE Productos DROP FOREIGN KEY fk_categoria;</pre>
+                                <pre class="p-2 rounded text-success">ALTER TABLE Productos DROP FOREIGN KEY fk_categoria;</pre>
                             </details>
                         </div>
                     </div>
@@ -361,7 +361,7 @@ ALTER TABLE categoria DROP CONSTRAINT pkcategoria;</code></pre>
 
         <!-- 1.3 Drop Tables -->
         <article class="card bg-glass border-0 shadow-sm p-4 mb-4" id="ddl-drop">
-            <h3 class="text-white"><i class="fas fa-trash me-2 text-danger"></i>1.3 Borrado (Drop)</h3>
+            <h3 ><i class="fas fa-trash me-2 text-danger"></i>1.3 Borrado (Drop)</h3>
             <p class="text-danger">Esta operación destruye la estructura y los datos permanentemente. ¡CUIDADO CON ESTO!</p>
             <pre><code class="language-sql">DROP TABLE NombreTabla;
 DROP TABLE IF EXISTS nombreTabla;
@@ -372,33 +372,33 @@ DROP DATABASE nombreBBDD; -- BORRAMOS ABSOLUTAMENTE TODO LO QUE CONTENGA LA BBDD
         <!-- CRITERIO 3.g BOJA: Diccionario de datos -->
         <article class="card bg-glass border-0 shadow-sm p-4 mb-4" id="ddl-diccionario">
             <h3 class="text-warning"><i class="fas fa-book me-2"></i>1.4 Diccionario de Datos <span class="badge bg-warning text-dark ms-2 fs-6">Criterio 3.g BOJA</span></h3>
-            <p class="text-secondary">El <strong class="text-light">diccionario de datos</strong> (también llamado catálogo del sistema) es el documento técnico que describe de forma precisa cada tabla, columna, tipo de dato, restricción y relación de la base de datos. Es la documentación oficial del diseño físico y es obligatorio en proyectos profesionales.</p>
+            <p class="text-secondary">El <strong >diccionario de datos</strong> (también llamado catálogo del sistema) es el documento técnico que describe de forma precisa cada tabla, columna, tipo de dato, restricción y relación de la base de datos. Es la documentación oficial del diseño físico y es obligatorio en proyectos profesionales.</p>
 
             <div class="alert alert-warning bg-opacity-10 border-warning text-warning">
                 <i class="fas fa-gavel me-2"></i><strong>Normativa BOJA — Criterio 3.g:</strong> «Se ha definido y documentado el diccionario de datos.»
             </div>
 
-            <h5 class="text-light mt-4 mb-3">¿Qué contiene un diccionario de datos?</h5>
+            <h5 class="mt-4 mb-3">¿Qué contiene un diccionario de datos?</h5>
             <div class="table-responsive">
                 <table class="table table-dark table-sm table-bordered">
                     <thead class="table-primary">
                         <tr><th>Campo</th><th>Descripción</th><th>Ejemplo (tabla Pedidos)</th></tr>
                     </thead>
                     <tbody class="small text-secondary">
-                        <tr><td><strong class="text-light">Nombre de tabla</strong></td><td>Nombre físico en la BD</td><td><code>Pedidos</code></td></tr>
-                        <tr><td><strong class="text-light">Nombre de columna</strong></td><td>Nombre exacto del campo</td><td><code>pedido_id</code></td></tr>
-                        <tr><td><strong class="text-light">Tipo de dato</strong></td><td>Tipo MariaDB</td><td><code>INT</code></td></tr>
-                        <tr><td><strong class="text-light">Tamaño / Precisión</strong></td><td>Longitud máxima o decimales</td><td><code>—</code></td></tr>
-                        <tr><td><strong class="text-light">¿Permite NULL?</strong></td><td>Obligatorio o no</td><td><code>NOT NULL</code></td></tr>
-                        <tr><td><strong class="text-light">Clave</strong></td><td>PK, FK, UNIQUE o ninguna</td><td><code>PK</code></td></tr>
-                        <tr><td><strong class="text-light">Valor por defecto</strong></td><td>DEFAULT si existe</td><td><code>—</code></td></tr>
-                        <tr><td><strong class="text-light">Descripción</strong></td><td>Significado del campo</td><td>Identificador único del pedido</td></tr>
-                        <tr><td><strong class="text-light">Referencia FK</strong></td><td>Tabla y columna destino</td><td><code>Clientes(cliente_id)</code></td></tr>
+                        <tr><td><strong >Nombre de tabla</strong></td><td>Nombre físico en la BD</td><td><code>Pedidos</code></td></tr>
+                        <tr><td><strong >Nombre de columna</strong></td><td>Nombre exacto del campo</td><td><code>pedido_id</code></td></tr>
+                        <tr><td><strong >Tipo de dato</strong></td><td>Tipo MariaDB</td><td><code>INT</code></td></tr>
+                        <tr><td><strong >Tamaño / Precisión</strong></td><td>Longitud máxima o decimales</td><td><code>—</code></td></tr>
+                        <tr><td><strong >¿Permite NULL?</strong></td><td>Obligatorio o no</td><td><code>NOT NULL</code></td></tr>
+                        <tr><td><strong >Clave</strong></td><td>PK, FK, UNIQUE o ninguna</td><td><code>PK</code></td></tr>
+                        <tr><td><strong >Valor por defecto</strong></td><td>DEFAULT si existe</td><td><code>—</code></td></tr>
+                        <tr><td><strong >Descripción</strong></td><td>Significado del campo</td><td>Identificador único del pedido</td></tr>
+                        <tr><td><strong >Referencia FK</strong></td><td>Tabla y columna destino</td><td><code>Clientes(cliente_id)</code></td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <h5 class="text-light mt-4 mb-3">Ejemplo completo — BD Arepazo (tabla Pedidos)</h5>
+            <h5 class="mt-4 mb-3">Ejemplo completo — BD Arepazo (tabla Pedidos)</h5>
             <div class="table-responsive">
                 <table class="table table-dark table-sm table-bordered small">
                     <thead class="table-secondary text-dark">
@@ -415,7 +415,7 @@ DROP DATABASE nombreBBDD; -- BORRAMOS ABSOLUTAMENTE TODO LO QUE CONTENGA LA BBDD
                 </table>
             </div>
 
-            <h5 class="text-light mt-4 mb-3">¿Cómo consultar el diccionario en MariaDB?</h5>
+            <h5 class="mt-4 mb-3">¿Cómo consultar el diccionario en MariaDB?</h5>
             <p class="text-secondary">MariaDB guarda automáticamente la estructura de la BD en la base de datos del sistema <code>information_schema</code>. Podemos consultarla con SQL estándar:</p>
             <pre><code class="language-sql">-- Ver todas las columnas de una tabla con sus tipos y restricciones:
 SELECT
@@ -443,20 +443,20 @@ WHERE TABLE_SCHEMA = 'arepazo'
   AND REFERENCED_TABLE_NAME IS NOT NULL
 ORDER BY TABLE_NAME;</code></pre>
 
-            <div class="alert alert-info bg-opacity-10 border-info text-light small mt-3">
+            <div class="alert alert-info bg-opacity-10 border-info small mt-3">
                 <i class="fas fa-lightbulb me-2 text-info"></i><strong>Comando rápido:</strong> <code>DESCRIBE Pedidos;</code> o <code>SHOW CREATE TABLE Pedidos;</code> dan una vista rápida del diccionario de una tabla concreta.
             </div>
 
             <h5 class="text-info mt-4"><i class="fas fa-pencil-alt me-2"></i>Ejercicio — Diccionario de datos</h5>
             <div class="accordion accordion-flush" id="accordionDicc">
-                <div class="accordion-item bg-transparent border-secondary">
-                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-toggle="collapse" data-bs-target="#ex-dicc-1" type="button">Crear el diccionario de tu proyecto DDL</button></h2>
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-toggle="collapse" data-bs-target="#ex-dicc-1" type="button">Crear el diccionario de tu proyecto DDL</button></h2>
                     <div id="ex-dicc-1" class="accordion-collapse collapse" data-bs-parent="#accordionDicc">
                         <div class="accordion-body text-secondary">
                             <p><strong>Enunciado:</strong> Usando la consulta a <code>information_schema.COLUMNS</code> mostrada arriba, extrae el diccionario de datos completo de la BD que creaste en la tarea DDL. Copia el resultado en una hoja de cálculo (o tabla Markdown) y añade una columna «Descripción» con el significado de negocio de cada campo. Entrega el resultado junto con tu script DDL.</p>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver consulta base</summary>
-                                <pre class="bg-dark p-2 rounded text-success"><code>SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH,
+                                <pre class="p-2 rounded text-success"><code>SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH,
        IS_NULLABLE, COLUMN_DEFAULT, COLUMN_KEY, EXTRA
 FROM information_schema.COLUMNS
 WHERE TABLE_SCHEMA = 'TU_BD'

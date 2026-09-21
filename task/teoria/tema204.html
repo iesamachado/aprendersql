@@ -1,41 +1,36 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tema 4: Automatización (RA4)</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        pre {
-            background-color: #212529 !important;
-            border: 1px solid #495057;
-            padding: 1rem;
-            border-radius: 0.375rem;
-            color: #f8f9fa;
-        }
-        code {
-            color: #e83e8c;
-        }
-    </style>
-<script src="../../js/theme-switcher.js"></script>
-</head>
-<body class="bg-dark text-white">
+<div class="tema-content p-4">
+  <div class="text-center mb-5">
+    <h1 class="display-5 text-primary"><i class="fas fa-database me-3"></i>Tema 4: Automatización</h1>
+    <p class="lead">Módulo: Administración de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA4</span></p>
+    <p class="text-secondary">Eventos · Triggers · Procedimientos y Funciones</p>
+  </div>
 
-<div class="tema-content p-4 container">
-    <h1 class="mb-4 text-center border-bottom border-secondary pb-3"><i class="fas fa-robot text-warning"></i> Tema 4: Automatización (RA4)</h1>
-    
-    <!-- Table of Contents -->
-    <div class="card bg-secondary text-white mb-5 shadow-sm">
+
+  <!-- Índice -->
+  <div class="card border-info mb-5">
+    <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
+      <i class="fas fa-list me-2"></i>Índice del Tema
+    </div>
+    <div class="card-body">
+      <ul class="list-unstyled mb-0" style="line-height: 2.2;">
+        <li><a href="#triggers" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. Triggers (Disparadores)</a></li>
+        <li><a href="#cursores" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Cursores (Iteración)</a></li>
+        <li><a href="#excepciones" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. Excepciones (Manejo de Errores)</a></li>
+        <li><a href="#eventos" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Eventos Programados</a></li>
+      </ul>
+    </div>
+  </div>
+  
+
+<!-- Table of Contents -->
+    <div class="card mb-5 shadow-sm">
         <div class="card-body">
             <h5 class="card-title mb-3"><i class="fas fa-list-ul"></i> Índice de Contenidos</h5>
             <ul class="list-unstyled mb-0 ms-3">
-                <li class="mb-2"><a href="#triggers" class="text-white text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>1. Triggers (Disparadores)</a></li>
-                <li class="mb-2"><a href="#cursores" class="text-white text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>2. Cursores</a></li>
-                <li class="mb-2"><a href="#excepciones" class="text-white text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>3. Excepciones (Manejo de Errores)</a></li>
-                <li><a href="#eventos" class="text-white text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>4. Eventos Programados</a></li>
+                <li class="mb-2"><a href="#triggers" class="text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>1. Triggers (Disparadores)</a></li>
+                <li class="mb-2"><a href="#cursores" class="text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>2. Cursores</a></li>
+                <li class="mb-2"><a href="#excepciones" class="text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>3. Excepciones (Manejo de Errores)</a></li>
+                <li><a href="#eventos" class="text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>4. Eventos Programados</a></li>
             </ul>
         </div>
     </div>
@@ -47,15 +42,15 @@
         
         <h4 class="mt-4"><i class="fas fa-question-circle text-secondary"></i> ¿Para qué sirven?</h4>
         <ul class="list-group list-group-flush mb-4 rounded">
-            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-check text-success me-2"></i> Registrar, auditar y monitorear los procesos de cambio.</li>
-            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-check text-success me-2"></i> Validar valores aprobando o negando acciones realizadas por sentencias SQL.</li>
-            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-check text-success me-2"></i> Preservar la consistencia y claridad de los valores (ej. recalcular el total de un pedido al añadir una línea).</li>
+            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Registrar, auditar y monitorear los procesos de cambio.</li>
+            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Validar valores aprobando o negando acciones realizadas por sentencias SQL.</li>
+            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Preservar la consistencia y claridad de los valores (ej. recalcular el total de un pedido al añadir una línea).</li>
         </ul>
 
         <div class="row mb-4">
             <div class="col-md-6 mb-3 mb-md-0">
-                <div class="card bg-success text-white h-100 opacity-75">
-                    <div class="card-header border-light"><i class="fas fa-thumbs-up"></i> Ventajas</div>
+                <div class="card bg-success h-100 opacity-75">
+                    <div class="card-header"><i class="fas fa-thumbs-up"></i> Ventajas</div>
                     <div class="card-body">
                         <ul class="mb-0">
                             <li>Ofrecen chequeos de seguridad en valores de las tablas.</li>
@@ -66,8 +61,8 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card bg-danger text-white h-100 opacity-75">
-                    <div class="card-header border-light"><i class="fas fa-thumbs-down"></i> Desventajas</div>
+                <div class="card border-danger bg-danger bg-opacity-10 h-100">
+                    <div class="card-header"><i class="fas fa-thumbs-down"></i> Desventajas</div>
                     <div class="card-body">
                         <ul class="mb-0">
                             <li>Se tiene que programar anticipadamente lo que tiene que realizar el trigger.</li>
@@ -87,7 +82,7 @@ BEGIN
     -- Acciones SQL a ejecutar
 END;</code></pre>
         
-        <div class="alert alert-info bg-info text-dark mt-3">
+        <div class="alert alert-info mt-3">
             <strong>BEFORE o AFTER:</strong><br>
             <ul class="mb-0 mt-2">
                 <li><strong>BEFORE:</strong> Si queremos que se ejecute ANTES del evento que ha disparado el trigger.</li>
@@ -99,7 +94,7 @@ END;</code></pre>
         <p>Nos servirán en nuestros triggers para recuperar los valores que se han modificado y han disparado nuestro trigger.</p>
         <div class="row">
             <div class="col-md-6">
-                <div class="card bg-primary text-white mb-3">
+                <div class="card border-primary bg-primary bg-opacity-10 mb-3">
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-plus-circle"></i> Tabla NEW</h5>
                         <p class="card-text">Disponible en triggers de <code>INSERT</code> y <code>UPDATE</code>. Contiene los nuevos valores insertados o actualizados.</p>
@@ -107,7 +102,7 @@ END;</code></pre>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card bg-warning text-dark mb-3">
+                <div class="card border-warning bg-warning bg-opacity-10 mb-3">
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-minus-circle"></i> Tabla OLD</h5>
                         <p class="card-text">Disponible en triggers de <code>DELETE</code> y <code>UPDATE</code>. Contiene los valores antiguos o borrados.</p>
@@ -124,10 +119,10 @@ END;</code></pre>
         
         <h4 class="mt-4"><i class="fas fa-list-ol text-secondary"></i> Pasos para usar un Cursor</h4>
         <ol class="list-group list-group-numbered list-group-flush mb-4 rounded">
-            <li class="list-group-item bg-dark text-white border-secondary"><strong>Declaración:</strong> <code>DECLARE nombre_cursor CURSOR FOR consulta_select;</code></li>
-            <li class="list-group-item bg-dark text-white border-secondary"><strong>Apertura:</strong> <code>OPEN nombre_cursor;</code> (Ejecuta la consulta)</li>
-            <li class="list-group-item bg-dark text-white border-secondary"><strong>Lectura (Fetch):</strong> <code>FETCH nombre_cursor INTO variable1, variable2;</code> (Avanza a la siguiente fila)</li>
-            <li class="list-group-item bg-dark text-white border-secondary"><strong>Cierre:</strong> <code>CLOSE nombre_cursor;</code> (Libera los recursos)</li>
+            <li class="list-group-item"><strong>Declaración:</strong> <code>DECLARE nombre_cursor CURSOR FOR consulta_select;</code></li>
+            <li class="list-group-item"><strong>Apertura:</strong> <code>OPEN nombre_cursor;</code> (Ejecuta la consulta)</li>
+            <li class="list-group-item"><strong>Lectura (Fetch):</strong> <code>FETCH nombre_cursor INTO variable1, variable2;</code> (Avanza a la siguiente fila)</li>
+            <li class="list-group-item"><strong>Cierre:</strong> <code>CLOSE nombre_cursor;</code> (Libera los recursos)</li>
         </ol>
         
         <h4 class="mt-4"><i class="fas fa-code text-secondary"></i> Ejemplo de Uso</h4>
@@ -176,7 +171,7 @@ END;</code></pre>
         
         <div class="row mt-4">
             <div class="col-md-6 mb-3">
-                <div class="card bg-secondary text-white h-100">
+                <div class="card h-100">
                     <div class="card-header fw-bold">Tipos de Handler</div>
                     <div class="card-body">
                         <ul>
@@ -187,7 +182,7 @@ END;</code></pre>
                 </div>
             </div>
             <div class="col-md-6 mb-3">
-                <div class="card bg-secondary text-white h-100">
+                <div class="card h-100">
                     <div class="card-header fw-bold">Condiciones de Error Comunes</div>
                     <div class="card-body">
                         <ul>
@@ -207,9 +202,9 @@ END;</code></pre>
         <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-clock text-success"></i> 4. Eventos Programados</h2>
         <p class="mt-3">Los eventos (Events) son tareas planificadas que el servidor ejecuta de forma automática en un momento específico o en intervalos regulares (similar a los <i>cron jobs</i> de Linux).</p>
         
-        <div class="alert alert-warning text-dark mt-3">
+        <div class="alert alert-warning mt-3">
             <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Para que los eventos funcionen, el planificador de eventos debe estar activo en el servidor:
-            <code class="d-block mt-2 bg-dark p-2 text-warning rounded">SET GLOBAL event_scheduler = ON;</code>
+            <code class="d-block mt-2 p-2 text-warning rounded">SET GLOBAL event_scheduler = ON;</code>
         </div>
 
         <h4 class="mt-4"><i class="fas fa-code text-secondary"></i> Sintaxis Básica</h4>
@@ -243,7 +238,4 @@ DO
 </div>
 
 <!-- Bootstrap 5 JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../../js/load-footer.js"></script>
-</body>
-</html>
+</div>

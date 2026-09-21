@@ -432,7 +432,7 @@ window._showMyGrades = async function() {
 };
 
 // Fetch Active Test Exams
-import { query, where, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 function loadActiveTestExams() {
   if (!userDoc || !userDoc.claseId) return;
@@ -457,26 +457,14 @@ function loadActiveTestExams() {
     let html = '';
     snap.forEach(docSnap => {
       const d = docSnap.data();
-      
-      // Mostrar activos y cerrados, ignorar ocultos
-      if (d.estado === "oculto") return;
-      
-      const isClosed = d.estado === 'cerrado';
-      const cardClass = isClosed ? 'bg-dark text-light border-secondary' : 'bg-warning text-dark border-warning';
-      const icon = isClosed ? 'fa-lock' : 'fa-exclamation-triangle';
-      const btnText = isClosed ? 'Ver Resultados' : 'Comenzar Examen';
-      const btnClass = isClosed ? 'btn-outline-info' : 'btn-dark';
-      const badge = isClosed ? '<span class="badge bg-secondary float-end mt-1">Cerrado</span>' : '<span class="badge bg-danger float-end mt-1 blink">Activo</span>';
-      
       html += `
-        <div class="col-md-6 col-lg-4 mb-3">
-          <div class="card ${cardClass} h-100 shadow-sm" style="border-width: 2px;">
+        <div class="col-md-6 col-lg-4">
+          <div class="card bg-warning text-dark h-100 shadow-sm" style="border: 2px solid #ffc107;">
             <div class="card-body">
-              ${badge}
-              <h5 class="card-title fw-bold"><i class="fas ${icon} me-2"></i>${d.titulo}</h5>
-              <p class="card-text mb-1 mt-3"><strong>Preguntas:</strong> ${d.preguntas ? d.preguntas.length : 0}</p>
+              <h5 class="card-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>${d.titulo}</h5>
+              <p class="card-text mb-1"><strong>Preguntas:</strong> ${d.preguntas ? d.preguntas.length : 0}</p>
               <p class="card-text mb-3"><strong>Tiempo límite:</strong> ${d.tiempoMinutos} min</p>
-              <a href="examen.html?id=${docSnap.id}" class="btn ${btnClass} w-100 fw-bold">${btnText} <i class="fas fa-arrow-right ms-2"></i></a>
+              <a href="examen.html?id=${docSnap.id}" class="btn btn-dark w-100 fw-bold">Comenzar Examen <i class="fas fa-arrow-right ms-2"></i></a>
             </div>
           </div>
         </div>

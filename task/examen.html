@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examen Test — AprenderSQL</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; display: flex; flex-direction: column; min-height: 100vh; }
+    .exam-header { background: #1e293b; border-bottom: 2px solid #334155; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .timer { font-size: 1.5rem; font-weight: bold; font-family: monospace; color: #38bdf8; }
+    .timer.danger { color: #ef4444; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    .q-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; margin-bottom: 20px; }
+    .q-btn { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; border: 2px solid #334155; background: transparent; color: #94a3b8; }
+    .q-btn.answered { background: #3b82f6; border-color: #3b82f6; color: white; }
+    .q-btn.active { border-color: #f59e0b; color: #f59e0b; }
+    .q-btn.answered.active { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.5); }
+    .opt-label { display: block; padding: 15px; border: 2px solid #334155; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+    .opt-label:hover { border-color: #64748b; background: rgba(255,255,255,0.05); }
+    .opt-label input:checked + span { font-weight: bold; }
+    .opt-label.selected { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+  </style>
+</head>
+<body>
+
+  <div class="exam-header">
+    <div>
+      <h5 class="mb-0 text-warning" id="ex-title">Cargando Examen...</h5>
+      <div class="small text-muted" id="ex-student"></div>
+    </div>
+    <div class="text-center">
+      <div class="timer" id="timer">--:--</div>
+      <div class="small text-muted">Tiempo restante</div>
+    </div>
+    <div>
+      <button class="btn btn-success fw-bold" id="btn-entregar"><i class="fas fa-check-double me-2"></i>Entregar Examen</button>
+    </div>
+  </div>
+
+  <div class="container py-4 flex-grow-1 d-flex flex-column" id="exam-ui" style="display: none !important;">
+    <div class="row flex-grow-1">
+      
+      <!-- Navegación -->
+      <div class="col-md-3 border-end border-secondary">
+        <h6 class="text-secondary mb-3">Navegación</h6>
+        <div class="q-grid" id="q-nav">
+          <!-- Botones dinámicos -->
+        </div>
+        <div class="mt-4 small text-muted">
+          <div><span class="d-inline-block rounded-circle bg-primary me-2" style="width:10px;height:10px;"></span> Respondidas: <span id="count-ans">0</span></div>
+          <div><span class="d-inline-block rounded-circle border border-secondary me-2" style="width:10px;height:10px;"></span> Pendientes: <span id="count-pend">0</span></div>
+        </div>
+      </div>
+
+      <!-- Pregunta Actual -->
+      <div class="col-md-9 ps-md-4 d-flex flex-column">
+        <div class="d-flex justify-content-between mb-4">
+          <h4 class="text-info">Pregunta <span id="q-current-num">1</span> de <span id="q-total-num">X</span></h4>
+          <span class="badge bg-secondary fs-6" id="q-tema-badge"></span>
+        </div>
+        
+        <div class="fs-4 mb-4 fw-medium" id="q-text">
+          <!-- Enunciado -->
+        </div>
+
+        <div id="q-options" class="flex-grow-1">
+          <!-- Opciones dinámicas -->
+        </div>
+
+        <div class="d-flex justify-content-between mt-4 pt-3 border-top border-secondary">
+          <button class="btn btn-outline-secondary" id="btn-prev"><i class="fas fa-arrow-left me-2"></i>Anterior</button>
+          <button class="btn btn-outline-primary" id="btn-next">Siguiente<i class="fas fa-arrow-right ms-2"></i></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Pantalla de Carga / Fin -->
+  <div class="container py-5 text-center" id="loading-ui">
+    <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+    <h5>Preparando tu examen...</h5>
+  </div>
+
+  <div class="container py-5 text-center d-none" id="finished-ui">
+    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+    <h2 class="mb-3">Examen Entregado</h2>
+    <p class="text-muted fs-5 mb-4">Tus respuestas han sido registradas correctamente.</p>
+    
+    <div id="grade-container" class="d-none card bg-black border-success d-inline-block p-4 mb-4">
+      <h5 class="text-success mb-2">Tu Nota</h5>
+      <h1 class="display-1 fw-bold text-white mb-0" id="final-grade">-</h1>
+      <p class="text-muted mt-2" id="final-aciertos"></p>
+    </div>
+    <div id="review-container" class="mt-5 text-start d-none" style="max-width: 800px; margin: 0 auto;">
+       <h4 class="border-bottom border-secondary pb-2 mb-4 text-warning"><i class="fas fa-search me-2"></i>Revisión del Examen</h4>
+       <div id="review-list"></div>
+    </div>
+
+    <div>
+      <a href="clases.html" class="btn btn-primary"><i class="fas fa-home me-2"></i>Volver a mis clases</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG;</script>
+  <script type="module" src="js/examen.js"></script>
+</body>
+</html>

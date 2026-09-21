@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banco Test — AprenderSQL Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/shared-admin.css">
+  <script src="../js/theme-switcher.js"></script>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="admin-sidebar" id="admin-sidebar"></aside>
+  <main class="admin-main">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="admin-page-title mb-0">
+        <i class="fas fa-list-ol text-primary"></i> Banco de Preguntas Tipo Test
+      </div>
+      <button class="btn btn-primary" id="btn-nueva-pregunta" data-bs-toggle="modal" data-bs-target="#modalPregunta">
+        <i class="fas fa-plus me-2"></i>Nueva Pregunta
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card bg-black border-secondary mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-2">
+            <select class="form-select bg-dark text-light border-secondary" id="filter-modulo">
+              <option value="">Módulos</option>
+              <option value="0372">0372 (1º)</option>
+              <option value="0377">0377 (2º)</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <select class="form-select bg-dark text-light border-secondary" id="filter-ra">
+              <option value="">Todos los RA</option>
+              <option value="1">RA 1: Conceptos / Instalación</option>
+              <option value="2">RA 2: D. Lógico / Configuración</option>
+              <option value="3">RA 3: D. Físico / Control Acceso</option>
+              <option value="4">RA 4: Consultas DML / Automatización</option>
+              <option value="5">RA 5: Modificación DML / Optimización</option>
+              <option value="6">RA 6: Aseguramiento / Distribución</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+             <input type="text" class="form-control bg-dark text-light border-secondary" id="filter-criterio" placeholder="Criterio (ej: 1a)">
+          </div>
+          <div class="col-md-4">
+             <input type="text" class="form-control bg-dark text-light border-secondary" id="filter-text" placeholder="Buscar texto...">
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-12 text-end">
+            <button class="btn btn-outline-warning me-2" id="btn-show-coverage">
+              <i class="fas fa-chart-pie me-2"></i>Ver Cobertura
+            </button>
+            <button class="btn btn-outline-danger me-2" id="btn-delete-selected" disabled>
+              <i class="fas fa-trash-alt me-2"></i>Borrar Seleccionados (<span id="delete-count">0</span>)
+            </button>
+            <button class="btn btn-outline-info" id="btn-import-json">
+              <i class="fas fa-file-import me-2"></i>Importar JSON
+            </button>
+            <input type="file" id="file-import-json" accept=".json" style="display: none;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-dark table-hover border-secondary align-middle">
+        <thead>
+          <tr>
+            <th style="width: 40px;"><input class="form-check-input border-secondary bg-dark" type="checkbox" id="chk-all"></th>
+            <th>Módulo</th>
+            <th>RA</th>
+            <th>Criterio</th>
+            <th>Enunciado</th>
+            <th>Dificultad</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="preguntas-list">
+          <tr><td colspan="6" class="text-center py-4">Cargando preguntas...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <div class="text-secondary small" id="page-info">Mostrando...</div>
+      <div class="btn-group">
+        <button class="btn btn-outline-secondary btn-sm" id="btn-prev-page" disabled>Anterior</button>
+        <button class="btn btn-outline-secondary btn-sm" id="btn-next-page" disabled>Siguiente</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+  <!-- Modal Pregunta -->
+  
+  <!-- Modal Cobertura -->
+  <div class="modal fade" id="modalCobertura" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-warning">
+        <div class="modal-header bg-black border-warning">
+          <h5 class="modal-title text-warning fw-bold"><i class="fas fa-chart-pie me-2"></i>Informe de Cobertura Curricular</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-dark text-light p-4" id="cobertura-body">
+          <!-- Acordeón dinámico -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalPregunta" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title" id="modalPreguntaTitle">Nueva Pregunta</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-pregunta">
+            <input type="hidden" id="p-id">
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Módulo</label>
+                <select class="form-select bg-black text-light border-secondary" id="p-modulo" required>
+                  <option value="0372">0372 - 1º ASIR</option>
+                  <option value="0377">0377 - 2º ASIR</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Tema</label>
+                <input type="number" class="form-control bg-black text-light border-secondary" id="p-tema" min="1" max="7" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">RA</label>
+                <input type="number" class="form-control bg-black text-light border-secondary" id="p-ra" min="1" max="6" required>
+              </div>
+            </div>
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Criterio <span class="text-muted small">(ej: 1a, 2b)</span></label>
+                <input type="text" class="form-control bg-black text-light border-secondary" id="p-criterio" placeholder="Opcional">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Dificultad</label>
+                <select class="form-select bg-black text-light border-secondary" id="p-dificultad">
+                  <option value="basica">Básica</option>
+                  <option value="media">Media</option>
+                  <option value="alta">Alta</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Enunciado</label>
+              <textarea class="form-control bg-black text-light border-secondary" id="p-enunciado" rows="3" required></textarea>
+            </div>
+
+            <h6 class="mb-3 border-bottom border-secondary pb-2">Opciones (Marca la correcta)</h6>
+            
+            <div class="mb-2 input-group">
+              <div class="input-group-text bg-black border-secondary">
+                <input class="form-check-input mt-0 p-correcta" type="radio" name="p-correcta" value="0" required>
+              </div>
+              <input type="text" class="form-control bg-black text-light border-secondary p-opcion" placeholder="Opción A" required>
+            </div>
+            <div class="mb-2 input-group">
+              <div class="input-group-text bg-black border-secondary">
+                <input class="form-check-input mt-0 p-correcta" type="radio" name="p-correcta" value="1">
+              </div>
+              <input type="text" class="form-control bg-black text-light border-secondary p-opcion" placeholder="Opción B" required>
+            </div>
+            <div class="mb-2 input-group">
+              <div class="input-group-text bg-black border-secondary">
+                <input class="form-check-input mt-0 p-correcta" type="radio" name="p-correcta" value="2">
+              </div>
+              <input type="text" class="form-control bg-black text-light border-secondary p-opcion" placeholder="Opción C" required>
+            </div>
+            <div class="mb-2 input-group">
+              <div class="input-group-text bg-black border-secondary">
+                <input class="form-check-input mt-0 p-correcta" type="radio" name="p-correcta" value="3">
+              </div>
+              <input type="text" class="form-control bg-black text-light border-secondary p-opcion" placeholder="Opción D" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-save-pregunta">Guardar Pregunta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { initAdminPage, showAdminToast } from "./js/shared.js";
+
+    let db, auth;
+    let allPreguntas = [];
+    let currentPage = 1;
+    const pageSize = 100;
+    const selectedIds = new Set();
+    const modalPregunta = new bootstrap.Modal(document.getElementById('modalPregunta'));
+
+    initAdminPage().then((fb) => {
+      db = fb.db;
+      auth = fb.auth;
+      loadPreguntas();
+    });
+
+    async function loadPreguntas() {
+      const q = collection(db, "preguntas");
+      const snap = await getDocs(q);
+      allPreguntas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      allPreguntas.sort((a, b) => { 
+        if(a.modulo !== b.modulo) return a.modulo.localeCompare(b.modulo); 
+        if(a.ra !== b.ra) return (a.ra || 0) - (b.ra || 0); 
+        const cA = a.criterio || ''; const cB = b.criterio || '';
+        return cA.localeCompare(cB);
+      });
+      renderPreguntas();
+    }
+
+
+    function updateSelectionUI() {
+      document.getElementById('delete-count').innerText = selectedIds.size;
+      document.getElementById('btn-delete-selected').disabled = selectedIds.size === 0;
+      
+      // Update check-all state based on visible rows
+      const chkRows = Array.from(document.querySelectorAll('.chk-row'));
+      const allChecked = chkRows.length > 0 && chkRows.every(chk => chk.checked);
+      document.getElementById('chk-all').checked = allChecked;
+    }
+
+    function renderPreguntas() {
+      const tbody = document.getElementById('preguntas-list');
+      const moduloF = document.getElementById('filter-modulo').value;
+      const raF = document.getElementById('filter-ra').value;
+      const critF = document.getElementById('filter-criterio').value.toLowerCase();
+      const textF = document.getElementById('filter-text').value.toLowerCase();
+
+      window.currentFilteredPreguntas = allPreguntas.filter(p => {
+        if (moduloF && p.modulo !== moduloF) return false;
+        if (raF && p.ra.toString() !== raF) return false;
+        if (critF && (!p.criterio || !p.criterio.toLowerCase().includes(critF))) return false;
+        if (textF && !p.enunciado.toLowerCase().includes(textF)) return false;
+        return true;
+      });
+
+      const total = window.currentFilteredPreguntas.length;
+      const maxPages = Math.ceil(total / pageSize) || 1;
+      if (currentPage > maxPages) currentPage = maxPages;
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, total);
+      
+      document.getElementById('page-info').innerText = total === 0 ? 'Sin resultados' : `Mostrando ${startIndex + 1} - ${endIndex} de ${total}`;
+      document.getElementById('btn-prev-page').disabled = currentPage === 1;
+      document.getElementById('btn-next-page').disabled = currentPage === maxPages;
+
+      if (total === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No hay preguntas que coincidan.</td></tr>';
+        return;
+      }
+
+      const paginated = window.currentFilteredPreguntas.slice(startIndex, endIndex);
+
+      tbody.innerHTML = paginated.map(p => `
+        <tr>
+          <td><input class="form-check-input chk-row border-secondary bg-dark" type="checkbox" value="${p.id}" ${selectedIds.has(p.id) ? 'checked' : ''}></td>
+          <td><span class="badge bg-secondary">${p.modulo}</span></td>
+          <td>RA${p.ra}</td>
+          <td class="text-info">${p.criterio || '-'}</td>
+          <td>
+            <div class="fw-bold text-truncate" style="max-width: 400px;" title="${p.enunciado.replace(/"/g, '&quot;')}">${p.enunciado}</div>
+            <div class="small text-success mt-1"><i class="fas fa-check me-1"></i> ${p.opciones.find(o=>o.correcta)?.texto || '?'}</div>
+          </td>
+          <td><span class="badge bg-${p.dificultad === 'alta' ? 'danger' : p.dificultad === 'media' ? 'warning' : 'success'}">${p.dificultad}</span></td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-info me-1" onclick="window.editPregunta('${p.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger" onclick="window.deletePregunta('${p.id}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+
+      document.querySelectorAll('.chk-row').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          if (e.target.checked) selectedIds.add(e.target.value);
+          else selectedIds.delete(e.target.value);
+          updateSelectionUI();
+        });
+      });
+      updateSelectionUI();
+    }
+
+
+    const onFilterChange = () => { currentPage = 1; renderPreguntas(); };
+    document.getElementById('filter-modulo').addEventListener('change', onFilterChange);
+    document.getElementById('filter-ra').addEventListener('change', onFilterChange);
+    document.getElementById('filter-criterio').addEventListener('input', onFilterChange);
+    document.getElementById('filter-text').addEventListener('input', onFilterChange);
+    
+    document.getElementById('btn-prev-page').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderPreguntas(); } });
+    document.getElementById('btn-next-page').addEventListener('click', () => { currentPage++; renderPreguntas(); });
+
+    document.getElementById('chk-all').addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+      document.querySelectorAll('.chk-row').forEach(chk => {
+        chk.checked = isChecked;
+        if (isChecked) selectedIds.add(chk.value);
+        else selectedIds.delete(chk.value);
+      });
+      updateSelectionUI();
+    });
+
+
+    document.getElementById('btn-nueva-pregunta').addEventListener('click', () => {
+      document.getElementById('form-pregunta').reset();
+      document.getElementById('p-id').value = '';
+      document.getElementById('p-criterio').value = '';
+      document.getElementById('modalPreguntaTitle').innerText = 'Nueva Pregunta';
+    });
+
+    document.getElementById('btn-save-pregunta').addEventListener('click', async () => {
+      const form = document.getElementById('form-pregunta');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const id = document.getElementById('p-id').value;
+      const opcionesInputs = document.querySelectorAll('.p-opcion');
+      const correctRadio = document.querySelector('.p-correcta:checked');
+      
+      const opciones = Array.from(opcionesInputs).map((input, idx) => ({
+        texto: input.value,
+        correcta: parseInt(correctRadio.value) === idx
+      }));
+
+      const data = {
+        modulo: document.getElementById('p-modulo').value,
+                ra: parseInt(document.getElementById('p-ra').value),
+        criterio: document.getElementById('p-criterio').value.trim(),
+        dificultad: document.getElementById('p-dificultad').value,
+        enunciado: document.getElementById('p-enunciado').value,
+        opciones: opciones
+      };
+
+      try {
+        if (id) {
+          await updateDoc(doc(db, "preguntas", id), data);
+          showAdminToast('Pregunta actualizada', 'success');
+        } else {
+          data.creadaEn = serverTimestamp();
+          await addDoc(collection(db, "preguntas"), data);
+          showAdminToast('Pregunta creada', 'success');
+        }
+        modalPregunta.hide();
+        loadPreguntas();
+      } catch (err) {
+        console.error(err);
+        showAdminToast('Error al guardar', 'danger');
+      }
+    });
+
+    
+    const modalCobertura = new bootstrap.Modal(document.getElementById('modalCobertura'));
+    document.getElementById('btn-show-coverage').addEventListener('click', () => {
+      // Calcular estadísticas
+      const stats = {};
+      let totalGlobal = 0;
+
+      allPreguntas.forEach(p => {
+        const mod = p.modulo || 'Sin módulo';
+        const ra = p.ra ? `RA ${p.ra}` : 'Sin RA';
+        const crit = p.criterio ? p.criterio.toLowerCase() : 'Sin criterio';
+
+        if (!stats[mod]) stats[mod] = { total: 0, ras: {} };
+        if (!stats[mod].ras[ra]) stats[mod].ras[ra] = { total: 0, criterios: {} };
+        if (!stats[mod].ras[ra].criterios[crit]) stats[mod].ras[ra].criterios[crit] = 0;
+
+        stats[mod].total++;
+        stats[mod].ras[ra].total++;
+        stats[mod].ras[ra].criterios[crit]++;
+        totalGlobal++;
+      });
+
+      // Construir Acordeón
+      let html = `<div class="alert bg-black border-warning text-warning mb-4">
+        <strong>Total Batería Test:</strong> ${totalGlobal} preguntas registradas
+      </div>`;
+      
+      html += `<div class="accordion accordion-flush" id="acc-modulos">`;
+      
+      Object.keys(stats).sort().forEach((mod, iMod) => {
+        const modData = stats[mod];
+        const modId = `mod-${iMod}`;
+        
+        html += `
+          <div class="accordion-item bg-black border-secondary mb-3 rounded">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed bg-black text-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#${modId}">
+                <i class="fas fa-book me-2 text-info"></i> Módulo ${mod} <span class="badge bg-info ms-auto">${modData.total} preg.</span>
+              </button>
+            </h2>
+            <div id="${modId}" class="accordion-collapse collapse" data-bs-parent="#acc-modulos">
+              <div class="accordion-body p-0">
+                <div class="accordion accordion-flush" id="acc-ras-${iMod}">
+        `;
+
+        Object.keys(modData.ras).sort().forEach((ra, iRa) => {
+          const raData = modData.ras[ra];
+          const raId = `ra-${iMod}-${iRa}`;
+
+          html += `
+                  <div class="accordion-item bg-dark border-0 border-bottom border-secondary">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#${raId}">
+                        <i class="fas fa-tasks me-2 text-warning"></i> ${ra} <span class="badge bg-warning text-dark ms-auto">${raData.total} preg.</span>
+                      </button>
+                    </h2>
+                    <div id="${raId}" class="accordion-collapse collapse" data-bs-parent="#acc-ras-${iMod}">
+                      <div class="accordion-body pt-2 pb-3">
+                        <ul class="list-group list-group-flush border border-secondary rounded">
+          `;
+
+          Object.keys(raData.criterios).sort().forEach(crit => {
+            html += `
+                          <li class="list-group-item bg-black text-secondary d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-angle-right me-2"></i> Criterio ${crit}</span>
+                            <span class="badge bg-secondary rounded-pill">${raData.criterios[crit]}</span>
+                          </li>
+            `;
+          });
+
+          html += `
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+          `;
+        });
+
+        html += `
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
+      document.getElementById('cobertura-body').innerHTML = html;
+      modalCobertura.show();
+    });
+
+    document.getElementById('btn-delete-selected').addEventListener('click', async () => {
+      if (selectedIds.size === 0) return;
+      if (confirm(`¿Estás seguro de borrar las ${selectedIds.size} preguntas seleccionadas? No se puede deshacer.`)) {
+        document.getElementById('btn-delete-selected').innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>Borrando...`;
+        document.getElementById('btn-delete-selected').disabled = true;
+        
+        try {
+          const deletePromises = Array.from(selectedIds).map(id => deleteDoc(doc(db, "preguntas", id)));
+          await Promise.all(deletePromises);
+          showAdminToast(`Se borraron ${selectedIds.size} preguntas`, 'success');
+          selectedIds.clear();
+          loadPreguntas();
+        } catch (err) {
+          console.error(err);
+          alert('Error al borrar masivamente: ' + err.message);
+        } finally {
+          document.getElementById('btn-delete-selected').innerHTML = `<i class="fas fa-trash-alt me-2"></i>Borrar Seleccionados (<span id="delete-count">0</span>)`;
+          updateSelectionUI();
+        }
+      }
+    });
+
+    document.getElementById("btn-import-json").addEventListener("click", () => document.getElementById("file-import-json").click());
+    document.getElementById("file-import-json").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const arr = JSON.parse(text);
+        if (!Array.isArray(arr)) throw new Error("Debe ser un array de objetos");
+        let importadas = 0;
+        document.getElementById("btn-import-json").innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>Importando...`;
+        for (let p of arr) {
+          p.creadaEn = serverTimestamp();
+          await addDoc(collection(db, "preguntas"), p);
+          importadas++;
+        }
+        showAdminToast(`Se importaron ${importadas} preguntas`, "success");
+        loadPreguntas();
+      } catch (err) {
+        console.error(err);
+        alert("Error al importar: " + err.message);
+      } finally {
+        document.getElementById("btn-import-json").innerHTML = `<i class="fas fa-file-import me-2"></i>Importar JSON`;
+        e.target.value = "";
+      }
+    });
+
+    window.editPregunta = (id) => {
+      const p = allPreguntas.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('p-id').value = p.id;
+      document.getElementById('p-modulo').value = p.modulo;
+            document.getElementById('p-ra').value = p.ra;
+      document.getElementById('p-criterio').value = p.criterio || '';
+      document.getElementById('p-dificultad').value = p.dificultad || 'media';
+      document.getElementById('p-enunciado').value = p.enunciado;
+      
+      const opts = document.querySelectorAll('.p-opcion');
+      const radios = document.querySelectorAll('.p-correcta');
+      
+      p.opciones.forEach((opt, i) => {
+        if(opts[i]) opts[i].value = opt.texto;
+        if(radios[i]) radios[i].checked = opt.correcta;
+      });
+      
+      document.getElementById('modalPreguntaTitle').innerText = 'Editar Pregunta';
+      modalPregunta.show();
+    };
+
+    window.deletePregunta = async (id) => {
+      if (confirm('¿Borrar esta pregunta? No se puede deshacer.')) {
+        await deleteDoc(doc(db, "preguntas", id));
+        showAdminToast('Borrada', 'warning');
+        loadPreguntas();
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
+</body>
+</html>

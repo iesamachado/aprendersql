@@ -1,0 +1,36 @@
+--- banco-preguntas.html	2026-09-21 18:37:00.000000000 +0200
++++ banco-preguntas.html	2026-09-21 18:40:00.000000000 +0200
+@@ -29,22 +29,22 @@
+     <div class="card bg-black border-secondary mb-4">
+       <div class="card-body">
+         <div class="row g-3">
+-          <div class="col-md-3">
++          <div class="col-md-2">
+             <select class="form-select bg-dark text-light border-secondary" id="filter-modulo">
+-              <option value="">Todos los módulos</option>
++              <option value="">Módulos</option>
+               <option value="0372">0372 - 1º ASIR</option>
+               <option value="0377">0377 - 2º ASIR</option>
+             </select>
+           </div>
+           <div class="col-md-3">
+-            <select class="form-select bg-dark text-light border-secondary" id="filter-tema">
+-              <option value="">Todos los temas</option>
+-              <option value="1">Tema 1</option>
+-              <option value="2">Tema 2</option>
+-              <option value="3">Tema 3</option>
+-              <option value="4">Tema 4</option>
+-              <option value="5">Tema 5</option>
+-              <option value="6">Tema 6</option>
+-              <option value="7">Tema 7</option>
++            <select class="form-select bg-dark text-light border-secondary" id="filter-ra">
++              <option value="">Todos los RA</option>
++              <option value="1">RA 1</option>
++              <option value="2">RA 2</option>
++              <option value="3">RA 3</option>
++              <option value="4">RA 4</option>
++              <option value="5">RA 5</option>
++              <option value="6">RA 6</option>
+             </select>
+           </div>
++          <div class="col-md-2">

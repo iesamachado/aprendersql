@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banco Test — AprenderSQL Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/shared-admin.css">
+  <script src="../js/theme-switcher.js"></script>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="admin-sidebar" id="admin-sidebar"></aside>
+  <main class="admin-main">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="admin-page-title mb-0">
+        <i class="fas fa-list-ol text-primary"></i> Banco de Preguntas Tipo Test
+      </div>
+      <button class="btn btn-primary" id="btn-nueva-pregunta" data-bs-toggle="modal" data-bs-target="#modalPregunta">
+        <i class="fas fa-plus me-2"></i>Nueva Pregunta
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card bg-black border-secondary mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <select class="form-select bg-dark text-light border-secondary" id="filter-modulo">
+              <option value="">Todos los módulos</option>
+              <option value="0372">0372 - 1º ASIR</option>
+              <option value="0377">0377 - 2º ASIR</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select class="form-select bg-dark text-light border-secondary" id="filter-tema">
+              <option value="">Todos los temas</option>
+              <option value="1">Tema 1</option>
+              <option value="2">Tema 2</option>
+              <option value="3">Tema 3</option>
+              <option value="4">Tema 4</option>
+              <option value="5">Tema 5</option>
+              <option value="6">Tema 6</option>
+              <option value="7">Tema 7</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+             <input type="text" class="form-control bg-dark text-light border-secondary" id="filter-text" placeholder="Buscar por texto...">
+          </div>
+          <div class="col-md-2">
+            <input type="file" id="file-import-json" accept=".json" class="d-none">
+            <button class="btn btn-outline-info w-100" id="btn-import-json">
+              <i class="fas fa-file-import me-2"></i>Importar JSON
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de preguntas -->
+    <div class="table-responsive">
+      <table class="table table-dark table-hover border-secondary align-middle">
+        <thead>
+          <tr>
+            <th>Módulo</th>
+            <th>Tema</th>
+            <th>RA</th>
+            <th>Criterio</th>
+            <th>Enunciado</th>
+            <th>Dificultad</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="preguntas-list">
+          <tr><td colspan="6" class="text-center py-4">Cargando preguntas...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+  <!-- Modal Pregunta -->
+  <div class="modal fade" id="modalPregunta" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title" id="modalPreguntaTitle">Nueva Pregunta</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-pregunta">
+            <input type="hidden" id="p-id">
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Módulo</label>
+                <select class="form-select bg-black text-light border-secondary" id="p-modulo" required>
+                  <option value="0372">0372 - 1º ASIR</option>
+                  <option value="0377">0377 - 2º ASIR</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Tema</label>
+                <input type="number" class="form-control bg-black text-light border-secondary" id="p-tema" min="1" max="7" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">RA</label>
+                <input type="number" class="form-control bg-black text-light border-secondary" id="p-ra" min="1" max="6" required>
+              </div>
+            </div>
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Criterio <span class="text-muted small">(ej: 1a, 2b)</span></label>
+                <input type="text" class="form-control bg-black text-light border-secondary" id="p-criterio" placeholder="Opcional">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Dificultad</label>
+                <select class="form-select bg-black text-light border-secondary" id="p-dificultad">
+                  <option value="basica">Básica</option>
+                  <option value="media">Media</option>
+                  <option value="alta">Alta</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Enunciado</label>
+              <textarea class="form-control bg-black text-light border-secondary" id="p-enunciado" rows="3" required></textarea>
+            </div>
+
+            <h6 class="mb-3 border-bottom border-secondary pb-2">Opciones (Marca la correcta)</h6>
+            
+            <div class="mb-2 input-group">
+              <div class="input-group-text bg-black border-secondary">
+                <input class="form-check-input mt-0 p-correcta" type="radio" name="p-correcta" value="0" required>
+              </div>
+              <input type="text" class="form-control bg-black text-light border-secondary p-opcion" placeholder="Opción A" required>
+            </div>
+            <div class="mb-2 input-group">
+              <div class="input-group-text bg-black border-secondary">
+                <input class="form-check-input mt-0 p-correcta" type="radio" name="p-correcta" value="1">
+              </div>
+              <input type="text" class="form-control bg-black text-light border-secondary p-opcion" placeholder="Opción B" required>
+            </div>
+            <div class="mb-2 input-group">
+              <div class="input-group-text bg-black border-secondary">
+                <input class="form-check-input mt-0 p-correcta" type="radio" name="p-correcta" value="2">
+              </div>
+              <input type="text" class="form-control bg-black text-light border-secondary p-opcion" placeholder="Opción C" required>
+            </div>
+            <div class="mb-2 input-group">
+              <div class="input-group-text bg-black border-secondary">
+                <input class="form-check-input mt-0 p-correcta" type="radio" name="p-correcta" value="3">
+              </div>
+              <input type="text" class="form-control bg-black text-light border-secondary p-opcion" placeholder="Opción D" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-save-pregunta">Guardar Pregunta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { initAdminPage, showAdminToast } from "./js/shared.js";
+
+    let db, auth;
+    let allPreguntas = [];
+    const modalPregunta = new bootstrap.Modal(document.getElementById('modalPregunta'));
+
+    initAdminPage().then((fb) => {
+      db = fb.db;
+      auth = fb.auth;
+      loadPreguntas();
+    });
+
+    async function loadPreguntas() {
+      const q = collection(db, "preguntas");
+      const snap = await getDocs(q);
+      allPreguntas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      allPreguntas.sort((a, b) => { if(a.modulo !== b.modulo) return a.modulo.localeCompare(b.modulo); return (a.tema || 0) - (b.tema || 0); });
+      renderPreguntas();
+    }
+
+    function renderPreguntas() {
+      const tbody = document.getElementById('preguntas-list');
+      const moduloF = document.getElementById('filter-modulo').value;
+      const temaF = document.getElementById('filter-tema').value;
+      const textF = document.getElementById('filter-text').value.toLowerCase();
+
+      let filtered = allPreguntas.filter(p => {
+        if (moduloF && p.modulo !== moduloF) return false;
+        if (temaF && p.tema.toString() !== temaF) return false;
+        if (textF && !p.enunciado.toLowerCase().includes(textF)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No hay preguntas que coincidan.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => `
+        <tr>
+          <td><span class="badge bg-secondary">${p.modulo}</span></td>
+          <td>T${p.tema}</td>
+          <td>RA${p.ra}</td>
+          <td class="text-info">${p.criterio || '-'}</td>
+          <td>
+            <div class="fw-bold text-truncate" style="max-width: 400px;" title="${p.enunciado.replace(/"/g, '&quot;')}">${p.enunciado}</div>
+            <div class="small text-success mt-1"><i class="fas fa-check me-1"></i> ${p.opciones.find(o=>o.correcta)?.texto || '?'}</div>
+          </td>
+          <td><span class="badge bg-${p.dificultad === 'alta' ? 'danger' : p.dificultad === 'media' ? 'warning' : 'success'}">${p.dificultad}</span></td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-info me-1" onclick="window.editPregunta('${p.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger" onclick="window.deletePregunta('${p.id}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('filter-modulo').addEventListener('change', renderPreguntas);
+    document.getElementById('filter-tema').addEventListener('change', renderPreguntas);
+    document.getElementById('filter-text').addEventListener('input', renderPreguntas);
+
+    document.getElementById('btn-nueva-pregunta').addEventListener('click', () => {
+      document.getElementById('form-pregunta').reset();
+      document.getElementById('p-id').value = '';
+      document.getElementById('p-criterio').value = '';
+      document.getElementById('modalPreguntaTitle').innerText = 'Nueva Pregunta';
+    });
+
+    document.getElementById('btn-save-pregunta').addEventListener('click', async () => {
+      const form = document.getElementById('form-pregunta');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const id = document.getElementById('p-id').value;
+      const opcionesInputs = document.querySelectorAll('.p-opcion');
+      const correctRadio = document.querySelector('.p-correcta:checked');
+      
+      const opciones = Array.from(opcionesInputs).map((input, idx) => ({
+        texto: input.value,
+        correcta: parseInt(correctRadio.value) === idx
+      }));
+
+      const data = {
+        modulo: document.getElementById('p-modulo').value,
+        tema: parseInt(document.getElementById('p-tema').value),
+        ra: parseInt(document.getElementById('p-ra').value),
+        criterio: document.getElementById('p-criterio').value.trim(),
+        dificultad: document.getElementById('p-dificultad').value,
+        enunciado: document.getElementById('p-enunciado').value,
+        opciones: opciones
+      };
+
+      try {
+        if (id) {
+          await updateDoc(doc(db, "preguntas", id), data);
+          showAdminToast('Pregunta actualizada', 'success');
+        } else {
+          data.creadaEn = serverTimestamp();
+          await addDoc(collection(db, "preguntas"), data);
+          showAdminToast('Pregunta creada', 'success');
+        }
+        modalPregunta.hide();
+        loadPreguntas();
+      } catch (err) {
+        console.error(err);
+        showAdminToast('Error al guardar', 'danger');
+      }
+    });
+
+    document.getElementById("btn-import-json").addEventListener("click", () => document.getElementById("file-import-json").click());
+    document.getElementById("file-import-json").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const arr = JSON.parse(text);
+        if (!Array.isArray(arr)) throw new Error("Debe ser un array de objetos");
+        let importadas = 0;
+        document.getElementById("btn-import-json").innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>Importando...`;
+        for (let p of arr) {
+          p.creadaEn = serverTimestamp();
+          await addDoc(collection(db, "preguntas"), p);
+          importadas++;
+        }
+        showAdminToast(`Se importaron ${importadas} preguntas`, "success");
+        loadPreguntas();
+      } catch (err) {
+        console.error(err);
+        alert("Error al importar: " + err.message);
+      } finally {
+        document.getElementById("btn-import-json").innerHTML = `<i class="fas fa-file-import me-2"></i>Importar JSON`;
+        e.target.value = "";
+      }
+    });
+
+    window.editPregunta = (id) => {
+      const p = allPreguntas.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('p-id').value = p.id;
+      document.getElementById('p-modulo').value = p.modulo;
+      document.getElementById('p-tema').value = p.tema;
+      document.getElementById('p-ra').value = p.ra;
+      document.getElementById('p-criterio').value = p.criterio || '';
+      document.getElementById('p-dificultad').value = p.dificultad || 'media';
+      document.getElementById('p-enunciado').value = p.enunciado;
+      
+      const opts = document.querySelectorAll('.p-opcion');
+      const radios = document.querySelectorAll('.p-correcta');
+      
+      p.opciones.forEach((opt, i) => {
+        if(opts[i]) opts[i].value = opt.texto;
+        if(radios[i]) radios[i].checked = opt.correcta;
+      });
+      
+      document.getElementById('modalPreguntaTitle').innerText = 'Editar Pregunta';
+      modalPregunta.show();
+    };
+
+    window.deletePregunta = async (id) => {
+      if (confirm('¿Borrar esta pregunta? No se puede deshacer.')) {
+        await deleteDoc(doc(db, "preguntas", id));
+        showAdminToast('Borrada', 'warning');
+        loadPreguntas();
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
+</body>
+</html>

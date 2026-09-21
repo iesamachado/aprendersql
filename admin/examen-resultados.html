@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultados Examen — Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="../css/shared-admin.css">
+  <script src="../js/theme-switcher.js"></script>
+  <style>
+    @media print {
+      body * { visibility: hidden; color: black !important; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      .print-header { border-bottom: 2px solid black; margin-bottom: 20px; padding-bottom: 10px; }
+      .print-q { margin-bottom: 15px; page-break-inside: avoid; }
+      .print-opt { margin-left: 20px; }
+    }
+  </style>
+</head>
+<body class="bg-dark text-light">
+
+<div class="admin-wrapper no-print">
+  <aside class="admin-sidebar" id="admin-sidebar"></aside>
+  <main class="admin-main">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <a href="#" id="back-link" class="btn btn-outline-secondary btn-sm mb-2"><i class="fas fa-arrow-left me-2"></i>Volver a la Clase</a>
+        <h2 id="ex-title">Cargando...</h2>
+        <p class="text-muted" id="ex-meta"></p>
+      </div>
+      <div>
+        <button class="btn btn-primary" onclick="printExams()"><i class="fas fa-print me-2"></i>Imprimir Versión A/B (Papel)</button>
+        <button class="btn btn-outline-success ms-2" id="btn-toggle-results" onclick="toggleResultados()">Publicar Notas a Alumnos</button>
+      </div>
+    </div>
+
+    <!-- Resultados en Vivo -->
+    <div class="card bg-black border-secondary mb-4">
+      <div class="card-header bg-secondary bg-opacity-10 fw-bold border-secondary">
+        <i class="fas fa-chart-line me-2 text-info"></i>Entregas de Alumnos
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-dark table-striped mb-0 text-center">
+          <thead>
+            <tr>
+              <th class="text-start ps-4">Alumno</th>
+              <th>Entregado el</th>
+              <th>Aciertos</th>
+              <th>Nota (sobre 10)</th>
+            </tr>
+          </thead>
+          <tbody id="resultados-list">
+            <tr><td colspan="4" class="py-4">Cargando entregas...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+  <!-- Contenedor Oculto para Impresión (se rellena dinámicamente) -->
+  <div id="print-area" class="bg-white text-dark w-100" style="display: none; position: absolute; top:0; left:0; min-height: 100vh;"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initAdminPage, showAdminToast } from "./js/shared.js";
+
+    let db;
+    let examen = null;
+    let bancoPreguntasCompleto = [];
+
+    initAdminPage().then(async (fb) => {
+      db = fb.db;
+      const urlParams = new URLSearchParams(window.location.search);
+      const exId = urlParams.get('id');
+      if (!exId) return;
+
+      const snap = await getDoc(doc(db, "examenes_test", exId));
+      if(!snap.exists()) return;
+      examen = { id: snap.id, ...snap.data() };
+      
+      document.getElementById('back-link').href = `clase.html?id=${examen.claseId}`;
+      document.getElementById('ex-title').innerText = examen.titulo;
+      document.getElementById('ex-meta').innerText = `${examen.preguntas.length} preguntas | ${examen.tiempoMinutos} min | Estado: ${examen.estado}`;
+
+      if (examen.resultadosPublicados) {
+        const btn = document.getElementById('btn-toggle-results');
+        btn.classList.replace('btn-outline-success', 'btn-success');
+        btn.innerText = 'Ocultar Notas a Alumnos';
+      }
+
+      // Cargar todas las preguntas completas (con correctas) para calcular notas y generar PDFs
+      const qsSnap = await getDocs(query(collection(db, "preguntas")));
+      bancoPreguntasCompleto = qsSnap.docs.map(d => ({id: d.id, ...d.data()}));
+
+      loadEntregas();
+    });
+
+    async function loadEntregas() {
+      const q = query(collection(db, "respuestas_test"), where("examenId", "==", examen.id));
+      const snap = await getDocs(q);
+      
+      const tbody = document.getElementById('resultados-list');
+      if (snap.empty) {
+        tbody.innerHTML = '<tr><td colspan="4" class="py-4">Nadie ha entregado todavía.</td></tr>';
+        return;
+      }
+
+      // Cargar datos de usuarios (alumnos)
+      const uSnap = await getDocs(query(collection(db, "usuarios"), where("claseId", "==", examen.claseId)));
+      const alumnos = {};
+      uSnap.forEach(d => alumnos[d.id] = d.data());
+
+      let html = '';
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const al = alumnos[d.uid] || { displayName: 'Desconocido', email: '' };
+        
+        // Calcular nota en vivo
+        let aciertos = 0;
+        let respondidas = 0;
+        
+        if (d.respuestas) {
+          Object.keys(d.respuestas).forEach(qId => {
+            respondidas++;
+            const elegidaIndex = d.respuestas[qId];
+            const origQ = bancoPreguntasCompleto.find(p => p.id === qId);
+            if (origQ) {
+              const objOpcionElegida = origQ.opciones[elegidaIndex];
+              if (objOpcionElegida && objOpcionElegida.correcta) {
+                aciertos++;
+              }
+            }
+          });
+        }
+        
+        const nota = (aciertos / examen.preguntas.length) * 10;
+        const color = nota >= 5 ? 'text-success' : 'text-danger';
+        const dateStr = d.entregadoEn ? d.entregadoEn.toDate().toLocaleString() : '-';
+
+        // Guardar la nota calculada en la base de datos si no estaba (o si cambió)
+        if (d.nota !== nota) {
+          updateDoc(doc(db, "respuestas_test", docSnap.id), { nota: nota });
+        }
+
+        html += `
+          <tr>
+            <td class="text-start ps-4">
+              <div class="fw-bold">${al.displayName}</div>
+              <div class="small text-muted">${al.email}</div>
+            </td>
+            <td>${dateStr}</td>
+            <td>${aciertos} / ${examen.preguntas.length}</td>
+            <td class="fw-bold fs-5 ${color}">${nota.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    window.toggleResultados = async () => {
+      const nuevoVal = !examen.resultadosPublicados;
+      const updateData = { resultadosPublicados: nuevoVal };
+      
+      if (nuevoVal) {
+        const correcciones = {};
+        examen.preguntas.forEach(p => {
+           const bq = bancoPreguntasCompleto.find(x => x.id === p.id);
+           if (bq) {
+             const correctIdx = bq.opciones.findIndex(o => o.correcta);
+             if(correctIdx !== -1) correcciones[p.id] = correctIdx;
+           }
+        });
+        updateData.correcciones = correcciones;
+      }
+      
+      await updateDoc(doc(db, "examenes_test", examen.id), updateData);
+      examen.resultadosPublicados = nuevoVal;
+      showAdminToast(nuevoVal ? 'Notas publicadas' : 'Notas ocultadas', 'success');
+      
+      const btn = document.getElementById('btn-toggle-results');
+      if (nuevoVal) {
+        btn.classList.replace('btn-outline-success', 'btn-success');
+        btn.innerText = 'Ocultar Notas a Alumnos';
+      } else {
+        btn.classList.replace('btn-success', 'btn-outline-success');
+        btn.innerText = 'Publicar Notas a Alumnos';
+      }
+    };
+
+    window.printExams = () => {
+      const printArea = document.getElementById('print-area');
+      
+      // Mapear preguntas del examen con sus datos completos
+      const qsExamen = examen.preguntas.map(pInfo => bancoPreguntasCompleto.find(bq => bq.id === pInfo.id)).filter(Boolean);
+
+      const htmlA = renderExamenPapel(qsExamen, 'A', 'Versión A');
+      
+      // Para la B: barajamos preguntas y opciones
+      const qsB = JSON.parse(JSON.stringify(qsExamen)).sort(() => Math.random() - 0.5);
+      qsB.forEach(q => q.opciones.sort(() => Math.random() - 0.5));
+      
+      const htmlB = renderExamenPapel(qsB, 'B', 'Versión B');
+
+      printArea.innerHTML = htmlA + '<div class="page-break"></div>' + htmlB;
+      printArea.style.display = 'block';
+      window.print();
+      printArea.style.display = 'none';
+    };
+
+    function renderExamenPapel(preguntas, version, tituloExtra) {
+      let h = `
+        <div class="p-4 bg-white" style="font-family: sans-serif;">
+          <div class="print-header">
+            <h3>${examen.titulo} — ${tituloExtra}</h3>
+            <div style="margin-top: 15px; font-size: 1.1em;">
+              <strong>Nombre y Apellidos:</strong> _______________________________________________________ 
+              <span style="float:right"><strong>Nota:</strong> _____ / 10</span>
+            </div>
+          </div>
+          <div style="margin-top:20px;">
+      `;
+
+      preguntas.forEach((q, idx) => {
+        h += `<div class="print-q">
+          <strong>${idx+1}. ${q.enunciado}</strong>
+          <div style="margin-top: 5px;">
+        `;
+        q.opciones.forEach((opt, oIdx) => {
+          h += `<div class="print-opt">O ${opt.texto}</div>`; // O actua como radio (un circulo)
+        });
+        h += `</div></div>`;
+      });
+
+      h += `</div></div>`;
+      return h;
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
+</body>
+</html>

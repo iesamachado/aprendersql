@@ -1,23 +1,34 @@
-<div class="tema-content p-4 bg-dark text-white">
-  <h1 class="mb-4"><i class="fas fa-cogs"></i> Tema 2: Configuración y Arquitectura (RA2)</h1>
-
-  <div class="toc bg-secondary p-3 rounded mb-4">
-    <h2>Tabla de Contenidos</h2>
-    <ul>
-      <li><a href="#motores" class="text-white">Selección de Motores: InnoDB vs MyISAM</a></li>
-      <li><a href="#arranque" class="text-white">Arranque y Parada del Servicio</a></li>
-      <li><a href="#logs" class="text-white">Archivos de Log (Registro)</a></li>
-      <li><a href="#conectividad" class="text-white">Parámetros de Conectividad</a></li>
-    </ul>
+<div class="tema-content p-4">
+  <div class="text-center mb-5">
+    <h1 class="display-5 text-primary"><i class="fas fa-database me-3"></i>Tema 2: Configuración y Arquitectura</h1>
+    <p class="lead">Módulo: Administración de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA2</span></p>
+    <p class="text-secondary">Motores InnoDB vs MyISAM · Arranque/Parada · Logs · Conectividad</p>
   </div>
 
-  <section id="motores" class="mb-5">
+
+  <!-- Índice -->
+  <div class="card border-info mb-5">
+    <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
+      <i class="fas fa-list me-2"></i>Índice del Tema
+    </div>
+    <div class="card-body">
+      <ul class="list-unstyled mb-0" style="line-height: 2.2;">
+        <li><a href="#motores" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>Selección de Motores: InnoDB vs MyISAM</a></li>
+        <li><a href="#arranque" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>Arranque y Parada del Servicio</a></li>
+        <li><a href="#logs" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>Archivos de Log (Registro)</a></li>
+        <li><a href="#conectividad" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>Parámetros de Conectividad</a></li>
+      </ul>
+    </div>
+  </div>
+  
+
+<section id="motores" class="mb-5">
     <h2><i class="fas fa-database"></i> Selección de Motores: InnoDB vs MyISAM</h2>
     <p>MariaDB soporta múltiples motores de almacenamiento. Los más comunes son InnoDB y MyISAM.</p>
     <div class="row">
       <div class="col-md-6">
-        <div class="card bg-dark border-light mb-3">
-          <div class="card-header bg-primary text-white">InnoDB (Predeterminado)</div>
+        <div class="card border-primary mb-3">
+          <div class="card-header bg-primary bg-opacity-10 text-primary fw-bold">InnoDB (Predeterminado)</div>
           <div class="card-body">
             <ul>
               <li>Soporta transacciones (ACID).</li>
@@ -29,8 +40,8 @@
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card bg-dark border-light mb-3">
-          <div class="card-header bg-info text-white">MyISAM</div>
+        <div class="card border-info mb-3">
+          <div class="card-header bg-info bg-opacity-10 text-info fw-bold">MyISAM</div>
           <div class="card-body">
             <ul>
               <li>No soporta transacciones.</li>
@@ -54,7 +65,7 @@
       <li><strong>Verificar el estado:</strong> <code>sudo systemctl status mariadb</code></li>
       <li><strong>Habilitar inicio automático:</strong> <code>sudo systemctl enable mariadb</code></li>
     </ul>
-    <div class="alert alert-warning text-dark">
+    <div class="alert alert-warning">
       <i class="fas fa-exclamation-triangle"></i> Asegúrate de tener privilegios de superusuario (root o sudo) para ejecutar estos comandos.
     </div>
   </section>
@@ -63,9 +74,9 @@
     <h2><i class="fas fa-file-alt"></i> Archivos de Log (Registro)</h2>
     <p>MariaDB genera diferentes tipos de logs que son cruciales para el monitoreo, la auditoría y la resolución de problemas.</p>
     <div class="accordion" id="accordionLogs">
-      <div class="accordion-item bg-secondary text-white border-dark">
+      <div class="accordion-item">
         <h2 class="accordion-header" id="headingErrorLog">
-          <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErrorLog" aria-expanded="false" aria-controls="collapseErrorLog">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErrorLog" aria-expanded="false" aria-controls="collapseErrorLog">
             Error Log (Registro de Errores)
           </button>
         </h2>
@@ -76,9 +87,9 @@
           </div>
         </div>
       </div>
-      <div class="accordion-item bg-secondary text-white border-dark">
+      <div class="accordion-item">
         <h2 class="accordion-header" id="headingGeneralLog">
-          <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeneralLog" aria-expanded="false" aria-controls="collapseGeneralLog">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeneralLog" aria-expanded="false" aria-controls="collapseGeneralLog">
             General Query Log (Registro General de Consultas)
           </button>
         </h2>
@@ -89,9 +100,9 @@
           </div>
         </div>
       </div>
-      <div class="accordion-item bg-secondary text-white border-dark">
+      <div class="accordion-item">
         <h2 class="accordion-header" id="headingSlowLog">
-          <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSlowLog" aria-expanded="false" aria-controls="collapseSlowLog">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSlowLog" aria-expanded="false" aria-controls="collapseSlowLog">
             Slow Query Log (Registro de Consultas Lentas)
           </button>
         </h2>
@@ -139,6 +150,134 @@
         </tr>
       </tbody>
     </table>
-  </section>
+  <section id="mycnf" class="mb-5">
+    <h2><i class="fas fa-file-code"></i> Editando <code>my.cnf</code>: La Configuración Real</h2>
+    <p>Saber leer una tabla de parámetros está bien, pero el trabajo real de un administrador es <strong>editar el archivo de configuración</strong> y verificar que los cambios han tenido efecto. Ese archivo es <code>my.cnf</code> (Linux) o <code>my.ini</code> (Windows).</p>
 
+    <div class="alert alert-warning">
+      <i class="fas fa-map-marker-alt me-2"></i><strong>¿Dónde está mi <code>my.cnf</code>?</strong><br>
+      En Ubuntu/Debian: <code>/etc/mysql/mariadb.conf.d/50-server.cnf</code><br>
+      En Docker (montando volumen): mapear un archivo local como <code>-v ./my.cnf:/etc/mysql/conf.d/custom.cnf</code><br>
+      En el propio MariaDB (para ver cuál usa): <code>SELECT @@datadir;</code> o <code>mysqld --verbose --help | grep -A 1 "Default options"</code>
+    </div>
+
+    <h3 class="mt-4">Estructura del archivo y parámetros clave</h3>
+    <p>El archivo usa grupos de configuración entre corchetes. <strong>Los parámetros del motor van bajo <code>[mysqld]</code></strong>.</p>
+    <pre><code class="language-ini bg-black p-3 rounded d-block text-success"># /etc/mysql/mariadb.conf.d/50-server.cnf
+
+[mysqld]
+# ── RED ──────────────────────────────────────────────────
+bind-address            = 0.0.0.0    # Escuchar en todas las IPs (necesario para acceso remoto)
+port                    = 3306
+
+# ── CONEXIONES ───────────────────────────────────────────
+max_connections         = 150        # Máximo de conexiones simultáneas
+wait_timeout            = 600        # Segundos de espera en conexión inactiva (no interactiva)
+interactive_timeout     = 3600       # Ídem para clientes interactivos (DBeaver, terminal...)
+
+# ── RENDIMIENTO ──────────────────────────────────────────
+innodb_buffer_pool_size = 512M       # La caché principal de InnoDB. Regla general: 70% de la RAM
+innodb_log_file_size    = 128M       # Tamaño de los redo logs: mayor = menos flushes, más rendimiento
+query_cache_size        = 0          # En MariaDB 10.5+ la caché de queries está deprecated, mejor en 0
+tmp_table_size          = 64M        # Tamaño máximo de tablas temporales en memoria
+max_heap_table_size     = 64M        # Debe coincidir con tmp_table_size
+
+# ── LOGS ─────────────────────────────────────────────────
+log_error               = /var/log/mysql/error.log
+slow_query_log          = 1
+slow_query_log_file     = /var/log/mysql/mariadb-slow.log
+long_query_time         = 2          # Registrar consultas que tarden más de 2 segundos
+log_queries_not_using_indexes = 1    # Registrar también consultas sin índice aunque sean rápidas</code></pre>
+
+    <h3 class="mt-4">Flujo de trabajo: cambiar un parámetro y verificarlo</h3>
+    <div class="accordion" id="accordionMyCnf">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#stepEdit">
+            Paso 1: Editar el archivo y reiniciar el servicio
+          </button>
+        </h2>
+        <div id="stepEdit" class="accordion-collapse collapse" data-bs-parent="#accordionMyCnf">
+          <div class="accordion-body">
+            <pre><code class="language-bash bg-black p-3 rounded d-block text-success"># Editar el archivo (necesita sudo)
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+
+# Aplicar los cambios reiniciando el servicio
+sudo systemctl restart mariadb
+
+# Verificar que arrancó bien (sin errores)
+sudo systemctl status mariadb</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#stepVerify">
+            Paso 2: Verificar que el cambio ha tenido efecto
+          </button>
+        </h2>
+        <div id="stepVerify" class="accordion-collapse collapse" data-bs-parent="#accordionMyCnf">
+          <div class="accordion-body">
+            <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Verificar el valor actual de cualquier variable
+SHOW VARIABLES LIKE 'max_connections';
+SHOW VARIABLES LIKE 'slow_query_log%';
+SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
+
+-- Ver TODAS las variables que coinciden con un patrón
+SHOW VARIABLES LIKE '%timeout%';
+
+-- Ver el estado en tiempo real (variables dinámicas)
+SHOW STATUS LIKE 'Threads_connected';   -- conexiones activas ahora mismo
+SHOW STATUS LIKE 'Slow_queries';        -- número de consultas lentas desde que arrancó</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#stepDynamic">
+            Paso 3 (bonus): Cambiar un parámetro en caliente sin reiniciar
+          </button>
+        </h2>
+        <div id="stepDynamic" class="accordion-collapse collapse" data-bs-parent="#accordionMyCnf">
+          <div class="accordion-body">
+            <p>Algunos parámetros son <strong>dinámicos</strong>: se pueden cambiar en caliente con <code>SET GLOBAL</code> sin necesidad de reiniciar. Esto es crítico en producción (¡no puedes apagar la base de datos!).</p>
+            <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Activar el slow query log en caliente
+SET GLOBAL slow_query_log = 1;
+SET GLOBAL long_query_time = 1;
+
+-- Cambiar max_connections sin reiniciar
+SET GLOBAL max_connections = 200;
+
+-- ⚠️ IMPORTANTE: Los cambios con SET GLOBAL NO son permanentes.
+-- Al reiniciar el servidor, MariaDB leerá el my.cnf de nuevo.
+-- Debes editar TAMBIÉN el my.cnf para que el cambio persista.</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-warning mt-4">
+      <div class="card-header bg-warning bg-opacity-10 text-warning fw-bold">
+        <i class="fas fa-book-open me-2"></i>La importancia de documentar los cambios de configuración
+      </div>
+      <div class="card-body">
+        <p>En un entorno de producción, tocar el <code>my.cnf</code> es una intervención crítica. Si algo sale mal después de un cambio, alguien tiene que poder responder estas preguntas en cuestión de minutos:</p>
+        <ul class="mb-3">
+          <li><strong>¿Qué cambiaste exactamente?</strong> — No «ajusté la memoria», sino <em>«cambié <code>innodb_buffer_pool_size</code> de 256M a 512M»</em>.</li>
+          <li><strong>¿Por qué lo cambiaste?</strong> — Qué problema o métrica te llevó a hacerlo.</li>
+          <li><strong>¿Quién lo hizo y cuándo?</strong> — Con fecha y hora exactas, no «la semana pasada».</li>
+          <li><strong>¿Qué impacto tuvo?</strong> — ¿Mejoró la latencia? ¿El servidor aguantó más conexiones? ¿O empeoró algo?</li>
+        </ul>
+        <p>La herramienta más sencilla para esto en un proyecto técnico es un fichero <code>CHANGELOG.md</code> en el repositorio, con una entrada por cada cambio:</p>
+        <pre><code class="language-markdown bg-black p-3 rounded d-block text-success">## 2025-03-15 — bernat@server-prod-01
+
+**Cambio:** innodb_buffer_pool_size: 256M → 512M
+**Motivo:** El slow query log mostraba 300+ consultas lentas/hora.
+            SHOW STATUS indicaba ratio de cache hit del 72% (ideal >95%).
+**Resultado:** Cache hit subió al 94%. Consultas lentas/hora bajaron a 12.
+**Reversión:** Volver a 256M si el servidor baja de 1GB de RAM libre.</code></pre>
+        <p class="mb-0 text-muted small">En empresas más grandes, estos registros se hacen en sistemas de tickets (Jira, Redmine) o en pipelines de IaC (<em>Infrastructure as Code</em>) como Ansible o Terraform, donde el propio historial de git sirve como registro de auditoría.</p>
+      </div>
+    </div>
+  </section>
 </div>

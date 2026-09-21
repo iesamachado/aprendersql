@@ -1,14 +1,14 @@
 <div class="tema-content">
-<section class="" id="dml-modification">
-<h2 class="display-6 fw-bold text-white mb-4 border-bottom pb-2 mt-5">Tema 5.1: Modificando datos, DML</h2>
+<section  id="dml-modification">
+<h2 class="display-6 fw-bold mb-4 border-bottom pb-2 mt-5">Tema 5.1: Modificando datos, DML</h2>
 <div class="alert alert-warning bg-opacity-10 border-warning text-warning mb-4">
     <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>¡Cuidado!</h4>
     <p>Vamos a modificar datos. Tendremos que tener mucho cuidado. Nos debe "temblar" el dedo antes de darle a ejecutar. No siempre tendremos un backup para volver al punto anterior.</p>
     <hr>
     <p class="mb-0"><strong>Guardar la partida:</strong> Utiliza <code>BEGIN</code> (Instrucción SQL para modificar/borrar/insertar datos) y <code>ROLLBACK</code>. Si lanzamos estas líneas juntas, NO MODIFICAMOS la BBDD, pero sí vemos las líneas afectadas. <strong>¡PROBAD SIEMPRE VUESTROS DELETES/UPDATES!</strong></p>
 </div>
-<div class="card bg-dark border-danger mb-4">
-    <div class="card-header bg-danger text-white fw-bold"><i class="fas fa-skull-crossbones me-2"></i>1º Tatuaje del curso</div>
+<div class="card border-danger mb-4">
+    <div class="card-header bg-danger fw-bold"><i class="fas fa-skull-crossbones me-2"></i>1º Tatuaje del curso</div>
     <div class="card-body text-center">
         <h4 class="text-danger">NO QUIERO VER UN DELETE/UPDATE SIN UN BEGIN/ROLLBACK</h4>
     </div>
@@ -31,20 +31,20 @@
 </div>
 <div class="row g-3 mb-3">
 <div class="col-md-6">
-<h6 class="text-white border-bottom border-success pb-1">1. Manual ("A pelo")</h6>
+<h6 class="border-bottom border-success pb-1">1. Manual ("A pelo")</h6>
 <p class="small text-muted">Añades valores estáticos que tú escribes.</p>
 <pre><code class="language-sql">INSERT INTO Platos (nombre, precio) 
 VALUES ('Arepa Nueva', 5.50);</code></pre>
 </div>
 <div class="col-md-6">
-<h6 class="text-white border-bottom border-info pb-1">2. Desde una Consulta</h6>
+<h6 class="border-bottom border-info pb-1">2. Desde una Consulta</h6>
 <p class="small text-muted">Los datos vienen de un <code>SELECT</code> previo.</p>
 <pre><code class="language-sql">INSERT INTO Clientes_VIP (nombre) 
 SELECT nombre FROM Clientes WHERE puntos &gt; 100;</code></pre>
 </div>
 </div>
-<div class="card bg-dark border-secondary mb-3 p-3">
-    <h6 class="text-white border-bottom border-secondary pb-1">3. Insertar desde un CSV</h6>
+<div class="card mb-3 p-3">
+    <h6 class="border-bottom pb-1">3. Insertar desde un CSV</h6>
     <pre><code class="language-sql">BULK INSERT equipos FROM '/var/opt/mssql/backup/futbol/clubs.csv' 
 WITH ( FIELDTERMINATOR = ',' , ROWTERMINATOR = '0x0a' )</code></pre>
     <p class="small text-muted mb-0">La ruta después del FROM le indicamos la ruta DENTRO del contenedor o servidor donde va a encontrar el CSV.</p>
@@ -52,8 +52,8 @@ WITH ( FIELDTERMINATOR = ',' , ROWTERMINATOR = '0x0a' )</code></pre>
 <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios INSERT
                                 (1-4)</h5>
 <div class="accordion accordion-flush bg-transparent" id="accordionDML-Ins">
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ins-1" data-bs-toggle="collapse" type="button">1. Nuevo
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ins-1" data-bs-toggle="collapse" type="button">1. Nuevo
                                             Cliente</button></h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Ins" id="ex-ins-1">
 <div class="accordion-body text-secondary">
@@ -64,13 +64,13 @@ WITH ( FIELDTERMINATOR = ',' , ROWTERMINATOR = '0x0a' )</code></pre>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">INSERT INTO Clientes (nombre, apellido, email) VALUES ('Pedro', 'Picapiedra', 'pedro@roca.com');</pre>
+<pre class="p-2 rounded text-success">INSERT INTO Clientes (nombre, apellido, email) VALUES ('Pedro', 'Picapiedra', 'pedro@roca.com');</pre>
 </details>
 </div>
 </div>
 </div>
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ins-2" data-bs-toggle="collapse" type="button">2. Nuevo
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ins-2" data-bs-toggle="collapse" type="button">2. Nuevo
                                             Plato Completo</button></h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Ins" id="ex-ins-2">
 <div class="accordion-body text-secondary">
@@ -81,14 +81,14 @@ WITH ( FIELDTERMINATOR = ',' , ROWTERMINATOR = '0x0a' )</code></pre>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">INSERT INTO Platos (nombre_plato, precio_venta, categoria, disponible) 
+<pre class="p-2 rounded text-success">INSERT INTO Platos (nombre_plato, precio_venta, categoria, disponible) 
 VALUES ('Cachapa con Queso', 8.50, 'Platos Principales', TRUE);</pre>
 </details>
 </div>
 </div>
 </div>
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ins-3" data-bs-toggle="collapse" type="button">3.
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ins-3" data-bs-toggle="collapse" type="button">3.
                                             Insertar solo obligatorios</button>
 </h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Ins" id="ex-ins-3">
@@ -100,24 +100,24 @@ VALUES ('Cachapa con Queso', 8.50, 'Platos Principales', TRUE);</pre>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">INSERT INTO Clientes (nombre, apellido) VALUES ('Solo', 'Nombre');</pre>
+<pre class="p-2 rounded text-success">INSERT INTO Clientes (nombre, apellido) VALUES ('Solo', 'Nombre');</pre>
 </details>
 </div>
 </div>
 </div>
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-ins-4" data-bs-toggle="collapse" type="button">4.
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ins-4" data-bs-toggle="collapse" type="button">4.
                                             Insertar desde Select</button></h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Ins" id="ex-ins-4">
 <div class="accordion-body text-secondary">
 <p><strong>Enunciado:</strong> Copia los clientes con más de 100 puntos a la
                                                 tabla 'Clientes_VIP'.<br/>
-<span class="badge bg-secondary mb-2">Contexto: General</span>
+<span class="badge mb-2">Contexto: General</span>
 </p>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">INSERT INTO Clientes_VIP (id, nombre) SELECT id, nombre FROM Clientes WHERE puntos &gt; 100;</pre>
+<pre class="p-2 rounded text-success">INSERT INTO Clientes_VIP (id, nombre) SELECT id, nombre FROM Clientes WHERE puntos &gt; 100;</pre>
 </details>
 </div>
 </div>
@@ -138,8 +138,8 @@ UPDATE Tabla SET columna = nuevo_valor WHERE condicion;</code></pre>
 <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios UPDATE
                                 (5-7)</h5>
 <div class="accordion accordion-flush bg-transparent" id="accordionDML-Upd">
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-upd-5" data-bs-toggle="collapse" type="button">5.
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-upd-5" data-bs-toggle="collapse" type="button">5.
                                             Corregir Email</button></h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Upd" id="ex-upd-5">
 <div class="accordion-body text-secondary">
@@ -150,13 +150,13 @@ UPDATE Tabla SET columna = nuevo_valor WHERE condicion;</code></pre>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">UPDATE Clientes SET email = 'nuevo@email.com' WHERE cliente_id = 5;</pre>
+<pre class="p-2 rounded text-success">UPDATE Clientes SET email = 'nuevo@email.com' WHERE cliente_id = 5;</pre>
 </details>
 </div>
 </div>
 </div>
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-upd-6" data-bs-toggle="collapse" type="button">6. Oferta
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-upd-6" data-bs-toggle="collapse" type="button">6. Oferta
                                             General</button></h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Upd" id="ex-upd-6">
 <div class="accordion-body text-secondary">
@@ -167,13 +167,13 @@ UPDATE Tabla SET columna = nuevo_valor WHERE condicion;</code></pre>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">UPDATE Platos SET precio_venta = precio_venta * 0.90 WHERE categoria = 'Postres';</pre>
+<pre class="p-2 rounded text-success">UPDATE Platos SET precio_venta = precio_venta * 0.90 WHERE categoria = 'Postres';</pre>
 </details>
 </div>
 </div>
 </div>
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-upd-7" data-bs-toggle="collapse" type="button">7. Marcar
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-upd-7" data-bs-toggle="collapse" type="button">7. Marcar
                                             como Agotado</button></h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Upd" id="ex-upd-7">
 <div class="accordion-body text-secondary">
@@ -184,7 +184,7 @@ UPDATE Tabla SET columna = nuevo_valor WHERE condicion;</code></pre>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">UPDATE Platos SET disponible = FALSE WHERE nombre_plato = 'Pabellón Criollo';</pre>
+<pre class="p-2 rounded text-success">UPDATE Platos SET disponible = FALSE WHERE nombre_plato = 'Pabellón Criollo';</pre>
 </details>
 </div>
 </div>
@@ -208,8 +208,8 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <h5 class="mt-3 text-info"><i class="fas fa-pencil-alt me-2"></i>Ejercicios DELETE
                                 (8-10)</h5>
 <div class="accordion accordion-flush bg-transparent" id="accordionDML-Del">
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-del-8" data-bs-toggle="collapse" type="button">8. Borrar
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-del-8" data-bs-toggle="collapse" type="button">8. Borrar
                                             Cliente</button></h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Del" id="ex-del-8">
 <div class="accordion-body text-secondary">
@@ -219,30 +219,30 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">DELETE FROM Clientes WHERE cliente_id = 99;</pre>
+<pre class="p-2 rounded text-success">DELETE FROM Clientes WHERE cliente_id = 99;</pre>
 </details>
 </div>
 </div>
 </div>
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-del-9" data-bs-toggle="collapse" type="button">9.
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-del-9" data-bs-toggle="collapse" type="button">9.
                                             Limpiar Logs Antiguos</button></h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Del" id="ex-del-9">
 <div class="accordion-body text-secondary">
 <p><strong>Enunciado:</strong> Borra todos los logs con fecha anterior al
                                                 '2020-01-01'.<br/>
-<span class="badge bg-secondary mb-2">Contexto: General</span>
+<span class="badge mb-2">Contexto: General</span>
 </p>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">DELETE FROM Logs WHERE fecha &lt; '2020-01-01';</pre>
+<pre class="p-2 rounded text-success">DELETE FROM Logs WHERE fecha &lt; '2020-01-01';</pre>
 </details>
 </div>
 </div>
 </div>
-<div class="accordion-item bg-transparent border-secondary">
-<h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-target="#ex-del-10" data-bs-toggle="collapse" type="button">10.
+<div class="accordion-item bg-transparent">
+<h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-del-10" data-bs-toggle="collapse" type="button">10.
                                             Borrado con Subconsulta</button>
 </h2>
 <div class="accordion-collapse collapse" data-bs-parent="#accordionDML-Del" id="ex-del-10">
@@ -254,15 +254,15 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <details>
 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL
                                                 </summary>
-<pre class="bg-dark p-2 rounded text-success">DELETE FROM Clientes WHERE email IS NULL;</pre>
+<pre class="p-2 rounded text-success">DELETE FROM Clientes WHERE email IS NULL;</pre>
 </details>
 </div>
 </div>
 </div>
 </div>
 </article>
-</section><section class="" id="dml-advanced-modifications">
-<h3 class="text-white mt-5 border-bottom pb-2">3.4 Modificaciones Avanzadas</h3>
+</section><section  id="dml-advanced-modifications">
+<h3 class="mt-5 border-bottom pb-2">3.4 Modificaciones Avanzadas</h3>
 <!-- 1. INSERT FROM QUERY WITH JOIN -->
 <article class="card bg-glass border-0 shadow-sm p-4 mb-4" id="adv-insert">
 <h4 class="text-success"><i class="fas fa-copy me-2"></i>3.4.1 INSERT desde SELECT
@@ -364,7 +364,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </div>
 <!-- SUBQUERY (Initially below, then moves up) -->
 <div id="del-subquery-container" style="transition: all 1s ease-in-out;">
-<div class="subquery-box d-inline-block text-white border-info bg-dark" id="del-subquery">
+<div class="subquery-box d-inline-block border-info" id="del-subquery">
 <span class="code-token text-info">SELECT user_id</span>
 <span class="code-token">FROM Logins</span>
 <span class="code-token">WHERE fecha &lt; '2023-01-01' </span>
@@ -385,12 +385,12 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <!-- REAL WORLD CASE STUDY: GDPR / DELETION -->
 <!-- REAL WORLD CASE STUDY: MERGED -->
 <section class="mb-5" id="real-world-store">
-<h3 class="text-white border-bottom border-primary pb-2 mb-4">
+<h3 class="border-bottom border-primary pb-2 mb-4">
 <i class="fas fa-store me-2 text-primary"></i>3.5 Caso Real: Una Tienda
                             </h3>
 <!-- 3.5.1 GDPR / DELETION -->
 <article class="card bg-glass border-0 shadow-sm p-4 mb-4 border-primary" id="adv-gdpr">
-<h4 class="text-white border-bottom border-secondary pb-2 mb-3">
+<h4 class="border-bottom pb-2 mb-3">
 <i class="fas fa-user-slash me-2 text-warning"></i>3.5.1 GDPR (Borrado de Clientes)
                                 </h4>
 <p>
@@ -418,7 +418,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <i class="fas fa-biohazard me-2"></i><strong>Destructivo:</strong>
                                             Borras al cliente Y TAMBIÉN sus pedidos. Pierdes historial de ventas.
                                         </div>
-<div class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+<div class="p-3 rounded border font-monospace">
 <div><span class="text-info">START TRANSACTION;</span></div>
 <div class="text-muted mt-2">-- 1. Borrar detalles (Un IN con JOIN dentro)
                                             </div>
@@ -443,7 +443,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <i class="fas fa-check-circle me-2"></i><strong>Recomendado (GDPR):</strong>
                                             Mantienes los datos de ventas pero el cliente se vuelve anónimo.
                                         </div>
-<div class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+<div class="p-3 rounded border font-monospace">
 <div><span class="text-warning">UPDATE</span> Clientes</div>
 <div>SET nombre = <span class="text-success">'Anónimo'</span>,</div>
 <div>    email = CONCAT('borrado_', id, '@anonimo.com'),
@@ -462,7 +462,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <i class="fas fa-link me-2"></i><strong>Híbrido:</strong>
                                             Los pedidos quedan "huérfanos" (sin cliente) y borras la ficha.
                                         </div>
-<div class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+<div class="p-3 rounded border font-monospace">
 <div><span class="text-info">START TRANSACTION;</span></div>
 <div class="text-muted mt-2">-- 1. Desvincular pedidos (FK debe permitir
                                                 NULL)
@@ -480,7 +480,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </article>
 <!-- 3.5.2 E-COMMERCE CHECKOUT -->
 <article class="card bg-glass border-0 shadow-sm p-4 mb-4 border-primary" id="adv-case">
-<h4 class="text-primary border-bottom border-secondary pb-2 mb-3">
+<h4 class="text-primary border-bottom pb-2 mb-3">
 <i class="fas fa-shopping-cart me-2"></i>3.5.2 Un Pedido (Tienda Online)
                                 </h4>
 <p>
@@ -493,11 +493,11 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <!-- Animation Container -->
 <div class="row g-0 border rounded overflow-hidden mb-4" style="background-color: #0f172a;">
 <!-- Left: Store Interface -->
-<div class="col-md-5 border-end border-secondary p-3">
-<h6 class="text-white border-bottom border-secondary pb-2 mb-3"><i class="fas fa-desktop me-2"></i>Mi Carrito (Frontend)</h6>
+<div class="col-md-5 border-end p-3">
+<h6 class="border-bottom pb-2 mb-3"><i class="fas fa-desktop me-2"></i>Mi Carrito (Frontend)</h6>
 <!-- User Status -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-<span class="badge bg-secondary" id="shop-user-status">No Logueado</span>
+<span class="badge" id="shop-user-status">No Logueado</span>
 <small class="text-muted" id="shop-cart-id">Carrito: -</small>
 </div>
 <!-- Action Buttons -->
@@ -543,14 +543,14 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </div>
 <!-- Right: Database Log (SQL) -->
 <div class="col-md-7 p-3 bg-black font-monospace">
-<h6 class="text-success border-bottom border-secondary pb-2 mb-3"><i class="fas fa-database me-2"></i>Log de Base de Datos</h6>
+<h6 class="text-success border-bottom pb-2 mb-3"><i class="fas fa-database me-2"></i>Log de Base de Datos</h6>
 <div class="small text-info" id="shop-sql-log" style="height: 350px; overflow-y: auto;">
 <div class="text-muted fst-italic">Esperando acciones de usuario...</div>
 </div>
 </div>
 </div>
 <!-- Explanation Text -->
-<div class="alert alert-info bg-opacity-10 border-info text-light small">
+<div class="alert alert-info bg-opacity-10 border-info small">
 <i class="fas fa-info-circle me-2"></i>
 <strong>Puntos Clave:</strong>
 <ul class="mb-0 mt-1 ps-3">
@@ -566,7 +566,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </section>
 <!-- SAFETY: TRANSACTIONS & MEMES -->
 <article class="card bg-glass border-0 shadow-sm p-4 mb-4 border-danger" id="adv-safety">
-<h3 class="text-white"><i class="fas fa-shield-alt me-2 text-primary"></i>3.6 Seguridad:
+<h3 ><i class="fas fa-shield-alt me-2 text-primary"></i>3.6 Seguridad:
                                 DELETE sin WHERE</h3>
 <div class="row align-items-center mb-4">
 <div class="col-md-6">
@@ -586,16 +586,16 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <h5 class="text-danger mb-3">Galería del Terror</h5>
 <!-- Carousel for Memes -->
 <div class="carousel slide" data-bs-ride="carousel" id="memeCarousel">
-<div class="carousel-inner rounded shadow border border-secondary">
+<div class="carousel-inner rounded shadow border">
 <div class="carousel-item active">
 <img alt="Meme Disaster" class="d-block w-100" src="img/meme_delete_where.webp"/>
-<div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded p-1">
+<div class="carousel-caption d-none d-md-block bg-opacity-75 rounded p-1">
 <p class="mb-0 small">Cuando ves el "Rows affected: 15,420"</p>
 </div>
 </div>
 <div class="carousel-item">
 <img alt="Meme Gru Plan" class="d-block w-100" src="img/meme_gru_plan.webp"/>
-<div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded p-1">
+<div class="carousel-caption d-none d-md-block bg-opacity-75 rounded p-1">
 <p class="mb-0 small">El Plan Perfecto... con un fallo fatal</p>
 </div>
 </div>
@@ -627,7 +627,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </div>
 </div>
 <!-- 3.6.1 Transactions -->
-<div class="mt-5 border-top border-secondary pt-4" id="adv-transactions">
+<div class="mt-5 border-top pt-4" id="adv-transactions">
 <h4 class="text-warning"><i class="fas fa-undo-alt me-2"></i>3.6.1 Transacciones: El
                                     "Ctrl+Z" de la Base de Datos</h4>
 <p class="text-secondary">
@@ -648,11 +648,11 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
                                                 ocurrido.
                                             </p>
 </div>
-<div class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+<div class="p-3 rounded border font-monospace">
 <span class="text-info">-- 1. Empieza la magia (Modo Seguro ON)</span><br/>
 <span class="text-primary fw-bold">BEGIN;</span><br/><br/>
 <span class="text-info">-- 2. Ejecuta tu sentencia peligrosa</span><br/>
-<span class="text-light">DELETE FROM Usuarios;</span> <span class="text-danger fw-bold">-- ¡UPS! ¡OLVIDÉ EL WHERE! 😱</span><br/><br/>
+<span >DELETE FROM Usuarios;</span> <span class="text-danger fw-bold">-- ¡UPS! ¡OLVIDÉ EL WHERE! 😱</span><br/><br/>
 <span class="text-info">-- 3. ¿El resultado es un desastre?</span><br/>
 <span class="text-warning fw-bold">ROLLBACK;</span> <span class="text-success">-- ¡Fiú! Todo vuelve a estar bien.
                                                 😌</span><br/><br/>
@@ -669,13 +669,13 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </div>
 <!-- Tattoos Image -->
 <div class="text-center mt-5">
-<h5 class="text-white mb-3">Filosofía de Vida (Tatuajes Obligatorios)</h5>
+<h5 class="mb-3">Filosofía de Vida (Tatuajes Obligatorios)</h5>
 <div class="d-inline-block position-relative">
 <img alt="Tatuajes SQL Safety" class="img-fluid rounded shadow-lg border border-danger" src="img/safety_tattoos_meme_v2.png" style="max-height: 400px;"/>
-<div class="position-absolute top-50 start-0 translate-middle-y bg-dark bg-opacity-75 p-2 rounded text-white small fw-bold ms-2" style="max-width: 150px;">
+<div class="position-absolute top-50 start-0 translate-middle-y bg-opacity-75 p-2 rounded small fw-bold ms-2" style="max-width: 150px;">
                                         NI UN DELETE/UPDATE SIN WHERE
                                     </div>
-<div class="position-absolute top-50 end-0 translate-middle-y bg-dark bg-opacity-75 p-2 rounded text-white small fw-bold me-2" style="max-width: 150px;">
+<div class="position-absolute top-50 end-0 translate-middle-y bg-opacity-75 p-2 rounded small fw-bold me-2" style="max-width: 150px;">
                                         NI UN DELETE/UPDATE SIN BEGIN ROLLBACK
                                     </div>
 </div>
@@ -690,12 +690,12 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </div>
 </article>
 </section><section class="mb-5" id="real-world-store">
-<h3 class="text-white border-bottom border-primary pb-2 mb-4">
+<h3 class="border-bottom border-primary pb-2 mb-4">
 <i class="fas fa-store me-2 text-primary"></i>3.5 Caso Real: Una Tienda
                             </h3>
 <!-- 3.5.1 GDPR / DELETION -->
 <article class="card bg-glass border-0 shadow-sm p-4 mb-4 border-primary" id="adv-gdpr">
-<h4 class="text-white border-bottom border-secondary pb-2 mb-3">
+<h4 class="border-bottom pb-2 mb-3">
 <i class="fas fa-user-slash me-2 text-warning"></i>3.5.1 GDPR (Borrado de Clientes)
                                 </h4>
 <p>
@@ -723,7 +723,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <i class="fas fa-biohazard me-2"></i><strong>Destructivo:</strong>
                                             Borras al cliente Y TAMBIÉN sus pedidos. Pierdes historial de ventas.
                                         </div>
-<div class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+<div class="p-3 rounded border font-monospace">
 <div><span class="text-info">START TRANSACTION;</span></div>
 <div class="text-muted mt-2">-- 1. Borrar detalles (Un IN con JOIN dentro)
                                             </div>
@@ -748,7 +748,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <i class="fas fa-check-circle me-2"></i><strong>Recomendado (GDPR):</strong>
                                             Mantienes los datos de ventas pero el cliente se vuelve anónimo.
                                         </div>
-<div class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+<div class="p-3 rounded border font-monospace">
 <div><span class="text-warning">UPDATE</span> Clientes</div>
 <div>SET nombre = <span class="text-success">'Anónimo'</span>,</div>
 <div>    email = CONCAT('borrado_', id, '@anonimo.com'),
@@ -767,7 +767,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <i class="fas fa-link me-2"></i><strong>Híbrido:</strong>
                                             Los pedidos quedan "huérfanos" (sin cliente) y borras la ficha.
                                         </div>
-<div class="bg-dark p-3 rounded border border-secondary font-monospace text-light">
+<div class="p-3 rounded border font-monospace">
 <div><span class="text-info">START TRANSACTION;</span></div>
 <div class="text-muted mt-2">-- 1. Desvincular pedidos (FK debe permitir
                                                 NULL)
@@ -785,7 +785,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </article>
 <!-- 3.5.2 E-COMMERCE CHECKOUT -->
 <article class="card bg-glass border-0 shadow-sm p-4 mb-4 border-primary" id="adv-case">
-<h4 class="text-primary border-bottom border-secondary pb-2 mb-3">
+<h4 class="text-primary border-bottom pb-2 mb-3">
 <i class="fas fa-shopping-cart me-2"></i>3.5.2 Un Pedido (Tienda Online)
                                 </h4>
 <p>
@@ -798,11 +798,11 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <!-- Animation Container -->
 <div class="row g-0 border rounded overflow-hidden mb-4" style="background-color: #0f172a;">
 <!-- Left: Store Interface -->
-<div class="col-md-5 border-end border-secondary p-3">
-<h6 class="text-white border-bottom border-secondary pb-2 mb-3"><i class="fas fa-desktop me-2"></i>Mi Carrito (Frontend)</h6>
+<div class="col-md-5 border-end p-3">
+<h6 class="border-bottom pb-2 mb-3"><i class="fas fa-desktop me-2"></i>Mi Carrito (Frontend)</h6>
 <!-- User Status -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-<span class="badge bg-secondary" id="shop-user-status">No Logueado</span>
+<span class="badge" id="shop-user-status">No Logueado</span>
 <small class="text-muted" id="shop-cart-id">Carrito: -</small>
 </div>
 <!-- Action Buttons -->
@@ -848,14 +848,14 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 </div>
 <!-- Right: Database Log (SQL) -->
 <div class="col-md-7 p-3 bg-black font-monospace">
-<h6 class="text-success border-bottom border-secondary pb-2 mb-3"><i class="fas fa-database me-2"></i>Log de Base de Datos</h6>
+<h6 class="text-success border-bottom pb-2 mb-3"><i class="fas fa-database me-2"></i>Log de Base de Datos</h6>
 <div class="small text-info" id="shop-sql-log" style="height: 350px; overflow-y: auto;">
 <div class="text-muted fst-italic">Esperando acciones de usuario...</div>
 </div>
 </div>
 </div>
 <!-- Explanation Text -->
-<div class="alert alert-info bg-opacity-10 border-info text-light small">
+<div class="alert alert-info bg-opacity-10 border-info small">
 <i class="fas fa-info-circle me-2"></i>
 <strong>Puntos Clave:</strong>
 <ul class="mb-0 mt-1 ps-3">
@@ -874,7 +874,7 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 <h3 class="text-warning"><i class="fas fa-lock me-2"></i>4. Bloqueos de Registros (Locking)
     <span class="badge bg-warning text-dark ms-2 fs-6">Criterio 5.h BOJA</span>
 </h3>
-<p class="text-secondary">En un entorno multiusuario varios procesos pueden intentar modificar el mismo registro al mismo tiempo. MariaDB utiliza un sistema de <strong class="text-light">bloqueos</strong> para garantizar que las modificaciones sean seguras y coherentes.</p>
+<p class="text-secondary">En un entorno multiusuario varios procesos pueden intentar modificar el mismo registro al mismo tiempo. MariaDB utiliza un sistema de <strong >bloqueos</strong> para garantizar que las modificaciones sean seguras y coherentes.</p>
 
 <div class="alert alert-warning bg-opacity-10 border-warning text-warning">
     <i class="fas fa-gavel me-2"></i><strong>Normativa BOJA — Criterio 5.h:</strong> «Se han identificado los efectos de las distintas políticas de bloqueo de registros.»
@@ -882,10 +882,10 @@ DELETE FROM Tabla WHERE condicion;</code></pre>
 
 <div class="row g-4 mt-2">
     <div class="col-md-6">
-        <div class="card bg-dark border-info h-100">
+        <div class="card border-info h-100">
             <div class="card-header text-info fw-bold"><i class="fas fa-eye me-2"></i>Bloqueo Compartido (Shared Lock / READ)</div>
             <div class="card-body text-secondary small">
-                <p>Varios procesos pueden <strong class="text-light">leer</strong> el mismo registro a la vez. Ninguno puede modificarlo mientras el bloqueo compartido está activo.</p>
+                <p>Varios procesos pueden <strong >leer</strong> el mismo registro a la vez. Ninguno puede modificarlo mientras el bloqueo compartido está activo.</p>
                 <pre><code class="language-sql">-- Adquirir bloqueo de lectura sobre una tabla:
 LOCK TABLES Pedidos READ;
 
@@ -898,10 +898,10 @@ UNLOCK TABLES;</code></pre>
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card bg-dark border-danger h-100">
+        <div class="card border-danger h-100">
             <div class="card-header text-danger fw-bold"><i class="fas fa-lock me-2"></i>Bloqueo Exclusivo (Exclusive Lock / WRITE)</div>
             <div class="card-body text-secondary small">
-                <p>Solo <strong class="text-light">un proceso</strong> puede escribir en el recurso bloqueado. Ningún otro puede leer ni escribir hasta que se libere.</p>
+                <p>Solo <strong >un proceso</strong> puede escribir en el recurso bloqueado. Ningún otro puede leer ni escribir hasta que se libere.</p>
                 <pre><code class="language-sql">LOCK TABLES Pedidos WRITE;
 
 UPDATE Pedidos SET estado = 'Enviado'
@@ -914,7 +914,7 @@ UNLOCK TABLES;</code></pre>
     </div>
 </div>
 
-<h5 class="text-light mt-4 mb-3">Bloqueo a nivel de fila con SELECT ... FOR UPDATE (InnoDB)</h5>
+<h5 class="mt-4 mb-3">Bloqueo a nivel de fila con SELECT ... FOR UPDATE (InnoDB)</h5>
 <p class="text-secondary">El motor <strong>InnoDB</strong> soporta bloqueos a nivel de <em>fila</em>, mucho más granulares y eficientes que los bloqueos de tabla:</p>
 <pre><code class="language-sql">-- Ejemplo: proceso de compra que bloquea el stock de un producto
 BEGIN;
@@ -927,11 +927,11 @@ UPDATE Platos SET stock = stock - 1 WHERE plato_id = 7;
 
 COMMIT;  -- Libera el bloqueo de fila automáticamente</code></pre>
 
-<div class="alert alert-info bg-opacity-10 border-info text-light small mt-2">
+<div class="alert alert-info bg-opacity-10 border-info small mt-2">
     <i class="fas fa-info-circle me-2"></i><code>FOR UPDATE</code> bloquea <em>solo las filas del resultado</em>, no la tabla entera. Es el enfoque correcto en aplicaciones de producción.
 </div>
 
-<h5 class="text-light mt-4 mb-3">Problemas clásicos de concurrencia sin bloqueos</h5>
+<h5 class="mt-4 mb-3">Problemas clásicos de concurrencia sin bloqueos</h5>
 <div class="table-responsive">
     <table class="table table-dark table-sm table-bordered small">
         <thead class="table-secondary text-dark">
@@ -957,7 +957,7 @@ COMMIT;  -- Libera el bloqueo de fila automáticamente</code></pre>
     </table>
 </div>
 
-<h5 class="text-light mt-4 mb-3">Niveles de aislamiento en MariaDB</h5>
+<h5 class="mt-4 mb-3">Niveles de aislamiento en MariaDB</h5>
 <div class="table-responsive">
     <table class="table table-dark table-sm table-bordered small">
         <thead class="table-secondary text-dark">
@@ -979,14 +979,14 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;</code></pre>
 
 <h5 class="text-info mt-4"><i class="fas fa-pencil-alt me-2"></i>Ejercicio — Bloqueos</h5>
 <div class="accordion accordion-flush" id="accordionBloqueos">
-    <div class="accordion-item bg-transparent border-secondary">
-        <h2 class="accordion-header"><button class="accordion-button collapsed bg-dark text-light bg-opacity-50" data-bs-toggle="collapse" data-bs-target="#ex-blq-1" type="button">Simula un proceso de compra con bloqueo de fila</button></h2>
+    <div class="accordion-item bg-transparent">
+        <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-toggle="collapse" data-bs-target="#ex-blq-1" type="button">Simula un proceso de compra con bloqueo de fila</button></h2>
         <div id="ex-blq-1" class="accordion-collapse collapse" data-bs-parent="#accordionBloqueos">
             <div class="accordion-body text-secondary">
                 <p><strong>Enunciado:</strong> Abre <em>dos pestañas</em> de DBeaver conectadas a la BD del Arepazo. En la pestaña 1, inicia una transacción y bloquea con <code>FOR UPDATE</code> el plato con <code>plato_id = 1</code>. Sin hacer COMMIT, intenta desde la pestaña 2 hacer un UPDATE sobre ese mismo plato. Observa qué ocurre. Luego haz COMMIT en la pestaña 1 y comprueba que la pestaña 2 continúa.</p>
                 <details>
                     <summary class="btn btn-sm btn-outline-light mb-2">Ver script para pestaña 1</summary>
-                    <pre class="bg-dark p-2 rounded text-success"><code>-- PESTAÑA 1: bloquear y esperar
+                    <pre class="p-2 rounded text-success"><code>-- PESTAÑA 1: bloquear y esperar
 BEGIN;
 SELECT plato_id, nombre, precio FROM Platos WHERE plato_id = 1 FOR UPDATE;
 -- NO hagas COMMIT todavía. Ahora ejecuta el script en la pestaña 2.
@@ -995,7 +995,7 @@ COMMIT;</code></pre>
                 </details>
                 <details>
                     <summary class="btn btn-sm btn-outline-light mb-2">Ver script para pestaña 2</summary>
-                    <pre class="bg-dark p-2 rounded text-success"><code>-- PESTAÑA 2: intentar modificar el registro bloqueado
+                    <pre class="p-2 rounded text-success"><code>-- PESTAÑA 2: intentar modificar el registro bloqueado
 BEGIN;
 UPDATE Platos SET precio = 9.99 WHERE plato_id = 1;
 -- Este UPDATE quedará ESPERANDO hasta que la pestaña 1 haga COMMIT o ROLLBACK

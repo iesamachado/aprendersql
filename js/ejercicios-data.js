@@ -105,6 +105,16594 @@ const BLOQUES = [
   { id: 204, tipo: "teoria", nombre: "Tema 4: Automatización (Triggers y Cursores)", modulo: "0377", curso: "2º ASIR", ra: "4", implementado: true, desc: "Programación avanzada: Triggers, Cursores, Excepciones y Eventos." },
   { id: 205, tipo: "teoria", nombre: "Tema 5: Optimización de Rendimiento", modulo: "0377", curso: "2º ASIR", ra: "5", implementado: true, desc: "Índices, EXPLAIN, monitorización y cuellos de botella." },
   { id: 206, tipo: "teoria", nombre: "Tema 6: Distribución y Alta Disponibilidad", modulo: "0377", curso: "2º ASIR", ra: "6", implementado: true, desc: "BBDD Distribuidas, Motor FEDERATED y Replicación Master-Slave." }
+  // --- TAREAS OFFLINE (Módulo 0377 - 2º ASIR) ---
+  ,{
+    id: 211, tipo: "tarea", nombre: "Tema 1: Tarea - Instalación Multi-SGBD en Docker", modulo: "0377", curso: "2º ASIR", ra: "1", implementado: true, temaRef: 201,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fab fa-docker me-2"></i>Despliegue Multi-SGBD</h4>
+<p class="mb-3">El objetivo de esta práctica es dominar el despliegue de infraestructuras de bases de datos utilizando contenedores <b>Docker</b>.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-server me-2"></i>Instrucciones</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2">Debes crear un archivo <code>docker-compose.yml</code> independiente para cada uno de estos tres motores: <b>MariaDB</b>, <b>SQL Server</b> y <b>Oracle Database</b>.</li>
+  <li class="mb-2">Inicia los tres contenedores de forma simultánea asegurándote de mapear puertos distintos en tu máquina anfitriona (ej. 3306, 1433, 1521).</li>
+  <li class="mb-2">Utiliza un cliente gráfico (DBeaver, Azure Data Studio, SQL Developer) para conectarte remotamente a los tres motores.</li>
+  <li class="mb-2">Descarga el script de la base de datos <b>Pokedata</b> (proporcionado en Classroom), ejecútalo en los tres sistemas y haz un SELECT para comprobar que las tablas tienen datos.</li>
+</ul>
+<div class="alert alert-info mt-4 bg-dark text-light border-info">
+  <i class="fas fa-file-pdf me-2 text-info"></i><b>Formato de Entrega:</b> Sube un PDF (<i>ApellidoNombre_InstalacionDocker.pdf</i>) que contenga:<br><br>
+  1. Captura de terminal con <code>docker ps</code> donde se vean los tres contenedores vivos.<br>
+  2. El código fuente de tus tres archivos <code>docker-compose.yml</code>.<br>
+  3. Capturas a pantalla completa del cliente gráfico demostrando conexión a cada motor.<br>
+  4. Capturas ejecutando consultas SELECT sobre la BD <i>Pokedata</i> en los tres sistemas.
+</div>`,
+    rubricaDocente: [
+      "Archivos Docker Compose (3 pts): Los tres docker-compose.yml están correctamente estructurados, exponen puertos locales sin conflicto (ej. 3306, 1433, 1521) y configuran contraseñas requeridas.",
+      "Ejecución de contenedores (2 pts): La captura de 'docker ps' demuestra que los 3 contenedores pueden coexistir en ejecución sin fallos.",
+      "Conectividad Cliente-Servidor (2 pts): Hay evidencias claras de conexión remota desde un cliente externo.",
+      "Creación de BD y Consultas (3 pts): Se demuestra la importación del script 'Pokedata', sus 3 tablas y la ejecución de consultas en los 3 SGBD."
+    ],
+    solucionDocente: `Aquí tienes una solución de referencia para los tres archivos docker-compose.yml (puedes facilitarlos a los alumnos si se atascan).
+
+=== MariaDB ===
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: pokedata_mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: RootPassword123!
+    ports:
+      - "3306:3306"
+
+=== SQL Server ===
+version: '3.8'
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pokedata_sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "SaPassword123!"
+    ports:
+      - "1433:1433"
+
+=== Oracle Database ===
+version: '3.8'
+services:
+  oracle:
+    image: container-registry.oracle.com/database/express:21.3.0-xe
+    container_name: pokedata_oracle
+    environment:
+      ORACLE_PWD: "OraclePassword123!"
+    ports:
+      - "1521:1521"
+`
+  }
+  ,{
+    id: 212, tipo: "tarea", nombre: "Tema 1: Tarea - Instalación Multi-SGBD Avanzada (VMs y Cloud)", modulo: "0377", curso: "2º ASIR", ra: "1", implementado: true, temaRef: 201,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-cloud me-2"></i>Infraestructura Nativa y Cloud</h4>
+<p class="mb-3">Simularemos un entorno de producción real instalando motores de base de datos directamente sobre el sistema operativo y configurando las redes y firewalls pertinentes.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-network-wired me-2"></i>Requisitos de la Infraestructura</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2"><b>MariaDB (Linux):</b> Despliega un Ubuntu Server o Debian (sin entorno gráfico) en VirtualBox. La administración se hará remotamente por SSH.</li>
+  <li class="mb-2"><b>SQL Server (Windows):</b> Instálalo sobre un Windows Server en VirtualBox. <i>(Atención a la autenticación mixta y al protocolo TCP/IP)</i>.</li>
+  <li class="mb-2"><b>Oracle Database (Cloud):</b> Despliega una instancia en Oracle Cloud Linux. <i>(Cuidado con las Security Lists y las Ingress Rules de la VCN)</i>.</li>
+</ul>
+<p class="mb-3">En los tres sistemas, debes configurar reglas de cortafuegos y permisos de usuario remoto para poder conectarte desde el ordenador físico del aula (fuera de las máquinas virtuales).</p>
+<div class="alert alert-warning mt-4 bg-dark text-light border-warning">
+  <i class="fas fa-exclamation-triangle me-2 text-warning"></i><b>Evaluación:</b><br><br>
+  1. <b>PDF Documental:</b> Entrega un PDF (<i>tarea2_apellidoNombre.pdf</i>) con capturas explicando cómo has configurado la red y los firewalls.<br>
+  2. <b>Defensa Presencial:</b> El día límite, deberás encender tus máquinas y demostrar en directo al profesor cómo te conectas a los 3 servidores simultáneamente desde el equipo físico.
+</div>`,
+    rubricaDocente: [
+      "MariaDB (2 pts): Instalación por SSH evidenciada. Configuración correcta de bind-address y permisos de usuario remoto (GRANT ALL ON *.* TO user@'%').",
+      "SQL Server (2 pts): Instalación en Windows Server exitosa con autenticación mixta. Reglas de Firewall de Windows creadas y protocolo TCP/IP habilitado.",
+      "Oracle Cloud (2 pts): Despliegue correcto en la nube. Security Lists (Ingress Rules) configuradas en la VCN de Oracle Cloud para abrir el puerto de escucha.",
+      "Conectividad y Defensa (4 pts): Logra conectar en directo desde la máquina anfitriona física a los 3 sistemas, demostrando privilegios de creación y consulta."
+    ],
+    solucionDocente: `Notas de ayuda para evaluar y ayudar a los alumnos atascados en esta tarea:
+
+=== 1. MariaDB (VirtualBox Linux) ===
+- Problema típico: "Access denied" o no llega a conectar.
+- Solución Red: La red de VirtualBox debe estar en "Adaptador Puente" para tener IP accesible desde el anfitrión.
+- Solución Bind: Deben editar /etc/mysql/mariadb.conf.d/50-server.cnf y comentar la línea "bind-address = 127.0.0.1" (o cambiarla a 0.0.0.0). Reiniciar servicio.
+- Usuario remoto: CREATE USER 'usuario'@'%' IDENTIFIED BY 'pass'; GRANT ALL PRIVILEGES ON *.* TO 'usuario'@'%'; FLUSH PRIVILEGES;
+
+=== 2. SQL Server (VirtualBox Windows Server) ===
+- Problema típico: Timeout al intentar conectar desde el anfitrión.
+- Solución Autenticación: Asegurarse de que instalaron marcando "Modo Mixto" (para poder usar login normal).
+- Solución Red: Deben abrir el "Administrador de Configuración de SQL Server" -> Configuración de red -> Protocolos -> Habilitar "TCP/IP" (y reiniciar el servicio SQL).
+- Solución Firewall: Deben añadir una regla de entrada en el Firewall de Windows Server para el puerto TCP 1433, o desactivar el perfil de dominio/privado.
+
+=== 3. Oracle DB (Oracle Cloud) ===
+- Problema típico: Timeout de conexión a pesar de que el SGBD dice estar encendido.
+- Solución Nube: En Oracle Cloud no basta con abrir el firewall de Linux (iptables/firewalld). Tienen que entrar al panel web -> Virtual Cloud Network (VCN) -> Security Lists -> y añadir explícitamente una "Ingress Rule" para el puerto TCP 1521 hacia todo origen (0.0.0.0/0).
+`
+  }
+  ,{
+    id: 215, tipo: "tarea", nombre: "Tema 5: Tarea - Auditoría y Optimización (EXPLAIN)", modulo: "0377", curso: "2º ASIR", ra: "5", implementado: true, temaRef: 205,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-search me-2"></i>Auditoría de Rendimiento (EXPLAIN)</h4>
+<div class="alert alert-danger bg-danger bg-opacity-10 text-danger border-danger mb-4">
+  <i class="fas fa-ban me-2"></i><b>REGLA DE ORO:</b> Tarea presencial. <b>PROHIBIDO USAR IA.</b> Si te atascas, pregunta a tu profesor en clase. Entrega lo que tengas al sonar la campana.
+</div>
+<p class="mb-3">Descarga el script: <a href="../task/sql/RegalosApp_Caos.sql" download class="fw-bold text-info"><i class="fas fa-file-code me-1"></i>RegalosApp_Caos.sql</a> y cárgalo en tu MariaDB. Es una base de datos lenta y mal diseñada.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-tools me-2"></i>Misiones de Optimización (Resumen del PDF)</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2"><b>Bloque 1:</b> Arregla la ausencia de <i>Primary Keys</i>. Soluciona el <code>Filesort</code> ordenando por fecha, y aplica un <i>Covering Index</i> para búsquedas de emails.</li>
+  <li class="mb-2"><b>Bloque 2 (JOINs):</b> Identifica qué claves foráneas de <code>pedidos</code> y <code>detalles_pedido</code> están ralentizando las uniones y créales índices.</li>
+  <li class="mb-2"><b>Bloque 3:</b> Crea índices compuestos respetando la <i>selectividad</i> (rango vs coincidencia exacta) y arregla las búsquedas con <code>LIKE</code> y comodines iniciales.</li>
+  <li class="mb-2"><b>Bloque 4 (Malas prácticas):</b> Reescribe las consultas SARGables (quita el <code>YEAR()</code> del <code>WHERE</code>) y elimina índices redundantes en el historial de búsquedas.</li>
+</ul>
+<p class="mb-0"><b>Entrega:</b> Documento PDF donde, para cada problema resuelto, muestres una captura del <code>EXPLAIN</code> original (demostrando el <i>ALL</i> o el <i>filesort</i>), tu instrucción de mejora SQL, y la captura del <code>EXPLAIN</code> nuevo (<i>Using index</i>, <i>range</i>).</p>`,
+    rubricaDocente: [
+      "Bloque 1 (Fundamentos): Aplicación correcta de Primary Keys y Covering Index en consultas simples (eliminar SELECT *).",
+      "Bloque 2 (JOINs): Identificación y creación de índices correctos en las claves foráneas utilizadas en los JOINs y WHERE previos.",
+      "Bloque 3 (Avanzado): Uso correcto del orden de columnas en los índices compuestos (exact match + range) y evitación del escaneo completo en LIKE con comodín inicial.",
+      "Bloque 4 (Malas prácticas): Reescribe la consulta sin tabla temporal, aplica el índice de forma SARGable (sin funciones YEAR/MONTH envolviendo la columna) y borra índices redundantes."
+    ],
+    solucionDocente: `SOLUCIONARIO PARA EL DOCENTE (15 Ejercicios de Optimización)
+
+-- BLOQUE 1
+1. PK Olvidada:
+ALTER TABLE usuarios ADD PRIMARY KEY (id_usuario);
+
+2. SELECT *:
+SELECT nombre, precio FROM productos;
+
+3. Índice simple:
+CREATE INDEX idx_sku ON productos(codigo_sku);
+
+4. Filesort:
+CREATE INDEX idx_fecha_reg ON usuarios(fecha_registro DESC);
+
+-- BLOQUE 2
+5. Joins Lentos:
+ALTER TABLE pedidos ADD PRIMARY KEY (id_pedido);
+CREATE INDEX idx_pedido_usuario ON pedidos(id_usuario);
+CREATE INDEX idx_pedido_total ON pedidos(total);
+
+6. Joins Múltiples:
+ALTER TABLE productos ADD PRIMARY KEY (id_producto);
+ALTER TABLE categorias ADD PRIMARY KEY (id_categoria);
+ALTER TABLE detalles_pedido ADD PRIMARY KEY (id_detalle);
+CREATE INDEX idx_det_pedido ON detalles_pedido(id_pedido);
+CREATE INDEX idx_det_producto ON detalles_pedido(id_producto);
+CREATE INDEX idx_prod_cat ON productos(id_categoria);
+
+7. Filtrar antes de unir:
+SELECT * FROM pedidos p JOIN usuarios u ON p.id_usuario = u.id_usuario WHERE p.estado = 'Cancelado';
+CREATE INDEX idx_estado ON pedidos(estado);
+
+-- BLOQUE 3
+8. Índice compuesto:
+CREATE INDEX idx_pais_ciudad ON usuarios(pais, ciudad);
+
+9. Covering Index:
+CREATE INDEX idx_email ON usuarios(email);
+-- (Usará Using index en el EXPLAIN).
+
+10. Orden de Selectividad (Compuesto):
+CREATE INDEX idx_activo_stock ON productos(activo, stock);
+-- (activo va primero porque usa '=' coincidencia exacta, stock va segundo porque es un rango '<').
+
+11. LIKE:
+CREATE INDEX idx_apellido ON usuarios(apellido);
+-- LIKE '%ez' no usará el índice (hace un ALL). 
+-- LIKE 'Gon%' SÍ usará el índice (Range).
+
+-- BLOQUE 4
+12. Tablas temporales:
+SELECT * FROM pedidos WHERE total > 500 AND id_usuario = 10;
+-- Directamente sobre la tabla original, aprovechando el índice en id_usuario o total.
+
+13. No abusar (Escritura):
+DROP INDEX idx_log_user ON historial_busquedas;
+DROP INDEX idx_log_term ON historial_busquedas;
+DROP INDEX idx_log_date ON historial_busquedas;
+-- Solo mantenemos idx_log_all, ya que tener índices individuales redundantes ralentiza brutalmente los INSERT masivos que hacen los logs.
+
+14. SARGable (Funciones en WHERE):
+-- MAL: YEAR(fecha_pedido) = 2023 anula el uso del árbol B-Tree del índice.
+CREATE INDEX idx_fecha_pedido ON pedidos(fecha_pedido);
+-- BIEN: 
+SELECT * FROM pedidos WHERE fecha_pedido >= '2023-01-01' AND fecha_pedido < '2024-01-01';
+
+15. Limpieza Final:
+-- Revisar índices duplicados o solapados en usuarios (ej. si existiera idx_pais y luego crearon idx_pais_ciudad, idx_pais sobra).
+`
+  }
+  ,{
+    id: 213, tipo: "tarea", nombre: "Tema 3: Tarea - Roles, Permisos y Vistas (El Arepazo)", modulo: "0377", curso: "2º ASIR", ra: "3", implementado: true, temaRef: 203,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-shield-alt me-2"></i>Seguridad: Roles y Permisos</h4>
+<p class="mb-3">Vamos a auditar y securizar la base de datos <b>El Arepazo</b>. Debes usar obligatoriamente sentencias puras SQL (<code>CREATE ROLE</code>, <code>GRANT</code>, etc.).</p>
+<h5 class="mt-4 text-info"><i class="fas fa-tasks me-2"></i>Fase 1: Roles Base</h5>
+<ul class="mb-3 text-start">
+  <li class="mb-2">Crea un grupo <code>cocineros</code> con permisos de lectura sobre <i>menu</i>, <i>recetas</i> e <i>ingredientes</i>. Crea un usuario, añádelo, entra con él y prueba a intentar borrar algo (debe fallar).</li>
+  <li class="mb-2">Crea un grupo <code>camareros</code> con lectura sobre <i>menu</i> y permisos totales (salvo DELETE) sobre <i>pedidos</i> y <i>pedidoslinea</i>. Crea un usuario y pruébalo.</li>
+</ul>
+<h5 class="mt-4 text-info"><i class="fas fa-user-tie me-2"></i>Fase 2: Superusuarios y Vistas</h5>
+<ul class="mb-3 text-start">
+  <li class="mb-2">Crea un usuario <code>jefe</code> con los permisos de ambos roles, y que además pueda borrar pedidos y modificar por completo el menú. Loguéate y sube un 5% el precio del menú.</li>
+  <li class="mb-2">Crea un <code>invitado</code>. Debe tener permiso solo sobre una VISTA del menú que muestre el plato, precio y el nombre en texto de la categoría/tipo (ocultando los IDs de foráneas).</li>
+</ul>
+<h5 class="mt-4 text-info"><i class="fas fa-globe me-2"></i>Fase 3: Entorno de Red</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2">Dale acceso a un compañero creando un usuario vinculado a su dirección IP (<code>'usuario'@'IP'</code>) con el rol de camarero. Conectaos cruzadamente.</li>
+</ul>
+<div class="alert alert-info mt-4 bg-dark text-light border-info">
+  <i class="fas fa-file-word me-2 text-info"></i><b>Entregable:</b> Documento de Google (el archivo debe llevar tu nombre). Por cada paso: explica brevemente qué haces, pega el código SQL en texto plano, e incluye capturas de pantalla <b>SIN RECORTAR</b> probando tanto los permisos concedidos como los "Access Denied".
+</div>`,
+    rubricaDocente: [
+      "Roles y Usuarios (Arepazo 1) (3 pts): Crea roles 'cocineros' y 'camareros' usando GRANT correctamente (solo SELECT vs SELECT/INSERT/UPDATE sin DELETE).",
+      "Rol Jefe y Vista Invitado (Arepazo 2) (3 pts): El Jefe hereda roles o tiene permisos acumulados más el DELETE. La vista del 'invitado' realiza un JOIN correcto con tipos/categorías y se le da permiso solo sobre esa vista, protegiendo las tablas reales.",
+      "Conexión Remota (Arepazo 3) (2 pts): Evidencias claras de conexión entre compañeros y asignación de roles a usuarios de IPs remotas (ej. 'usuario'@'IP_COMPAÑERO').",
+      "Formato y Calidad (2 pts): Documento Google con nombre correcto, texto SQL copiable, explicaciones lógicas y capturas de pantalla sin recortar demostrando éxito y rechazo de permisos."
+    ],
+    solucionDocente: `CHULETA DE SOLUCIONES SQL (El Arepazo):
+
+-- 1. Rol Cocineros
+CREATE ROLE cocineros;
+GRANT SELECT ON arepazo.menu TO cocineros;
+GRANT SELECT ON arepazo.recetas TO cocineros;
+GRANT SELECT ON arepazo.ingredientes TO cocineros;
+CREATE USER 'paco_cocinero'@'%' IDENTIFIED BY '1234';
+GRANT cocineros TO 'paco_cocinero'@'%';
+-- IMPORTANTE: Para que el rol se active automáticamente al loguearse:
+SET DEFAULT ROLE cocineros FOR 'paco_cocinero'@'%'; 
+
+-- 2. Rol Camareros
+CREATE ROLE camareros;
+GRANT SELECT ON arepazo.menu TO camareros;
+GRANT SELECT, INSERT, UPDATE ON arepazo.pedidos TO camareros;
+GRANT SELECT, INSERT, UPDATE ON arepazo.pedidoslinea TO camareros;
+CREATE USER 'ana_camarera'@'%' IDENTIFIED BY '1234';
+GRANT camareros TO 'ana_camarera'@'%';
+SET DEFAULT ROLE camareros FOR 'ana_camarera'@'%';
+
+-- 3. Usuario Jefe 
+CREATE USER 'jefe'@'%' IDENTIFIED BY 'boss';
+GRANT cocineros TO 'jefe'@'%';
+GRANT camareros TO 'jefe'@'%';
+GRANT DELETE ON arepazo.pedidos TO 'jefe'@'%';
+GRANT INSERT, UPDATE, DELETE ON arepazo.menu TO 'jefe'@'%';
+SET DEFAULT ROLE ALL FOR 'jefe'@'%';
+-- Prueba del 5%: UPDATE arepazo.menu SET precio = precio * 1.05;
+
+-- 4. Usuario Invitado y Vista Ocultando FKs
+CREATE VIEW arepazo.vista_menu_invitado AS
+SELECT m.id, m.nombre, m.precio, t.nombre AS tipo, c.nombre AS categoria
+FROM arepazo.menu m
+JOIN arepazo.tipo_plato t ON m.id_tipo = t.id
+JOIN arepazo.categorias c ON m.id_categoria = c.id;
+
+CREATE USER 'invitado'@'%' IDENTIFIED BY 'guest';
+GRANT SELECT ON arepazo.vista_menu_invitado TO 'invitado'@'%';
+
+-- 5. Intercambio con compañero
+-- Tienen que crear un usuario apuntando a la IP real del compañero de clase
+CREATE USER 'compinche'@'192.168.X.Y' IDENTIFIED BY '1234';
+GRANT camareros TO 'compinche'@'192.168.X.Y';
+SET DEFAULT ROLE camareros FOR 'compinche'@'192.168.X.Y';
+`
+  }
+  ,{
+    id: 216, tipo: "tarea", nombre: "Tema 6: Tarea - Replicación en SQL Server (Publisher/Subscriber)", modulo: "0377", curso: "2º ASIR", ra: "6", implementado: true, temaRef: 206,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-clone me-2"></i>Replicación Transaccional en SQL Server</h4>
+<p class="mb-3">Investiga y despliega una topología de alta disponibilidad de base de datos configurando el sistema de replicación maestro/esclavo nativo de Microsoft.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-desktop me-2"></i>Entorno Virtual</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2">Levanta 2 máquinas con Windows Server en VirtualBox configuradas en <b>Red Interna</b> para aislar el tráfico.</li>
+  <li class="mb-2">Configura la primera como <b>Publicador</b> (Master) y la segunda como <b>Suscriptor</b> (Slave).</li>
+</ul>
+<div class="alert alert-warning mb-4 bg-dark text-light border-warning">
+  <i class="fas fa-exclamation-triangle me-2 text-warning"></i><b>¡Cuidado con la clonación!</b><br>
+  Si clonas la VM de Windows, debes cambiarle el nombre al sistema operativo. Al hacerlo, <b>debes renombrar obligatoriamente la instancia interna de SQL Server</b> y reiniciar el servicio, o el Agente SQL colapsará:<br>
+  <pre class="bg-black text-success p-2 mt-2 mb-0 rounded border border-secondary">EXEC sp_dropserver 'NombreAntiguo';<br>GO<br>EXEC sp_addserver 'NombreNuevo', local;<br>GO</pre>
+</div>
+<h5 class="mt-4 text-info"><i class="fas fa-clipboard-check me-2"></i>Defensa y Entregable</h5>
+<ul class="mb-0 text-start">
+  <li class="mb-2"><b>Manual PDF:</b> Tutorial paso a paso con capturas <b>a pantalla completa</b>, comandos y configuraciones de red, firewall y carpetas compartidas.</li>
+  <li class="mb-0"><b>Defensa presencial:</b> Enciende las máquinas en clase y enséñale al profesor cómo insertas un registro en el Publicador y aparece automáticamente en el Suscriptor.</li>
+</ul>`,
+    rubricaDocente: [
+      "Configuración de Red y Nombres (2 pts): Las máquinas están en red interna, se ven mutuamente (ping), y los nombres del OS y de la instancia de SQL Server coinciden perfectamente.",
+      "Manual PDF (3 pts): El documento detalla de forma clara el paso a paso para crear la Publicación y la Suscripción, con capturas a pantalla completa.",
+      "Defensa en Directo - Sincronización (3 pts): Demuestra en clase insertando/borrando un registro en el Publicador y verificando en tiempo real que aparece/desaparece en el Suscriptor.",
+      "Resolución y Conocimiento (2 pts): El alumno comprende el rol de la carpeta compartida (ReplData) y el funcionamiento del 'SQL Server Agent'."
+    ],
+    solucionDocente: `CHULETA PARA EL DOCENTE (Replicación SQL Server):
+
+Los alumnos se van a atascar principalmente en estos puntos. Úsalo como checklist para ayudarles o corregir la defensa presencial:
+
+1. Prerrequisitos Críticos (Causas de fallo habituales):
+- SERVICIO DETENIDO: El servicio "SQL Server Agent" (Agente SQL Server) debe estar en estado "En Ejecución" y en arranque "Automático" en AMBAS máquinas (por defecto viene deshabilitado). La replicación funciona a base de jobs de este Agente.
+- FIREWALL Y RED: El Firewall de Windows de ambas máquinas debe permitir el tráfico por el puerto TCP 1433 y UDP 1434. Además, hay que habilitar 'Compartir archivos e impresoras' para poder acceder a la carpeta de instantáneas.
+- RESOLUCIÓN DE NOMBRES: Si las máquinas están en Red Interna y no tienen servidor DNS, no van a poder conectarse por nombre. Diles que editen el archivo C:\Windows\System32\drivers\etc\hosts y metan las IPs y nombres de ambas.
+
+2. Proceso de Publicador (Publisher):
+- Tienen que crear una carpeta compartida en C:\ (ej. C:\ReplData) dando permisos completos a 'Todos' en la pestaña "Compartir" y en la pestaña "Seguridad".
+- La publicación que deben crear es "Publicación Transaccional" (Transactional Publication) para que los datos se repliquen en tiempo real al hacer los INSERT.
+
+3. Proceso de Suscriptor (Subscriber):
+- Al configurar la Suscripción (Pull o Push), si usan Push (el publicador empuja los datos), la carga se queda en el Master (ideal para aulas).
+- El usuario bajo el que corre el Agente SQL Server es el que intentará entrar a la carpeta compartida; a veces requiere usar un usuario de Windows específico o administrador de dominio.`
+  }
+  ,{
+    id: 214, tipo: "tarea", nombre: "Tema 4: Repaso 1 - Funciones y Procedimientos (Arepazo)", modulo: "0377", curso: "2º ASIR", ra: "4", implementado: true, temaRef: 204,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-code me-2"></i>Repaso: Rutinas y Automatización (El Arepazo)</h4>
+<p class="mb-3">Automatiza la gestión de datos mediante programación de Base de Datos (Functions y Procedures) creando un script <code>.sql</code> con la solución de estos retos:</p>
+<h5 class="mt-4 text-info"><i class="fas fa-map-marker-alt me-2"></i>1. Códigos Postales</h5>
+<ul class="mb-3 text-start">
+  <li class="mb-1">Añade a la tabla <code>pedidos</code> el campo <code>CP</code>.</li>
+  <li class="mb-1">Crea una función que devuelva un CP aleatorio. Si le pasas la provincia 'Sevilla', debe empezar obligatoriamente por '41'. Si es nulo, aleatorio total.</li>
+  <li class="mb-2">Crea un <i>Procedure</i> con un Cursor. A los 30 primeros pedidos asígnales un CP de Sevilla, al resto asígnales uno aleatorio.</li>
+</ul>
+<h5 class="mt-4 text-info"><i class="fas fa-id-card me-2"></i>2. Generación de DNIs</h5>
+<ul class="mb-3 text-start">
+  <li class="mb-1">Añade el campo <code>DNI</code> a los clientes.</li>
+  <li class="mb-1">Crea una función matemática que genere un DNI aleatorio (8 números usando <code>RAND()</code>) y calcule su letra oficial (busca en internet el algoritmo del Módulo 23).</li>
+  <li class="mb-2">Crea un <i>Procedure</i> que asigne masivamente un DNI válido y distinto a cada cliente.</li>
+</ul>
+<h5 class="mt-4 text-info"><i class="fas fa-truck me-2"></i>3. Tarificador de Envíos</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-1">Añade a <code>pedidos</code> el campo numérico <code>gastos_envio</code>.</li>
+  <li class="mb-1">Crea una función tarificadora basada en el CP: Si empieza por <code>410NN</code> (Sevilla ciudad) -> 3.99€. Si es <code>41NNN</code> (Provincia) -> 6.99€. Otro CP numérico -> 9.99€.</li>
+  <li class="mb-2">Crea un <i>Procedure</i> que aplique la función actualizando toda la tabla de pedidos.</li>
+</ul>`,
+    rubricaDocente: [
+      "Ejercicio 1 (3 pts): Uso correcto de LPAD, RAND y condicionales en la función. El procedure usa un CURSOR o LIMIT iterativo correctamente para separar los 30 primeros.",
+      "Ejercicio 2 (3 pts): La función calcula la letra del DNI correctamente usando MOD 23 y SUBSTRING. El procedure actualiza todos los clientes.",
+      "Ejercicio 3 (3 pts): La función de envíos usa correctamente LIKE ('410__', '41___') o expresiones regulares. El procedure de volcado es funcional.",
+      "Sintaxis general (1 pt): Uso correcto de DELIMITER, declaración de variables (DECLARE) y limpieza del código."
+    ],
+    solucionDocente: `CHULETA PARA EL DOCENTE (Arepazo Repaso):
+
+-- EJERCICIO 1
+ALTER TABLE pedidos ADD COLUMN CP VARCHAR(5);
+DELIMITER $
+CREATE FUNCTION generar_cp(provincia VARCHAR(50)) RETURNS VARCHAR(5)
+BEGIN
+    DECLARE prefijo VARCHAR(2);
+    IF provincia = 'Sevilla' THEN SET prefijo = '41';
+    ELSE SET prefijo = LPAD(FLOOR(1 + RAND() * 52), 2, '0'); END IF;
+    RETURN CONCAT(prefijo, LPAD(FLOOR(RAND() * 1000), 3, '0'));
+END$
+
+CREATE PROCEDURE asignar_cp()
+BEGIN
+    DECLARE v_id INT;
+    DECLARE contador INT DEFAULT 1;
+    DECLARE done INT DEFAULT 0;
+    DECLARE cur CURSOR FOR SELECT id FROM pedidos ORDER BY id; -- Ajustar nombre PK
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    OPEN cur;
+    read_loop: LOOP
+        FETCH cur INTO v_id;
+        IF done THEN LEAVE read_loop; END IF;
+        
+        IF contador <= 30 THEN
+            UPDATE pedidos SET CP = generar_cp('Sevilla') WHERE id = v_id;
+        ELSE
+            UPDATE pedidos SET CP = generar_cp(NULL) WHERE id = v_id;
+        END IF;
+        SET contador = contador + 1;
+    END LOOP;
+    CLOSE cur;
+END$
+DELIMITER ;
+
+-- EJERCICIO 2
+ALTER TABLE clientes ADD COLUMN dni VARCHAR(9);
+DELIMITER $
+CREATE FUNCTION generar_dni() RETURNS VARCHAR(9)
+BEGIN
+    DECLARE numero INT;
+    DECLARE letras VARCHAR(23) DEFAULT 'TRWAGMYFPDXBNJZSQVHLCKE';
+    SET numero = FLOOR(RAND() * 100000000);
+    RETURN CONCAT(LPAD(numero, 8, '0'), SUBSTRING(letras, (numero MOD 23) + 1, 1));
+END$
+
+CREATE PROCEDURE asignar_dnis()
+BEGIN
+    -- Se puede hacer con cursor, pero un UPDATE masivo es más eficiente
+    UPDATE clientes SET dni = generar_dni();
+END$
+DELIMITER ;
+
+-- EJERCICIO 3
+ALTER TABLE pedidos ADD COLUMN gastos_envio DECIMAL(5,2);
+DELIMITER $
+CREATE FUNCTION calcular_envio(cp_in VARCHAR(5)) RETURNS DECIMAL(5,2)
+BEGIN
+    IF cp_in LIKE '410__' THEN RETURN 3.99;
+    ELSEIF cp_in LIKE '41___' THEN RETURN 6.99;
+    ELSEIF cp_in REGEXP '^[0-9]+ = [
+  {
+    "id": 100,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con tipos de datos y PK",
+    "titulo": "Crear tabla Proveedores",
+    "enunciado": "Crea una tabla llamada <code>Proveedores</code> con las siguientes columnas: <b>proveedor_id</b> como clave primaria entera autoincremental, <b>nombre</b> de tipo VARCHAR(100) que no pueda ser nulo, <b>telefono</b> de tipo VARCHAR(20), y <b>pais_origen</b> de tipo VARCHAR(50) con valor por defecto <code>'España'</code>.",
+    "bd": "arepazo",
+    "query_solucion": "CREATE TABLE Proveedores (\n  proveedor_id INT AUTO_INCREMENT PRIMARY KEY,\n  nombre VARCHAR(100) NOT NULL,\n  telefono VARCHAR(20),\n  pais_origen VARCHAR(50) DEFAULT 'España'\n);",
+    "puntos": 10,
+    "pista": "Recuerda que AUTO_INCREMENT se usa junto a PRIMARY KEY. El valor DEFAULT se pone entre comillas simples para texto.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>Zonas_Reparto</code> con las columnas: <b>zona_id</b> como clave primaria entera autoincremental, <b>nombre_zona</b> de tipo VARCHAR(80) que no pueda ser nulo, <b>ciudad</b> de tipo VARCHAR(60), y <b>coste_envio</b> de tipo DECIMAL(5,2) con valor por defecto <code>2.50</code>.",
+        "query_solucion": "CREATE TABLE Zonas_Reparto (\n  zona_id INT AUTO_INCREMENT PRIMARY KEY,\n  nombre_zona VARCHAR(80) NOT NULL,\n  ciudad VARCHAR(60),\n  coste_envio DECIMAL(5,2) DEFAULT 2.50\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>Categorias_Menu</code> con las columnas: <b>categoria_id</b> como clave primaria entera autoincremental, <b>nombre_categoria</b> de tipo VARCHAR(50) que no pueda ser nulo, <b>descripcion</b> de tipo TEXT, y <b>activa</b> de tipo BOOLEAN con valor por defecto <code>TRUE</code>.",
+        "query_solucion": "CREATE TABLE Categorias_Menu (\n  categoria_id INT AUTO_INCREMENT PRIMARY KEY,\n  nombre_categoria VARCHAR(50) NOT NULL,\n  descripcion TEXT,\n  activa BOOLEAN DEFAULT TRUE\n);"
+      }
+    ]
+  },
+  {
+    "id": 101,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con UNIQUE y NOT NULL",
+    "titulo": "Crear tabla Repartidores",
+    "enunciado": "Crea una tabla <code>Repartidores</code> con: <b>repartidor_id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>nombre</b> VARCHAR(100) NOT NULL, <b>dni</b> VARCHAR(20) NOT NULL UNIQUE, <b>email</b> VARCHAR(100) UNIQUE, y <b>activo</b> BOOLEAN NOT NULL DEFAULT TRUE.",
+    "bd": "arepazo",
+    "query_solucion": "CREATE TABLE Repartidores (\n  repartidor_id INT AUTO_INCREMENT PRIMARY KEY,\n  nombre VARCHAR(100) NOT NULL,\n  dni VARCHAR(20) NOT NULL UNIQUE,\n  email VARCHAR(100) UNIQUE,\n  activo BOOLEAN NOT NULL DEFAULT TRUE\n);",
+    "puntos": 12,
+    "pista": "UNIQUE garantiza que no haya dos filas con el mismo valor en esa columna. Puede combinarse con NOT NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Cupones_Descuento</code> con: <b>cupon_id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>codigo</b> VARCHAR(30) NOT NULL UNIQUE, <b>descuento_pct</b> DECIMAL(5,2) NOT NULL, <b>descripcion</b> VARCHAR(200), y <b>activo</b> BOOLEAN NOT NULL DEFAULT TRUE.",
+        "query_solucion": "CREATE TABLE Cupones_Descuento (\n  cupon_id INT AUTO_INCREMENT PRIMARY KEY,\n  codigo VARCHAR(30) NOT NULL UNIQUE,\n  descuento_pct DECIMAL(5,2) NOT NULL,\n  descripcion VARCHAR(200),\n  activo BOOLEAN NOT NULL DEFAULT TRUE\n);"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Mesas</code> con: <b>mesa_id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>numero_mesa</b> INT NOT NULL UNIQUE, <b>capacidad</b> INT NOT NULL, <b>ubicacion</b> VARCHAR(50), y <b>disponible</b> BOOLEAN NOT NULL DEFAULT TRUE.",
+        "query_solucion": "CREATE TABLE Mesas (\n  mesa_id INT AUTO_INCREMENT PRIMARY KEY,\n  numero_mesa INT NOT NULL UNIQUE,\n  capacidad INT NOT NULL,\n  ubicacion VARCHAR(50),\n  disponible BOOLEAN NOT NULL DEFAULT TRUE\n);"
+      }
+    ]
+  },
+  {
+    "id": 102,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con FOREIGN KEY",
+    "titulo": "Crear tabla Valoraciones",
+    "enunciado": "Crea una tabla <code>Valoraciones</code> que referencie a clientes y platos: <b>valoracion_id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>cliente_id</b> INT NOT NULL con FK a <code>Clientes(cliente_id)</code>, <b>plato_id</b> INT NOT NULL con FK a <code>Platos(plato_id)</code>, <b>puntuacion</b> INT NOT NULL, y <b>comentario</b> TEXT.",
+    "bd": "arepazo",
+    "query_solucion": "CREATE TABLE Valoraciones (\n  valoracion_id INT AUTO_INCREMENT PRIMARY KEY,\n  cliente_id INT NOT NULL,\n  plato_id INT NOT NULL,\n  puntuacion INT NOT NULL,\n  comentario TEXT,\n  FOREIGN KEY (cliente_id) REFERENCES Clientes(cliente_id),\n  FOREIGN KEY (plato_id) REFERENCES Platos(plato_id)\n);",
+    "puntos": 15,
+    "pista": "Las FOREIGN KEY se declaran al final de la tabla con FOREIGN KEY (columna) REFERENCES tabla_padre(columna_padre).",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Asignaciones_Reparto</code> con: <b>asignacion_id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>pedido_id</b> INT NOT NULL con FK a <code>Pedidos(pedido_id)</code>, <b>repartidor_id</b> INT NOT NULL, <b>fecha_asignacion</b> TIMESTAMP DEFAULT CURRENT_TIMESTAMP, y <b>estado</b> VARCHAR(20) DEFAULT <code>'Asignado'</code>.",
+        "query_solucion": "CREATE TABLE Asignaciones_Reparto (\n  asignacion_id INT AUTO_INCREMENT PRIMARY KEY,\n  pedido_id INT NOT NULL,\n  repartidor_id INT NOT NULL,\n  fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  estado VARCHAR(20) DEFAULT 'Asignado',\n  FOREIGN KEY (pedido_id) REFERENCES Pedidos(pedido_id)\n);"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Favoritos</code> con: <b>favorito_id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>cliente_id</b> INT NOT NULL con FK a <code>Clientes(cliente_id)</code>, <b>plato_id</b> INT NOT NULL con FK a <code>Platos(plato_id)</code>, y <b>fecha_guardado</b> TIMESTAMP DEFAULT CURRENT_TIMESTAMP.",
+        "query_solucion": "CREATE TABLE Favoritos (\n  favorito_id INT AUTO_INCREMENT PRIMARY KEY,\n  cliente_id INT NOT NULL,\n  plato_id INT NOT NULL,\n  fecha_guardado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (cliente_id) REFERENCES Clientes(cliente_id),\n  FOREIGN KEY (plato_id) REFERENCES Platos(plato_id)\n);"
+      }
+    ]
+  },
+  {
+    "id": 103,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con UNIQUE compuesto",
+    "titulo": "Crear tabla Alergias",
+    "enunciado": "Crea una tabla <code>Alergias_Ingrediente</code> que registre qué alérgenos contiene cada ingrediente. Columnas: <b>alergia_id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>ingrediente_id</b> INT NOT NULL con FK a <code>Ingredientes(ingrediente_id)</code>, <b>tipo_alergia</b> VARCHAR(50) NOT NULL, y una restricción UNIQUE sobre la combinación <code>(ingrediente_id, tipo_alergia)</code>.",
+    "bd": "arepazo",
+    "query_solucion": "CREATE TABLE Alergias_Ingrediente (\n  alergia_id INT AUTO_INCREMENT PRIMARY KEY,\n  ingrediente_id INT NOT NULL,\n  tipo_alergia VARCHAR(50) NOT NULL,\n  FOREIGN KEY (ingrediente_id) REFERENCES Ingredientes(ingrediente_id),\n  UNIQUE (ingrediente_id, tipo_alergia)\n);",
+    "puntos": 15,
+    "pista": "Un UNIQUE compuesto se declara al final de la tabla con UNIQUE (col1, col2), igual que un FOREIGN KEY.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Platos_Alergenos</code> para registrar los alérgenos de cada plato. Columnas: <b>id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>plato_id</b> INT NOT NULL con FK a <code>Platos(plato_id)</code>, <b>alergeno</b> VARCHAR(60) NOT NULL, y una restricción UNIQUE sobre <code>(plato_id, alergeno)</code>.",
+        "query_solucion": "CREATE TABLE Platos_Alergenos (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  plato_id INT NOT NULL,\n  alergeno VARCHAR(60) NOT NULL,\n  FOREIGN KEY (plato_id) REFERENCES Platos(plato_id),\n  UNIQUE (plato_id, alergeno)\n);"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Horarios_Personal</code> con: <b>horario_id</b> INT PRIMARY KEY AUTO_INCREMENT, <b>empleado_id</b> INT NOT NULL, <b>dia_semana</b> VARCHAR(15) NOT NULL, <b>hora_entrada</b> TIME, <b>hora_salida</b> TIME, y una restricción UNIQUE sobre <code>(empleado_id, dia_semana)</code>.",
+        "query_solucion": "CREATE TABLE Horarios_Personal (\n  horario_id INT AUTO_INCREMENT PRIMARY KEY,\n  empleado_id INT NOT NULL,\n  dia_semana VARCHAR(15) NOT NULL,\n  hora_entrada TIME,\n  hora_salida TIME,\n  UNIQUE (empleado_id, dia_semana)\n);"
+      }
+    ]
+  },
+  {
+    "id": 104,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE - ADD COLUMN",
+    "titulo": "Añadir columna a Clientes",
+    "enunciado": "El restaurante Arepazo quiere guardar la <b>fecha de nacimiento</b> de sus clientes. Añade la columna <code>fecha_nacimiento</code> de tipo DATE a la tabla <code>Clientes</code>.",
+    "bd": "arepazo",
+    "query_solucion": "ALTER TABLE Clientes\n  ADD COLUMN fecha_nacimiento DATE;",
+    "puntos": 10,
+    "pista": "Usa ALTER TABLE seguido de ADD COLUMN con el nombre y el tipo de dato.",
+    "variaciones": [
+      {
+        "enunciado": "Arepazo quiere registrar la <b>dirección de entrega preferida</b> de cada cliente. Añade la columna <code>direccion_preferida</code> de tipo VARCHAR(200) a la tabla <code>Clientes</code>.",
+        "query_solucion": "ALTER TABLE Clientes\n  ADD COLUMN direccion_preferida VARCHAR(200);"
+      },
+      {
+        "enunciado": "El restaurante decide registrar el <b>número de calorías</b> de cada plato. Añade la columna <code>calorias</code> de tipo INT a la tabla <code>Platos</code>.",
+        "query_solucion": "ALTER TABLE Platos\n  ADD COLUMN calorias INT;"
+      }
+    ]
+  },
+  {
+    "id": 105,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE - ADD COLUMN con DEFAULT y NOT NULL",
+    "titulo": "Añadir columna con restricción a Pedidos",
+    "enunciado": "Añade a la tabla <code>Pedidos</code> una columna llamada <code>valorado</code> de tipo BOOLEAN, que <b>no pueda ser nula</b> y tenga valor por defecto <code>FALSE</code>.",
+    "bd": "arepazo",
+    "query_solucion": "ALTER TABLE Pedidos\n  ADD COLUMN valorado BOOLEAN NOT NULL DEFAULT FALSE;",
+    "puntos": 12,
+    "pista": "Puedes combinar NOT NULL y DEFAULT en la misma instrucción ADD COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Añade a la tabla <code>Platos</code> una columna llamada <code>destacado</code> de tipo BOOLEAN, que <b>no pueda ser nula</b> y tenga valor por defecto <code>FALSE</code>.",
+        "query_solucion": "ALTER TABLE Platos\n  ADD COLUMN destacado BOOLEAN NOT NULL DEFAULT FALSE;"
+      },
+      {
+        "enunciado": "Añade a la tabla <code>Ingredientes</code> una columna <code>stock_kg</code> de tipo DECIMAL(10,2), que <b>no pueda ser nula</b> y tenga valor por defecto <code>0.00</code>.",
+        "query_solucion": "ALTER TABLE Ingredientes\n  ADD COLUMN stock_kg DECIMAL(10,2) NOT NULL DEFAULT 0.00;"
+      }
+    ]
+  },
+  {
+    "id": 106,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE - MODIFY COLUMN",
+    "titulo": "Modificar columna descripcion de Platos",
+    "enunciado": "La columna <code>descripcion</code> de la tabla <code>Platos</code> actualmente es de tipo TEXT. Modifícala para que sea <b>VARCHAR(500)</b> y además tenga un valor por defecto de <code>'Sin descripción'</code>.",
+    "bd": "arepazo",
+    "query_solucion": "ALTER TABLE Platos\n  MODIFY COLUMN descripcion VARCHAR(500) DEFAULT 'Sin descripción';",
+    "puntos": 12,
+    "pista": "Con MODIFY COLUMN debes especificar el nombre de la columna, el nuevo tipo y cualquier restricción que quieras mantener o añadir.",
+    "variaciones": [
+      {
+        "enunciado": "La columna <code>telefono</code> de la tabla <code>Clientes</code> es VARCHAR(20). Modifícala para ampliarla a <b>VARCHAR(30)</b>.",
+        "query_solucion": "ALTER TABLE Clientes\n  MODIFY COLUMN telefono VARCHAR(30);"
+      },
+      {
+        "enunciado": "La columna <code>tipo_pedido</code> de la tabla <code>Pedidos</code> es VARCHAR(20). Modifícala para que sea <b>VARCHAR(30)</b> y tenga valor por defecto <code>'Mesa'</code>.",
+        "query_solucion": "ALTER TABLE Pedidos\n  MODIFY COLUMN tipo_pedido VARCHAR(30) DEFAULT 'Mesa';"
+      }
+    ]
+  },
+  {
+    "id": 107,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE - DROP COLUMN",
+    "titulo": "Eliminar columna de Ingredientes",
+    "enunciado": "El campo <code>unidad_almacen</code> de la tabla <code>Ingredientes</code> ya no es necesario porque todos los ingredientes se almacenan en kilogramos. <b>Elimina esa columna</b> de la tabla.",
+    "bd": "arepazo",
+    "query_solucion": "ALTER TABLE Ingredientes\n  DROP COLUMN unidad_almacen;",
+    "puntos": 10,
+    "pista": "Para eliminar una columna usa ALTER TABLE seguido de DROP COLUMN y el nombre de la columna.",
+    "variaciones": [
+      {
+        "enunciado": "Se decide que la columna <code>descripcion</code> de la tabla <code>Platos</code> no es necesaria. <b>Elimínala</b> de la tabla.",
+        "query_solucion": "ALTER TABLE Platos\n  DROP COLUMN descripcion;"
+      },
+      {
+        "enunciado": "La columna <code>estado</code> de la tabla <code>Pedidos</code> se va a gestionar en otra tabla. <b>Elimínala</b> de la tabla <code>Pedidos</code>.",
+        "query_solucion": "ALTER TABLE Pedidos\n  DROP COLUMN estado;"
+      }
+    ]
+  },
+  {
+    "id": 108,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE - ADD CONSTRAINT UNIQUE",
+    "titulo": "Añadir restricción UNIQUE a Platos",
+    "enunciado": "Tras revisar los datos, el restaurante decide que el campo <code>nombre_plato</code> de la tabla <code>Platos</code> debe ser único aunque no lo era al crear la tabla (supón que aún no tiene la restricción). Añade una restricción UNIQUE llamada <code>uq_nombre_plato</code> sobre esa columna.",
+    "bd": "arepazo",
+    "query_solucion": "ALTER TABLE Platos\n  ADD CONSTRAINT uq_nombre_plato UNIQUE (nombre_plato);",
+    "puntos": 12,
+    "pista": "Usa ALTER TABLE ... ADD CONSTRAINT nombre_restriccion UNIQUE (columna).",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción UNIQUE llamada <code>uq_email_cliente</code> sobre la columna <code>email</code> de la tabla <code>Clientes</code> (suponiendo que aún no existe).",
+        "query_solucion": "ALTER TABLE Clientes\n  ADD CONSTRAINT uq_email_cliente UNIQUE (email);"
+      },
+      {
+        "enunciado": "Añade una restricción UNIQUE llamada <code>uq_nombre_ingrediente</code> sobre la columna <code>nombre_ingrediente</code> de la tabla <code>Ingredientes</code> (suponiendo que aún no existe).",
+        "query_solucion": "ALTER TABLE Ingredientes\n  ADD CONSTRAINT uq_nombre_ingrediente UNIQUE (nombre_ingrediente);"
+      }
+    ]
+  },
+  {
+    "id": 109,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE - ADD FOREIGN KEY",
+    "titulo": "Añadir FK a tabla existente",
+    "enunciado": "Tienes una tabla <code>Notas_Pedido</code> ya creada con columnas <code>nota_id</code> y <code>pedido_id</code> (INT), pero sin la clave foránea. Añade una restricción de clave foránea llamada <code>fk_nota_pedido</code> que relacione <code>pedido_id</code> con <code>Pedidos(pedido_id)</code>.",
+    "bd": "arepazo",
+    "query_solucion": "ALTER TABLE Notas_Pedido\n  ADD CONSTRAINT fk_nota_pedido FOREIGN KEY (pedido_id) REFERENCES Pedidos(pedido_id);",
+    "puntos": 15,
+    "pista": "Usa ADD CONSTRAINT nombre FOREIGN KEY (columna) REFERENCES tabla(columna).",
+    "variaciones": [
+      {
+        "enunciado": "Tienes una tabla <code>Fotos_Plato</code> con columnas <code>foto_id</code> y <code>plato_id</code> INT, sin FK. Añade una restricción llamada <code>fk_foto_plato</code> que relacione <code>plato_id</code> con <code>Platos(plato_id)</code>.",
+        "query_solucion": "ALTER TABLE Fotos_Plato\n  ADD CONSTRAINT fk_foto_plato FOREIGN KEY (plato_id) REFERENCES Platos(plato_id);"
+      },
+      {
+        "enunciado": "Tienes una tabla <code>Direcciones_Cliente</code> con columnas <code>dir_id</code> y <code>cliente_id</code> INT, sin FK. Añade una restricción llamada <code>fk_dir_cliente</code> que relacione <code>cliente_id</code> con <code>Clientes(cliente_id)</code>.",
+        "query_solucion": "ALTER TABLE Direcciones_Cliente\n  ADD CONSTRAINT fk_dir_cliente FOREIGN KEY (cliente_id) REFERENCES Clientes(cliente_id);"
+      }
+    ]
+  },
+  {
+    "id": 110,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Eliminar tabla temporal",
+    "enunciado": "Se creó una tabla llamada <code>Platos_Temporada</code> para una campaña de verano que ya ha terminado. <b>Elimina completamente</b> esa tabla de la base de datos.",
+    "bd": "arepazo",
+    "query_solucion": "DROP TABLE Platos_Temporada;",
+    "puntos": 10,
+    "pista": "DROP TABLE elimina la tabla y todos sus datos permanentemente. Asegúrate de usar el nombre exacto.",
+    "variaciones": [
+      {
+        "enunciado": "La tabla <code>Pedidos_Archivados</code> ya no es necesaria porque los datos se han migrado a otro sistema. <b>Elimínala</b> de la base de datos.",
+        "query_solucion": "DROP TABLE Pedidos_Archivados;"
+      },
+      {
+        "enunciado": "Durante el desarrollo se creó una tabla de pruebas llamada <code>Test_Clientes</code>. <b>Elimínala</b> de la base de datos.",
+        "query_solucion": "DROP TABLE Test_Clientes;"
+      }
+    ]
+  },
+  {
+    "id": 111,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE IF EXISTS",
+    "titulo": "Eliminar tabla si existe",
+    "enunciado": "Quieres eliminar la tabla <code>Promociones_Antiguas</code>, pero no estás seguro de si existe. Usa la variante de DROP TABLE que <b>no genera error si la tabla no existe</b>.",
+    "bd": "arepazo",
+    "query_solucion": "DROP TABLE IF EXISTS Promociones_Antiguas;",
+    "puntos": 10,
+    "pista": "Añade IF EXISTS entre DROP TABLE y el nombre de la tabla para evitar errores si no existe.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la tabla <code>Backup_Pedidos</code> solo si existe, sin que se produzca un error en caso de que no esté en la base de datos. Usa la cláusula adecuada.",
+        "query_solucion": "DROP TABLE IF EXISTS Backup_Pedidos;"
+      },
+      {
+        "enunciado": "Elimina la tabla <code>Clientes_Inactivos</code> solo si existe, sin provocar error si no está en la base de datos.",
+        "query_solucion": "DROP TABLE IF EXISTS Clientes_Inactivos;"
+      }
+    ]
+  },
+  {
+    "id": 112,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar tabla",
+    "enunciado": "La tabla <code>Lineas_Pedido</code> va a renombrarse a <code>Detalle_Pedido</code> para seguir el nuevo convenio de nomenclatura del proyecto. <b>Renombra la tabla</b> con la instrucción SQL adecuada.",
+    "bd": "arepazo",
+    "query_solucion": "RENAME TABLE Lineas_Pedido TO Detalle_Pedido;",
+    "puntos": 10,
+    "pista": "Usa RENAME TABLE nombre_actual TO nuevo_nombre.",
+    "variaciones": [
+      {
+        "enunciado": "La tabla <code>Clientes</code> debe renombrarse a <code>Clientes_Registrados</code> para reflejar mejor su contenido. <b>Renombra la tabla</b> con la instrucción SQL adecuada.",
+        "query_solucion": "RENAME TABLE Clientes TO Clientes_Registrados;"
+      },
+      {
+        "enunciado": "La tabla <code>Recetas</code> debe renombrarse a <code>Composicion_Platos</code>. <b>Renombra la tabla</b> con la instrucción SQL adecuada.",
+        "query_solucion": "RENAME TABLE Recetas TO Composicion_Platos;"
+      }
+    ]
+  },
+  {
+    "id": 113,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE completa con múltiples restricciones",
+    "titulo": "Crear tabla Empleados completa",
+    "enunciado": "Crea la tabla <code>Empleados</code> con todas estas columnas y restricciones: <b>empleado_id</b> INT PK AUTO_INCREMENT, <b>nombre</b> VARCHAR(80) NOT NULL, <b>apellido</b> VARCHAR(80) NOT NULL, <b>cargo</b> VARCHAR(50) NOT NULL, <b>salario</b> DECIMAL(8,2) NOT NULL, <b>fecha_contrato</b> DATE NOT NULL, <b>activo</b> BOOLEAN NOT NULL DEFAULT TRUE.",
+    "bd": "arepazo",
+    "query_solucion": "CREATE TABLE Empleados (\n  empleado_id INT AUTO_INCREMENT PRIMARY KEY,\n  nombre VARCHAR(80) NOT NULL,\n  apellido VARCHAR(80) NOT NULL,\n  cargo VARCHAR(50) NOT NULL,\n  salario DECIMAL(8,2) NOT NULL,\n  fecha_contrato DATE NOT NULL,\n  activo BOOLEAN NOT NULL DEFAULT TRUE\n);",
+    "puntos": 15,
+    "pista": "Define cada columna en una línea separada por comas, con su tipo y restricciones. La PRIMARY KEY va al final de su línea o como restricción separada.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Turnos</code> con: <b>turno_id</b> INT PK AUTO_INCREMENT, <b>nombre_turno</b> VARCHAR(50) NOT NULL UNIQUE, <b>hora_inicio</b> TIME NOT NULL, <b>hora_fin</b> TIME NOT NULL, <b>dias_semana</b> VARCHAR(100) NOT NULL.",
+        "query_solucion": "CREATE TABLE Turnos (\n  turno_id INT AUTO_INCREMENT PRIMARY KEY,\n  nombre_turno VARCHAR(50) NOT NULL UNIQUE,\n  hora_inicio TIME NOT NULL,\n  hora_fin TIME NOT NULL,\n  dias_semana VARCHAR(100) NOT NULL\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Promociones</code> con: <b>promo_id</b> INT PK AUTO_INCREMENT, <b>nombre_promo</b> VARCHAR(100) NOT NULL UNIQUE, <b>descuento_pct</b> DECIMAL(5,2) NOT NULL, <b>fecha_inicio</b> DATE NOT NULL, <b>fecha_fin</b> DATE, <b>activa</b> BOOLEAN NOT NULL DEFAULT TRUE.",
+        "query_solucion": "CREATE TABLE Promociones (\n  promo_id INT AUTO_INCREMENT PRIMARY KEY,\n  nombre_promo VARCHAR(100) NOT NULL UNIQUE,\n  descuento_pct DECIMAL(5,2) NOT NULL,\n  fecha_inicio DATE NOT NULL,\n  fecha_fin DATE,\n  activa BOOLEAN NOT NULL DEFAULT TRUE\n);"
+      }
+    ]
+  },
+  {
+    "id": 114,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE - múltiples cambios",
+    "titulo": "Modificar tabla Platos con varios cambios",
+    "enunciado": "Realiza los siguientes cambios en la tabla <code>Platos</code> en una sola instrucción ALTER TABLE: <b>añade</b> una columna <code>tiempo_preparacion_min</code> de tipo INT, y <b>añade</b> otra columna <code>imagen_url</code> de tipo VARCHAR(255).",
+    "bd": "arepazo",
+    "query_solucion": "ALTER TABLE Platos\n  ADD COLUMN tiempo_preparacion_min INT,\n  ADD COLUMN imagen_url VARCHAR(255);",
+    "puntos": 12,
+    "pista": "En una sola instrucción ALTER TABLE puedes hacer múltiples cambios separándolos con comas.",
+    "variaciones": [
+      {
+        "enunciado": "Realiza los siguientes cambios en la tabla <code>Clientes</code> en una sola instrucción ALTER TABLE: <b>añade</b> la columna <code>puntos_fidelidad</code> de tipo INT DEFAULT 0, y <b>añade</b> la columna <code>acepta_publicidad</code> de tipo BOOLEAN DEFAULT FALSE.",
+        "query_solucion": "ALTER TABLE Clientes\n  ADD COLUMN puntos_fidelidad INT DEFAULT 0,\n  ADD COLUMN acepta_publicidad BOOLEAN DEFAULT FALSE;"
+      },
+      {
+        "enunciado": "Realiza los siguientes cambios en la tabla <code>Ingredientes</code> en una sola instrucción ALTER TABLE: <b>añade</b> la columna <code>proveedor</code> de tipo VARCHAR(100), y <b>añade</b> la columna <code>fecha_caducidad</code> de tipo DATE.",
+        "query_solucion": "ALTER TABLE Ingredientes\n  ADD COLUMN proveedor VARCHAR(100),\n  ADD COLUMN fecha_caducidad DATE;"
+      }
+    ]
+  },
+  {
+    "id": 115,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT * y columnas específicas",
+    "titulo": "Ver todos los platos",
+    "enunciado": "Muestra <b>todos los datos</b> de todos los platos de la carta del restaurante Arepazo.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT * FROM Platos;",
+    "puntos": 10,
+    "pista": "El asterisco (*) selecciona todas las columnas de la tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>todos los datos</b> de todos los ingredientes que tiene el restaurante.",
+        "query_solucion": "SELECT * FROM Ingredientes;"
+      },
+      {
+        "enunciado": "Muestra <b>todos los datos</b> de todos los clientes registrados en el sistema.",
+        "query_solucion": "SELECT * FROM Clientes;"
+      }
+    ]
+  },
+  {
+    "id": 116,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT columnas específicas con alias AS",
+    "titulo": "Listado de platos con alias",
+    "enunciado": "Muestra el <b>nombre del plato</b> y su <b>precio de venta</b> de todos los platos. Renombra las columnas como <code>Plato</code> y <code>Precio (€)</code> respectivamente.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato AS Plato, precio_venta AS 'Precio (€)'\nFROM Platos;",
+    "puntos": 12,
+    "pista": "Usa AS para poner alias a las columnas. Si el alias tiene espacios o caracteres especiales, ponlo entre comillas simples.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido</b> de todos los clientes. Renombra las columnas como <code>Nombre</code> y <code>Apellido</code>.",
+        "query_solucion": "SELECT nombre AS Nombre, apellido AS Apellido\nFROM Clientes;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del ingrediente</b> y su <b>precio por kg</b>. Renombra las columnas como <code>Ingrediente</code> y <code>Precio Kg</code>.",
+        "query_solucion": "SELECT nombre_ingrediente AS Ingrediente, precio_kg AS 'Precio Kg'\nFROM Ingredientes;"
+      }
+    ]
+  },
+  {
+    "id": 117,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con comparadores",
+    "titulo": "Platos disponibles con precio alto",
+    "enunciado": "Muestra el nombre y precio de todos los platos cuyo <b>precio de venta sea mayor que 10 euros</b>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, precio_venta\nFROM Platos\nWHERE precio_venta > 10;",
+    "puntos": 12,
+    "pista": "Usa la cláusula WHERE con el operador > para filtrar por precio.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre y precio por kg de los ingredientes cuyo <b>precio por kg sea menor o igual a 5 euros</b>.",
+        "query_solucion": "SELECT nombre_ingrediente, precio_kg\nFROM Ingredientes\nWHERE precio_kg <= 5;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de los pedidos cuyo <b>total sea mayor o igual a 30 euros</b>.",
+        "query_solucion": "SELECT *\nFROM Pedidos\nWHERE total_pedido >= 30;"
+      }
+    ]
+  },
+  {
+    "id": 118,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con AND y OR",
+    "titulo": "Platos de categoría y precio filtrados",
+    "enunciado": "Muestra el nombre, categoría y precio de los platos que sean de la categoría <code>'Arepas'</code> <b>Y</b> cuyo precio de venta sea menor de 8 euros.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, categoria, precio_venta\nFROM Platos\nWHERE categoria = 'Arepas' AND precio_venta < 8;",
+    "puntos": 12,
+    "pista": "Con AND ambas condiciones deben cumplirse. Con OR basta con que se cumpla una de ellas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre y categoría de los platos que sean de la categoría <code>'Bebidas'</code> <b>O</b> de la categoría <code>'Postres'</code>.",
+        "query_solucion": "SELECT nombre_plato, categoria\nFROM Platos\nWHERE categoria = 'Bebidas' OR categoria = 'Postres';"
+      },
+      {
+        "enunciado": "Muestra el nombre, tipo y total de los pedidos que sean de tipo <code>'Delivery'</code> <b>Y</b> cuyo total sea mayor de 20 euros.",
+        "query_solucion": "SELECT pedido_id, tipo_pedido, total_pedido\nFROM Pedidos\nWHERE tipo_pedido = 'Delivery' AND total_pedido > 20;"
+      }
+    ]
+  },
+  {
+    "id": 119,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con IN",
+    "titulo": "Platos de varias categorías con IN",
+    "enunciado": "Muestra el nombre y categoría de los platos que pertenezcan a las categorías <code>'Entrantes'</code>, <code>'Platos Principales'</code> o <code>'Acompañantes'</code>. Usa la cláusula <code>IN</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, categoria\nFROM Platos\nWHERE categoria IN ('Entrantes', 'Platos Principales', 'Acompañantes');",
+    "puntos": 12,
+    "pista": "IN permite comparar una columna con una lista de valores. Es equivalente a varios OR pero más compacto.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el pedido_id, tipo y estado de los pedidos cuyo <code>tipo_pedido</code> sea <code>'Mesa'</code> o <code>'Para llevar'</code>. Usa la cláusula <code>IN</code>.",
+        "query_solucion": "SELECT pedido_id, tipo_pedido, estado\nFROM Pedidos\nWHERE tipo_pedido IN ('Mesa', 'Para llevar');"
+      },
+      {
+        "enunciado": "Muestra los clientes cuyos <code>cliente_id</code> sean 1, 5, 10 o 15. Muestra nombre, apellido e email. Usa la cláusula <code>IN</code>.",
+        "query_solucion": "SELECT nombre, apellido, email\nFROM Clientes\nWHERE cliente_id IN (1, 5, 10, 15);"
+      }
+    ]
+  },
+  {
+    "id": 120,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con BETWEEN",
+    "titulo": "Platos en rango de precio",
+    "enunciado": "Muestra el nombre y precio de los platos cuyo <b>precio de venta esté entre 5 y 12 euros</b> (ambos inclusive). Usa la cláusula <code>BETWEEN</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, precio_venta\nFROM Platos\nWHERE precio_venta BETWEEN 5 AND 12;",
+    "puntos": 12,
+    "pista": "BETWEEN valor1 AND valor2 incluye los dos extremos. Es equivalente a >= valor1 AND <= valor2.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre y precio por kg de los ingredientes cuyo <b>precio por kg esté entre 2 y 8 euros</b>. Usa <code>BETWEEN</code>.",
+        "query_solucion": "SELECT nombre_ingrediente, precio_kg\nFROM Ingredientes\nWHERE precio_kg BETWEEN 2 AND 8;"
+      },
+      {
+        "enunciado": "Muestra los pedidos cuyo <b>total esté entre 15 y 40 euros</b>. Muestra pedido_id, tipo_pedido y total_pedido. Usa <code>BETWEEN</code>.",
+        "query_solucion": "SELECT pedido_id, tipo_pedido, total_pedido\nFROM Pedidos\nWHERE total_pedido BETWEEN 15 AND 40;"
+      }
+    ]
+  },
+  {
+    "id": 121,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con LIKE",
+    "titulo": "Buscar platos por nombre",
+    "enunciado": "Muestra el nombre y categoría de todos los platos cuyo nombre <b>contenga la palabra 'arepa'</b> (sin distinguir mayúsculas y minúsculas). Usa <code>LIKE</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, categoria\nFROM Platos\nWHERE nombre_plato LIKE '%arepa%';",
+    "puntos": 12,
+    "pista": "El % en LIKE representa cualquier cantidad de caracteres. Ponlo antes y después del texto para buscar en cualquier posición.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre y apellido de los clientes cuyo <b>apellido empiece por la letra 'G'</b>. Usa <code>LIKE</code>.",
+        "query_solucion": "SELECT nombre, apellido\nFROM Clientes\nWHERE apellido LIKE 'G%';"
+      },
+      {
+        "enunciado": "Muestra el nombre de los ingredientes cuyo nombre <b>termine en 'o'</b>. Usa <code>LIKE</code>.",
+        "query_solucion": "SELECT nombre_ingrediente\nFROM Ingredientes\nWHERE nombre_ingrediente LIKE '%o';"
+      }
+    ]
+  },
+  {
+    "id": 122,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL / IS NOT NULL",
+    "titulo": "Pedidos sin email de cliente",
+    "enunciado": "Muestra el <code>cliente_id</code>, <code>nombre</code> y <code>apellido</code> de los clientes que <b>no tienen email registrado</b> (el campo email es NULL).",
+    "bd": "arepazo",
+    "query_solucion": "SELECT cliente_id, nombre, apellido\nFROM Clientes\nWHERE email IS NULL;",
+    "puntos": 12,
+    "pista": "Para comprobar si un campo es nulo usa IS NULL (nunca = NULL, eso no funciona en SQL).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>cliente_id</code>, <code>nombre</code> y <code>telefono</code> de los clientes que <b>sí tienen teléfono registrado</b> (el campo no es NULL).",
+        "query_solucion": "SELECT cliente_id, nombre, telefono\nFROM Clientes\nWHERE telefono IS NOT NULL;"
+      },
+      {
+        "enunciado": "Muestra todos los pedidos que <b>no tienen registrado un total</b> (total_pedido es NULL). Muestra pedido_id, cliente_id y tipo_pedido.",
+        "query_solucion": "SELECT pedido_id, cliente_id, tipo_pedido\nFROM Pedidos\nWHERE total_pedido IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 123,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY ASC y DESC",
+    "titulo": "Platos ordenados por precio",
+    "enunciado": "Muestra el nombre y precio de venta de todos los platos, <b>ordenados de más caro a más barato</b>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, precio_venta\nFROM Platos\nORDER BY precio_venta DESC;",
+    "puntos": 12,
+    "pista": "ORDER BY columna DESC ordena de mayor a menor. ASC ordena de menor a mayor (es el valor por defecto).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de los clientes y su fecha de registro, <b>ordenados por fecha de registro de más antiguo a más reciente</b>.",
+        "query_solucion": "SELECT nombre, apellido, fecha_registro\nFROM Clientes\nORDER BY fecha_registro ASC;"
+      },
+      {
+        "enunciado": "Muestra el nombre de los ingredientes y su precio por kg, <b>ordenados alfabéticamente por nombre</b> (de la A a la Z).",
+        "query_solucion": "SELECT nombre_ingrediente, precio_kg\nFROM Ingredientes\nORDER BY nombre_ingrediente ASC;"
+      }
+    ]
+  },
+  {
+    "id": 124,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Los 5 platos más caros",
+    "enunciado": "Muestra el nombre y precio de venta de los <b>5 platos más caros</b> del menú.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, precio_venta\nFROM Platos\nORDER BY precio_venta DESC\nLIMIT 5;",
+    "puntos": 12,
+    "pista": "Combina ORDER BY ... DESC con LIMIT para obtener los N primeros registros de un orden.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre y precio por kg de los <b>3 ingredientes más baratos</b> del restaurante.",
+        "query_solucion": "SELECT nombre_ingrediente, precio_kg\nFROM Ingredientes\nORDER BY precio_kg ASC\nLIMIT 3;"
+      },
+      {
+        "enunciado": "Muestra los <b>10 últimos pedidos</b> realizados en el restaurante (los más recientes). Muestra pedido_id, cliente_id y fecha_hora.",
+        "query_solucion": "SELECT pedido_id, cliente_id, fecha_hora\nFROM Pedidos\nORDER BY fecha_hora DESC\nLIMIT 10;"
+      }
+    ]
+  },
+  {
+    "id": 125,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Categorías únicas del menú",
+    "enunciado": "Muestra las <b>categorías distintas</b> de platos que existen en el menú del restaurante. Cada categoría debe aparecer solo una vez.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT DISTINCT categoria\nFROM Platos;",
+    "puntos": 10,
+    "pista": "DISTINCT elimina los valores duplicados en el resultado. Se pone justo después de SELECT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>tipos de pedido distintos</b> que se han registrado en el restaurante. Cada tipo debe aparecer una sola vez.",
+        "query_solucion": "SELECT DISTINCT tipo_pedido\nFROM Pedidos;"
+      },
+      {
+        "enunciado": "Muestra los <b>estados distintos</b> en los que pueden estar los pedidos. Cada estado debe aparecer una sola vez.",
+        "query_solucion": "SELECT DISTINCT estado\nFROM Pedidos;"
+      }
+    ]
+  },
+  {
+    "id": 126,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones de texto: UPPER, LOWER, LENGTH",
+    "titulo": "Nombres en mayúsculas y longitud",
+    "enunciado": "Muestra el nombre de cada plato en <b>mayúsculas</b> y la <b>longitud en caracteres</b> de su nombre. Muestra dos columnas con los alias <code>Nombre_Mayus</code> y <code>Longitud</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT UPPER(nombre_plato) AS Nombre_Mayus, LENGTH(nombre_plato) AS Longitud\nFROM Platos;",
+    "puntos": 15,
+    "pista": "UPPER(columna) convierte el texto a mayúsculas. LENGTH(columna) devuelve el número de caracteres.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de cada ingrediente en <b>minúsculas</b> y la <b>longitud de su nombre</b>. Usa los alias <code>Ingrediente_Minus</code> y <code>Chars</code>.",
+        "query_solucion": "SELECT LOWER(nombre_ingrediente) AS Ingrediente_Minus, LENGTH(nombre_ingrediente) AS Chars\nFROM Ingredientes;"
+      },
+      {
+        "enunciado": "Muestra el <b>apellido en mayúsculas</b> y la <b>longitud del apellido</b> de cada cliente. Usa los alias <code>Apellido_May</code> y <code>Longitud</code>.",
+        "query_solucion": "SELECT UPPER(apellido) AS Apellido_May, LENGTH(apellido) AS Longitud\nFROM Clientes;"
+      }
+    ]
+  },
+  {
+    "id": 127,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Función CONCAT",
+    "titulo": "Nombre completo de clientes",
+    "enunciado": "Muestra el nombre completo de cada cliente (nombre y apellido unidos con un espacio) en una sola columna con el alias <code>Nombre_Completo</code>, junto con su email.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(nombre, ' ', apellido) AS Nombre_Completo, email\nFROM Clientes;",
+    "puntos": 15,
+    "pista": "CONCAT une varias cadenas de texto. Recuerda añadir un espacio ' ' entre el nombre y el apellido.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del plato y su categoría unidos en una sola columna con el formato <code>'nombre - categoria'</code>. Usa el alias <code>Descripcion_Plato</code>.",
+        "query_solucion": "SELECT CONCAT(nombre_plato, ' - ', categoria) AS Descripcion_Plato\nFROM Platos;"
+      },
+      {
+        "enunciado": "Muestra una columna llamada <code>Info_Ingrediente</code> que combine el nombre del ingrediente, el texto <code>' | Precio: '</code> y su precio_kg en una sola cadena.",
+        "query_solucion": "SELECT CONCAT(nombre_ingrediente, ' | Precio: ', precio_kg) AS Info_Ingrediente\nFROM Ingredientes;"
+      }
+    ]
+  },
+  {
+    "id": 128,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Aritmética y función ROUND",
+    "titulo": "Precio con IVA redondeado",
+    "enunciado": "Muestra el nombre del plato, su precio de venta y el <b>precio con IVA del 10%</b> redondeado a 2 decimales. Llama a esta última columna <code>Precio_con_IVA</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, precio_venta, ROUND(precio_venta * 1.10, 2) AS Precio_con_IVA\nFROM Platos;",
+    "puntos": 15,
+    "pista": "Multiplica el precio por 1.10 para añadir el 10% de IVA. Usa ROUND(valor, decimales) para redondear.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del ingrediente, su precio por kg y el <b>precio si aumenta un 5%</b>, redondeado a 2 decimales. Llama a la columna <code>Precio_Nuevo</code>.",
+        "query_solucion": "SELECT nombre_ingrediente, precio_kg, ROUND(precio_kg * 1.05, 2) AS Precio_Nuevo\nFROM Ingredientes;"
+      },
+      {
+        "enunciado": "Muestra el pedido_id, el total del pedido y el <b>importe de un descuento del 15%</b> redondeado a 2 decimales. Llama a la columna <code>Descuento</code>.",
+        "query_solucion": "SELECT pedido_id, total_pedido, ROUND(total_pedido * 0.15, 2) AS Descuento\nFROM Pedidos\nWHERE total_pedido IS NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 129,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Combinación de filtros y ordenación",
+    "titulo": "Platos disponibles por categoría y precio",
+    "enunciado": "Muestra el nombre, categoría y precio de los platos que estén <b>disponibles</b> (<code>disponible = TRUE</code>) y cuyo precio sea <b>mayor de 6 euros</b>. Ordénalos por categoría alfabéticamente y dentro de cada categoría por precio descendente.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, categoria, precio_venta\nFROM Platos\nWHERE disponible = TRUE AND precio_venta > 6\nORDER BY categoria ASC, precio_venta DESC;",
+    "puntos": 15,
+    "pista": "Puedes ordenar por múltiples columnas separándolas con comas en ORDER BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre, categoría y precio de los platos de la categoría <code>'Arepas'</code> que estén disponibles, ordenados por precio de menor a mayor. Limita el resultado a 5 platos.",
+        "query_solucion": "SELECT nombre_plato, categoria, precio_venta\nFROM Platos\nWHERE categoria = 'Arepas' AND disponible = TRUE\nORDER BY precio_venta ASC\nLIMIT 5;"
+      },
+      {
+        "enunciado": "Muestra el nombre y apellido de los clientes cuyo nombre <b>contenga la letra 'a'</b>, ordenados por apellido de A a Z y limitando a los primeros 8 resultados.",
+        "query_solucion": "SELECT nombre, apellido\nFROM Clientes\nWHERE nombre LIKE '%a%'\nORDER BY apellido ASC\nLIMIT 8;"
+      }
+    ]
+  },
+  {
+    "id": 130,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT y GROUP BY",
+    "titulo": "Número de platos por categoría",
+    "enunciado": "Muestra el <b>número de platos</b> que hay en cada categoría del menú. Muestra la categoría y el conteo con el alias <code>Total_Platos</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT categoria, COUNT(*) AS Total_Platos\nFROM Platos\nGROUP BY categoria;",
+    "puntos": 20,
+    "pista": "COUNT(*) cuenta el número de filas. Combínalo con GROUP BY para contar por grupos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>número de pedidos</b> realizados de cada tipo (<code>tipo_pedido</code>). Muestra el tipo y el conteo como <code>Num_Pedidos</code>.",
+        "query_solucion": "SELECT tipo_pedido, COUNT(*) AS Num_Pedidos\nFROM Pedidos\nGROUP BY tipo_pedido;"
+      },
+      {
+        "enunciado": "Muestra cuántos <b>clientes</b> se registraron en cada mes (usa la función <code>MONTH(fecha_registro)</code>). Muestra el mes y el conteo como <code>Clientes_Mes</code>.",
+        "query_solucion": "SELECT MONTH(fecha_registro) AS Mes, COUNT(*) AS Clientes_Mes\nFROM Clientes\nGROUP BY MONTH(fecha_registro);"
+      }
+    ]
+  },
+  {
+    "id": 131,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM y GROUP BY",
+    "titulo": "Total facturado por tipo de pedido",
+    "enunciado": "Calcula el <b>total facturado</b> agrupado por tipo de pedido. Muestra el tipo y la suma total con el alias <code>Facturado</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT tipo_pedido, SUM(total_pedido) AS Facturado\nFROM Pedidos\nGROUP BY tipo_pedido;",
+    "puntos": 20,
+    "pista": "SUM(columna) suma todos los valores de esa columna. Combínalo con GROUP BY para sumar por grupos.",
+    "variaciones": [
+      {
+        "enunciado": "Para cada plato que aparece en líneas de pedido, calcula el <b>total de unidades vendidas</b>. Muestra plato_id y la suma de cantidades como <code>Unidades_Vendidas</code>.",
+        "query_solucion": "SELECT plato_id, SUM(cantidad) AS Unidades_Vendidas\nFROM Lineas_Pedido\nGROUP BY plato_id;"
+      },
+      {
+        "enunciado": "Para cada pedido, calcula el <b>total de artículos pedidos</b> (suma de cantidades en sus líneas). Muestra pedido_id y la suma como <code>Total_Articulos</code>.",
+        "query_solucion": "SELECT pedido_id, SUM(cantidad) AS Total_Articulos\nFROM Lineas_Pedido\nGROUP BY pedido_id;"
+      }
+    ]
+  },
+  {
+    "id": 132,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG, MAX, MIN",
+    "titulo": "Estadísticas de precios por categoría",
+    "enunciado": "Muestra, para cada categoría de platos, el <b>precio medio</b>, el <b>precio máximo</b> y el <b>precio mínimo</b>. Usa los alias <code>Precio_Medio</code>, <code>Precio_Max</code> y <code>Precio_Min</code>. Redondea el precio medio a 2 decimales.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT categoria, ROUND(AVG(precio_venta), 2) AS Precio_Medio, MAX(precio_venta) AS Precio_Max, MIN(precio_venta) AS Precio_Min\nFROM Platos\nGROUP BY categoria;",
+    "puntos": 22,
+    "pista": "AVG calcula el promedio, MAX el máximo y MIN el mínimo. Todas se combinan con GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Calcula el <b>precio promedio</b>, el <b>precio máximo</b> y el <b>precio mínimo</b> por kg de los ingredientes. Muestra una sola fila sin agrupar. Usa alias <code>Promedio</code>, <code>Maximo</code> y <code>Minimo</code>.",
+        "query_solucion": "SELECT ROUND(AVG(precio_kg), 2) AS Promedio, MAX(precio_kg) AS Maximo, MIN(precio_kg) AS Minimo\nFROM Ingredientes;"
+      },
+      {
+        "enunciado": "Para cada <code>estado</code> de pedido, calcula el <b>total promedio</b>, el <b>total máximo</b> y el <b>total mínimo</b> de los pedidos. Usa alias <code>Media</code>, <code>Max</code> y <code>Min</code>.",
+        "query_solucion": "SELECT estado, ROUND(AVG(total_pedido), 2) AS Media, MAX(total_pedido) AS Max, MIN(total_pedido) AS Min\nFROM Pedidos\nGROUP BY estado;"
+      }
+    ]
+  },
+  {
+    "id": 133,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Categorías con más de 3 platos",
+    "enunciado": "Muestra las categorías del menú que tengan <b>más de 3 platos</b>. Muestra la categoría y el número de platos.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT categoria, COUNT(*) AS Total_Platos\nFROM Platos\nGROUP BY categoria\nHAVING COUNT(*) > 3;",
+    "puntos": 22,
+    "pista": "HAVING filtra grupos después de GROUP BY, igual que WHERE filtra filas. Se usa con funciones de agregación.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los platos que aparecen en <b>más de 2 líneas de pedido distintas</b>. Muestra plato_id y el número de líneas.",
+        "query_solucion": "SELECT plato_id, COUNT(*) AS Num_Lineas\nFROM Lineas_Pedido\nGROUP BY plato_id\nHAVING COUNT(*) > 2;"
+      },
+      {
+        "enunciado": "Muestra los tipos de pedido cuyo <b>total facturado supere los 200 euros</b>. Muestra tipo_pedido y la suma total.",
+        "query_solucion": "SELECT tipo_pedido, SUM(total_pedido) AS Total_Facturado\nFROM Pedidos\nGROUP BY tipo_pedido\nHAVING SUM(total_pedido) > 200;"
+      }
+    ]
+  },
+  {
+    "id": 134,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN dos tablas",
+    "titulo": "Pedidos con nombre de cliente",
+    "enunciado": "Muestra el <b>pedido_id</b>, el <b>nombre completo del cliente</b> (concatenado) y el <b>total del pedido</b> para todos los pedidos que tengan un cliente asociado.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT p.pedido_id, CONCAT(c.nombre, ' ', c.apellido) AS Cliente, p.total_pedido\nFROM Pedidos p\nINNER JOIN Clientes c ON p.cliente_id = c.cliente_id;",
+    "puntos": 22,
+    "pista": "INNER JOIN devuelve solo las filas que tienen coincidencia en ambas tablas. Usa ON para indicar la condición de unión.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del plato</b> y la <b>cantidad de cada ingrediente</b> (en kg) que necesita en su receta. Une las tablas <code>Platos</code>, <code>Recetas</code> e <code>Ingredientes</code>.",
+        "query_solucion": "SELECT pl.nombre_plato, i.nombre_ingrediente, r.cantidad_kg\nFROM Platos pl\nINNER JOIN Recetas r ON pl.plato_id = r.plato_id\nINNER JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del plato</b> y su <b>cantidad</b> para cada línea de pedido. Une las tablas <code>Lineas_Pedido</code> y <code>Platos</code>.",
+        "query_solucion": "SELECT lp.linea_id, pl.nombre_plato, lp.cantidad\nFROM Lineas_Pedido lp\nINNER JOIN Platos pl ON lp.plato_id = pl.plato_id;"
+      }
+    ]
+  },
+  {
+    "id": 135,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN con WHERE y GROUP BY",
+    "titulo": "Platos más pedidos por clientes",
+    "enunciado": "Muestra el <b>nombre del plato</b> y el <b>total de unidades vendidas</b> (suma de cantidades en Lineas_Pedido). Ordena de mayor a menor por unidades vendidas y limita a los 5 primeros.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT pl.nombre_plato, SUM(lp.cantidad) AS Unidades_Vendidas\nFROM Lineas_Pedido lp\nINNER JOIN Platos pl ON lp.plato_id = pl.plato_id\nGROUP BY pl.plato_id, pl.nombre_plato\nORDER BY Unidades_Vendidas DESC\nLIMIT 5;",
+    "puntos": 25,
+    "pista": "Haz el JOIN primero, luego agrupa y suma. No olvides ordenar y limitar el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre completo del cliente</b> y el <b>número de pedidos</b> que ha realizado. Ordena por número de pedidos descendente.",
+        "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, COUNT(p.pedido_id) AS Num_Pedidos\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nGROUP BY c.cliente_id, c.nombre, c.apellido\nORDER BY Num_Pedidos DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del ingrediente</b> y en <b>cuántos platos distintos</b> aparece en las recetas. Llama a esa columna <code>Num_Platos</code>.",
+        "query_solucion": "SELECT i.nombre_ingrediente, COUNT(r.plato_id) AS Num_Platos\nFROM Ingredientes i\nINNER JOIN Recetas r ON i.ingrediente_id = r.ingrediente_id\nGROUP BY i.ingrediente_id, i.nombre_ingrediente\nORDER BY Num_Platos DESC;"
+      }
+    ]
+  },
+  {
+    "id": 136,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN básico",
+    "titulo": "Todos los platos con sus recetas",
+    "enunciado": "Muestra <b>todos los platos</b> del menú junto con los ingredientes de su receta (si los tiene). Muestra nombre del plato, nombre del ingrediente y cantidad. Los platos <b>sin receta</b> también deben aparecer.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT pl.nombre_plato, i.nombre_ingrediente, r.cantidad_kg\nFROM Platos pl\nLEFT JOIN Recetas r ON pl.plato_id = r.plato_id\nLEFT JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id;",
+    "puntos": 22,
+    "pista": "LEFT JOIN incluye todas las filas de la tabla de la izquierda aunque no tengan coincidencia en la tabla de la derecha (en ese caso los valores son NULL).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>todos los clientes</b> junto con los pedidos que han realizado (si los tienen). Muestra nombre, apellido, pedido_id y total_pedido. Incluye clientes sin pedidos.",
+        "query_solucion": "SELECT c.nombre, c.apellido, p.pedido_id, p.total_pedido\nFROM Clientes c\nLEFT JOIN Pedidos p ON c.cliente_id = p.cliente_id;"
+      },
+      {
+        "enunciado": "Muestra <b>todos los pedidos</b> junto con las líneas de pedido que tienen (si las hay). Muestra pedido_id, tipo_pedido, linea_id y cantidad. Incluye pedidos sin líneas.",
+        "query_solucion": "SELECT p.pedido_id, p.tipo_pedido, lp.linea_id, lp.cantidad\nFROM Pedidos p\nLEFT JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id;"
+      }
+    ]
+  },
+  {
+    "id": 137,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY con HAVING y JOIN",
+    "titulo": "Clientes que han gastado más de 50 euros",
+    "enunciado": "Muestra el <b>nombre completo</b> de los clientes y su <b>gasto total acumulado</b> en todos sus pedidos, pero solo de aquellos cuyo gasto total sea <b>superior a 50 euros</b>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, SUM(p.total_pedido) AS Gasto_Total\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nGROUP BY c.cliente_id, c.nombre, c.apellido\nHAVING SUM(p.total_pedido) > 50\nORDER BY Gasto_Total DESC;",
+    "puntos": 25,
+    "pista": "Haz el JOIN, agrupa por cliente y usa HAVING para filtrar sobre la suma.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del plato</b> y el <b>total facturado</b> por ese plato (precio_unitario_snapshot × cantidad), solo para platos con una facturación total superior a 100 euros.",
+        "query_solucion": "SELECT pl.nombre_plato, SUM(lp.precio_unitario_snapshot * lp.cantidad) AS Total_Facturado\nFROM Platos pl\nINNER JOIN Lineas_Pedido lp ON pl.plato_id = lp.plato_id\nGROUP BY pl.plato_id, pl.nombre_plato\nHAVING SUM(lp.precio_unitario_snapshot * lp.cantidad) > 100\nORDER BY Total_Facturado DESC;"
+      },
+      {
+        "enunciado": "Muestra los <b>ingredientes</b> que se usan en <b>más de 3 platos distintos</b>. Muestra el nombre del ingrediente y el número de platos.",
+        "query_solucion": "SELECT i.nombre_ingrediente, COUNT(r.plato_id) AS Num_Platos\nFROM Ingredientes i\nINNER JOIN Recetas r ON i.ingrediente_id = r.ingrediente_id\nGROUP BY i.ingrediente_id, i.nombre_ingrediente\nHAVING COUNT(r.plato_id) > 3;"
+      }
+    ]
+  },
+  {
+    "id": 138,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT con condición y GROUP BY",
+    "titulo": "Pedidos por estado y tipo",
+    "enunciado": "Muestra el <b>tipo de pedido</b>, el <b>estado</b> y el <b>número de pedidos</b> para cada combinación de tipo y estado. Ordena por tipo de pedido y luego por número de pedidos descendente.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT tipo_pedido, estado, COUNT(*) AS Num_Pedidos\nFROM Pedidos\nGROUP BY tipo_pedido, estado\nORDER BY tipo_pedido ASC, Num_Pedidos DESC;",
+    "puntos": 22,
+    "pista": "Puedes agrupar por múltiples columnas separándolas con comas en GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <b>categoría del plato</b> y cuántos platos de esa categoría están <b>disponibles</b> y cuántos <b>no disponibles</b>. Muestra categoria, disponible y el conteo.",
+        "query_solucion": "SELECT categoria, disponible, COUNT(*) AS Num_Platos\nFROM Platos\nGROUP BY categoria, disponible\nORDER BY categoria ASC;"
+      },
+      {
+        "enunciado": "Muestra el <b>año</b> y el <b>mes</b> de los pedidos y el <b>número de pedidos</b> realizados en cada mes. Usa <code>YEAR()</code> y <code>MONTH()</code>.",
+        "query_solucion": "SELECT YEAR(fecha_hora) AS Anio, MONTH(fecha_hora) AS Mes, COUNT(*) AS Num_Pedidos\nFROM Pedidos\nGROUP BY YEAR(fecha_hora), MONTH(fecha_hora)\nORDER BY Anio ASC, Mes ASC;"
+      }
+    ]
+  },
+  {
+    "id": 139,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN con filtro WHERE",
+    "titulo": "Ingredientes usados en platos principales",
+    "enunciado": "Muestra el <b>nombre del ingrediente</b> y la <b>cantidad en kg</b> que usa el plato, para todos los ingredientes que aparezcan en recetas de platos de la categoría <code>'Platos Principales'</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT i.nombre_ingrediente, r.cantidad_kg, pl.nombre_plato\nFROM Ingredientes i\nINNER JOIN Recetas r ON i.ingrediente_id = r.ingrediente_id\nINNER JOIN Platos pl ON r.plato_id = pl.plato_id\nWHERE pl.categoria = 'Platos Principales';",
+    "puntos": 25,
+    "pista": "Haz el JOIN entre las tres tablas y luego filtra con WHERE por la categoría.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del plato</b> y la <b>cantidad pedida</b> para todos los pedidos de tipo <code>'Delivery'</code>. Une Lineas_Pedido, Pedidos y Platos.",
+        "query_solucion": "SELECT pl.nombre_plato, lp.cantidad\nFROM Lineas_Pedido lp\nINNER JOIN Pedidos p ON lp.pedido_id = p.pedido_id\nINNER JOIN Platos pl ON lp.plato_id = pl.plato_id\nWHERE p.tipo_pedido = 'Delivery';"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre completo del cliente</b> y el <b>total del pedido</b> para todos los pedidos en estado <code>'Entregado'</code>.",
+        "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, p.total_pedido\nFROM Pedidos p\nINNER JOIN Clientes c ON p.cliente_id = c.cliente_id\nWHERE p.estado = 'Entregado';"
+      }
+    ]
+  },
+  {
+    "id": 140,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta escalar en SELECT",
+    "titulo": "Precio del plato más caro en cada categoría",
+    "enunciado": "Muestra cada plato con su categoría y precio, y añade una columna <code>Max_Categoria</code> que muestre el precio máximo de su categoría usando una subconsulta correlacionada en el SELECT.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, categoria, precio_venta,\n  (SELECT MAX(p2.precio_venta) FROM Platos p2 WHERE p2.categoria = p1.categoria) AS Max_Categoria\nFROM Platos p1;",
+    "puntos": 28,
+    "pista": "Una subconsulta en el SELECT devuelve un único valor por fila. Usa un alias para la tabla exterior para referenciarla desde la subconsulta interior.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra cada ingrediente con su nombre y precio_kg, y añade una columna <code>Precio_Promedio</code> con el precio medio de todos los ingredientes (subconsulta escalar no correlacionada en el SELECT).",
+        "query_solucion": "SELECT nombre_ingrediente, precio_kg,\n  (SELECT ROUND(AVG(precio_kg), 2) FROM Ingredientes) AS Precio_Promedio\nFROM Ingredientes;"
+      },
+      {
+        "enunciado": "Muestra cada pedido con su id y total, y añade una columna <code>Total_Maximo</code> con el mayor total de todos los pedidos (subconsulta escalar en el SELECT).",
+        "query_solucion": "SELECT pedido_id, total_pedido,\n  (SELECT MAX(total_pedido) FROM Pedidos) AS Total_Maximo\nFROM Pedidos\nWHERE total_pedido IS NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 141,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG con HAVING para filtrar grupos",
+    "titulo": "Clientes con ticket medio alto",
+    "enunciado": "Muestra el <b>cliente_id</b> y el <b>ticket medio</b> (promedio del total de sus pedidos) de los clientes cuyo ticket medio sea <b>superior a 25 euros</b>. Redondea a 2 decimales.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT cliente_id, ROUND(AVG(total_pedido), 2) AS Ticket_Medio\nFROM Pedidos\nWHERE total_pedido IS NOT NULL\nGROUP BY cliente_id\nHAVING AVG(total_pedido) > 25\nORDER BY Ticket_Medio DESC;",
+    "puntos": 25,
+    "pista": "Agrupa por cliente, calcula el promedio con AVG y filtra con HAVING.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las <b>categorías</b> cuyo <b>precio medio de platos sea inferior a 7 euros</b>. Muestra categoria y el precio medio redondeado a 2 decimales.",
+        "query_solucion": "SELECT categoria, ROUND(AVG(precio_venta), 2) AS Precio_Medio\nFROM Platos\nGROUP BY categoria\nHAVING AVG(precio_venta) < 7;"
+      },
+      {
+        "enunciado": "Muestra los <b>platos</b> (plato_id) cuya <b>cantidad media pedida</b> en Lineas_Pedido sea <b>mayor de 2</b>. Muestra plato_id y la media redondeada a 1 decimal.",
+        "query_solucion": "SELECT plato_id, ROUND(AVG(cantidad), 1) AS Cantidad_Media\nFROM Lineas_Pedido\nGROUP BY plato_id\nHAVING AVG(cantidad) > 2;"
+      }
+    ]
+  },
+  {
+    "id": 142,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN con COUNT DISTINCT",
+    "titulo": "Número de ingredientes por plato",
+    "enunciado": "Muestra el <b>nombre del plato</b> y el <b>número de ingredientes distintos</b> que tiene en su receta. Ordena por número de ingredientes descendente.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT pl.nombre_plato, COUNT(DISTINCT r.ingrediente_id) AS Num_Ingredientes\nFROM Platos pl\nINNER JOIN Recetas r ON pl.plato_id = r.plato_id\nGROUP BY pl.plato_id, pl.nombre_plato\nORDER BY Num_Ingredientes DESC;",
+    "puntos": 25,
+    "pista": "COUNT(DISTINCT columna) cuenta valores únicos. Combínalo con JOIN y GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>cliente_id</b> y el <b>número de platos distintos</b> que ha pedido en todos sus pedidos. Ordena por número de platos distintos descendente.",
+        "query_solucion": "SELECT p.cliente_id, COUNT(DISTINCT lp.plato_id) AS Platos_Distintos\nFROM Pedidos p\nINNER JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\nGROUP BY p.cliente_id\nORDER BY Platos_Distintos DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del plato</b> y el <b>número de pedidos distintos</b> en los que ha aparecido. Ordena descendente por número de pedidos.",
+        "query_solucion": "SELECT pl.nombre_plato, COUNT(DISTINCT lp.pedido_id) AS Num_Pedidos\nFROM Platos pl\nINNER JOIN Lineas_Pedido lp ON pl.plato_id = lp.plato_id\nGROUP BY pl.plato_id, pl.nombre_plato\nORDER BY Num_Pedidos DESC;"
+      }
+    ]
+  },
+  {
+    "id": 143,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN tres tablas",
+    "titulo": "Detalle completo de pedidos",
+    "enunciado": "Muestra el <b>nombre completo del cliente</b>, el <b>tipo de pedido</b>, el <b>nombre del plato</b> y la <b>cantidad</b> pedida, combinando las tablas Clientes, Pedidos, Lineas_Pedido y Platos.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, p.tipo_pedido, pl.nombre_plato, lp.cantidad\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\nINNER JOIN Platos pl ON lp.plato_id = pl.plato_id;",
+    "puntos": 25,
+    "pista": "Encadena los JOINs uno tras otro, asegurándote de que cada ON conecta las claves correctas entre las dos tablas que une.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del plato</b>, el <b>nombre del ingrediente</b> y el <b>precio por kg</b> del ingrediente para todos los platos y sus recetas.",
+        "query_solucion": "SELECT pl.nombre_plato, i.nombre_ingrediente, i.precio_kg\nFROM Platos pl\nINNER JOIN Recetas r ON pl.plato_id = r.plato_id\nINNER JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre completo del cliente</b>, el <b>nombre del plato</b> que pidió y el <b>precio unitario</b> al que se sirvió, para todos los pedidos. Ordena por cliente.",
+        "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, pl.nombre_plato, lp.precio_unitario_snapshot\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\nINNER JOIN Platos pl ON lp.plato_id = pl.plato_id\nORDER BY Cliente ASC;"
+      }
+    ]
+  },
+  {
+    "id": 144,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN con IS NULL (anti-join)",
+    "titulo": "Platos que nunca se han pedido",
+    "enunciado": "Encuentra los <b>platos que nunca han sido pedidos</b> (que no aparecen en ninguna línea de pedido). Muestra el nombre del plato y su categoría.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT pl.nombre_plato, pl.categoria\nFROM Platos pl\nLEFT JOIN Lineas_Pedido lp ON pl.plato_id = lp.plato_id\nWHERE lp.linea_id IS NULL;",
+    "puntos": 30,
+    "pista": "Usa LEFT JOIN y filtra con WHERE la clave de la tabla derecha IS NULL. Esto devuelve las filas de la izquierda que no tienen coincidencia.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra los <b>clientes que nunca han realizado un pedido</b>. Muestra su nombre completo y su email.",
+        "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, c.email\nFROM Clientes c\nLEFT JOIN Pedidos p ON c.cliente_id = p.cliente_id\nWHERE p.pedido_id IS NULL;"
+      },
+      {
+        "enunciado": "Encuentra los <b>ingredientes que no están en ninguna receta</b>. Muestra el nombre del ingrediente y su precio por kg.",
+        "query_solucion": "SELECT i.nombre_ingrediente, i.precio_kg\nFROM Ingredientes i\nLEFT JOIN Recetas r ON i.ingrediente_id = r.ingrediente_id\nWHERE r.receta_id IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 145,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con IN",
+    "titulo": "Clientes que han pedido arepas",
+    "enunciado": "Muestra el <b>nombre completo y email</b> de los clientes que han pedido algún plato de la categoría <code>'Arepas'</code>. Usa una subconsulta con <code>IN</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, c.email\nFROM Clientes c\nWHERE c.cliente_id IN (\n  SELECT p.cliente_id\n  FROM Pedidos p\n  INNER JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\n  INNER JOIN Platos pl ON lp.plato_id = pl.plato_id\n  WHERE pl.categoria = 'Arepas'\n);",
+    "puntos": 30,
+    "pista": "La subconsulta debe devolver una lista de cliente_id. La consulta exterior filtra los clientes cuyo id esté en esa lista.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre y precio</b> de los platos que han sido pedidos en algún pedido de tipo <code>'Delivery'</code>. Usa una subconsulta con <code>IN</code>.",
+        "query_solucion": "SELECT pl.nombre_plato, pl.precio_venta\nFROM Platos pl\nWHERE pl.plato_id IN (\n  SELECT lp.plato_id\n  FROM Lineas_Pedido lp\n  INNER JOIN Pedidos p ON lp.pedido_id = p.pedido_id\n  WHERE p.tipo_pedido = 'Delivery'\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre y precio por kg</b> de los ingredientes que se usan en platos de la categoría <code>'Platos Principales'</code>. Usa una subconsulta con <code>IN</code>.",
+        "query_solucion": "SELECT i.nombre_ingrediente, i.precio_kg\nFROM Ingredientes i\nWHERE i.ingrediente_id IN (\n  SELECT r.ingrediente_id\n  FROM Recetas r\n  INNER JOIN Platos pl ON r.plato_id = pl.plato_id\n  WHERE pl.categoria = 'Platos Principales'\n);"
+      }
+    ]
+  },
+  {
+    "id": 146,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con NOT IN",
+    "titulo": "Clientes que no han pedido en delivery",
+    "enunciado": "Muestra el <b>nombre completo y teléfono</b> de los clientes que <b>nunca han realizado un pedido de tipo Delivery</b>. Usa una subconsulta con <code>NOT IN</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, c.telefono\nFROM Clientes c\nWHERE c.cliente_id NOT IN (\n  SELECT p.cliente_id\n  FROM Pedidos p\n  WHERE p.tipo_pedido = 'Delivery'\n  AND p.cliente_id IS NOT NULL\n);",
+    "puntos": 30,
+    "pista": "NOT IN devuelve las filas cuyo valor NO aparece en la lista de la subconsulta. Asegúrate de que la subconsulta no devuelva NULLs.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre y categoría</b> de los platos que <b>nunca han sido pedidos</b>. Usa una subconsulta con <code>NOT IN</code>.",
+        "query_solucion": "SELECT pl.nombre_plato, pl.categoria\nFROM Platos pl\nWHERE pl.plato_id NOT IN (\n  SELECT lp.plato_id\n  FROM Lineas_Pedido lp\n  WHERE lp.plato_id IS NOT NULL\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre de los ingredientes</b> que <b>no se usan en ninguna receta</b>. Usa una subconsulta con <code>NOT IN</code>.",
+        "query_solucion": "SELECT i.nombre_ingrediente\nFROM Ingredientes i\nWHERE i.ingrediente_id NOT IN (\n  SELECT r.ingrediente_id\n  FROM Recetas r\n  WHERE r.ingrediente_id IS NOT NULL\n);"
+      }
+    ]
+  },
+  {
+    "id": 147,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en WHERE con comparador",
+    "titulo": "Platos más caros que la media",
+    "enunciado": "Muestra el <b>nombre y precio</b> de los platos cuyo precio de venta sea <b>superior al precio medio</b> de todos los platos. Usa una subconsulta en el WHERE.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, precio_venta\nFROM Platos\nWHERE precio_venta > (SELECT AVG(precio_venta) FROM Platos)\nORDER BY precio_venta DESC;",
+    "puntos": 30,
+    "pista": "La subconsulta entre paréntesis devuelve un único valor (el promedio). Lo puedes usar con >, <, =, etc.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre y precio por kg</b> de los ingredientes cuyo precio sea <b>superior al precio medio</b> de todos los ingredientes.",
+        "query_solucion": "SELECT nombre_ingrediente, precio_kg\nFROM Ingredientes\nWHERE precio_kg > (SELECT AVG(precio_kg) FROM Ingredientes)\nORDER BY precio_kg DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>pedido_id, cliente_id y total</b> de los pedidos cuyo total sea <b>superior al total medio</b> de todos los pedidos.",
+        "query_solucion": "SELECT pedido_id, cliente_id, total_pedido\nFROM Pedidos\nWHERE total_pedido > (SELECT AVG(total_pedido) FROM Pedidos)\nORDER BY total_pedido DESC;"
+      }
+    ]
+  },
+  {
+    "id": 148,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Múltiples JOINs (4 tablas)",
+    "titulo": "Facturación por cliente y categoría",
+    "enunciado": "Muestra el <b>nombre completo del cliente</b>, la <b>categoría del plato</b> y el <b>total gastado</b> en esa categoría (precio_unitario_snapshot × cantidad). Incluye solo las combinaciones con gasto mayor de 10 euros. Une 4 tablas: Clientes, Pedidos, Lineas_Pedido, Platos.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, pl.categoria, SUM(lp.precio_unitario_snapshot * lp.cantidad) AS Total_Gastado\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\nINNER JOIN Platos pl ON lp.plato_id = pl.plato_id\nGROUP BY c.cliente_id, c.nombre, c.apellido, pl.categoria\nHAVING SUM(lp.precio_unitario_snapshot * lp.cantidad) > 10\nORDER BY Cliente, Total_Gastado DESC;",
+    "puntos": 35,
+    "pista": "Encadena los 4 JOINs, luego agrupa por cliente y categoría, y usa HAVING para filtrar.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del plato</b>, el <b>nombre del ingrediente</b> y el <b>coste estimado del ingrediente por unidad de plato</b> (cantidad_kg × precio_kg). Ordena por coste estimado descendente.",
+        "query_solucion": "SELECT pl.nombre_plato, i.nombre_ingrediente, ROUND(r.cantidad_kg * i.precio_kg, 4) AS Coste_Ingrediente\nFROM Platos pl\nINNER JOIN Recetas r ON pl.plato_id = r.plato_id\nINNER JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id\nORDER BY Coste_Ingrediente DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre completo del cliente</b>, el <b>nombre del plato</b> pedido y el <b>subtotal de esa línea</b> (precio_unitario_snapshot × cantidad), solo para pedidos del estado <code>'Entregado'</code>. Ordena por subtotal descendente.",
+        "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, pl.nombre_plato, lp.precio_unitario_snapshot * lp.cantidad AS Subtotal\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\nINNER JOIN Platos pl ON lp.plato_id = pl.plato_id\nWHERE p.estado = 'Entregado'\nORDER BY Subtotal DESC;"
+      }
+    ]
+  },
+  {
+    "id": 149,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta correlacionada",
+    "titulo": "Platos más caros de su categoría",
+    "enunciado": "Muestra los <b>platos que son los más caros dentro de su categoría</b>. Muestra el nombre del plato, la categoría y el precio.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, categoria, precio_venta\nFROM Platos p1\nWHERE precio_venta = (\n  SELECT MAX(p2.precio_venta)\n  FROM Platos p2\n  WHERE p2.categoria = p1.categoria\n);",
+    "puntos": 35,
+    "pista": "La subconsulta correlacionada hace referencia a la tabla exterior (p1). Para cada fila de la exterior, la subconsulta calcula el máximo de su categoría.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>pedidos de cada cliente que tienen el mayor total</b> para ese cliente. Muestra cliente_id, pedido_id y total_pedido.",
+        "query_solucion": "SELECT cliente_id, pedido_id, total_pedido\nFROM Pedidos p1\nWHERE total_pedido = (\n  SELECT MAX(p2.total_pedido)\n  FROM Pedidos p2\n  WHERE p2.cliente_id = p1.cliente_id\n);"
+      },
+      {
+        "enunciado": "Muestra los <b>platos más baratos de cada categoría</b>. Muestra nombre del plato, categoría y precio.",
+        "query_solucion": "SELECT nombre_plato, categoria, precio_venta\nFROM Platos p1\nWHERE precio_venta = (\n  SELECT MIN(p2.precio_venta)\n  FROM Platos p2\n  WHERE p2.categoria = p1.categoria\n);"
+      }
+    ]
+  },
+  {
+    "id": 150,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP BY + HAVING + JOIN múltiple",
+    "titulo": "Clientes VIP por gasto en Arepas",
+    "enunciado": "Encuentra los <b>clientes que han gastado más de 30 euros en platos de la categoría 'Arepas'</b>. Muestra el nombre completo del cliente y el total gastado en arepas. Ordena por gasto descendente.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, SUM(lp.precio_unitario_snapshot * lp.cantidad) AS Gasto_Arepas\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\nINNER JOIN Platos pl ON lp.plato_id = pl.plato_id\nWHERE pl.categoria = 'Arepas'\nGROUP BY c.cliente_id, c.nombre, c.apellido\nHAVING SUM(lp.precio_unitario_snapshot * lp.cantidad) > 30\nORDER BY Gasto_Arepas DESC;",
+    "puntos": 35,
+    "pista": "Filtra con WHERE la categoría antes de agrupar, luego usa HAVING para el umbral de gasto.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra los <b>platos que han sido pedidos por más de 3 clientes distintos</b>. Muestra el nombre del plato y el número de clientes únicos.",
+        "query_solucion": "SELECT pl.nombre_plato, COUNT(DISTINCT p.cliente_id) AS Clientes_Distintos\nFROM Platos pl\nINNER JOIN Lineas_Pedido lp ON pl.plato_id = lp.plato_id\nINNER JOIN Pedidos p ON lp.pedido_id = p.pedido_id\nGROUP BY pl.plato_id, pl.nombre_plato\nHAVING COUNT(DISTINCT p.cliente_id) > 3\nORDER BY Clientes_Distintos DESC;"
+      },
+      {
+        "enunciado": "Encuentra los <b>ingredientes cuyo coste total en recetas de Arepas</b> (suma de cantidad_kg × precio_kg) sea superior a 0.5 euros por plato de arepa. Muestra nombre del ingrediente y el coste total.",
+        "query_solucion": "SELECT i.nombre_ingrediente, SUM(r.cantidad_kg * i.precio_kg) AS Coste_Total\nFROM Ingredientes i\nINNER JOIN Recetas r ON i.ingrediente_id = r.ingrediente_id\nINNER JOIN Platos pl ON r.plato_id = pl.plato_id\nWHERE pl.categoria = 'Arepas'\nGROUP BY i.ingrediente_id, i.nombre_ingrediente\nHAVING SUM(r.cantidad_kg * i.precio_kg) > 0.5\nORDER BY Coste_Total DESC;"
+      }
+    ]
+  },
+  {
+    "id": 151,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN con IS NULL + múltiples tablas",
+    "titulo": "Platos disponibles sin ingredientes en receta",
+    "enunciado": "Muestra los <b>platos que están disponibles pero no tienen ningún ingrediente asignado en la tabla Recetas</b>. Muestra el nombre del plato y su categoría.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT pl.nombre_plato, pl.categoria\nFROM Platos pl\nLEFT JOIN Recetas r ON pl.plato_id = r.plato_id\nWHERE pl.disponible = TRUE AND r.receta_id IS NULL;",
+    "puntos": 32,
+    "pista": "Haz un LEFT JOIN y luego en el WHERE comprueba disponible = TRUE Y que la clave del LEFT JOIN sea NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>clientes registrados que no tienen ningún pedido</b> y cuyo email no sea NULL. Muestra nombre completo y email.",
+        "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, c.email\nFROM Clientes c\nLEFT JOIN Pedidos p ON c.cliente_id = p.cliente_id\nWHERE p.pedido_id IS NULL AND c.email IS NOT NULL;"
+      },
+      {
+        "enunciado": "Muestra los <b>pedidos que no tienen ninguna línea de pedido</b> (pedidos vacíos). Muestra el pedido_id, el tipo de pedido y la fecha.",
+        "query_solucion": "SELECT p.pedido_id, p.tipo_pedido, p.fecha_hora\nFROM Pedidos p\nLEFT JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\nWHERE lp.linea_id IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 152,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en FROM (tabla derivada)",
+    "titulo": "Ranking de clientes por gasto",
+    "enunciado": "Calcula el <b>gasto total de cada cliente</b> y muestra solo los que están <b>por encima de la media de gasto entre todos los clientes que han pedido</b>. Usa una subconsulta como tabla derivada en el FROM.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT cliente_id, Gasto_Total\nFROM (\n  SELECT cliente_id, SUM(total_pedido) AS Gasto_Total\n  FROM Pedidos\n  WHERE total_pedido IS NOT NULL\n  GROUP BY cliente_id\n) AS Gastos\nWHERE Gasto_Total > (\n  SELECT AVG(Gasto_Total)\n  FROM (\n    SELECT cliente_id, SUM(total_pedido) AS Gasto_Total\n    FROM Pedidos\n    WHERE total_pedido IS NOT NULL\n    GROUP BY cliente_id\n  ) AS Gastos2\n)\nORDER BY Gasto_Total DESC;",
+    "puntos": 38,
+    "pista": "Una subconsulta en el FROM actúa como una tabla temporal. Ponle un alias obligatorio. Puedes anidar subconsultas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los platos cuyo <b>número de veces pedido</b> (apariciones en Lineas_Pedido) está <b>por encima de la media de apariciones</b> de todos los platos. Usa una tabla derivada.",
+        "query_solucion": "SELECT plato_id, Num_Veces\nFROM (\n  SELECT plato_id, COUNT(*) AS Num_Veces\n  FROM Lineas_Pedido\n  GROUP BY plato_id\n) AS Conteos\nWHERE Num_Veces > (\n  SELECT AVG(Num_Veces)\n  FROM (\n    SELECT plato_id, COUNT(*) AS Num_Veces\n    FROM Lineas_Pedido\n    GROUP BY plato_id\n  ) AS Conteos2\n)\nORDER BY Num_Veces DESC;"
+      },
+      {
+        "enunciado": "Muestra las <b>categorías</b> cuyo <b>precio medio de platos</b> es superior a la <b>media de precios medios de todas las categorías</b>. Usa una tabla derivada.",
+        "query_solucion": "SELECT categoria, Precio_Medio_Cat\nFROM (\n  SELECT categoria, AVG(precio_venta) AS Precio_Medio_Cat\n  FROM Platos\n  GROUP BY categoria\n) AS Medias\nWHERE Precio_Medio_Cat > (\n  SELECT AVG(Precio_Medio_Cat)\n  FROM (\n    SELECT categoria, AVG(precio_venta) AS Precio_Medio_Cat\n    FROM Platos\n    GROUP BY categoria\n  ) AS Medias2\n)\nORDER BY Precio_Medio_Cat DESC;"
+      }
+    ]
+  },
+  {
+    "id": 153,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "EXISTS / NOT EXISTS",
+    "titulo": "Clientes con al menos un pedido entregado",
+    "enunciado": "Muestra el <b>nombre completo y email</b> de los clientes que tienen <b>al menos un pedido en estado 'Entregado'</b>. Usa la cláusula <code>EXISTS</code>.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, c.email\nFROM Clientes c\nWHERE EXISTS (\n  SELECT 1\n  FROM Pedidos p\n  WHERE p.cliente_id = c.cliente_id\n  AND p.estado = 'Entregado'\n);",
+    "puntos": 35,
+    "pista": "EXISTS devuelve TRUE si la subconsulta devuelve al menos una fila. La subconsulta suele hacer referencia a la tabla exterior (subconsulta correlacionada).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre y categoría</b> de los platos para los que <b>no existe ninguna receta</b> registrada. Usa la cláusula <code>NOT EXISTS</code>.",
+        "query_solucion": "SELECT pl.nombre_plato, pl.categoria\nFROM Platos pl\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM Recetas r\n  WHERE r.plato_id = pl.plato_id\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre completo</b> de los clientes que tienen <b>al menos un pedido de tipo 'Para llevar'</b>. Usa la cláusula <code>EXISTS</code>.",
+        "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente\nFROM Clientes c\nWHERE EXISTS (\n  SELECT 1\n  FROM Pedidos p\n  WHERE p.cliente_id = c.cliente_id\n  AND p.tipo_pedido = 'Para llevar'\n);"
+      }
+    ]
+  },
+  {
+    "id": 154,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "Subconsulta con ALL / comparación avanzada",
+    "titulo": "El plato más caro de todos",
+    "enunciado": "Muestra el <b>nombre y precio</b> del plato más caro de todo el menú usando una subconsulta con <code>ALL</code> o con <code>MAX</code> en subconsulta.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT nombre_plato, precio_venta\nFROM Platos\nWHERE precio_venta >= ALL (\n  SELECT precio_venta FROM Platos WHERE precio_venta IS NOT NULL\n);",
+    "puntos": 32,
+    "pista": "precio >= ALL(subconsulta) es verdadero si el precio es mayor o igual que todos los valores devueltos por la subconsulta, es decir, si es el máximo.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre y precio por kg</b> del ingrediente más barato de todos usando una subconsulta con <code>ALL</code>.",
+        "query_solucion": "SELECT nombre_ingrediente, precio_kg\nFROM Ingredientes\nWHERE precio_kg <= ALL (\n  SELECT precio_kg FROM Ingredientes WHERE precio_kg IS NOT NULL\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>pedido_id y total</b> del pedido con el mayor total registrado, usando una subconsulta con <code>ALL</code>.",
+        "query_solucion": "SELECT pedido_id, total_pedido\nFROM Pedidos\nWHERE total_pedido >= ALL (\n  SELECT total_pedido FROM Pedidos WHERE total_pedido IS NOT NULL\n);"
+      }
+    ]
+  },
+  {
+    "id": 155,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Combinación GROUP BY + HAVING + subconsulta",
+    "titulo": "Categorías con precio medio por encima de la media global",
+    "enunciado": "Muestra las <b>categorías</b> cuyo <b>precio medio de platos sea superior al precio medio global</b> de todos los platos. Usa GROUP BY, HAVING y una subconsulta.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT categoria, ROUND(AVG(precio_venta), 2) AS Precio_Medio\nFROM Platos\nGROUP BY categoria\nHAVING AVG(precio_venta) > (\n  SELECT AVG(precio_venta) FROM Platos\n)\nORDER BY Precio_Medio DESC;",
+    "puntos": 35,
+    "pista": "La subconsulta dentro del HAVING calcula el promedio global. El HAVING compara el promedio del grupo con ese valor.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>estados de pedido</b> cuyo <b>total medio de pedidos en ese estado</b> supere el total medio global de todos los pedidos. Usa GROUP BY, HAVING y subconsulta.",
+        "query_solucion": "SELECT estado, ROUND(AVG(total_pedido), 2) AS Media_Estado\nFROM Pedidos\nWHERE total_pedido IS NOT NULL\nGROUP BY estado\nHAVING AVG(total_pedido) > (\n  SELECT AVG(total_pedido) FROM Pedidos WHERE total_pedido IS NOT NULL\n)\nORDER BY Media_Estado DESC;"
+      },
+      {
+        "enunciado": "Muestra los <b>clientes</b> cuyo <b>número de pedidos</b> supera el número medio de pedidos por cliente. Muestra cliente_id y el número de pedidos.",
+        "query_solucion": "SELECT cliente_id, COUNT(*) AS Num_Pedidos\nFROM Pedidos\nGROUP BY cliente_id\nHAVING COUNT(*) > (\n  SELECT AVG(Conteo)\n  FROM (\n    SELECT cliente_id, COUNT(*) AS Conteo\n    FROM Pedidos\n    GROUP BY cliente_id\n  ) AS Conteos\n)\nORDER BY Num_Pedidos DESC;"
+      }
+    ]
+  },
+  {
+    "id": 156,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN doble con IS NULL para intersección negativa",
+    "titulo": "Clientes sin pedidos completos",
+    "enunciado": "Muestra los <b>clientes que tienen pedidos pero ninguno en estado 'Entregado'</b>. Es decir, han pedido pero ninguno llegó a entregarse. Muestra nombre completo y número de pedidos.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT CONCAT(c.nombre, ' ', c.apellido) AS Cliente, COUNT(p.pedido_id) AS Total_Pedidos\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nWHERE c.cliente_id NOT IN (\n  SELECT cliente_id FROM Pedidos\n  WHERE estado = 'Entregado' AND cliente_id IS NOT NULL\n)\nGROUP BY c.cliente_id, c.nombre, c.apellido\nHAVING COUNT(p.pedido_id) > 0\nORDER BY Total_Pedidos DESC;",
+    "puntos": 38,
+    "pista": "Usa NOT IN con subconsulta para excluir clientes con algún pedido entregado, y luego agrupa para contar sus pedidos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>platos que se han pedido pero nunca en un pedido de tipo 'Mesa'</b>. Muestra nombre del plato y categoría.",
+        "query_solucion": "SELECT DISTINCT pl.nombre_plato, pl.categoria\nFROM Platos pl\nINNER JOIN Lineas_Pedido lp ON pl.plato_id = lp.plato_id\nWHERE pl.plato_id NOT IN (\n  SELECT lp2.plato_id\n  FROM Lineas_Pedido lp2\n  INNER JOIN Pedidos p ON lp2.pedido_id = p.pedido_id\n  WHERE p.tipo_pedido = 'Mesa'\n  AND lp2.plato_id IS NOT NULL\n);"
+      },
+      {
+        "enunciado": "Muestra los <b>ingredientes que se usan en recetas pero no en ningún plato de la categoría 'Arepas'</b>. Muestra nombre del ingrediente.",
+        "query_solucion": "SELECT DISTINCT i.nombre_ingrediente\nFROM Ingredientes i\nINNER JOIN Recetas r ON i.ingrediente_id = r.ingrediente_id\nWHERE i.ingrediente_id NOT IN (\n  SELECT r2.ingrediente_id\n  FROM Recetas r2\n  INNER JOIN Platos pl ON r2.plato_id = pl.plato_id\n  WHERE pl.categoria = 'Arepas'\n  AND r2.ingrediente_id IS NOT NULL\n);"
+      }
+    ]
+  },
+  {
+    "id": 157,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Consulta de ranking con variable o subconsulta",
+    "titulo": "Top 3 platos más vendidos por categoría",
+    "enunciado": "Para cada categoría de platos, muestra el <b>plato más vendido</b> (el que más unidades acumula en Lineas_Pedido). Muestra categoría, nombre del plato y unidades totales vendidas.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT pl.categoria, pl.nombre_plato, SUM(lp.cantidad) AS Unidades\nFROM Platos pl\nINNER JOIN Lineas_Pedido lp ON pl.plato_id = lp.plato_id\nGROUP BY pl.plato_id, pl.nombre_plato, pl.categoria\nHAVING SUM(lp.cantidad) = (\n  SELECT MAX(sub.total)\n  FROM (\n    SELECT r.plato_id, SUM(l.cantidad) AS total\n    FROM Lineas_Pedido l\n    INNER JOIN Platos r ON l.plato_id = r.plato_id\n    WHERE r.categoria = pl.categoria\n    GROUP BY r.plato_id\n  ) AS sub\n)\nORDER BY pl.categoria;",
+    "puntos": 40,
+    "pista": "Usa una subconsulta correlacionada en el HAVING que calcule el máximo de unidades vendidas para la categoría del plato actual.",
+    "variaciones": [
+      {
+        "enunciado": "Para cada <b>tipo de pedido</b>, muestra el <b>cliente que más ha gastado</b>. Muestra tipo_pedido, nombre del cliente y su gasto total en ese tipo.",
+        "query_solucion": "SELECT p.tipo_pedido, CONCAT(c.nombre, ' ', c.apellido) AS Cliente, SUM(p.total_pedido) AS Gasto\nFROM Pedidos p\nINNER JOIN Clientes c ON p.cliente_id = c.cliente_id\nGROUP BY p.tipo_pedido, p.cliente_id, c.nombre, c.apellido\nHAVING SUM(p.total_pedido) = (\n  SELECT MAX(sub.total)\n  FROM (\n    SELECT p2.cliente_id, SUM(p2.total_pedido) AS total\n    FROM Pedidos p2\n    WHERE p2.tipo_pedido = p.tipo_pedido\n    AND p2.total_pedido IS NOT NULL\n    GROUP BY p2.cliente_id\n  ) AS sub\n)\nORDER BY p.tipo_pedido;"
+      },
+      {
+        "enunciado": "Muestra el <b>ingrediente más caro</b> que se usa en cada categoría de platos. Muestra categoría, nombre del ingrediente y su precio por kg.",
+        "query_solucion": "SELECT pl.categoria, i.nombre_ingrediente, i.precio_kg\nFROM Platos pl\nINNER JOIN Recetas r ON pl.plato_id = r.plato_id\nINNER JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id\nWHERE i.precio_kg = (\n  SELECT MAX(i2.precio_kg)\n  FROM Ingredientes i2\n  INNER JOIN Recetas r2 ON i2.ingrediente_id = r2.ingrediente_id\n  INNER JOIN Platos pl2 ON r2.plato_id = pl2.plato_id\n  WHERE pl2.categoria = pl.categoria\n)\nGROUP BY pl.categoria, i.nombre_ingrediente, i.precio_kg\nORDER BY pl.categoria;"
+      }
+    ]
+  },
+  {
+    "id": 158,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Consulta de coste de receta completa",
+    "titulo": "Coste de ingredientes por plato vs precio de venta",
+    "enunciado": "Calcula el <b>coste total de ingredientes</b> de cada plato (sumando cantidad_kg × precio_kg para todos sus ingredientes) y compáralo con su <b>precio de venta</b>. Muestra nombre del plato, coste de ingredientes (redondeado a 2 decimales), precio de venta y el <b>margen bruto</b> (precio_venta − coste). Ordena por margen descendente.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT pl.nombre_plato,\n  ROUND(SUM(r.cantidad_kg * i.precio_kg), 2) AS Coste_Ingredientes,\n  pl.precio_venta,\n  ROUND(pl.precio_venta - SUM(r.cantidad_kg * i.precio_kg), 2) AS Margen_Bruto\nFROM Platos pl\nINNER JOIN Recetas r ON pl.plato_id = r.plato_id\nINNER JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id\nGROUP BY pl.plato_id, pl.nombre_plato, pl.precio_venta\nORDER BY Margen_Bruto DESC;",
+    "puntos": 38,
+    "pista": "Une Platos, Recetas e Ingredientes. Agrupa por plato, suma el coste y réstalo del precio de venta.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los platos cuyo <b>coste de ingredientes supera el 50% de su precio de venta</b>. Muestra nombre, coste y precio de venta.",
+        "query_solucion": "SELECT pl.nombre_plato,\n  ROUND(SUM(r.cantidad_kg * i.precio_kg), 2) AS Coste_Ingredientes,\n  pl.precio_venta\nFROM Platos pl\nINNER JOIN Recetas r ON pl.plato_id = r.plato_id\nINNER JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id\nGROUP BY pl.plato_id, pl.nombre_plato, pl.precio_venta\nHAVING SUM(r.cantidad_kg * i.precio_kg) > pl.precio_venta * 0.5\nORDER BY Coste_Ingredientes DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>coste medio de ingredientes por categoría</b> y el <b>precio medio de venta por categoría</b>. Calcula también el <b>margen medio</b>. Redondea a 2 decimales.",
+        "query_solucion": "SELECT pl.categoria,\n  ROUND(AVG(sub.coste_plato), 2) AS Coste_Medio,\n  ROUND(AVG(pl.precio_venta), 2) AS Precio_Medio,\n  ROUND(AVG(pl.precio_venta) - AVG(sub.coste_plato), 2) AS Margen_Medio\nFROM Platos pl\nINNER JOIN (\n  SELECT r.plato_id, SUM(r.cantidad_kg * i.precio_kg) AS coste_plato\n  FROM Recetas r\n  INNER JOIN Ingredientes i ON r.ingrediente_id = i.ingrediente_id\n  GROUP BY r.plato_id\n) AS sub ON pl.plato_id = sub.plato_id\nGROUP BY pl.categoria\nORDER BY Margen_Medio DESC;"
+      }
+    ]
+  },
+  {
+    "id": 159,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Consulta multidimensional con todo combinado",
+    "titulo": "Informe completo de ventas por cliente y mes",
+    "enunciado": "Genera un informe que muestre: <b>nombre completo del cliente</b>, <b>mes del pedido</b> (número), <b>número de pedidos</b> ese mes, <b>total de platos distintos</b> pedidos y <b>gasto total</b> en ese mes. Solo incluye registros donde el gasto mensual supere los 20 euros. Ordena por cliente y mes.",
+    "bd": "arepazo",
+    "query_solucion": "SELECT\n  CONCAT(c.nombre, ' ', c.apellido) AS Cliente,\n  MONTH(p.fecha_hora) AS Mes,\n  COUNT(DISTINCT p.pedido_id) AS Num_Pedidos,\n  COUNT(DISTINCT lp.plato_id) AS Platos_Distintos,\n  ROUND(SUM(p.total_pedido), 2) AS Gasto_Mensual\nFROM Clientes c\nINNER JOIN Pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN Lineas_Pedido lp ON p.pedido_id = lp.pedido_id\nWHERE p.total_pedido IS NOT NULL\nGROUP BY c.cliente_id, c.nombre, c.apellido, MONTH(p.fecha_hora)\nHAVING SUM(p.total_pedido) > 20\nORDER BY Cliente ASC, Mes ASC;",
+    "puntos": 40,
+    "pista": "Combina múltiples JOINs, agrupa por cliente y mes, usa COUNT(DISTINCT ...) para contar elementos únicos y HAVING para filtrar por gasto.",
+    "variaciones": [
+      {
+        "enunciado": "Genera un informe que muestre: <b>categoría del plato</b>, <b>mes</b> (número), <b>número de pedidos</b> que incluyeron esa categoría, <b>unidades vendidas</b> y <b>facturación total</b>. Solo meses con facturación superior a 50 euros.",
+        "query_solucion": "SELECT\n  pl.categoria,\n  MONTH(p.fecha_hora) AS Mes,\n  COUNT(DISTINCT p.pedido_id) AS Num_Pedidos,\n  SUM(lp.cantidad) AS Unidades_Vendidas,\n  ROUND(SUM(lp.precio_unitario_snapshot * lp.cantidad), 2) AS Facturacion\nFROM Platos pl\nINNER JOIN Lineas_Pedido lp ON pl.plato_id = lp.plato_id\nINNER JOIN Pedidos p ON lp.pedido_id = p.pedido_id\nGROUP BY pl.categoria, MONTH(p.fecha_hora)\nHAVING SUM(lp.precio_unitario_snapshot * lp.cantidad) > 50\nORDER BY pl.categoria ASC, Mes ASC;"
+      },
+      {
+        "enunciado": "Genera un informe que muestre para cada <b>ingrediente</b>: su <b>nombre</b>, el <b>número de platos distintos</b> en los que aparece, el <b>número de pedidos</b> en los que se ha servido (a través de sus platos) y su <b>coste total estimado</b> (suma de cantidad_kg × precio_kg por cada receta). Solo ingredientes que aparezcan en más de 2 platos.",
+        "query_solucion": "SELECT\n  i.nombre_ingrediente,\n  COUNT(DISTINCT r.plato_id) AS Num_Platos,\n  COUNT(DISTINCT lp.pedido_id) AS Num_Pedidos,\n  ROUND(SUM(r.cantidad_kg * i.precio_kg), 4) AS Coste_Total_Estimado\nFROM Ingredientes i\nINNER JOIN Recetas r ON i.ingrediente_id = r.ingrediente_id\nINNER JOIN Lineas_Pedido lp ON r.plato_id = lp.plato_id\nGROUP BY i.ingrediente_id, i.nombre_ingrediente\nHAVING COUNT(DISTINCT r.plato_id) > 2\nORDER BY Num_Platos DESC, Coste_Total_Estimado DESC;"
+      }
+    ]
+  },
+  {
+    "id": 160,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con PK y NOT NULL",
+    "titulo": "Tabla de árbitros",
+    "enunciado": "Crea una tabla llamada <code>arbitros</code> con las siguientes columnas: <b>id</b> (entero, clave primaria), <b>nombre</b> (VARCHAR(20), no nulo), <b>apellido</b> (VARCHAR(30), no nulo) y <b>licencia</b> (VARCHAR(10), no nulo).",
+    "bd": "nba",
+    "query_solucion": "CREATE TABLE arbitros (\n  id INT PRIMARY KEY,\n  nombre VARCHAR(20) NOT NULL,\n  apellido VARCHAR(30) NOT NULL,\n  licencia VARCHAR(10) NOT NULL\n);",
+    "puntos": 10,
+    "pista": "Recuerda definir PRIMARY KEY después del tipo de dato de la columna id, y NOT NULL en las columnas obligatorias.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>delegados</code> con las columnas: <b>id</b> (entero, clave primaria), <b>nombre</b> (VARCHAR(25), no nulo), <b>zona</b> (VARCHAR(20), no nulo) y <b>telefono</b> (VARCHAR(15), no nulo).",
+        "query_solucion": "CREATE TABLE delegados (\n  id INT PRIMARY KEY,\n  nombre VARCHAR(25) NOT NULL,\n  zona VARCHAR(20) NOT NULL,\n  telefono VARCHAR(15) NOT NULL\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>medicos</code> con las columnas: <b>id</b> (entero, clave primaria), <b>nombre</b> (VARCHAR(20), no nulo), <b>especialidad</b> (VARCHAR(40), no nulo) y <b>colegiado</b> (VARCHAR(12), no nulo).",
+        "query_solucion": "CREATE TABLE medicos (\n  id INT PRIMARY KEY,\n  nombre VARCHAR(20) NOT NULL,\n  especialidad VARCHAR(40) NOT NULL,\n  colegiado VARCHAR(12) NOT NULL\n);"
+      }
+    ]
+  },
+  {
+    "id": 161,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con DEFAULT y UNIQUE",
+    "titulo": "Tabla de estadios",
+    "enunciado": "Crea una tabla llamada <code>estadios</code> con las columnas: <b>id</b> (entero, clave primaria), <b>nombre</b> (VARCHAR(50), no nulo, único), <b>ciudad</b> (VARCHAR(30), no nulo), <b>capacidad</b> (entero) y <b>activo</b> (TINYINT con valor por defecto 1).",
+    "bd": "nba",
+    "query_solucion": "CREATE TABLE estadios (\n  id INT PRIMARY KEY,\n  nombre VARCHAR(50) NOT NULL UNIQUE,\n  ciudad VARCHAR(30) NOT NULL,\n  capacidad INT,\n  activo TINYINT DEFAULT 1\n);",
+    "puntos": 12,
+    "pista": "Usa la palabra clave UNIQUE tras el tipo de dato para que no puedan repetirse nombres, y DEFAULT para indicar el valor por omisión.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>pabellones</code> con las columnas: <b>id</b> (entero, clave primaria), <b>codigo</b> (VARCHAR(10), no nulo, único), <b>nombre</b> (VARCHAR(60), no nulo), <b>aforo</b> (entero) y <b>en_uso</b> (TINYINT con valor por defecto 1).",
+        "query_solucion": "CREATE TABLE pabellones (\n  id INT PRIMARY KEY,\n  codigo VARCHAR(10) NOT NULL UNIQUE,\n  nombre VARCHAR(60) NOT NULL,\n  aforo INT,\n  en_uso TINYINT DEFAULT 1\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>canchas</code> con las columnas: <b>id</b> (entero, clave primaria), <b>nombre</b> (VARCHAR(50), no nulo, único), <b>pais</b> (VARCHAR(30), no nulo, con valor por defecto 'USA') y <b>superficie</b> (VARCHAR(20)).",
+        "query_solucion": "CREATE TABLE canchas (\n  id INT PRIMARY KEY,\n  nombre VARCHAR(50) NOT NULL UNIQUE,\n  pais VARCHAR(30) NOT NULL DEFAULT 'USA',\n  superficie VARCHAR(20)\n);"
+      }
+    ]
+  },
+  {
+    "id": 162,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con FOREIGN KEY",
+    "titulo": "Tabla de contratos",
+    "enunciado": "Crea una tabla llamada <code>contratos</code> con las columnas: <b>id</b> (entero, clave primaria), <b>id_jugador</b> (entero, no nulo) con clave foránea que referencia a <code>jugadores(id)</code>, <b>fecha_inicio</b> (DATE, no nulo), <b>fecha_fin</b> (DATE, no nulo) y <b>salario_anual</b> (DECIMAL(12,2)).",
+    "bd": "nba",
+    "query_solucion": "CREATE TABLE contratos (\n  id INT PRIMARY KEY,\n  id_jugador INT NOT NULL,\n  fecha_inicio DATE NOT NULL,\n  fecha_fin DATE NOT NULL,\n  salario_anual DECIMAL(12,2),\n  FOREIGN KEY (id_jugador) REFERENCES jugadores(id)\n);",
+    "puntos": 15,
+    "pista": "Declara la FOREIGN KEY al final de la tabla con la sintaxis: FOREIGN KEY (columna) REFERENCES tabla_referenciada(columna_pk).",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>sanciones</code> con las columnas: <b>id</b> (entero, clave primaria), <b>id_jugador</b> (entero, no nulo) con clave foránea a <code>jugadores(id)</code>, <b>motivo</b> (VARCHAR(100), no nulo) y <b>fecha</b> (DATE, no nulo).",
+        "query_solucion": "CREATE TABLE sanciones (\n  id INT PRIMARY KEY,\n  id_jugador INT NOT NULL,\n  motivo VARCHAR(100) NOT NULL,\n  fecha DATE NOT NULL,\n  FOREIGN KEY (id_jugador) REFERENCES jugadores(id)\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>lesiones</code> con las columnas: <b>id</b> (entero, clave primaria), <b>id_jugador</b> (entero, no nulo) con clave foránea a <code>jugadores(id)</code>, <b>tipo</b> (VARCHAR(50), no nulo), <b>fecha_lesion</b> (DATE, no nulo) y <b>baja_estimada</b> (INT, días de baja).",
+        "query_solucion": "CREATE TABLE lesiones (\n  id INT PRIMARY KEY,\n  id_jugador INT NOT NULL,\n  tipo VARCHAR(50) NOT NULL,\n  fecha_lesion DATE NOT NULL,\n  baja_estimada INT,\n  FOREIGN KEY (id_jugador) REFERENCES jugadores(id)\n);"
+      }
+    ]
+  },
+  {
+    "id": 163,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con clave primaria compuesta",
+    "titulo": "Tabla de árbitros en partidos",
+    "enunciado": "Crea una tabla llamada <code>arbitros_partido</code> que relacione árbitros con partidos. Debe tener: <b>id_arbitro</b> (entero) con FK a una tabla <code>arbitros(id)</code>, <b>id_partido</b> (entero) con FK a <code>partidos(id)</code>, y <b>rol</b> (VARCHAR(20), no nulo). La clave primaria debe ser compuesta por <b>id_arbitro</b> e <b>id_partido</b>.",
+    "bd": "nba",
+    "query_solucion": "CREATE TABLE arbitros_partido (\n  id_arbitro INT,\n  id_partido INT,\n  rol VARCHAR(20) NOT NULL,\n  PRIMARY KEY (id_arbitro, id_partido),\n  FOREIGN KEY (id_arbitro) REFERENCES arbitros(id),\n  FOREIGN KEY (id_partido) REFERENCES partidos(id)\n);",
+    "puntos": 15,
+    "pista": "Una clave primaria compuesta se declara al final: PRIMARY KEY (col1, col2). Así cada combinación árbitro-partido es única.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>jugadores_equipo_historial</code> con: <b>id_jugador</b> (entero, FK a <code>jugadores(id)</code>), <b>id_equipo</b> (entero, FK a <code>equipos(id)</code>), <b>temporada</b> (VARCHAR(10), no nulo). La clave primaria es compuesta por <b>id_jugador</b>, <b>id_equipo</b> y <b>temporada</b>.",
+        "query_solucion": "CREATE TABLE jugadores_equipo_historial (\n  id_jugador INT,\n  id_equipo INT,\n  temporada VARCHAR(10) NOT NULL,\n  PRIMARY KEY (id_jugador, id_equipo, temporada),\n  FOREIGN KEY (id_jugador) REFERENCES jugadores(id),\n  FOREIGN KEY (id_equipo) REFERENCES equipos(id)\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>premios_jugador</code> con: <b>id_jugador</b> (entero, FK a <code>jugadores(id)</code>), <b>temporada</b> (VARCHAR(10)), <b>tipo_premio</b> (VARCHAR(30), no nulo). La clave primaria es compuesta por <b>id_jugador</b> y <b>temporada</b>.",
+        "query_solucion": "CREATE TABLE premios_jugador (\n  id_jugador INT,\n  temporada VARCHAR(10),\n  tipo_premio VARCHAR(30) NOT NULL,\n  PRIMARY KEY (id_jugador, temporada),\n  FOREIGN KEY (id_jugador) REFERENCES jugadores(id)\n);"
+      }
+    ]
+  },
+  {
+    "id": 164,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD COLUMN",
+    "titulo": "Añadir columna a jugadores",
+    "enunciado": "Modifica la tabla <code>jugadores</code> para añadir una nueva columna llamada <b>posicion</b> de tipo VARCHAR(20) que admita valores nulos.",
+    "bd": "nba",
+    "query_solucion": "ALTER TABLE jugadores ADD COLUMN posicion VARCHAR(20);",
+    "puntos": 10,
+    "pista": "Usa ALTER TABLE seguido de ADD COLUMN con el nombre y tipo de la nueva columna.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la tabla <code>jugadores</code> para añadir una columna llamada <b>altura_cm</b> de tipo INT que admita valores nulos.",
+        "query_solucion": "ALTER TABLE jugadores ADD COLUMN altura_cm INT;"
+      },
+      {
+        "enunciado": "Modifica la tabla <code>equipos</code> para añadir una columna llamada <b>año_fundacion</b> de tipo YEAR que admita valores nulos.",
+        "query_solucion": "ALTER TABLE equipos ADD COLUMN año_fundacion YEAR;"
+      }
+    ]
+  },
+  {
+    "id": 165,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD COLUMN NOT NULL DEFAULT",
+    "titulo": "Añadir columna con valor por defecto",
+    "enunciado": "Modifica la tabla <code>partidos</code> para añadir una columna llamada <b>temporada</b> de tipo VARCHAR(10), no nula, con valor por defecto <code>'2024-25'</code>.",
+    "bd": "nba",
+    "query_solucion": "ALTER TABLE partidos ADD COLUMN temporada VARCHAR(10) NOT NULL DEFAULT '2024-25';",
+    "puntos": 12,
+    "pista": "Al añadir una columna NOT NULL a una tabla existente, es obligatorio definir DEFAULT para que las filas ya existentes tengan un valor.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la tabla <code>equipos</code> para añadir una columna llamada <b>activo</b> de tipo TINYINT, no nula, con valor por defecto <code>1</code>.",
+        "query_solucion": "ALTER TABLE equipos ADD COLUMN activo TINYINT NOT NULL DEFAULT 1;"
+      },
+      {
+        "enunciado": "Modifica la tabla <code>jugadores</code> para añadir una columna llamada <b>activo</b> de tipo TINYINT, no nula, con valor por defecto <code>1</code>.",
+        "query_solucion": "ALTER TABLE jugadores ADD COLUMN activo TINYINT NOT NULL DEFAULT 1;"
+      }
+    ]
+  },
+  {
+    "id": 166,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE MODIFY COLUMN",
+    "titulo": "Modificar tipo de columna",
+    "enunciado": "Modifica la columna <b>nacionalidad</b> de la tabla <code>jugadores</code> para que sea de tipo VARCHAR(30) y no admita valores nulos.",
+    "bd": "nba",
+    "query_solucion": "ALTER TABLE jugadores MODIFY COLUMN nacionalidad VARCHAR(30) NOT NULL;",
+    "puntos": 12,
+    "pista": "Con MODIFY COLUMN redefines completamente la columna: debes especificar tanto el nuevo tipo como las restricciones deseadas.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <b>salario</b> de la tabla <code>jugadores</code> para que sea de tipo DECIMAL(14,2) y no admita valores nulos.",
+        "query_solucion": "ALTER TABLE jugadores MODIFY COLUMN salario DECIMAL(14,2) NOT NULL;"
+      },
+      {
+        "enunciado": "Modifica la columna <b>direccion_sede</b> de la tabla <code>equipos</code> para que sea de tipo TEXT y no admita valores nulos.",
+        "query_solucion": "ALTER TABLE equipos MODIFY COLUMN direccion_sede TEXT NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 167,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DROP COLUMN",
+    "titulo": "Eliminar columna de una tabla",
+    "enunciado": "Elimina la columna <b>apellido2</b> de la tabla <code>jugadores</code>.",
+    "bd": "nba",
+    "query_solucion": "ALTER TABLE jugadores DROP COLUMN apellido2;",
+    "puntos": 10,
+    "pista": "Usa ALTER TABLE con DROP COLUMN seguido del nombre exacto de la columna a eliminar.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <b>direccion</b> de la tabla <code>partidos</code>.",
+        "query_solucion": "ALTER TABLE partidos DROP COLUMN direccion;"
+      },
+      {
+        "enunciado": "Elimina la columna <b>direccion_sede</b> de la tabla <code>equipos</code>.",
+        "query_solucion": "ALTER TABLE equipos DROP COLUMN direccion_sede;"
+      }
+    ]
+  },
+  {
+    "id": 168,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD CONSTRAINT UNIQUE",
+    "titulo": "Añadir restricción UNIQUE",
+    "enunciado": "Añade una restricción UNIQUE a la columna <b>presidente</b> de la tabla <code>equipos</code> para que no pueda haber dos equipos con el mismo presidente. Nombra la restricción <code>uq_presidente</code>.",
+    "bd": "nba",
+    "query_solucion": "ALTER TABLE equipos ADD CONSTRAINT uq_presidente UNIQUE (presidente);",
+    "puntos": 12,
+    "pista": "Usa ADD CONSTRAINT seguido del nombre de la restricción y UNIQUE (columna).",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción UNIQUE a la columna <b>nombre</b> de la tabla <code>equipos</code> para que no haya dos equipos con el mismo nombre. Llama a la restricción <code>uq_nombre_equipo</code>.",
+        "query_solucion": "ALTER TABLE equipos ADD CONSTRAINT uq_nombre_equipo UNIQUE (nombre);"
+      },
+      {
+        "enunciado": "Añade una restricción UNIQUE a la combinación de columnas <b>id_equipoLocal</b> e <b>id_equipoVisitante</b> junto con <b>fecha</b> en la tabla <code>partidos</code>. Llama a la restricción <code>uq_partido_unico</code>.",
+        "query_solucion": "ALTER TABLE partidos ADD CONSTRAINT uq_partido_unico UNIQUE (id_equipoLocal, id_equipoVisitante, fecha);"
+      }
+    ]
+  },
+  {
+    "id": 169,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Eliminar tabla",
+    "enunciado": "Elimina la tabla <code>sanciones</code> de la base de datos si existe.",
+    "bd": "nba",
+    "query_solucion": "DROP TABLE IF EXISTS sanciones;",
+    "puntos": 10,
+    "pista": "Usa DROP TABLE IF EXISTS para evitar errores si la tabla no existe.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la tabla <code>lesiones</code> de la base de datos si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS lesiones;"
+      },
+      {
+        "enunciado": "Elimina la tabla <code>contratos</code> de la base de datos si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS contratos;"
+      }
+    ]
+  },
+  {
+    "id": 170,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar tabla",
+    "enunciado": "Renombra la tabla <code>estadios</code> a <code>recintos_deportivos</code>.",
+    "bd": "nba",
+    "query_solucion": "RENAME TABLE estadios TO recintos_deportivos;",
+    "puntos": 10,
+    "pista": "Usa RENAME TABLE nombre_actual TO nombre_nuevo.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la tabla <code>arbitros</code> a <code>cuerpo_arbitral</code>.",
+        "query_solucion": "RENAME TABLE arbitros TO cuerpo_arbitral;"
+      },
+      {
+        "enunciado": "Renombra la tabla <code>contratos</code> a <code>acuerdos_contractuales</code>.",
+        "query_solucion": "RENAME TABLE contratos TO acuerdos_contractuales;"
+      }
+    ]
+  },
+  {
+    "id": 171,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con múltiples FK",
+    "titulo": "Tabla de transferencias",
+    "enunciado": "Crea una tabla llamada <code>transferencias</code> con las columnas: <b>id</b> (entero, PK), <b>id_jugador</b> (entero, no nulo, FK a <code>jugadores(id)</code>), <b>id_equipo_origen</b> (entero, FK a <code>equipos(id)</code>), <b>id_equipo_destino</b> (entero, FK a <code>equipos(id)</code>), <b>fecha</b> (DATE, no nulo) y <b>importe</b> (DECIMAL(12,2)).",
+    "bd": "nba",
+    "query_solucion": "CREATE TABLE transferencias (\n  id INT PRIMARY KEY,\n  id_jugador INT NOT NULL,\n  id_equipo_origen INT,\n  id_equipo_destino INT,\n  fecha DATE NOT NULL,\n  importe DECIMAL(12,2),\n  FOREIGN KEY (id_jugador) REFERENCES jugadores(id),\n  FOREIGN KEY (id_equipo_origen) REFERENCES equipos(id),\n  FOREIGN KEY (id_equipo_destino) REFERENCES equipos(id)\n);",
+    "puntos": 15,
+    "pista": "Puedes tener múltiples FK en la misma tabla. Cada una se declara con FOREIGN KEY (...) REFERENCES ..., incluso si dos columnas apuntan a la misma tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>partidos_amistosos</code> con: <b>id</b> (entero, PK), <b>id_equipo_a</b> (entero, FK a <code>equipos(id)</code>), <b>id_equipo_b</b> (entero, FK a <code>equipos(id)</code>), <b>fecha</b> (DATE, no nulo) y <b>ciudad</b> (VARCHAR(30)).",
+        "query_solucion": "CREATE TABLE partidos_amistosos (\n  id INT PRIMARY KEY,\n  id_equipo_a INT,\n  id_equipo_b INT,\n  fecha DATE NOT NULL,\n  ciudad VARCHAR(30),\n  FOREIGN KEY (id_equipo_a) REFERENCES equipos(id),\n  FOREIGN KEY (id_equipo_b) REFERENCES equipos(id)\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>entrenamientos</code> con: <b>id</b> (entero, PK), <b>id_equipo</b> (entero, no nulo, FK a <code>equipos(id)</code>), <b>fecha</b> (DATETIME, no nulo), <b>duracion_min</b> (INT) y <b>tipo</b> (VARCHAR(20), no nulo, DEFAULT 'colectivo').",
+        "query_solucion": "CREATE TABLE entrenamientos (\n  id INT PRIMARY KEY,\n  id_equipo INT NOT NULL,\n  fecha DATETIME NOT NULL,\n  duracion_min INT,\n  tipo VARCHAR(20) NOT NULL DEFAULT 'colectivo',\n  FOREIGN KEY (id_equipo) REFERENCES equipos(id)\n);"
+      }
+    ]
+  },
+  {
+    "id": 172,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD FOREIGN KEY",
+    "titulo": "Añadir FK a tabla existente",
+    "enunciado": "La tabla <code>partidos</code> tiene la columna <b>id_equipoLocal</b> pero aún no tiene la restricción de clave foránea. Añade una FK en dicha columna que referencie a <code>equipos(id)</code> y nómbrala <code>fk_local</code>.",
+    "bd": "nba",
+    "query_solucion": "ALTER TABLE partidos ADD CONSTRAINT fk_local FOREIGN KEY (id_equipoLocal) REFERENCES equipos(id);",
+    "puntos": 12,
+    "pista": "Con ADD CONSTRAINT puedes añadir una FK a una columna ya existente sin necesidad de recrear la tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción de clave foránea llamada <code>fk_visitante</code> en la columna <b>id_equipoVisitante</b> de la tabla <code>partidos</code>, que referencie a <code>equipos(id)</code>.",
+        "query_solucion": "ALTER TABLE partidos ADD CONSTRAINT fk_visitante FOREIGN KEY (id_equipoVisitante) REFERENCES equipos(id);"
+      },
+      {
+        "enunciado": "Añade una restricción de clave foránea llamada <code>fk_equipo_jugador</code> en la columna <b>id_equipo</b> de la tabla <code>jugadores</code>, que referencie a <code>equipos(id)</code>.",
+        "query_solucion": "ALTER TABLE jugadores ADD CONSTRAINT fk_equipo_jugador FOREIGN KEY (id_equipo) REFERENCES equipos(id);"
+      }
+    ]
+  },
+  {
+    "id": 173,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con CHECK",
+    "titulo": "Tabla de votaciones con restricción CHECK",
+    "enunciado": "Crea una tabla llamada <code>valoraciones</code> con las columnas: <b>id</b> (entero, PK), <b>id_jugador</b> (entero, FK a <code>jugadores(id)</code>), <b>temporada</b> (VARCHAR(10), no nulo) y <b>nota</b> (DECIMAL(3,1)) con una restricción CHECK que garantice que <b>nota</b> esté entre 0 y 10.",
+    "bd": "nba",
+    "query_solucion": "CREATE TABLE valoraciones (\n  id INT PRIMARY KEY,\n  id_jugador INT,\n  temporada VARCHAR(10) NOT NULL,\n  nota DECIMAL(3,1),\n  CHECK (nota >= 0 AND nota <= 10),\n  FOREIGN KEY (id_jugador) REFERENCES jugadores(id)\n);",
+    "puntos": 15,
+    "pista": "La restricción CHECK se define al final de la tabla y permite establecer condiciones lógicas sobre los valores de las columnas.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>resultados_votacion</code> con: <b>id</b> (entero, PK), <b>id_equipo</b> (entero, FK a <code>equipos(id)</code>), <b>temporada</b> (VARCHAR(10), no nulo) y <b>puntuacion</b> (INT) con un CHECK que garantice que <b>puntuacion</b> sea mayor que 0.",
+        "query_solucion": "CREATE TABLE resultados_votacion (\n  id INT PRIMARY KEY,\n  id_equipo INT,\n  temporada VARCHAR(10) NOT NULL,\n  puntuacion INT,\n  CHECK (puntuacion > 0),\n  FOREIGN KEY (id_equipo) REFERENCES equipos(id)\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>estadisticas_temporada</code> con: <b>id</b> (entero, PK), <b>id_jugador</b> (entero, FK a <code>jugadores(id)</code>), <b>temporada</b> (VARCHAR(10), no nulo), <b>partidos_jugados</b> (INT) con un CHECK que garantice que sea >= 0, y <b>promedio_puntos</b> (DECIMAL(4,1)).",
+        "query_solucion": "CREATE TABLE estadisticas_temporada (\n  id INT PRIMARY KEY,\n  id_jugador INT,\n  temporada VARCHAR(10) NOT NULL,\n  partidos_jugados INT,\n  promedio_puntos DECIMAL(4,1),\n  CHECK (partidos_jugados >= 0),\n  FOREIGN KEY (id_jugador) REFERENCES jugadores(id)\n);"
+      }
+    ]
+  },
+  {
+    "id": 174,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE RENAME COLUMN",
+    "titulo": "Renombrar una columna",
+    "enunciado": "Renombra la columna <b>apellido1</b> de la tabla <code>jugadores</code> a <b>primer_apellido</b>.",
+    "bd": "nba",
+    "query_solucion": "ALTER TABLE jugadores RENAME COLUMN apellido1 TO primer_apellido;",
+    "puntos": 10,
+    "pista": "En MySQL 8+ puedes usar ALTER TABLE ... RENAME COLUMN nombre_actual TO nombre_nuevo.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la columna <b>presidente</b> de la tabla <code>equipos</code> a <b>director_general</b>.",
+        "query_solucion": "ALTER TABLE equipos RENAME COLUMN presidente TO director_general;"
+      },
+      {
+        "enunciado": "Renombra la columna <b>direccion_sede</b> de la tabla <code>equipos</code> a <b>sede</b>.",
+        "query_solucion": "ALTER TABLE equipos RENAME COLUMN direccion_sede TO sede;"
+      }
+    ]
+  },
+  {
+    "id": 175,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT * y columnas específicas",
+    "titulo": "Todos los equipos",
+    "enunciado": "Muestra <b>todos los datos</b> de todos los equipos de la NBA.",
+    "bd": "nba",
+    "query_solucion": "SELECT * FROM equipos;",
+    "puntos": 10,
+    "pista": "El asterisco (*) selecciona todas las columnas de la tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>únicamente</b> el <b>nombre</b> y la <b>ciudad</b> de todos los equipos.",
+        "query_solucion": "SELECT nombre, ciudad FROM equipos;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b>, la <b>conferencia</b> y el <b>presidente</b> de todos los equipos.",
+        "query_solucion": "SELECT nombre, conferencia, presidente FROM equipos;"
+      }
+    ]
+  },
+  {
+    "id": 176,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con comparadores",
+    "titulo": "Jugadores con alto salario",
+    "enunciado": "Lista el <b>nombre</b>, <b>apellido1</b> y <b>salario</b> de los jugadores cuyo salario sea <b>mayor de 5.000.000</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1, salario FROM jugadores WHERE salario > 5000000;",
+    "puntos": 10,
+    "pista": "Usa la cláusula WHERE con el operador > para filtrar por salario.",
+    "variaciones": [
+      {
+        "enunciado": "Lista el <b>nombre</b>, <b>apellido1</b> y <b>salario</b> de los jugadores cuyo salario sea <b>menor o igual a 2.000.000</b>.",
+        "query_solucion": "SELECT nombre, apellido1, salario FROM jugadores WHERE salario <= 2000000;"
+      },
+      {
+        "enunciado": "Muestra todos los partidos donde el <b>marcadorLocal</b> sea <b>mayor de 110 puntos</b>.",
+        "query_solucion": "SELECT * FROM partidos WHERE marcadorLocal > 110;"
+      }
+    ]
+  },
+  {
+    "id": 177,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con AND y OR",
+    "titulo": "Jugadores por conferencia y salario",
+    "enunciado": "Muestra los jugadores que pertenezcan a un equipo con <b>id_equipo = 1</b> <b>y</b> tengan un salario <b>superior a 3.000.000</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT * FROM jugadores WHERE id_equipo = 1 AND salario > 3000000;",
+    "puntos": 12,
+    "pista": "AND requiere que se cumplan ambas condiciones simultáneamente.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre y apellido de los jugadores que sean de <b>nacionalidad 'USA'</b> <b>o</b> tengan un salario <b>mayor de 10.000.000</b>.",
+        "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE nacionalidad = 'USA' OR salario > 10000000;"
+      },
+      {
+        "enunciado": "Lista los partidos donde el <b>marcadorLocal sea mayor de 100</b> <b>y</b> el <b>marcadorVisitante sea mayor de 100</b> (partido con mucho tanteo).",
+        "query_solucion": "SELECT * FROM partidos WHERE marcadorLocal > 100 AND marcadorVisitante > 100;"
+      }
+    ]
+  },
+  {
+    "id": 178,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE IN",
+    "titulo": "Jugadores de varios equipos",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> y <b>id_equipo</b> de los jugadores que pertenezcan a los equipos con id <b>1, 3 o 5</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1, id_equipo FROM jugadores WHERE id_equipo IN (1, 3, 5);",
+    "puntos": 12,
+    "pista": "El operador IN permite comprobar si un valor se encuentra dentro de una lista de valores.",
+    "variaciones": [
+      {
+        "enunciado": "Lista todos los jugadores cuya <b>nacionalidad</b> sea <code>'USA'</code>, <code>'France'</code> o <code>'Spain'</code>.",
+        "query_solucion": "SELECT * FROM jugadores WHERE nacionalidad IN ('USA', 'France', 'Spain');"
+      },
+      {
+        "enunciado": "Muestra los partidos donde el <b>id_equipoLocal</b> sea 2, 4 o 6.",
+        "query_solucion": "SELECT * FROM partidos WHERE id_equipoLocal IN (2, 4, 6);"
+      }
+    ]
+  },
+  {
+    "id": 179,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE BETWEEN",
+    "titulo": "Jugadores por rango de salario",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> y <b>salario</b> de los jugadores con salario <b>entre 2.000.000 y 8.000.000</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1, salario FROM jugadores WHERE salario BETWEEN 2000000 AND 8000000;",
+    "puntos": 12,
+    "pista": "BETWEEN valor1 AND valor2 incluye ambos extremos del rango.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los partidos jugados entre el <code>'2024-01-01'</code> y el <code>'2024-06-30'</code>.",
+        "query_solucion": "SELECT * FROM partidos WHERE fecha BETWEEN '2024-01-01' AND '2024-06-30';"
+      },
+      {
+        "enunciado": "Muestra los jugadores nacidos entre el <code>'1990-01-01'</code> y el <code>'2000-12-31'</code>.",
+        "query_solucion": "SELECT nombre, apellido1, fecha_nacimiento FROM jugadores WHERE fecha_nacimiento BETWEEN '1990-01-01' AND '2000-12-31';"
+      }
+    ]
+  },
+  {
+    "id": 180,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE LIKE",
+    "titulo": "Búsqueda por patrón en nombre",
+    "enunciado": "Lista los jugadores cuyo <b>apellido1</b> empiece por la letra <b>'J'</b>. Muestra nombre y apellido1.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE apellido1 LIKE 'J%';",
+    "puntos": 12,
+    "pista": "El comodín % sustituye cualquier cantidad de caracteres. Ponlo al final para buscar apellidos que empiecen por 'J'.",
+    "variaciones": [
+      {
+        "enunciado": "Lista los equipos cuyo <b>nombre</b> contenga la palabra <code>'Lake'</code> en cualquier posición.",
+        "query_solucion": "SELECT * FROM equipos WHERE nombre LIKE '%Lake%';"
+      },
+      {
+        "enunciado": "Muestra los jugadores cuyo <b>nombre</b> acabe en la letra <code>'n'</code>.",
+        "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE nombre LIKE '%n';"
+      }
+    ]
+  },
+  {
+    "id": 181,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL / IS NOT NULL",
+    "titulo": "Jugadores sin salario registrado",
+    "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que <b>no tienen salario registrado</b> (salario es NULL).",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE salario IS NULL;",
+    "puntos": 12,
+    "pista": "Para comprobar si un valor es nulo, no uses = NULL sino IS NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los jugadores que <b>sí tienen salario registrado</b> (salario no es NULL). Muestra nombre, apellido1 y salario.",
+        "query_solucion": "SELECT nombre, apellido1, salario FROM jugadores WHERE salario IS NOT NULL;"
+      },
+      {
+        "enunciado": "Muestra los partidos que <b>no tienen marcador registrado</b> para el equipo local (marcadorLocal es NULL).",
+        "query_solucion": "SELECT * FROM partidos WHERE marcadorLocal IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 182,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY ASC y DESC",
+    "titulo": "Jugadores ordenados por salario",
+    "enunciado": "Lista el <b>nombre</b>, <b>apellido1</b> y <b>salario</b> de todos los jugadores ordenados por salario de <b>mayor a menor</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1, salario FROM jugadores ORDER BY salario DESC;",
+    "puntos": 10,
+    "pista": "Usa ORDER BY con DESC para ordenar de mayor a menor.",
+    "variaciones": [
+      {
+        "enunciado": "Lista todos los jugadores ordenados <b>alfabéticamente por apellido1</b> de A a Z.",
+        "query_solucion": "SELECT nombre, apellido1 FROM jugadores ORDER BY apellido1 ASC;"
+      },
+      {
+        "enunciado": "Muestra los partidos ordenados por <b>fecha</b> del más reciente al más antiguo.",
+        "query_solucion": "SELECT * FROM partidos ORDER BY fecha DESC;"
+      }
+    ]
+  },
+  {
+    "id": 183,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Top 5 jugadores mejor pagados",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> y <b>salario</b> de los <b>5 jugadores con mayor salario</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1, salario FROM jugadores ORDER BY salario DESC LIMIT 5;",
+    "puntos": 12,
+    "pista": "Combina ORDER BY DESC con LIMIT para obtener los primeros N registros en un orden determinado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>3 partidos más recientes</b> (solo fecha, marcadorLocal y marcadorVisitante).",
+        "query_solucion": "SELECT fecha, marcadorLocal, marcadorVisitante FROM partidos ORDER BY fecha DESC LIMIT 3;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los <b>10 primeros jugadores</b> registrados (ordenados por id de forma ascendente).",
+        "query_solucion": "SELECT nombre, apellido1 FROM jugadores ORDER BY id ASC LIMIT 10;"
+      }
+    ]
+  },
+  {
+    "id": 184,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Nacionalidades únicas",
+    "enunciado": "Muestra todas las <b>nacionalidades distintas</b> de los jugadores de la NBA (sin repetir).",
+    "bd": "nba",
+    "query_solucion": "SELECT DISTINCT nacionalidad FROM jugadores;",
+    "puntos": 10,
+    "pista": "DISTINCT elimina los duplicados en el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todas las <b>conferencias distintas</b> que aparecen en la tabla de equipos.",
+        "query_solucion": "SELECT DISTINCT conferencia FROM equipos;"
+      },
+      {
+        "enunciado": "Muestra todos los <b>id_equipo distintos</b> que aparecen en la tabla de jugadores (equipos que tienen al menos un jugador).",
+        "query_solucion": "SELECT DISTINCT id_equipo FROM jugadores;"
+      }
+    ]
+  },
+  {
+    "id": 185,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Alias con AS",
+    "titulo": "Columnas con alias descriptivos",
+    "enunciado": "Muestra el <b>nombre</b> del equipo como <code>Equipo</code>, la <b>ciudad</b> como <code>Ciudad</code> y el <b>presidente</b> como <code>Presidente</code> de todos los equipos.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre AS Equipo, ciudad AS Ciudad, presidente AS Presidente FROM equipos;",
+    "puntos": 10,
+    "pista": "Usa AS después del nombre de la columna para darle un alias que aparecerá como cabecera en los resultados.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> como <code>Nombre_Jugador</code>, el <b>apellido1</b> como <code>Primer_Apellido</code> y el <b>salario</b> como <code>Salario_Anual</code> de todos los jugadores.",
+        "query_solucion": "SELECT nombre AS Nombre_Jugador, apellido1 AS Primer_Apellido, salario AS Salario_Anual FROM jugadores;"
+      },
+      {
+        "enunciado": "Muestra el <b>id</b> como <code>ID_Partido</code>, el <b>marcadorLocal</b> como <code>Local</code> y el <b>marcadorVisitante</b> como <code>Visitante</code> de todos los partidos.",
+        "query_solucion": "SELECT id AS ID_Partido, marcadorLocal AS Local, marcadorVisitante AS Visitante FROM partidos;"
+      }
+    ]
+  },
+  {
+    "id": 186,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones de texto",
+    "titulo": "Nombre completo en mayúsculas",
+    "enunciado": "Muestra el <b>nombre completo</b> de cada jugador concatenando nombre y apellido1 con un espacio, en <b>mayúsculas</b>. Muestra la columna resultante como <code>Nombre_Completo</code>.",
+    "bd": "nba",
+    "query_solucion": "SELECT UPPER(CONCAT(nombre, ' ', apellido1)) AS Nombre_Completo FROM jugadores;",
+    "puntos": 15,
+    "pista": "Usa CONCAT para unir cadenas y UPPER para convertir a mayúsculas. Puedes anidar funciones.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> del equipo en minúsculas junto con la <b>ciudad</b> en minúsculas. Aliasa las columnas como <code>equipo_lower</code> y <code>ciudad_lower</code>.",
+        "query_solucion": "SELECT LOWER(nombre) AS equipo_lower, LOWER(ciudad) AS ciudad_lower FROM equipos;"
+      },
+      {
+        "enunciado": "Muestra el <b>apellido1</b> de cada jugador y la <b>longitud</b> de dicho apellido como <code>longitud_apellido</code>.",
+        "query_solucion": "SELECT apellido1, LENGTH(apellido1) AS longitud_apellido FROM jugadores;"
+      }
+    ]
+  },
+  {
+    "id": 187,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones numéricas y aritmética",
+    "titulo": "Salario mensual aproximado",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> y el salario <b>mensual aproximado</b> (salario dividido entre 12) de cada jugador. Redondea el resultado a 2 decimales. Aliasa la columna como <code>salario_mensual</code>.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1, ROUND(salario / 12, 2) AS salario_mensual FROM jugadores;",
+    "puntos": 15,
+    "pista": "Usa la división (/) para calcular el salario mensual y ROUND(valor, decimales) para redondear.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra para cada partido la diferencia de marcador entre el equipo local y el visitante (<code>diferencia</code>). Usa ABS para que el resultado sea siempre positivo.",
+        "query_solucion": "SELECT id, ABS(marcadorLocal - marcadorVisitante) AS diferencia FROM partidos;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de cada jugador y el valor de su salario <b>incrementado un 10%</b>, redondeado a 2 decimales. Aliasa como <code>salario_nuevo</code>.",
+        "query_solucion": "SELECT nombre, apellido1, ROUND(salario * 1.10, 2) AS salario_nuevo FROM jugadores;"
+      }
+    ]
+  },
+  {
+    "id": 188,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con múltiples condiciones",
+    "titulo": "Partidos con resultado muy ajustado",
+    "enunciado": "Muestra los partidos donde la diferencia entre <b>marcadorLocal</b> y <b>marcadorVisitante</b> sea <b>menor o igual a 5 puntos</b> y ambos marcadores estén registrados (no nulos).",
+    "bd": "nba",
+    "query_solucion": "SELECT * FROM partidos WHERE ABS(marcadorLocal - marcadorVisitante) <= 5 AND marcadorLocal IS NOT NULL AND marcadorVisitante IS NOT NULL;",
+    "puntos": 15,
+    "pista": "Puedes usar ABS() directamente en la cláusula WHERE y combinar condiciones con AND.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los jugadores que tengan <b>nacionalidad 'USA'</b> y <b>salario mayor de 5.000.000</b> y cuyo <b>id_equipo no sea nulo</b>.",
+        "query_solucion": "SELECT * FROM jugadores WHERE nacionalidad = 'USA' AND salario > 5000000 AND id_equipo IS NOT NULL;"
+      },
+      {
+        "enunciado": "Lista los partidos donde el <b>marcadorLocal sea mayor de 120</b> <b>o</b> el <b>marcadorVisitante sea mayor de 120</b>, que tengan ambos marcadores registrados.",
+        "query_solucion": "SELECT * FROM partidos WHERE (marcadorLocal > 120 OR marcadorVisitante > 120) AND marcadorLocal IS NOT NULL AND marcadorVisitante IS NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 189,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY múltiple",
+    "titulo": "Jugadores ordenados por equipo y salario",
+    "enunciado": "Lista el <b>nombre</b>, <b>apellido1</b>, <b>id_equipo</b> y <b>salario</b> de todos los jugadores, ordenados primero por <b>id_equipo</b> de forma ascendente y luego por <b>salario</b> de mayor a menor.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1, id_equipo, salario FROM jugadores ORDER BY id_equipo ASC, salario DESC;",
+    "puntos": 12,
+    "pista": "ORDER BY puede recibir múltiples columnas separadas por comas; cada una puede tener su propio ASC o DESC.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los jugadores ordenados primero por <b>nacionalidad</b> alfabéticamente y luego por <b>apellido1</b> alfabéticamente.",
+        "query_solucion": "SELECT nombre, apellido1, nacionalidad FROM jugadores ORDER BY nacionalidad ASC, apellido1 ASC;"
+      },
+      {
+        "enunciado": "Muestra los partidos ordenados por <b>id_equipoLocal</b> ascendente y, dentro del mismo equipo local, por <b>marcadorLocal</b> de mayor a menor.",
+        "query_solucion": "SELECT * FROM partidos ORDER BY id_equipoLocal ASC, marcadorLocal DESC;"
+      }
+    ]
+  },
+  {
+    "id": 190,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Número de jugadores por equipo",
+    "enunciado": "Muestra el <b>id_equipo</b> y el <b>número de jugadores</b> que tiene cada equipo. Aliasa el conteo como <code>total_jugadores</code>.",
+    "bd": "nba",
+    "query_solucion": "SELECT id_equipo, COUNT(*) AS total_jugadores FROM jugadores GROUP BY id_equipo;",
+    "puntos": 20,
+    "pista": "Usa COUNT(*) junto con GROUP BY id_equipo para agrupar los jugadores por equipo.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>número total de partidos</b> que ha jugado cada equipo como local. Muestra <b>id_equipoLocal</b> y el conteo como <code>partidos_local</code>.",
+        "query_solucion": "SELECT id_equipoLocal, COUNT(*) AS partidos_local FROM partidos GROUP BY id_equipoLocal;"
+      },
+      {
+        "enunciado": "Muestra cuántos jugadores hay por cada <b>nacionalidad</b>. Muestra <b>nacionalidad</b> y el conteo como <code>num_jugadores</code>.",
+        "query_solucion": "SELECT nacionalidad, COUNT(*) AS num_jugadores FROM jugadores GROUP BY nacionalidad;"
+      }
+    ]
+  },
+  {
+    "id": 191,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM y AVG",
+    "titulo": "Gasto total en salarios por equipo",
+    "enunciado": "Muestra el <b>id_equipo</b>, el <b>salario total</b> (<code>gasto_total</code>) y el <b>salario promedio</b> (<code>salario_medio</code>) redondeado a 2 decimales de cada equipo.",
+    "bd": "nba",
+    "query_solucion": "SELECT id_equipo, SUM(salario) AS gasto_total, ROUND(AVG(salario), 2) AS salario_medio FROM jugadores GROUP BY id_equipo;",
+    "puntos": 20,
+    "pista": "Puedes usar varias funciones de agregación (SUM, AVG) en el mismo SELECT, siempre agrupando con GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_partido</b> y la <b>suma total de puntos</b> anotados por todos los jugadores en cada partido (<code>puntos_totales</code>).",
+        "query_solucion": "SELECT id_partido, SUM(puntos) AS puntos_totales FROM estadisticasPartido GROUP BY id_partido;"
+      },
+      {
+        "enunciado": "Para cada jugador (por <b>id_jugador</b>), muestra el <b>promedio de puntos</b> (<code>media_puntos</code>) y el <b>promedio de rebotes</b> (<code>media_rebotes</code>) en todos sus partidos. Redondea a 1 decimal.",
+        "query_solucion": "SELECT id_jugador, ROUND(AVG(puntos), 1) AS media_puntos, ROUND(AVG(rebotes), 1) AS media_rebotes FROM estadisticasPartido GROUP BY id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 192,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX y MIN",
+    "titulo": "Mayor y menor salario",
+    "enunciado": "Muestra el <b>salario máximo</b> (<code>max_salario</code>) y el <b>salario mínimo</b> (<code>min_salario</code>) de todos los jugadores.",
+    "bd": "nba",
+    "query_solucion": "SELECT MAX(salario) AS max_salario, MIN(salario) AS min_salario FROM jugadores;",
+    "puntos": 20,
+    "pista": "MAX y MIN son funciones de agregación que no necesitan GROUP BY si quieres el resultado global de toda la tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Para cada equipo (<b>id_equipo</b>), muestra el <b>salario máximo</b> (<code>max_salario</code>) y el <b>salario mínimo</b> (<code>min_salario</code>) de sus jugadores.",
+        "query_solucion": "SELECT id_equipo, MAX(salario) AS max_salario, MIN(salario) AS min_salario FROM jugadores GROUP BY id_equipo;"
+      },
+      {
+        "enunciado": "Para cada partido (<b>id_partido</b>), muestra el <b>máximo de puntos</b> anotados por un jugador individual (<code>max_puntos</code>) y el <b>mínimo de faltas</b> (<code>min_faltas</code>).",
+        "query_solucion": "SELECT id_partido, MAX(puntos) AS max_puntos, MIN(faltas) AS min_faltas FROM estadisticasPartido GROUP BY id_partido;"
+      }
+    ]
+  },
+  {
+    "id": 193,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Equipos con muchos jugadores",
+    "enunciado": "Muestra los equipos (por <b>id_equipo</b>) que tengan <b>más de 10 jugadores</b>. Muestra id_equipo y el total de jugadores como <code>total</code>.",
+    "bd": "nba",
+    "query_solucion": "SELECT id_equipo, COUNT(*) AS total FROM jugadores GROUP BY id_equipo HAVING COUNT(*) > 10;",
+    "puntos": 22,
+    "pista": "HAVING filtra los grupos después de hacer el GROUP BY, al contrario que WHERE que filtra filas antes de agrupar.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las nacionalidades que tengan <b>más de 3 jugadores</b>. Muestra <b>nacionalidad</b> y el recuento como <code>num_jugadores</code>.",
+        "query_solucion": "SELECT nacionalidad, COUNT(*) AS num_jugadores FROM jugadores GROUP BY nacionalidad HAVING COUNT(*) > 3;"
+      },
+      {
+        "enunciado": "Muestra los partidos (por <b>id_partido</b>) en los que se hayan registrado estadísticas de <b>más de 8 jugadores</b>. Muestra id_partido y el conteo como <code>jugadores_con_stats</code>.",
+        "query_solucion": "SELECT id_partido, COUNT(*) AS jugadores_con_stats FROM estadisticasPartido GROUP BY id_partido HAVING COUNT(*) > 8;"
+      }
+    ]
+  },
+  {
+    "id": 194,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING con AVG",
+    "titulo": "Equipos con alto gasto medio en salarios",
+    "enunciado": "Muestra los equipos cuyo <b>salario medio</b> sea <b>superior a 4.000.000</b>. Muestra <b>id_equipo</b> y el salario medio como <code>media_salarial</code> redondeado a 2 decimales.",
+    "bd": "nba",
+    "query_solucion": "SELECT id_equipo, ROUND(AVG(salario), 2) AS media_salarial FROM jugadores GROUP BY id_equipo HAVING AVG(salario) > 4000000;",
+    "puntos": 22,
+    "pista": "En HAVING puedes usar funciones de agregación como AVG directamente para filtrar grupos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los jugadores (por <b>id_jugador</b>) cuyo <b>promedio de puntos</b> en todos sus partidos sea <b>mayor de 15</b>. Muestra id_jugador y la media como <code>media_puntos</code>.",
+        "query_solucion": "SELECT id_jugador, ROUND(AVG(puntos), 2) AS media_puntos FROM estadisticasPartido GROUP BY id_jugador HAVING AVG(puntos) > 15;"
+      },
+      {
+        "enunciado": "Muestra los partidos (por <b>id_partido</b>) cuya <b>media de faltas</b> por jugador sea <b>mayor de 3</b>. Muestra id_partido y la media de faltas como <code>media_faltas</code>.",
+        "query_solucion": "SELECT id_partido, ROUND(AVG(faltas), 2) AS media_faltas FROM estadisticasPartido GROUP BY id_partido HAVING AVG(faltas) > 3;"
+      }
+    ]
+  },
+  {
+    "id": 195,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "Nombre del equipo de cada jugador",
+    "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador junto con el <b>nombre del equipo</b> al que pertenece. Usa INNER JOIN.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, e.nombre AS equipo FROM jugadores j INNER JOIN equipos e ON j.id_equipo = e.id;",
+    "puntos": 22,
+    "pista": "INNER JOIN une dos tablas mostrando solo los registros que tienen coincidencia en ambas. La condición ON especifica cómo se relacionan.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo local</b>, el <b>marcadorLocal</b> y el <b>marcadorVisitante</b> de cada partido. Une <code>partidos</code> con <code>equipos</code>.",
+        "query_solucion": "SELECT e.nombre AS equipo_local, p.marcadorLocal, p.marcadorVisitante FROM partidos p INNER JOIN equipos e ON p.id_equipoLocal = e.id;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador junto con el <b>número de puntos</b> y <b>rebotes</b> que anotó en cada partido. Une <code>jugadores</code> con <code>estadisticasPartido</code>.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, ep.puntos, ep.rebotes FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 196,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN básico",
+    "titulo": "Todos los jugadores y sus estadísticas",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> de cada jugador y sus <b>puntos</b> en los partidos que tenga registrados. Incluye también a los jugadores <b>sin estadísticas</b> (mostrarán NULL en puntos). Usa LEFT JOIN.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, ep.puntos FROM jugadores j LEFT JOIN estadisticasPartido ep ON j.id = ep.id_jugador;",
+    "puntos": 22,
+    "pista": "LEFT JOIN incluye todos los registros de la tabla izquierda aunque no tengan correspondencia en la tabla derecha.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los <b>equipos</b> (nombre) y el <b>salario</b> de cada uno de sus jugadores. Incluye también los equipos <b>sin jugadores</b>. Usa LEFT JOIN.",
+        "query_solucion": "SELECT e.nombre AS equipo, j.salario FROM equipos e LEFT JOIN jugadores j ON e.id = j.id_equipo;"
+      },
+      {
+        "enunciado": "Muestra todos los <b>partidos</b> (id, fecha) y las <b>estadísticas</b> (puntos, rebotes) de cada jugador en ese partido. Incluye partidos sin estadísticas registradas. Usa LEFT JOIN.",
+        "query_solucion": "SELECT p.id, p.fecha, ep.puntos, ep.rebotes FROM partidos p LEFT JOIN estadisticasPartido ep ON p.id = ep.id_partido;"
+      }
+    ]
+  },
+  {
+    "id": 197,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN con GROUP BY",
+    "titulo": "Total de puntos anotados por equipo",
+    "enunciado": "Muestra el <b>nombre del equipo</b> y la <b>suma total de puntos</b> anotados por todos sus jugadores en todos los partidos (<code>total_puntos</code>). Ordena de mayor a menor por total de puntos.",
+    "bd": "nba",
+    "query_solucion": "SELECT e.nombre AS equipo, SUM(ep.puntos) AS total_puntos FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY e.id, e.nombre ORDER BY total_puntos DESC;",
+    "puntos": 25,
+    "pista": "Necesitas encadenar dos JOINs: equipos→jugadores→estadisticasPartido. Luego agrupa por equipo y suma los puntos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y el <b>número de partidos</b> que ha jugado como equipo local (<code>partidos_local</code>). Ordena por número de partidos de mayor a menor.",
+        "query_solucion": "SELECT e.nombre AS equipo, COUNT(*) AS partidos_local FROM equipos e INNER JOIN partidos p ON e.id = p.id_equipoLocal GROUP BY e.id, e.nombre ORDER BY partidos_local DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y el <b>salario total</b> de su plantilla (<code>masa_salarial</code>). Ordena de mayor a menor.",
+        "query_solucion": "SELECT e.nombre AS equipo, SUM(j.salario) AS masa_salarial FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo GROUP BY e.id, e.nombre ORDER BY masa_salarial DESC;"
+      }
+    ]
+  },
+  {
+    "id": 198,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY con COUNT y JOIN",
+    "titulo": "Jugadores con más partidos estadísticos",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> del jugador y el <b>número de partidos</b> con estadísticas registradas (<code>num_partidos</code>). Ordena de mayor a menor número de partidos.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, COUNT(ep.id_partido) AS num_partidos FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY j.id, j.nombre, j.apellido1 ORDER BY num_partidos DESC;",
+    "puntos": 25,
+    "pista": "Haz el JOIN entre jugadores y estadisticasPartido y luego agrupa por jugador para contar cuántos registros tiene cada uno.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y cuántos jugadores de <b>nacionalidad distinta</b> tiene (<code>nacionalidades_distintas</code>). Ordena de mayor a menor.",
+        "query_solucion": "SELECT e.nombre AS equipo, COUNT(DISTINCT j.nacionalidad) AS nacionalidades_distintas FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo GROUP BY e.id, e.nombre ORDER BY nacionalidades_distintas DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador y la <b>suma total de asistencias</b> en todos sus partidos (<code>total_asistencias</code>). Ordena de mayor a menor.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, SUM(ep.asistencias) AS total_asistencias FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY j.id, j.nombre, j.apellido1 ORDER BY total_asistencias DESC;"
+      }
+    ]
+  },
+  {
+    "id": 199,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING con JOIN",
+    "titulo": "Jugadores con muchos tapones",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> del jugador y el <b>total de tapones</b> (<code>total_tapones</code>) sumando todos sus partidos. Muestra solo los que superen <b>20 tapones en total</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, SUM(ep.tapones) AS total_tapones FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY j.id, j.nombre, j.apellido1 HAVING SUM(ep.tapones) > 20;",
+    "puntos": 25,
+    "pista": "El HAVING filtra grupos después del GROUP BY. Aquí filtras por la suma total de tapones.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y la <b>media de salario</b> de sus jugadores (<code>media_salarial</code>) solo para equipos cuya media supere los <b>5.000.000</b>. Redondea a 2 decimales.",
+        "query_solucion": "SELECT e.nombre AS equipo, ROUND(AVG(j.salario), 2) AS media_salarial FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo GROUP BY e.id, e.nombre HAVING AVG(j.salario) > 5000000;"
+      },
+      {
+        "enunciado": "Muestra los partidos (<b>id_partido</b>) donde la <b>suma de robos</b> de todos los jugadores supere <b>15 robos en total</b>. Muestra id_partido y el total de robos como <code>total_robos</code>.",
+        "query_solucion": "SELECT id_partido, SUM(robos) AS total_robos FROM estadisticasPartido GROUP BY id_partido HAVING SUM(robos) > 15;"
+      }
+    ]
+  },
+  {
+    "id": 200,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN con filtro WHERE",
+    "titulo": "Estadísticas de jugadores de un equipo",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> del jugador, los <b>puntos</b> y las <b>asistencias</b> de cada partido, pero solo de los jugadores que pertenezcan al equipo con <b>id = 1</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, ep.puntos, ep.asistencias FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador WHERE j.id_equipo = 1;",
+    "puntos": 22,
+    "pista": "Combina el JOIN con un WHERE para filtrar los resultados a un equipo concreto.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y los datos del partido (marcadorLocal, marcadorVisitante, fecha) solo de los partidos jugados <b>como local por el equipo con id = 2</b>.",
+        "query_solucion": "SELECT e.nombre AS equipo_local, p.marcadorLocal, p.marcadorVisitante, p.fecha FROM equipos e INNER JOIN partidos p ON e.id = p.id_equipoLocal WHERE e.id = 2;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> de los jugadores con estadísticas en las que sus <b>puntos sean mayores de 20</b> en algún partido. Muestra también los puntos y el id_partido.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, ep.puntos, ep.id_partido FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador WHERE ep.puntos > 20;"
+      }
+    ]
+  },
+  {
+    "id": 201,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT con DISTINCT y JOIN",
+    "titulo": "Partidos únicos por jugador",
+    "enunciado": "Muestra el <b>nombre del equipo</b> y cuántos <b>partidos únicos</b> han jugado en total sus jugadores (sumando estadísticasPartido). Aliasa como <code>total_apariciones</code>. Ordena de mayor a menor.",
+    "bd": "nba",
+    "query_solucion": "SELECT e.nombre AS equipo, COUNT(ep.id_partido) AS total_apariciones FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY e.id, e.nombre ORDER BY total_apariciones DESC;",
+    "puntos": 25,
+    "pista": "Encadena dos JOINs (equipos→jugadores→estadisticasPartido) y agrupa por equipo para contar el total de registros estadísticos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra cuántos <b>jugadores distintos</b> han participado en cada partido (<b>id_partido</b>). Aliasa el conteo como <code>jugadores_participantes</code> y ordena de mayor a menor.",
+        "query_solucion": "SELECT id_partido, COUNT(DISTINCT id_jugador) AS jugadores_participantes FROM estadisticasPartido GROUP BY id_partido ORDER BY jugadores_participantes DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador y en cuántos <b>partidos distintos</b> ha marcado al menos un punto (puntos > 0). Aliasa como <code>partidos_con_puntos</code>.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, COUNT(ep.id_partido) AS partidos_con_puntos FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador WHERE ep.puntos > 0 GROUP BY j.id, j.nombre, j.apellido1;"
+      }
+    ]
+  },
+  {
+    "id": 202,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN con GROUP BY",
+    "titulo": "Equipos y número de jugadores incluyendo equipos vacíos",
+    "enunciado": "Muestra el <b>nombre del equipo</b> y el <b>número de jugadores</b> que tiene (<code>num_jugadores</code>). Incluye también los equipos <b>sin jugadores</b> (mostrarán 0). Usa LEFT JOIN.",
+    "bd": "nba",
+    "query_solucion": "SELECT e.nombre AS equipo, COUNT(j.id) AS num_jugadores FROM equipos e LEFT JOIN jugadores j ON e.id = j.id_equipo GROUP BY e.id, e.nombre;",
+    "puntos": 25,
+    "pista": "Con LEFT JOIN todos los equipos aparecen. COUNT(j.id) cuenta solo los jugadores que existen; si no hay jugadores, devuelve 0.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y el <b>número de partidos</b> que ha jugado como local (<code>partidos_local</code>). Incluye equipos que no hayan jugado como local (mostrarán 0). Usa LEFT JOIN.",
+        "query_solucion": "SELECT e.nombre AS equipo, COUNT(p.id) AS partidos_local FROM equipos e LEFT JOIN partidos p ON e.id = p.id_equipoLocal GROUP BY e.id, e.nombre;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de cada jugador y cuántos partidos tiene con estadísticas (<code>num_stats</code>). Incluye también jugadores sin ninguna estadística (mostrarán 0). Usa LEFT JOIN.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, COUNT(ep.id_partido) AS num_stats FROM jugadores j LEFT JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY j.id, j.nombre, j.apellido1;"
+      }
+    ]
+  },
+  {
+    "id": 203,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY + HAVING + ORDER BY completo",
+    "titulo": "Jugadores con más robos y buen promedio",
+    "enunciado": "Muestra el <b>id_jugador</b>, el <b>total de robos</b> (<code>total_robos</code>) y la <b>media de puntos</b> (<code>media_puntos</code>) redondeada a 1 decimal de cada jugador en todos sus partidos. Muestra solo aquellos con <b>más de 5 robos en total</b> y ordena por total de robos de mayor a menor.",
+    "bd": "nba",
+    "query_solucion": "SELECT id_jugador, SUM(robos) AS total_robos, ROUND(AVG(puntos), 1) AS media_puntos FROM estadisticasPartido GROUP BY id_jugador HAVING SUM(robos) > 5 ORDER BY total_robos DESC;",
+    "puntos": 25,
+    "pista": "Combina GROUP BY, múltiples funciones de agregación, HAVING para filtrar grupos y ORDER BY para ordenar.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_partido</b>, la <b>suma de puntos</b> (<code>total_puntos</code>) y el <b>total de faltas</b> (<code>total_faltas</code>) de todos los jugadores en ese partido. Filtra partidos con <b>más de 200 puntos en total</b> y ordena por total de puntos de mayor a menor.",
+        "query_solucion": "SELECT id_partido, SUM(puntos) AS total_puntos, SUM(faltas) AS total_faltas FROM estadisticasPartido GROUP BY id_partido HAVING SUM(puntos) > 200 ORDER BY total_puntos DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>id_equipo</b>, el <b>número de jugadores</b> (<code>num_jugadores</code>) y el <b>salario máximo</b> (<code>max_salario</code>). Filtra equipos que tengan <b>al menos 5 jugadores</b> y ordena por salario máximo de mayor a menor.",
+        "query_solucion": "SELECT id_equipo, COUNT(*) AS num_jugadores, MAX(salario) AS max_salario FROM jugadores GROUP BY id_equipo HAVING COUNT(*) >= 5 ORDER BY max_salario DESC;"
+      }
+    ]
+  },
+  {
+    "id": 204,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN con IS NULL (antijoin)",
+    "titulo": "Jugadores sin estadísticas",
+    "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que <b>no tienen ningún registro</b> en la tabla <code>estadisticasPartido</code>. Usa LEFT JOIN e IS NULL.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1 FROM jugadores j LEFT JOIN estadisticasPartido ep ON j.id = ep.id_jugador WHERE ep.id_jugador IS NULL;",
+    "puntos": 30,
+    "pista": "Haz un LEFT JOIN y luego filtra WHERE columna_de_tabla_derecha IS NULL para obtener solo los que no tienen correspondencia.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>equipos</b> (nombre) que <b>no han jugado ningún partido</b> como local. Usa LEFT JOIN e IS NULL.",
+        "query_solucion": "SELECT e.nombre FROM equipos e LEFT JOIN partidos p ON e.id = p.id_equipoLocal WHERE p.id IS NULL;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que <b>no pertenecen a ningún equipo</b> (id_equipo es NULL o no existe en equipos). Usa LEFT JOIN e IS NULL.",
+        "query_solucion": "SELECT j.nombre, j.apellido1 FROM jugadores j LEFT JOIN equipos e ON j.id_equipo = e.id WHERE e.id IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 205,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "Múltiples JOINs (3+ tablas)",
+    "titulo": "Nombre del equipo local y visitante en cada partido",
+    "enunciado": "Muestra la <b>fecha</b> del partido, el <b>nombre del equipo local</b> (<code>equipo_local</code>), el <b>marcadorLocal</b>, el <b>marcadorVisitante</b> y el <b>nombre del equipo visitante</b> (<code>equipo_visitante</code>). Une las tres tablas necesarias.",
+    "bd": "nba",
+    "query_solucion": "SELECT p.fecha, el.nombre AS equipo_local, p.marcadorLocal, p.marcadorVisitante, ev.nombre AS equipo_visitante FROM partidos p INNER JOIN equipos el ON p.id_equipoLocal = el.id INNER JOIN equipos ev ON p.id_equipoVisitante = ev.id;",
+    "puntos": 30,
+    "pista": "Necesitas unir la tabla equipos dos veces con alias diferentes: una para el equipo local y otra para el visitante.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador, el <b>nombre del equipo</b> al que pertenece y los <b>puntos</b> y <b>asistencias</b> en cada partido. Une jugadores, equipos y estadisticasPartido.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, e.nombre AS equipo, ep.puntos, ep.asistencias FROM jugadores j INNER JOIN equipos e ON j.id_equipo = e.id INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador;"
+      },
+      {
+        "enunciado": "Muestra la <b>fecha del partido</b>, el <b>nombre del equipo local</b> (<code>local</code>) y el <b>nombre del equipo visitante</b> (<code>visitante</code>) de los partidos donde el <b>equipo local haya ganado</b> (marcadorLocal > marcadorVisitante).",
+        "query_solucion": "SELECT p.fecha, el.nombre AS local, ev.nombre AS visitante FROM partidos p INNER JOIN equipos el ON p.id_equipoLocal = el.id INNER JOIN equipos ev ON p.id_equipoVisitante = ev.id WHERE p.marcadorLocal > p.marcadorVisitante;"
+      }
+    ]
+  },
+  {
+    "id": 206,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en WHERE",
+    "titulo": "Jugadores del equipo más caro",
+    "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que pertenecen al equipo cuya <b>masa salarial total es la más alta</b>. Usa una subconsulta.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE id_equipo = (SELECT id_equipo FROM jugadores GROUP BY id_equipo ORDER BY SUM(salario) DESC LIMIT 1);",
+    "puntos": 35,
+    "pista": "La subconsulta calcula qué equipo tiene la mayor suma de salarios. La consulta principal usa ese id_equipo para filtrar jugadores.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador que tiene el <b>salario más alto</b> de toda la NBA. Usa una subconsulta con MAX.",
+        "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE salario = (SELECT MAX(salario) FROM jugadores);"
+      },
+      {
+        "enunciado": "Muestra todos los datos del <b>partido con mayor marcadorLocal</b> registrado. Usa una subconsulta con MAX.",
+        "query_solucion": "SELECT * FROM partidos WHERE marcadorLocal = (SELECT MAX(marcadorLocal) FROM partidos);"
+      }
+    ]
+  },
+  {
+    "id": 207,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con IN",
+    "titulo": "Jugadores de equipos de la Conferencia Este",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> y <b>salario</b> de los jugadores que pertenecen a equipos de la <b>conferencia 'East'</b>. Usa una subconsulta con IN.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, apellido1, salario FROM jugadores WHERE id_equipo IN (SELECT id FROM equipos WHERE conferencia = 'East');",
+    "puntos": 32,
+    "pista": "La subconsulta obtiene los ids de los equipos de la conferencia Este. La consulta principal usa IN para filtrar jugadores de esos equipos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que han jugado en algún partido <b>después del 01/01/2024</b>. Usa una subconsulta con IN.",
+        "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE id IN (SELECT DISTINCT id_jugador FROM estadisticasPartido WHERE id_partido IN (SELECT id FROM partidos WHERE fecha > '2024-01-01'));"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>ciudad</b> de los equipos que tienen algún jugador con un <b>salario superior a 10.000.000</b>. Usa una subconsulta con IN.",
+        "query_solucion": "SELECT nombre, ciudad FROM equipos WHERE id IN (SELECT DISTINCT id_equipo FROM jugadores WHERE salario > 10000000);"
+      }
+    ]
+  },
+  {
+    "id": 208,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con NOT IN",
+    "titulo": "Equipos sin jugadores con estadísticas",
+    "enunciado": "Muestra el <b>nombre</b> y <b>ciudad</b> de los equipos que <b>no tienen ningún jugador</b> con estadísticas registradas. Usa NOT IN.",
+    "bd": "nba",
+    "query_solucion": "SELECT nombre, ciudad FROM equipos WHERE id NOT IN (SELECT DISTINCT id_equipo FROM jugadores WHERE id IN (SELECT DISTINCT id_jugador FROM estadisticasPartido) AND id_equipo IS NOT NULL);",
+    "puntos": 35,
+    "pista": "Encadena dos subconsultas: primero obtén los jugadores con estadísticas, luego sus equipos, y usa NOT IN para excluirlos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que <b>nunca han anotado más de 30 puntos</b> en un solo partido. Usa NOT IN.",
+        "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE id NOT IN (SELECT DISTINCT id_jugador FROM estadisticasPartido WHERE puntos > 30);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> de los equipos que <b>no han jugado ningún partido</b> (ni como local ni como visitante). Usa NOT IN.",
+        "query_solucion": "SELECT nombre FROM equipos WHERE id NOT IN (SELECT DISTINCT id_equipoLocal FROM partidos WHERE id_equipoLocal IS NOT NULL) AND id NOT IN (SELECT DISTINCT id_equipoVisitante FROM partidos WHERE id_equipoVisitante IS NOT NULL);"
+      }
+    ]
+  },
+  {
+    "id": 209,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Consulta correlacionada",
+    "titulo": "Jugadores que ganan más que la media de su equipo",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b>, <b>id_equipo</b> y <b>salario</b> de los jugadores que <b>ganan más que la media salarial de su propio equipo</b>. Usa una subconsulta correlacionada.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, j.id_equipo, j.salario FROM jugadores j WHERE j.salario > (SELECT AVG(j2.salario) FROM jugadores j2 WHERE j2.id_equipo = j.id_equipo);",
+    "puntos": 38,
+    "pista": "Una subconsulta correlacionada referencia a la consulta exterior (j.id_equipo). Se ejecuta una vez por cada fila de la consulta principal.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador y los <b>puntos</b> del partido, para los registros en que el jugador <b>anotó más puntos que su propia media</b> de puntos en todos sus partidos. Usa subconsulta correlacionada.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, ep.puntos FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador WHERE ep.puntos > (SELECT AVG(ep2.puntos) FROM estadisticasPartido ep2 WHERE ep2.id_jugador = ep.id_jugador);"
+      },
+      {
+        "enunciado": "Muestra los partidos (id, fecha, marcadorLocal) donde el <b>marcadorLocal fue superior al promedio de todos los marcadores locales</b> de ese mismo equipo local. Usa subconsulta correlacionada.",
+        "query_solucion": "SELECT p.id, p.fecha, p.marcadorLocal FROM partidos p WHERE p.marcadorLocal > (SELECT AVG(p2.marcadorLocal) FROM partidos p2 WHERE p2.id_equipoLocal = p.id_equipoLocal);"
+      }
+    ]
+  },
+  {
+    "id": 210,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP BY + HAVING + JOIN (3 tablas)",
+    "titulo": "Equipos con muchos puntos en casa",
+    "enunciado": "Muestra el <b>nombre del equipo</b> y la <b>suma total de puntos</b> anotados por sus jugadores cuando el partido se jugó en casa (es decir, el equipo era el local en ese partido). Muestra solo equipos con <b>más de 500 puntos</b> en casa. Ordena de mayor a menor.",
+    "bd": "nba",
+    "query_solucion": "SELECT e.nombre AS equipo, SUM(ep.puntos) AS puntos_en_casa FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador INNER JOIN partidos p ON ep.id_partido = p.id WHERE p.id_equipoLocal = e.id GROUP BY e.id, e.nombre HAVING SUM(ep.puntos) > 500 ORDER BY puntos_en_casa DESC;",
+    "puntos": 38,
+    "pista": "Necesitas unir 4 tablas: equipos→jugadores→estadisticasPartido→partidos. Filtra con WHERE para que el partido sea en casa y usa HAVING para el umbral de puntos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y el <b>número de partidos ganados como local</b> (<code>victorias_local</code>). Un partido ganado como local es cuando marcadorLocal > marcadorVisitante. Muestra solo equipos con <b>al menos 5 victorias</b>. Ordena de mayor a menor.",
+        "query_solucion": "SELECT e.nombre AS equipo, COUNT(*) AS victorias_local FROM equipos e INNER JOIN partidos p ON e.id = p.id_equipoLocal WHERE p.marcadorLocal > p.marcadorVisitante GROUP BY e.id, e.nombre HAVING COUNT(*) >= 5 ORDER BY victorias_local DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador, el <b>nombre del equipo</b> y el <b>total de puntos anotados</b> (<code>total_puntos</code>). Filtra solo jugadores cuyo total supere los <b>100 puntos</b> en toda la temporada. Ordena por total de puntos de mayor a menor.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, e.nombre AS equipo, SUM(ep.puntos) AS total_puntos FROM jugadores j INNER JOIN equipos e ON j.id_equipo = e.id INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY j.id, j.nombre, j.apellido1, e.nombre HAVING SUM(ep.puntos) > 100 ORDER BY total_puntos DESC;"
+      }
+    ]
+  },
+  {
+    "id": 211,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en FROM (tabla derivada)",
+    "titulo": "Media de la media salarial por equipo",
+    "enunciado": "Calcula la <b>media salarial de cada equipo</b> y luego obtén la <b>media de esas medias</b> (es decir, el promedio de los salarios medios de los equipos). Usa una subconsulta en el FROM.",
+    "bd": "nba",
+    "query_solucion": "SELECT ROUND(AVG(media_equipo), 2) AS media_de_medias FROM (SELECT id_equipo, AVG(salario) AS media_equipo FROM jugadores GROUP BY id_equipo) AS medias_por_equipo;",
+    "puntos": 40,
+    "pista": "La subconsulta en el FROM (tabla derivada) calcula la media salarial por equipo. La consulta exterior calcula la media de esos resultados.",
+    "variaciones": [
+      {
+        "enunciado": "Obtén el <b>total de puntos por partido</b> para cada partido y luego calcula el <b>promedio de puntos totales</b> por partido. Usa una subconsulta en el FROM.",
+        "query_solucion": "SELECT ROUND(AVG(puntos_partido), 2) AS promedio_puntos_por_partido FROM (SELECT id_partido, SUM(puntos) AS puntos_partido FROM estadisticasPartido GROUP BY id_partido) AS totales_por_partido;"
+      },
+      {
+        "enunciado": "Para cada jugador, obtén su <b>máximo de puntos</b> en un solo partido. Luego muestra solo los jugadores cuyo máximo sea <b>superior a la media de todos los máximos</b>. Usa subconsulta en FROM.",
+        "query_solucion": "SELECT id_jugador, max_puntos FROM (SELECT id_jugador, MAX(puntos) AS max_puntos FROM estadisticasPartido GROUP BY id_jugador) AS maximos WHERE max_puntos > (SELECT AVG(max_puntos) FROM (SELECT MAX(puntos) AS max_puntos FROM estadisticasPartido GROUP BY id_jugador) AS sub);"
+      }
+    ]
+  },
+  {
+    "id": 212,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN con IS NULL + subconsulta",
+    "titulo": "Jugadores que nunca han ganado un partido",
+    "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que <b>nunca han jugado en un partido ganado</b> por su equipo. Un partido es ganado si el equipo del jugador era el local y marcadorLocal > marcadorVisitante, o era visitante y marcadorVisitante > marcadorLocal.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1 FROM jugadores j WHERE j.id NOT IN (\n  SELECT DISTINCT ep.id_jugador FROM estadisticasPartido ep\n  INNER JOIN partidos p ON ep.id_partido = p.id\n  INNER JOIN jugadores j2 ON ep.id_jugador = j2.id\n  WHERE (p.id_equipoLocal = j2.id_equipo AND p.marcadorLocal > p.marcadorVisitante)\n     OR (p.id_equipoVisitante = j2.id_equipo AND p.marcadorVisitante > p.marcadorLocal)\n);",
+    "puntos": 40,
+    "pista": "La subconsulta con NOT IN identifica los jugadores que sí han ganado partidos. El resto son los que nunca han ganado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>equipos</b> (nombre) que <b>nunca han ganado un partido como visitante</b> (marcadorVisitante > marcadorLocal). Usa NOT IN o LEFT JOIN con IS NULL.",
+        "query_solucion": "SELECT nombre FROM equipos WHERE id NOT IN (SELECT DISTINCT id_equipoVisitante FROM partidos WHERE marcadorVisitante > marcadorLocal AND id_equipoVisitante IS NOT NULL);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que <b>no han participado en ningún partido en el que hayan anotado una falta</b> (faltas = 0 o sin registros). Usa NOT IN.",
+        "query_solucion": "SELECT nombre, apellido1 FROM jugadores WHERE id NOT IN (SELECT DISTINCT id_jugador FROM estadisticasPartido WHERE faltas > 0);"
+      }
+    ]
+  },
+  {
+    "id": 213,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Consulta con múltiples JOINs y agrupación compleja",
+    "titulo": "Mejor jugador de cada equipo por puntos",
+    "enunciado": "Muestra el <b>nombre del equipo</b>, el <b>nombre</b> y <b>apellido1</b> del jugador con <b>mayor total de puntos</b> de cada equipo. Usa subconsultas o JOIN según necesites.",
+    "bd": "nba",
+    "query_solucion": "SELECT e.nombre AS equipo, j.nombre, j.apellido1, tp.total_puntos FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo INNER JOIN (SELECT id_jugador, SUM(puntos) AS total_puntos FROM estadisticasPartido GROUP BY id_jugador) tp ON j.id = tp.id_jugador WHERE tp.total_puntos = (SELECT MAX(tp2.total_puntos) FROM jugadores j2 INNER JOIN (SELECT id_jugador, SUM(puntos) AS total_puntos FROM estadisticasPartido GROUP BY id_jugador) tp2 ON j2.id = tp2.id_jugador WHERE j2.id_equipo = e.id);",
+    "puntos": 40,
+    "pista": "Calcula primero el total de puntos por jugador como subconsulta. Luego, para cada equipo, filtra al jugador cuyo total iguale el máximo de su equipo (subconsulta correlacionada).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y el <b>salario del jugador mejor pagado</b> de cada equipo (<code>salario_estrella</code>), junto con el nombre de ese jugador. Usa subconsultas.",
+        "query_solucion": "SELECT e.nombre AS equipo, j.nombre, j.apellido1, j.salario AS salario_estrella FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo WHERE j.salario = (SELECT MAX(j2.salario) FROM jugadores j2 WHERE j2.id_equipo = e.id);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b>, la <b>fecha del partido</b> y el <b>marcadorLocal</b> del partido en que ese equipo obtuvo su <b>marcador local más alto</b>. Usa subconsultas correlacionadas.",
+        "query_solucion": "SELECT e.nombre AS equipo, p.fecha, p.marcadorLocal FROM equipos e INNER JOIN partidos p ON e.id = p.id_equipoLocal WHERE p.marcadorLocal = (SELECT MAX(p2.marcadorLocal) FROM partidos p2 WHERE p2.id_equipoLocal = e.id);"
+      }
+    ]
+  },
+  {
+    "id": 214,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con EXISTS",
+    "titulo": "Equipos con jugadores internacionales",
+    "enunciado": "Muestra el <b>nombre</b> y <b>ciudad</b> de los equipos que tienen <b>al menos un jugador extranjero</b> (nacionalidad distinta de 'USA'). Usa la cláusula EXISTS.",
+    "bd": "nba",
+    "query_solucion": "SELECT e.nombre, e.ciudad FROM equipos e WHERE EXISTS (SELECT 1 FROM jugadores j WHERE j.id_equipo = e.id AND j.nacionalidad <> 'USA');",
+    "puntos": 35,
+    "pista": "EXISTS comprueba si la subconsulta devuelve al menos una fila. Dentro de la subconsulta, referencia la tabla exterior para que sea correlacionada.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> de los jugadores que <b>tienen al menos un partido con más de 25 puntos</b>. Usa EXISTS.",
+        "query_solucion": "SELECT j.nombre, j.apellido1 FROM jugadores j WHERE EXISTS (SELECT 1 FROM estadisticasPartido ep WHERE ep.id_jugador = j.id AND ep.puntos > 25);"
+      },
+      {
+        "enunciado": "Muestra los <b>equipos</b> (nombre, conferencia) que <b>han jugado al menos un partido en 2024</b>. Usa EXISTS.",
+        "query_solucion": "SELECT e.nombre, e.conferencia FROM equipos e WHERE EXISTS (SELECT 1 FROM partidos p WHERE (p.id_equipoLocal = e.id OR p.id_equipoVisitante = e.id) AND YEAR(p.fecha) = 2024);"
+      }
+    ]
+  },
+  {
+    "id": 215,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Ranking con subconsulta",
+    "titulo": "Posición de cada jugador por salario",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b>, <b>salario</b> y la <b>posición en el ranking salarial</b> de cada jugador (<code>ranking</code>). El jugador con mayor salario tendrá ranking 1. Usa una subconsulta correlacionada.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, j.salario, (SELECT COUNT(*) + 1 FROM jugadores j2 WHERE j2.salario > j.salario) AS ranking FROM jugadores j WHERE j.salario IS NOT NULL ORDER BY ranking;",
+    "puntos": 40,
+    "pista": "La subconsulta correlacionada cuenta cuántos jugadores tienen un salario mayor al jugador actual. Ese conteo + 1 es su posición en el ranking.",
+    "variaciones": [
+      {
+        "enunciado": "Para cada jugador (con estadísticas), muestra su <b>nombre</b>, <b>apellido1</b>, el <b>total de puntos</b> y su <b>posición en el ranking de anotadores</b> (<code>ranking_anotador</code>). Usa subconsulta correlacionada.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, tp.total_puntos, (SELECT COUNT(*) + 1 FROM (SELECT id_jugador, SUM(puntos) AS total FROM estadisticasPartido GROUP BY id_jugador) sub WHERE sub.total > tp.total_puntos) AS ranking_anotador FROM jugadores j INNER JOIN (SELECT id_jugador, SUM(puntos) AS total_puntos FROM estadisticasPartido GROUP BY id_jugador) tp ON j.id = tp.id_jugador ORDER BY ranking_anotador;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b>, el <b>número de victorias como local</b> (<code>victorias</code>) y su <b>posición en el ranking</b> de victorias locales (<code>ranking</code>). Usa subconsulta correlacionada.",
+        "query_solucion": "SELECT e.nombre, vl.victorias, (SELECT COUNT(*) + 1 FROM (SELECT id_equipoLocal, COUNT(*) AS v FROM partidos WHERE marcadorLocal > marcadorVisitante GROUP BY id_equipoLocal) sub WHERE sub.v > vl.victorias) AS ranking FROM equipos e INNER JOIN (SELECT id_equipoLocal, COUNT(*) AS victorias FROM partidos WHERE marcadorLocal > marcadorVisitante GROUP BY id_equipoLocal) vl ON e.id = vl.id_equipoLocal ORDER BY ranking;"
+      }
+    ]
+  },
+  {
+    "id": 216,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Combinación GROUP BY + HAVING + múltiples JOINs",
+    "titulo": "Conferencia con más jugadores internacionales",
+    "enunciado": "Muestra la <b>conferencia</b> y el <b>número de jugadores internacionales</b> (nacionalidad distinta de 'USA') de cada conferencia (<code>internacionales</code>). Muestra solo las conferencias con <b>más de 5 jugadores internacionales</b>.",
+    "bd": "nba",
+    "query_solucion": "SELECT e.conferencia, COUNT(j.id) AS internacionales FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo WHERE j.nacionalidad <> 'USA' GROUP BY e.conferencia HAVING COUNT(j.id) > 5;",
+    "puntos": 35,
+    "pista": "Une equipos y jugadores, filtra con WHERE la nacionalidad y luego agrupa por conferencia. HAVING filtra las conferencias resultantes.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <b>conferencia</b> y el <b>salario medio de sus jugadores</b> (<code>media_salarial</code>), redondeado a 2 decimales. Ordena de mayor a menor y muestra solo las conferencias cuya media supere los <b>3.000.000</b>.",
+        "query_solucion": "SELECT e.conferencia, ROUND(AVG(j.salario), 2) AS media_salarial FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo GROUP BY e.conferencia HAVING AVG(j.salario) > 3000000 ORDER BY media_salarial DESC;"
+      },
+      {
+        "enunciado": "Muestra la <b>conferencia</b> y el <b>número total de puntos anotados</b> por todos sus jugadores en todos sus partidos (<code>total_puntos</code>). Muestra solo conferencias con más de <b>1000 puntos</b>. Ordena de mayor a menor.",
+        "query_solucion": "SELECT e.conferencia, SUM(ep.puntos) AS total_puntos FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY e.conferencia HAVING SUM(ep.puntos) > 1000 ORDER BY total_puntos DESC;"
+      }
+    ]
+  },
+  {
+    "id": 217,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Análisis de partidos con múltiples JOINs",
+    "titulo": "Jugadores con doble-doble",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> del jugador y el <b>número de partidos</b> en los que ha conseguido un <b>doble-doble</b> (al menos 10 puntos Y al menos 10 rebotes en el mismo partido). Aliasa el conteo como <code>dobles_dobles</code>. Ordena de mayor a menor.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, COUNT(*) AS dobles_dobles FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador WHERE ep.puntos >= 10 AND ep.rebotes >= 10 GROUP BY j.id, j.nombre, j.apellido1 ORDER BY dobles_dobles DESC;",
+    "puntos": 35,
+    "pista": "Filtra con WHERE las filas donde puntos >= 10 AND rebotes >= 10, luego agrupa por jugador y cuenta cuántas veces ocurre.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>apellido1</b> del jugador y cuántas veces ha tenido al menos <b>5 tapones Y 5 robos</b> en el mismo partido (<code>actuaciones_defensivas</code>). Ordena de mayor a menor.",
+        "query_solucion": "SELECT j.nombre, j.apellido1, COUNT(*) AS actuaciones_defensivas FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador WHERE ep.tapones >= 5 AND ep.robos >= 5 GROUP BY j.id, j.nombre, j.apellido1 ORDER BY actuaciones_defensivas DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y cuántos <b>partidos con más de 120 puntos</b> ha anotado como local (<code>partidos_explosivos</code>). Ordena de mayor a menor.",
+        "query_solucion": "SELECT e.nombre AS equipo, COUNT(*) AS partidos_explosivos FROM equipos e INNER JOIN partidos p ON e.id = p.id_equipoLocal WHERE p.marcadorLocal > 120 GROUP BY e.id, e.nombre ORDER BY partidos_explosivos DESC;"
+      }
+    ]
+  },
+  {
+    "id": 218,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con ALL",
+    "titulo": "Jugador con más asistencias que todos los de otro equipo",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> y el <b>total de asistencias</b> de los jugadores cuyo total de asistencias sea <b>mayor que el total de asistencias de TODOS los jugadores del equipo con id = 2</b>. Usa ALL en la subconsulta.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1, SUM(ep.asistencias) AS total_asistencias FROM jugadores j INNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador GROUP BY j.id, j.nombre, j.apellido1 HAVING SUM(ep.asistencias) > ALL (SELECT SUM(ep2.asistencias) FROM jugadores j2 INNER JOIN estadisticasPartido ep2 ON j2.id = ep2.id_jugador WHERE j2.id_equipo = 2 GROUP BY j2.id);",
+    "puntos": 40,
+    "pista": "ALL compara con cada valor devuelto por la subconsulta. El resultado debe superar el mayor de los valores del equipo 2.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b> y su <b>masa salarial</b> total, pero solo de los equipos cuya masa salarial sea <b>mayor que la de TODOS los equipos de la conferencia 'West'</b>. Usa ALL.",
+        "query_solucion": "SELECT e.nombre, SUM(j.salario) AS masa_salarial FROM equipos e INNER JOIN jugadores j ON e.id = j.id_equipo GROUP BY e.id, e.nombre HAVING SUM(j.salario) > ALL (SELECT SUM(j2.salario) FROM equipos e2 INNER JOIN jugadores j2 ON e2.id = j2.id_equipo WHERE e2.conferencia = 'West' GROUP BY e2.id);"
+      },
+      {
+        "enunciado": "Muestra los partidos (id, fecha, marcadorLocal) donde el <b>marcadorLocal sea mayor que TODOS los marcadores locales</b> del equipo con <b>id = 3</b> como local. Usa ALL.",
+        "query_solucion": "SELECT id, fecha, marcadorLocal FROM partidos WHERE marcadorLocal > ALL (SELECT marcadorLocal FROM partidos WHERE id_equipoLocal = 3 AND marcadorLocal IS NOT NULL);"
+      }
+    ]
+  },
+  {
+    "id": 219,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Análisis complejo con múltiples subconsultas",
+    "titulo": "Rendimiento de jugadores en partidos ganados vs perdidos",
+    "enunciado": "Muestra el <b>nombre</b>, <b>apellido1</b> del jugador, su <b>media de puntos en partidos ganados</b> (<code>media_puntos_victoria</code>) y su <b>media de puntos en partidos perdidos</b> (<code>media_puntos_derrota</code>). Un partido es ganado si el equipo del jugador era local y marcadorLocal > marcadorVisitante, o era visitante y marcadorVisitante > marcadorLocal. Redondea a 1 decimal.",
+    "bd": "nba",
+    "query_solucion": "SELECT j.nombre, j.apellido1,\n  ROUND(AVG(CASE WHEN (p.id_equipoLocal = j.id_equipo AND p.marcadorLocal > p.marcadorVisitante) OR (p.id_equipoVisitante = j.id_equipo AND p.marcadorVisitante > p.marcadorLocal) THEN ep.puntos END), 1) AS media_puntos_victoria,\n  ROUND(AVG(CASE WHEN (p.id_equipoLocal = j.id_equipo AND p.marcadorLocal < p.marcadorVisitante) OR (p.id_equipoVisitante = j.id_equipo AND p.marcadorVisitante < p.marcadorLocal) THEN ep.puntos END), 1) AS media_puntos_derrota\nFROM jugadores j\nINNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador\nINNER JOIN partidos p ON ep.id_partido = p.id\nGROUP BY j.id, j.nombre, j.apellido1;",
+    "puntos": 40,
+    "pista": "Usa CASE WHEN dentro de AVG para calcular condicionalmente: incluye el valor de puntos solo cuando se cumple la condición (victoria o derrota).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del equipo</b>, su <b>media de puntos marcados como local</b> (<code>media_como_local</code>) y su <b>media de puntos marcados como visitante</b> (<code>media_como_visitante</code>). Redondea a 1 decimal.",
+        "query_solucion": "SELECT e.nombre AS equipo,\n  ROUND(AVG(CASE WHEN p.id_equipoLocal = e.id THEN p.marcadorLocal END), 1) AS media_como_local,\n  ROUND(AVG(CASE WHEN p.id_equipoVisitante = e.id THEN p.marcadorVisitante END), 1) AS media_como_visitante\nFROM equipos e\nINNER JOIN partidos p ON e.id = p.id_equipoLocal OR e.id = p.id_equipoVisitante\nGROUP BY e.id, e.nombre;"
+      },
+      {
+        "enunciado": "Para cada jugador, muestra su <b>nombre</b>, <b>apellido1</b>, la <b>suma de puntos en el primer tiempo</b> (partidos con id par, como simplificación) (<code>puntos_par</code>) y la <b>suma de puntos en el segundo tiempo</b> (partidos con id impar) (<code>puntos_impar</code>). Usa CASE WHEN.",
+        "query_solucion": "SELECT j.nombre, j.apellido1,\n  SUM(CASE WHEN ep.id_partido % 2 = 0 THEN ep.puntos ELSE 0 END) AS puntos_par,\n  SUM(CASE WHEN ep.id_partido % 2 <> 0 THEN ep.puntos ELSE 0 END) AS puntos_impar\nFROM jugadores j\nINNER JOIN estadisticasPartido ep ON j.id = ep.id_jugador\nGROUP BY j.id, j.nombre, j.apellido1;"
+      }
+    ]
+  },
+  {
+    "id": 220,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Crear Habilidades",
+    "enunciado": "Crea una tabla <b>Habilidades</b> con <code>id_habilidad</code> (INT, PK) y <code>nombre</code> (VARCHAR(50)).",
+    "bd": "mmorpg",
+    "query_solucion": "CREATE TABLE Habilidades (id_habilidad INT PRIMARY KEY, nombre VARCHAR(50));",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <b>Hechizos</b> con <code>id_hechizo</code> (INT, PK) y <code>nombre</code> (VARCHAR(50)).",
+        "query_solucion": "CREATE TABLE Hechizos (id_hechizo INT PRIMARY KEY, nombre VARCHAR(50));"
+      },
+      {
+        "enunciado": "Crea una tabla <b>Monturas</b> con <code>id_montura</code> (INT, PK) y <code>tipo</code> (VARCHAR(50)).",
+        "query_solucion": "CREATE TABLE Monturas (id_montura INT PRIMARY KEY, tipo VARCHAR(50));"
+      }
+    ]
+  },
+  {
+    "id": 221,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE FK",
+    "titulo": "Crear Misiones",
+    "enunciado": "Crea <b>Misiones</b> con <code>id_mision</code> (INT PK), <code>titulo</code> (VARCHAR(100)) y <code>id_jugador</code> (INT FK a Jugadores).",
+    "bd": "mmorpg",
+    "query_solucion": "CREATE TABLE Misiones (id_mision INT PRIMARY KEY, titulo VARCHAR(100), id_jugador INT, FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador));",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE FK",
+    "variaciones": [
+      {
+        "enunciado": "Crea <b>Títulos</b> con <code>id_titulo</code> (INT PK), <code>nombre</code> (VARCHAR(100)) y <code>id_jugador</code> (INT FK a Jugadores).",
+        "query_solucion": "CREATE TABLE Titulos (id_titulo INT PRIMARY KEY, nombre VARCHAR(100), id_jugador INT, FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador));"
+      },
+      {
+        "enunciado": "Crea <b>Mascotas</b> con <code>id_mascota</code> (INT PK), <code>nombre</code> (VARCHAR(100)) y <code>id_jugador</code> (INT FK a Jugadores).",
+        "query_solucion": "CREATE TABLE Mascotas (id_mascota INT PRIMARY KEY, nombre VARCHAR(100), id_jugador INT, FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador));"
+      }
+    ]
+  },
+  {
+    "id": 222,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD",
+    "titulo": "Añadir a Jugadores",
+    "enunciado": "Añade a <b>Jugadores</b> la columna <code>experiencia</code> (INT).",
+    "bd": "mmorpg",
+    "query_solucion": "ALTER TABLE Jugadores ADD COLUMN experiencia INT;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE ADD",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <b>Jugadores</b> la columna <code>oro</code> (INT).",
+        "query_solucion": "ALTER TABLE Jugadores ADD COLUMN oro INT;"
+      },
+      {
+        "enunciado": "Añade a <b>Jugadores</b> la columna <code>karma</code> (INT).",
+        "query_solucion": "ALTER TABLE Jugadores ADD COLUMN karma INT;"
+      }
+    ]
+  },
+  {
+    "id": 223,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE MODIFY",
+    "titulo": "Modificar Gremios",
+    "enunciado": "Modifica la columna <code>nombre</code> de <b>Gremios</b> a VARCHAR(150).",
+    "bd": "mmorpg",
+    "query_solucion": "ALTER TABLE Gremios MODIFY COLUMN nombre VARCHAR(150);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE MODIFY",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <code>nombre</code> de <b>Gremios</b> a VARCHAR(200).",
+        "query_solucion": "ALTER TABLE Gremios MODIFY COLUMN nombre VARCHAR(200);"
+      },
+      {
+        "enunciado": "Modifica la columna <code>nombre</code> de <b>Gremios</b> a VARCHAR(250).",
+        "query_solucion": "ALTER TABLE Gremios MODIFY COLUMN nombre VARCHAR(250);"
+      }
+    ]
+  },
+  {
+    "id": 224,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DROP",
+    "titulo": "Borrar de Objetos",
+    "enunciado": "Elimina la columna <code>daño</code> de la tabla <b>Objetos</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "ALTER TABLE Objetos DROP COLUMN daño;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE DROP",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <code>rareza</code> de la tabla <b>Objetos</b>.",
+        "query_solucion": "ALTER TABLE Objetos DROP COLUMN rareza;"
+      },
+      {
+        "enunciado": "Elimina la columna <code>nombre_objeto</code> de la tabla <b>Objetos</b>.",
+        "query_solucion": "ALTER TABLE Objetos DROP COLUMN nombre_objeto;"
+      }
+    ]
+  },
+  {
+    "id": 225,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE CONSTRAINT",
+    "titulo": "Restricción Objetos",
+    "enunciado": "Añade una restricción UNIQUE a <code>nombre_objeto</code> en <b>Objetos</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "ALTER TABLE Objetos ADD CONSTRAINT UNIQUE (nombre_objeto);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE CONSTRAINT",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción UNIQUE a <code>nickname</code> en <b>Jugadores</b>.",
+        "query_solucion": "ALTER TABLE Jugadores ADD CONSTRAINT UNIQUE (nickname);"
+      },
+      {
+        "enunciado": "Añade una restricción UNIQUE a <code>nombre</code> en <b>Gremios</b>.",
+        "query_solucion": "ALTER TABLE Gremios ADD CONSTRAINT UNIQUE (nombre);"
+      }
+    ]
+  },
+  {
+    "id": 226,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Borrar tabla inútil",
+    "enunciado": "Elimina por completo la tabla <b>Inventarios</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "DROP TABLE Inventarios;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de DROP TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Elimina por completo la tabla <b>Objetos</b>.",
+        "query_solucion": "DROP TABLE Objetos;"
+      },
+      {
+        "enunciado": "Elimina por completo la tabla <b>Gremios</b>.",
+        "query_solucion": "DROP TABLE Gremios;"
+      }
+    ]
+  },
+  {
+    "id": 227,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar Objetos",
+    "enunciado": "Renombra la tabla <b>Objetos</b> a <b>Items</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "RENAME TABLE Objetos TO Items;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de RENAME TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la tabla <b>Gremios</b> a <b>Guilds</b>.",
+        "query_solucion": "RENAME TABLE Gremios TO Guilds;"
+      },
+      {
+        "enunciado": "Renombra la tabla <b>Jugadores</b> a <b>Players</b>.",
+        "query_solucion": "RENAME TABLE Jugadores TO Players;"
+      }
+    ]
+  },
+  {
+    "id": 228,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Tabla Eventos",
+    "enunciado": "Crea <b>Eventos</b> con <code>id</code> (INT PK) y <code>recompensa</code> (INT DEFAULT 100).",
+    "bd": "mmorpg",
+    "query_solucion": "CREATE TABLE Eventos (id INT PRIMARY KEY, recompensa INT DEFAULT 100);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Crea <b>Torneos</b> con <code>id</code> (INT PK) y <code>premio</code> (INT DEFAULT 500).",
+        "query_solucion": "CREATE TABLE Torneos (id INT PRIMARY KEY, premio INT DEFAULT 500);"
+      },
+      {
+        "enunciado": "Crea <b>Subastas</b> con <code>id</code> (INT PK) y <code>precio_inicial</code> (INT DEFAULT 10).",
+        "query_solucion": "CREATE TABLE Subastas (id INT PRIMARY KEY, precio_inicial INT DEFAULT 10);"
+      }
+    ]
+  },
+  {
+    "id": 229,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DEFAULT",
+    "titulo": "Modificar Default",
+    "enunciado": "Modifica <b>Jugadores</b> para que <code>nivel</code> tenga DEFAULT 5.",
+    "bd": "mmorpg",
+    "query_solucion": "ALTER TABLE Jugadores ALTER COLUMN nivel SET DEFAULT 5;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE DEFAULT",
+    "variaciones": [
+      {
+        "enunciado": "Modifica <b>Gremios</b> para que <code>nivel_gremio</code> tenga DEFAULT 2.",
+        "query_solucion": "ALTER TABLE Gremios ALTER COLUMN nivel_gremio SET DEFAULT 2;"
+      },
+      {
+        "enunciado": "Modifica <b>Objetos</b> para que <code>daño</code> tenga DEFAULT 10.",
+        "query_solucion": "ALTER TABLE Objetos ALTER COLUMN daño SET DEFAULT 10;"
+      }
+    ]
+  },
+  {
+    "id": 230,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD FK",
+    "titulo": "Clave foránea extra",
+    "enunciado": "Añade a <b>Inventarios</b> la FK de <code>id_jugador</code> referenciando a <b>Jugadores</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "ALTER TABLE Inventarios ADD FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE ADD FK",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <b>Jugadores</b> la FK de <code>id_gremio</code> referenciando a <b>Gremios</b>.",
+        "query_solucion": "ALTER TABLE Jugadores ADD FOREIGN KEY (id_gremio) REFERENCES Gremios(id_gremio);"
+      },
+      {
+        "enunciado": "Añade a <b>Inventarios</b> la FK de <code>id_objeto</code> referenciando a <b>Objetos</b>.",
+        "query_solucion": "ALTER TABLE Inventarios ADD FOREIGN KEY (id_objeto) REFERENCES Objetos(id_objeto);"
+      }
+    ]
+  },
+  {
+    "id": 231,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Tabla Doble PK",
+    "enunciado": "Crea <b>Amistades</b> con <code>j1</code> (INT) y <code>j2</code> (INT), siendo ambas la PK.",
+    "bd": "mmorpg",
+    "query_solucion": "CREATE TABLE Amistades (j1 INT, j2 INT, PRIMARY KEY (j1, j2));",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Crea <b>Enemistades</b> con <code>p1</code> (INT) y <code>p2</code> (INT), siendo ambas la PK.",
+        "query_solucion": "CREATE TABLE Enemistades (p1 INT, p2 INT, PRIMARY KEY (p1, p2));"
+      },
+      {
+        "enunciado": "Crea <b>Grupos</b> con <code>lider</code> (INT) y <code>miembro</code> (INT), siendo ambas la PK.",
+        "query_solucion": "CREATE TABLE Grupos (lider INT, miembro INT, PRIMARY KEY (lider, miembro));"
+      }
+    ]
+  },
+  {
+    "id": 232,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE NOT NULL",
+    "titulo": "Tabla Regiones",
+    "enunciado": "Crea <b>Regiones</b> con <code>id</code> (INT PK) y <code>nombre</code> (VARCHAR(50) NOT NULL).",
+    "bd": "mmorpg",
+    "query_solucion": "CREATE TABLE Regiones (id INT PRIMARY KEY, nombre VARCHAR(50) NOT NULL);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE NOT NULL",
+    "variaciones": [
+      {
+        "enunciado": "Crea <b>Zonas</b> con <code>id</code> (INT PK) y <code>clima</code> (VARCHAR(50) NOT NULL).",
+        "query_solucion": "CREATE TABLE Zonas (id INT PRIMARY KEY, clima VARCHAR(50) NOT NULL);"
+      },
+      {
+        "enunciado": "Crea <b>Ciudades</b> con <code>id</code> (INT PK) y <code>alcalde</code> (VARCHAR(50) NOT NULL).",
+        "query_solucion": "CREATE TABLE Ciudades (id INT PRIMARY KEY, alcalde VARCHAR(50) NOT NULL);"
+      }
+    ]
+  },
+  {
+    "id": 233,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE RENAME COLUMN",
+    "titulo": "Renombrar Columna",
+    "enunciado": "En <b>Jugadores</b>, renombra <code>nickname</code> a <code>apodo</code>.",
+    "bd": "mmorpg",
+    "query_solucion": "ALTER TABLE Jugadores RENAME COLUMN nickname TO apodo;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE RENAME COLUMN",
+    "variaciones": [
+      {
+        "enunciado": "En <b>Objetos</b>, renombra <code>nombre_objeto</code> a <code>designacion</code>.",
+        "query_solucion": "ALTER TABLE Objetos RENAME COLUMN nombre_objeto TO designacion;"
+      },
+      {
+        "enunciado": "En <b>Gremios</b>, renombra <code>nivel_gremio</code> a <code>rango_gremio</code>.",
+        "query_solucion": "ALTER TABLE Gremios RENAME COLUMN nivel_gremio TO rango_gremio;"
+      }
+    ]
+  },
+  {
+    "id": 234,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP CONSTRAINT",
+    "titulo": "Eliminar PK",
+    "enunciado": "Elimina la Primary Key de la tabla <b>Inventarios</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "ALTER TABLE Inventarios DROP PRIMARY KEY;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de DROP CONSTRAINT",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la Primary Key de la tabla <b>Jugadores</b>.",
+        "query_solucion": "ALTER TABLE Jugadores DROP PRIMARY KEY;"
+      },
+      {
+        "enunciado": "Elimina la Primary Key de la tabla <b>Objetos</b>.",
+        "query_solucion": "ALTER TABLE Objetos DROP PRIMARY KEY;"
+      }
+    ]
+  },
+  {
+    "id": 235,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT *",
+    "titulo": "Todos los gremios",
+    "enunciado": "Muestra todos los datos de <b>Gremios</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Gremios;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción SELECT *",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de <b>Jugadores</b>.",
+        "query_solucion": "SELECT * FROM Jugadores;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de <b>Objetos</b>.",
+        "query_solucion": "SELECT * FROM Objetos;"
+      }
+    ]
+  },
+  {
+    "id": 236,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT columnas",
+    "titulo": "Nombres de jugadores",
+    "enunciado": "Obtén el <code>nickname</code> y <code>nivel</code> de todos los <b>Jugadores</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT nickname, nivel FROM Jugadores;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción SELECT columnas",
+    "variaciones": [
+      {
+        "enunciado": "Obtén el <code>nombre</code> y <code>nivel_gremio</code> de los <b>Gremios</b>.",
+        "query_solucion": "SELECT nombre, nivel_gremio FROM Gremios;"
+      },
+      {
+        "enunciado": "Obtén el <code>nombre_objeto</code> y <code>daño</code> de los <b>Objetos</b>.",
+        "query_solucion": "SELECT nombre_objeto, daño FROM Objetos;"
+      }
+    ]
+  },
+  {
+    "id": 237,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE >",
+    "titulo": "Jugadores nivel alto",
+    "enunciado": "Encuentra <b>Jugadores</b> con <code>nivel</code> mayor a 50.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Jugadores WHERE nivel > 50;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción WHERE >",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra <b>Gremios</b> con <code>nivel_gremio</code> mayor a 5.",
+        "query_solucion": "SELECT * FROM Gremios WHERE nivel_gremio > 5;"
+      },
+      {
+        "enunciado": "Encuentra <b>Objetos</b> con <code>daño</code> mayor a 100.",
+        "query_solucion": "SELECT * FROM Objetos WHERE daño > 100;"
+      }
+    ]
+  },
+  {
+    "id": 238,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE AND",
+    "titulo": "Objetos raros y fuertes",
+    "enunciado": "Busca <b>Objetos</b> con <code>rareza</code> 'Legendaria' y <code>daño</code> mayor a 100.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Objetos WHERE rareza = 'Legendaria' AND daño > 100;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción WHERE AND",
+    "variaciones": [
+      {
+        "enunciado": "Busca <b>Objetos</b> con <code>rareza</code> 'Rara' y <code>daño</code> mayor a 40.",
+        "query_solucion": "SELECT * FROM Objetos WHERE rareza = 'Rara' AND daño > 40;"
+      },
+      {
+        "enunciado": "Busca <b>Objetos</b> con <code>rareza</code> 'Épica' y <code>daño</code> mayor a 80.",
+        "query_solucion": "SELECT * FROM Objetos WHERE rareza = 'Épica' AND daño > 80;"
+      }
+    ]
+  },
+  {
+    "id": 239,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE OR",
+    "titulo": "Gremios extremos",
+    "enunciado": "Lista los <b>Gremios</b> de <code>nivel_gremio</code> 1 o superiores a 10.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Gremios WHERE nivel_gremio = 1 OR nivel_gremio > 10;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción WHERE OR",
+    "variaciones": [
+      {
+        "enunciado": "Lista los <b>Jugadores</b> de <code>nivel</code> 1 o superiores a 90.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE nivel = 1 OR nivel > 90;"
+      },
+      {
+        "enunciado": "Lista los <b>Objetos</b> con <code>daño</code> 0 o superior a 200.",
+        "query_solucion": "SELECT * FROM Objetos WHERE daño = 0 OR daño > 200;"
+      }
+    ]
+  },
+  {
+    "id": 240,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IN",
+    "titulo": "Rarezas específicas",
+    "enunciado": "Busca <b>Objetos</b> cuya <code>rareza</code> sea 'Común' o 'Rara'.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Objetos WHERE rareza IN ('Común', 'Rara');",
+    "puntos": 15,
+    "pista": "Revisa la instrucción IN",
+    "variaciones": [
+      {
+        "enunciado": "Busca <b>Objetos</b> cuya <code>rareza</code> sea 'Legendaria' o 'Mítica'.",
+        "query_solucion": "SELECT * FROM Objetos WHERE rareza IN ('Legendaria', 'Mítica');"
+      },
+      {
+        "enunciado": "Busca <b>Objetos</b> cuya <code>rareza</code> sea 'Épica' o 'Única'.",
+        "query_solucion": "SELECT * FROM Objetos WHERE rareza IN ('Épica', 'Única');"
+      }
+    ]
+  },
+  {
+    "id": 241,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "BETWEEN",
+    "titulo": "Nivel medio",
+    "enunciado": "Encuentra <b>Jugadores</b> con <code>nivel</code> entre 20 y 40.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Jugadores WHERE nivel BETWEEN 20 AND 40;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción BETWEEN",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra <b>Jugadores</b> con <code>nivel</code> entre 10 y 30.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE nivel BETWEEN 10 AND 30;"
+      },
+      {
+        "enunciado": "Encuentra <b>Jugadores</b> con <code>nivel</code> entre 50 y 70.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE nivel BETWEEN 50 AND 70;"
+      }
+    ]
+  },
+  {
+    "id": 242,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIKE",
+    "titulo": "Nombres que empiezan",
+    "enunciado": "Busca <b>Jugadores</b> cuyo <code>nickname</code> empiece por 'Shadow'.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Jugadores WHERE nickname LIKE 'Shadow%';",
+    "puntos": 15,
+    "pista": "Revisa la instrucción LIKE",
+    "variaciones": [
+      {
+        "enunciado": "Busca <b>Jugadores</b> cuyo <code>nickname</code> empiece por 'Dark'.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE nickname LIKE 'Dark%';"
+      },
+      {
+        "enunciado": "Busca <b>Gremios</b> cuyo <code>nombre</code> empiece por 'Los'.",
+        "query_solucion": "SELECT * FROM Gremios WHERE nombre LIKE 'Los%';"
+      }
+    ]
+  },
+  {
+    "id": 243,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL",
+    "titulo": "Sin gremio",
+    "enunciado": "Encuentra <b>Jugadores</b> cuyo <code>id_gremio</code> sea nulo.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Jugadores WHERE id_gremio IS NULL;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción IS NULL",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra <b>Objetos</b> cuya <code>rareza</code> sea nula.",
+        "query_solucion": "SELECT * FROM Objetos WHERE rareza IS NULL;"
+      },
+      {
+        "enunciado": "Encuentra <b>Jugadores</b> con <code>nickname</code> nulo (hipotético).",
+        "query_solucion": "SELECT * FROM Jugadores WHERE nickname IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 244,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY",
+    "titulo": "Ranking",
+    "enunciado": "Lista a los <b>Jugadores</b> ordenados por su <code>nivel</code> de mayor a menor.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Jugadores ORDER BY nivel DESC;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción ORDER BY",
+    "variaciones": [
+      {
+        "enunciado": "Lista los <b>Gremios</b> ordenados por su <code>nivel_gremio</code> de mayor a menor.",
+        "query_solucion": "SELECT * FROM Gremios ORDER BY nivel_gremio DESC;"
+      },
+      {
+        "enunciado": "Lista los <b>Objetos</b> ordenados por su <code>daño</code> de mayor a menor.",
+        "query_solucion": "SELECT * FROM Objetos ORDER BY daño DESC;"
+      }
+    ]
+  },
+  {
+    "id": 245,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Top 3",
+    "enunciado": "Muestra los 3 <b>Objetos</b> con más <code>daño</code>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Objetos ORDER BY daño DESC LIMIT 3;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción LIMIT",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los 5 <b>Jugadores</b> con más <code>nivel</code>.",
+        "query_solucion": "SELECT * FROM Jugadores ORDER BY nivel DESC LIMIT 5;"
+      },
+      {
+        "enunciado": "Muestra el <b>Gremio</b> de mayor <code>nivel_gremio</code>.",
+        "query_solucion": "SELECT * FROM Gremios ORDER BY nivel_gremio DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 246,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Tipos de rareza",
+    "enunciado": "Lista todas las <code>rareza</code> únicas de la tabla <b>Objetos</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT DISTINCT rareza FROM Objetos;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción DISTINCT",
+    "variaciones": [
+      {
+        "enunciado": "Lista los <code>id_gremio</code> únicos en <b>Jugadores</b>.",
+        "query_solucion": "SELECT DISTINCT id_gremio FROM Jugadores;"
+      },
+      {
+        "enunciado": "Lista las <code>cantidad</code> únicas en <b>Inventarios</b>.",
+        "query_solucion": "SELECT DISTINCT cantidad FROM Inventarios;"
+      }
+    ]
+  },
+  {
+    "id": 247,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "AS (Alias)",
+    "titulo": "Alias en columnas",
+    "enunciado": "Muestra el <code>nombre_objeto</code> como <b>Arma</b> de la tabla <b>Objetos</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT nombre_objeto AS Arma FROM Objetos;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción AS (Alias)",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code> como <b>Héroe</b> de la tabla <b>Jugadores</b>.",
+        "query_solucion": "SELECT nickname AS Héroe FROM Jugadores;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> como <b>Clan</b> de la tabla <b>Gremios</b>.",
+        "query_solucion": "SELECT nombre AS Clan FROM Gremios;"
+      }
+    ]
+  },
+  {
+    "id": 248,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones de texto",
+    "titulo": "Nombres en mayúscula",
+    "enunciado": "Muestra el <code>nickname</code> de los <b>Jugadores</b> en mayúsculas.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT UPPER(nickname) FROM Jugadores;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción Funciones de texto",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre</code> de los <b>Gremios</b> en minúsculas.",
+        "query_solucion": "SELECT LOWER(nombre) FROM Gremios;"
+      },
+      {
+        "enunciado": "Muestra la longitud (LENGTH) del <code>nombre_objeto</code> en <b>Objetos</b>.",
+        "query_solucion": "SELECT LENGTH(nombre_objeto) FROM Objetos;"
+      }
+    ]
+  },
+  {
+    "id": 249,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Aritmética",
+    "titulo": "Daño doble",
+    "enunciado": "Muestra el <code>nombre_objeto</code> y su <code>daño</code> multiplicado por 2.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT nombre_objeto, daño * 2 FROM Objetos;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción Aritmética",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre_objeto</code> y su <code>daño</code> sumando 50.",
+        "query_solucion": "SELECT nombre_objeto, daño + 50 FROM Objetos;"
+      },
+      {
+        "enunciado": "Muestra el <code>nickname</code> y el <code>nivel</code> dividido por 10.",
+        "query_solucion": "SELECT nickname, nivel / 10 FROM Jugadores;"
+      }
+    ]
+  },
+  {
+    "id": 250,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Contar jugadores",
+    "enunciado": "Cuenta el número total de <b>Jugadores</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT COUNT(*) FROM Jugadores;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta el número total de <b>Objetos</b>.",
+        "query_solucion": "SELECT COUNT(*) FROM Objetos;"
+      },
+      {
+        "enunciado": "Cuenta el número total de <b>Gremios</b>.",
+        "query_solucion": "SELECT COUNT(*) FROM Gremios;"
+      }
+    ]
+  },
+  {
+    "id": 251,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM",
+    "titulo": "Suma de niveles",
+    "enunciado": "Suma todos los <code>nivel</code> de los <b>Jugadores</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT SUM(nivel) FROM Jugadores;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Suma todas las <code>cantidad</code> en <b>Inventarios</b>.",
+        "query_solucion": "SELECT SUM(cantidad) FROM Inventarios;"
+      },
+      {
+        "enunciado": "Suma todo el <code>daño</code> de los <b>Objetos</b>.",
+        "query_solucion": "SELECT SUM(daño) FROM Objetos;"
+      }
+    ]
+  },
+  {
+    "id": 252,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG",
+    "titulo": "Media de daño",
+    "enunciado": "Calcula el <code>daño</code> medio de los <b>Objetos</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT AVG(daño) FROM Objetos;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Calcula el <code>nivel</code> medio de los <b>Jugadores</b>.",
+        "query_solucion": "SELECT AVG(nivel) FROM Jugadores;"
+      },
+      {
+        "enunciado": "Calcula el <code>nivel_gremio</code> medio de los <b>Gremios</b>.",
+        "query_solucion": "SELECT AVG(nivel_gremio) FROM Gremios;"
+      }
+    ]
+  },
+  {
+    "id": 253,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX / MIN",
+    "titulo": "Max / Min",
+    "enunciado": "Muestra el <code>daño</code> máximo de la tabla <b>Objetos</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT MAX(daño) FROM Objetos;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nivel</code> máximo de la tabla <b>Jugadores</b>.",
+        "query_solucion": "SELECT MAX(nivel) FROM Jugadores;"
+      },
+      {
+        "enunciado": "Muestra el <code>daño</code> mínimo de la tabla <b>Objetos</b>.",
+        "query_solucion": "SELECT MIN(daño) FROM Objetos;"
+      }
+    ]
+  },
+  {
+    "id": 254,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Jugadores por gremio",
+    "enunciado": "Muestra el <code>id_gremio</code> y cuántos jugadores tiene agrupando en <b>Jugadores</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT id_gremio, COUNT(*) FROM Jugadores GROUP BY id_gremio;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>rareza</code> y cuántos objetos tiene agrupando en <b>Objetos</b>.",
+        "query_solucion": "SELECT rareza, COUNT(*) FROM Objetos GROUP BY rareza;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_jugador</code> y cuántos objetos distintos tiene agrupando en <b>Inventarios</b>.",
+        "query_solucion": "SELECT id_jugador, COUNT(*) FROM Inventarios GROUP BY id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 255,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY AVG",
+    "titulo": "Media de nivel por gremio",
+    "enunciado": "Muestra el <code>id_gremio</code> y el <code>nivel</code> medio de sus jugadores.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT id_gremio, AVG(nivel) FROM Jugadores GROUP BY id_gremio;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>rareza</code> y el <code>daño</code> medio en <b>Objetos</b>.",
+        "query_solucion": "SELECT rareza, AVG(daño) FROM Objetos GROUP BY rareza;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_jugador</code> y la <code>cantidad</code> media en <b>Inventarios</b>.",
+        "query_solucion": "SELECT id_jugador, AVG(cantidad) FROM Inventarios GROUP BY id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 256,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Filtro en grupos",
+    "enunciado": "Muestra las <code>rareza</code> en <b>Objetos</b> que tienen más de 1 objeto.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT rareza, COUNT(*) FROM Objetos GROUP BY rareza HAVING COUNT(*) > 1;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>id_gremio</code> que tienen más de 2 <b>Jugadores</b>.",
+        "query_solucion": "SELECT id_gremio, COUNT(*) FROM Jugadores GROUP BY id_gremio HAVING COUNT(*) > 2;"
+      },
+      {
+        "enunciado": "Muestra los <code>id_jugador</code> en <b>Inventarios</b> con más de 3 objetos distintos.",
+        "query_solucion": "SELECT id_jugador, COUNT(*) FROM Inventarios GROUP BY id_jugador HAVING COUNT(*) > 3;"
+      }
+    ]
+  },
+  {
+    "id": 257,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "Jugador y su gremio",
+    "enunciado": "Muestra <code>nickname</code> del jugador y el <code>nombre</code> del gremio usando JOIN.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT J.nickname, G.nombre FROM Jugadores J INNER JOIN Gremios G ON J.id_gremio = G.id_gremio;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <code>nickname</code> del jugador y el <code>nivel_gremio</code> del gremio usando JOIN.",
+        "query_solucion": "SELECT J.nickname, G.nivel_gremio FROM Jugadores J INNER JOIN Gremios G ON J.id_gremio = G.id_gremio;"
+      },
+      {
+        "enunciado": "Muestra <code>nivel</code> del jugador y el <code>nombre</code> del gremio usando JOIN.",
+        "query_solucion": "SELECT J.nivel, G.nombre FROM Jugadores J INNER JOIN Gremios G ON J.id_gremio = G.id_gremio;"
+      }
+    ]
+  },
+  {
+    "id": 258,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN 2",
+    "titulo": "Inventario y Objeto",
+    "enunciado": "Muestra <code>id_jugador</code>, <code>cantidad</code> y el <code>nombre_objeto</code> usando JOIN.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT I.id_jugador, I.cantidad, O.nombre_objeto FROM Inventarios I INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <code>id_jugador</code> y el <code>daño</code> del objeto que posee.",
+        "query_solucion": "SELECT I.id_jugador, O.daño FROM Inventarios I INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;"
+      },
+      {
+        "enunciado": "Muestra <code>cantidad</code> y la <code>rareza</code> del objeto en inventario.",
+        "query_solucion": "SELECT I.cantidad, O.rareza FROM Inventarios I INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;"
+      }
+    ]
+  },
+  {
+    "id": 259,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN 3",
+    "titulo": "Jugador e Inventario",
+    "enunciado": "Muestra <code>nickname</code> y el <code>id_objeto</code> del inventario.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT J.nickname, I.id_objeto FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <code>nickname</code> y la <code>cantidad</code> que posee.",
+        "query_solucion": "SELECT J.nickname, I.cantidad FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador;"
+      },
+      {
+        "enunciado": "Muestra <code>nivel</code> del jugador y el <code>id_objeto</code> que posee.",
+        "query_solucion": "SELECT J.nivel, I.id_objeto FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 260,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN",
+    "titulo": "Todos los gremios",
+    "enunciado": "Muestra el <code>nombre</code> de todos los gremios y el <code>nickname</code> de sus jugadores (incluso gremios sin jugadores).",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT G.nombre, J.nickname FROM Gremios G LEFT JOIN Jugadores J ON G.id_gremio = J.id_gremio;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code> de todos los jugadores y el <code>nombre</code> de su gremio (incluso sin gremio).",
+        "query_solucion": "SELECT J.nickname, G.nombre FROM Jugadores J LEFT JOIN Gremios G ON J.id_gremio = G.id_gremio;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_objeto</code> y el <code>id_jugador</code> que lo posee (incluso si nadie lo tiene).",
+        "query_solucion": "SELECT O.nombre_objeto, I.id_jugador FROM Objetos O LEFT JOIN Inventarios I ON O.id_objeto = I.id_objeto;"
+      }
+    ]
+  },
+  {
+    "id": 261,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN + WHERE",
+    "titulo": "Filtro en JOIN",
+    "enunciado": "Muestra el <code>nickname</code> y <code>nombre</code> del gremio para los jugadores de nivel mayor a 20.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT J.nickname, G.nombre FROM Jugadores J INNER JOIN Gremios G ON J.id_gremio = G.id_gremio WHERE J.nivel > 20;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code> y <code>nombre</code> del gremio si el gremio es nivel 10.",
+        "query_solucion": "SELECT J.nickname, G.nombre FROM Jugadores J INNER JOIN Gremios G ON J.id_gremio = G.id_gremio WHERE G.nivel_gremio = 10;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_jugador</code> y <code>nombre_objeto</code> si el daño es mayor a 50.",
+        "query_solucion": "SELECT I.id_jugador, O.nombre_objeto FROM Inventarios I INNER JOIN Objetos O ON I.id_objeto = O.id_objeto WHERE O.daño > 50;"
+      }
+    ]
+  },
+  {
+    "id": 262,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN + ORDER",
+    "titulo": "Ordenación en JOIN",
+    "enunciado": "Muestra <code>nickname</code> y <code>nombre</code> del gremio, ordenado por el nivel del gremio descendente.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT J.nickname, G.nombre FROM Jugadores J INNER JOIN Gremios G ON J.id_gremio = G.id_gremio ORDER BY G.nivel_gremio DESC;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <code>nickname</code> y <code>nombre</code> del gremio, ordenado por el nivel del jugador ascendente.",
+        "query_solucion": "SELECT J.nickname, G.nombre FROM Jugadores J INNER JOIN Gremios G ON J.id_gremio = G.id_gremio ORDER BY J.nivel ASC;"
+      },
+      {
+        "enunciado": "Muestra <code>id_jugador</code> y <code>nombre_objeto</code> ordenado por daño descendente.",
+        "query_solucion": "SELECT I.id_jugador, O.nombre_objeto FROM Inventarios I INNER JOIN Objetos O ON I.id_objeto = O.id_objeto ORDER BY O.daño DESC;"
+      }
+    ]
+  },
+  {
+    "id": 263,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "CONCAT",
+    "titulo": "Combinar cadenas",
+    "enunciado": "Usa CONCAT para mostrar el texto 'Gremio [nombre]' de <b>Gremios</b>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT CONCAT('Gremio ', nombre) FROM Gremios;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Usa CONCAT para mostrar 'Lv. [nivel]' en <b>Jugadores</b>.",
+        "query_solucion": "SELECT CONCAT('Lv. ', nivel) FROM Jugadores;"
+      },
+      {
+        "enunciado": "Usa CONCAT para mostrar '[nombre_objeto] ([rareza])' en <b>Objetos</b>.",
+        "query_solucion": "SELECT CONCAT(nombre_objeto, ' (', rareza, ')') FROM Objetos;"
+      }
+    ]
+  },
+  {
+    "id": 264,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP + JOIN",
+    "titulo": "Jugadores por gremio con JOIN",
+    "enunciado": "Muestra el <code>nombre</code> del gremio y la cuenta de sus jugadores usando JOIN.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT G.nombre, COUNT(J.id_jugador) FROM Gremios G LEFT JOIN Jugadores J ON G.id_gremio = J.id_gremio GROUP BY G.id_gremio, G.nombre;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre_objeto</code> y la suma de cantidades en inventarios usando JOIN.",
+        "query_solucion": "SELECT O.nombre_objeto, SUM(I.cantidad) FROM Objetos O INNER JOIN Inventarios I ON O.id_objeto = I.id_objeto GROUP BY O.id_objeto, O.nombre_objeto;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_jugador</code> y la suma de daño de sus objetos usando JOIN.",
+        "query_solucion": "SELECT I.id_jugador, SUM(O.daño) FROM Inventarios I INNER JOIN Objetos O ON I.id_objeto = O.id_objeto GROUP BY I.id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 265,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN IS NULL",
+    "titulo": "Gremio fantasma",
+    "enunciado": "Muestra los <code>nombre</code> de Gremios que NO tienen ningún jugador.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT G.nombre FROM Gremios G LEFT JOIN Jugadores J ON G.id_gremio = J.id_gremio WHERE J.id_jugador IS NULL;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>nombre_objeto</code> que nadie tiene en el inventario.",
+        "query_solucion": "SELECT O.nombre_objeto FROM Objetos O LEFT JOIN Inventarios I ON O.id_objeto = I.id_objeto WHERE I.id_jugador IS NULL;"
+      },
+      {
+        "enunciado": "Muestra los <code>nickname</code> de Jugadores que NO tienen gremio (usando LEFT JOIN inverso o WHERE).",
+        "query_solucion": "SELECT J.nickname FROM Jugadores J LEFT JOIN Gremios G ON J.id_gremio = G.id_gremio WHERE G.id_gremio IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 266,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Multiple JOIN",
+    "titulo": "Inventario completo",
+    "enunciado": "Muestra el <code>nickname</code> del jugador, el <code>nombre_objeto</code> y la <code>cantidad</code> cruzando 3 tablas.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT J.nickname, O.nombre_objeto, I.cantidad FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code>, la <code>rareza</code> y la <code>cantidad</code> cruzando 3 tablas.",
+        "query_solucion": "SELECT J.nickname, O.rareza, I.cantidad FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;"
+      },
+      {
+        "enunciado": "Muestra el <code>nivel</code>, el <code>nombre_objeto</code> y el <code>daño</code> cruzando 3 tablas.",
+        "query_solucion": "SELECT J.nivel, O.nombre_objeto, O.daño FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;"
+      }
+    ]
+  },
+  {
+    "id": 267,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Multiple JOIN 2",
+    "titulo": "Gremio y Objetos",
+    "enunciado": "Muestra el <code>nombre</code> del gremio, <code>nickname</code> del jugador y <code>nombre_objeto</code>.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT G.nombre, J.nickname, O.nombre_objeto FROM Gremios G INNER JOIN Jugadores J ON G.id_gremio = J.id_gremio INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nivel_gremio</code>, <code>nickname</code> del jugador y <code>rareza</code>.",
+        "query_solucion": "SELECT G.nivel_gremio, J.nickname, O.rareza FROM Gremios G INNER JOIN Jugadores J ON G.id_gremio = J.id_gremio INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> del gremio, <code>nivel</code> del jugador y <code>daño</code>.",
+        "query_solucion": "SELECT G.nombre, J.nivel, O.daño FROM Gremios G INNER JOIN Jugadores J ON G.id_gremio = J.id_gremio INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto;"
+      }
+    ]
+  },
+  {
+    "id": 268,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subquery WHERE",
+    "titulo": "Supera la media",
+    "enunciado": "Muestra los <b>Jugadores</b> cuyo <code>nivel</code> es superior a la media de todos.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Jugadores WHERE nivel > (SELECT AVG(nivel) FROM Jugadores);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Objetos</b> cuyo <code>daño</code> es superior a la media de todos.",
+        "query_solucion": "SELECT * FROM Objetos WHERE daño > (SELECT AVG(daño) FROM Objetos);"
+      },
+      {
+        "enunciado": "Muestra los <b>Gremios</b> cuyo <code>nivel_gremio</code> es superior a la media de todos.",
+        "query_solucion": "SELECT * FROM Gremios WHERE nivel_gremio > (SELECT AVG(nivel_gremio) FROM Gremios);"
+      }
+    ]
+  },
+  {
+    "id": 269,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subquery IN",
+    "titulo": "Gremios de élite",
+    "enunciado": "Muestra los <b>Jugadores</b> que pertenecen a un Gremio de nivel mayor a 5 usando IN.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Jugadores WHERE id_gremio IN (SELECT id_gremio FROM Gremios WHERE nivel_gremio > 5);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Inventarios</b> de objetos cuya rareza es 'Legendaria' usando IN.",
+        "query_solucion": "SELECT * FROM Inventarios WHERE id_objeto IN (SELECT id_objeto FROM Objetos WHERE rareza = 'Legendaria');"
+      },
+      {
+        "enunciado": "Muestra los <b>Jugadores</b> que tienen objetos de daño mayor a 100 usando IN.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE id_jugador IN (SELECT id_jugador FROM Inventarios WHERE id_objeto IN (SELECT id_objeto FROM Objetos WHERE daño > 100));"
+      }
+    ]
+  },
+  {
+    "id": 270,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subquery NOT IN",
+    "titulo": "Objetos olvidados",
+    "enunciado": "Muestra los <b>Objetos</b> que no están en el inventario de nadie usando NOT IN.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Objetos WHERE id_objeto NOT IN (SELECT id_objeto FROM Inventarios);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Gremios</b> que no tienen ningún jugador usando NOT IN.",
+        "query_solucion": "SELECT * FROM Gremios WHERE id_gremio NOT IN (SELECT id_gremio FROM Jugadores WHERE id_gremio IS NOT NULL);"
+      },
+      {
+        "enunciado": "Muestra los <b>Jugadores</b> que no tienen ningún objeto usando NOT IN.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE id_jugador NOT IN (SELECT id_jugador FROM Inventarios);"
+      }
+    ]
+  },
+  {
+    "id": 271,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Correlated Subquery",
+    "titulo": "Máximo del gremio",
+    "enunciado": "Muestra el <b>Jugador</b> con el nivel más alto dentro de su respectivo gremio.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Jugadores J1 WHERE nivel = (SELECT MAX(nivel) FROM Jugadores J2 WHERE J1.id_gremio = J2.id_gremio);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>Objeto</b> con el daño más alto dentro de su rareza.",
+        "query_solucion": "SELECT * FROM Objetos O1 WHERE daño = (SELECT MAX(daño) FROM Objetos O2 WHERE O1.rareza = O2.rareza);"
+      },
+      {
+        "enunciado": "Muestra la mayor <b>cantidad</b> en inventario para cada id_jugador.",
+        "query_solucion": "SELECT * FROM Inventarios I1 WHERE cantidad = (SELECT MAX(cantidad) FROM Inventarios I2 WHERE I1.id_jugador = I2.id_jugador);"
+      }
+    ]
+  },
+  {
+    "id": 272,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP HAVING JOIN",
+    "titulo": "Gremio de alto nivel medio",
+    "enunciado": "Muestra el <code>nombre</code> de los gremios cuya media de nivel de sus jugadores es mayor a 20.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT G.nombre FROM Gremios G INNER JOIN Jugadores J ON G.id_gremio = J.id_gremio GROUP BY G.id_gremio, G.nombre HAVING AVG(J.nivel) > 20;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code> de los jugadores que tienen en total más de 5 objetos (sumando cantidad).",
+        "query_solucion": "SELECT J.nickname FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador GROUP BY J.id_jugador, J.nickname HAVING SUM(I.cantidad) > 5;"
+      },
+      {
+        "enunciado": "Muestra la <code>rareza</code> y la media de cantidades en inventario, solo si es mayor a 2.",
+        "query_solucion": "SELECT O.rareza FROM Objetos O INNER JOIN Inventarios I ON O.id_objeto = I.id_objeto GROUP BY O.rareza HAVING AVG(I.cantidad) > 2;"
+      }
+    ]
+  },
+  {
+    "id": 273,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Compleja 1",
+    "titulo": "Jugador legendario",
+    "enunciado": "Muestra el <code>nickname</code> de jugadores que poseen al menos un objeto 'Legendaria'.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT DISTINCT J.nickname FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto WHERE O.rareza = 'Legendaria';",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code> de jugadores que poseen objetos con daño > 50.",
+        "query_solucion": "SELECT DISTINCT J.nickname FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto WHERE O.daño > 50;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> del gremio que tiene jugadores con objetos 'Legendaria'.",
+        "query_solucion": "SELECT DISTINCT G.nombre FROM Gremios G INNER JOIN Jugadores J ON G.id_gremio = J.id_gremio INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto WHERE O.rareza = 'Legendaria';"
+      }
+    ]
+  },
+  {
+    "id": 274,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Compleja 2",
+    "titulo": "Total de daño de jugador",
+    "enunciado": "Muestra el <code>nickname</code> y la suma del <code>daño</code> total de todos sus objetos (cantidad * daño).",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT J.nickname, SUM(I.cantidad * O.daño) FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto GROUP BY J.id_jugador, J.nickname;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code> y el máximo <code>daño</code> que posee en el inventario.",
+        "query_solucion": "SELECT J.nickname, MAX(O.daño) FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto GROUP BY J.id_jugador, J.nickname;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> del gremio y la suma del <code>daño</code> total de todos sus miembros.",
+        "query_solucion": "SELECT G.nombre, SUM(I.cantidad * O.daño) FROM Gremios G INNER JOIN Jugadores J ON G.id_gremio = J.id_gremio INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto GROUP BY G.id_gremio, G.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 275,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subquery SELECT",
+    "titulo": "Contador en select",
+    "enunciado": "Muestra el <code>nombre</code> del gremio y una columna calculada con el total de jugadores (subquery en SELECT).",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT nombre, (SELECT COUNT(*) FROM Jugadores WHERE id_gremio = Gremios.id_gremio) AS num_jugadores FROM Gremios;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code> y una columna con su total de objetos distintos en inventario.",
+        "query_solucion": "SELECT nickname, (SELECT COUNT(*) FROM Inventarios WHERE id_jugador = Jugadores.id_jugador) AS num_objetos FROM Jugadores;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_objeto</code> y el total de jugadores que lo poseen.",
+        "query_solucion": "SELECT nombre_objeto, (SELECT COUNT(DISTINCT id_jugador) FROM Inventarios WHERE id_objeto = Objetos.id_objeto) AS poseedores FROM Objetos;"
+      }
+    ]
+  },
+  {
+    "id": 276,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "ALL / ANY",
+    "titulo": "Más fuerte que todos",
+    "enunciado": "Muestra los <b>Objetos</b> cuyo daño es mayor que el daño de todos los objetos 'Común'.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Objetos WHERE daño > ALL(SELECT daño FROM Objetos WHERE rareza = 'Común');",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Jugadores</b> cuyo nivel es mayor que el nivel de todos los del gremio 2.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE nivel > ALL(SELECT nivel FROM Jugadores WHERE id_gremio = 2);"
+      },
+      {
+        "enunciado": "Muestra los <b>Gremios</b> cuyo nivel_gremio es mayor que ANY (alguno) de los gremios sin jugadores.",
+        "query_solucion": "SELECT * FROM Gremios WHERE nivel_gremio > ANY(SELECT nivel_gremio FROM Gremios WHERE id_gremio NOT IN (SELECT id_gremio FROM Jugadores WHERE id_gremio IS NOT NULL));"
+      }
+    ]
+  },
+  {
+    "id": 277,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "EXISTS",
+    "titulo": "Gremio activo",
+    "enunciado": "Muestra los <b>Gremios</b> usando EXISTS que tengan al menos un jugador.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Gremios G WHERE EXISTS (SELECT 1 FROM Jugadores J WHERE J.id_gremio = G.id_gremio);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Objetos</b> usando EXISTS que estén en algún inventario.",
+        "query_solucion": "SELECT * FROM Objetos O WHERE EXISTS (SELECT 1 FROM Inventarios I WHERE I.id_objeto = O.id_objeto);"
+      },
+      {
+        "enunciado": "Muestra los <b>Jugadores</b> usando EXISTS que tengan al menos un objeto.",
+        "query_solucion": "SELECT * FROM Jugadores J WHERE EXISTS (SELECT 1 FROM Inventarios I WHERE I.id_jugador = J.id_jugador);"
+      }
+    ]
+  },
+  {
+    "id": 278,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT EXISTS",
+    "titulo": "Gremio muerto",
+    "enunciado": "Muestra los <b>Gremios</b> usando NOT EXISTS que no tengan jugadores.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT * FROM Gremios G WHERE NOT EXISTS (SELECT 1 FROM Jugadores J WHERE J.id_gremio = G.id_gremio);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Objetos</b> usando NOT EXISTS que nadie tenga.",
+        "query_solucion": "SELECT * FROM Objetos O WHERE NOT EXISTS (SELECT 1 FROM Inventarios I WHERE I.id_objeto = O.id_objeto);"
+      },
+      {
+        "enunciado": "Muestra los <b>Jugadores</b> usando NOT EXISTS que no tengan objetos.",
+        "query_solucion": "SELECT * FROM Jugadores J WHERE NOT EXISTS (SELECT 1 FROM Inventarios I WHERE I.id_jugador = J.id_jugador);"
+      }
+    ]
+  },
+  {
+    "id": 279,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Compleja 3",
+    "titulo": "Top Gremio y Objetos",
+    "enunciado": "Muestra el <code>nombre</code> del gremio con el jugador que tiene más objetos en total.",
+    "bd": "mmorpg",
+    "query_solucion": "SELECT G.nombre FROM Gremios G INNER JOIN Jugadores J ON G.id_gremio = J.id_gremio INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador GROUP BY G.id_gremio, G.nombre, J.id_jugador ORDER BY SUM(I.cantidad) DESC LIMIT 1;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nickname</code> del jugador que tiene el objeto de mayor daño.",
+        "query_solucion": "SELECT J.nickname FROM Jugadores J INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto ORDER BY O.daño DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra la <code>rareza</code> más común en los inventarios del gremio de más nivel.",
+        "query_solucion": "SELECT O.rareza FROM Gremios G INNER JOIN Jugadores J ON G.id_gremio = J.id_gremio INNER JOIN Inventarios I ON J.id_jugador = I.id_jugador INNER JOIN Objetos O ON I.id_objeto = O.id_objeto ORDER BY G.nivel_gremio DESC, O.rareza LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 280,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Crear Jefes",
+    "enunciado": "Crea una tabla <b>Jefes</b> con <code>id_jefe</code> (INT, PK) y <code>nombre</code> (VARCHAR(100)).",
+    "bd": "dungeon",
+    "query_solucion": "CREATE TABLE Jefes (id_jefe INT PRIMARY KEY, nombre VARCHAR(100));",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <b>Armas</b> con <code>id_arma</code> (INT, PK) y <code>tipo</code> (VARCHAR(100)).",
+        "query_solucion": "CREATE TABLE Armas (id_arma INT PRIMARY KEY, tipo VARCHAR(100));"
+      },
+      {
+        "enunciado": "Crea una tabla <b>Mascotas</b> con <code>id_mascota</code> (INT, PK) y <code>especie</code> (VARCHAR(100)).",
+        "query_solucion": "CREATE TABLE Mascotas (id_mascota INT PRIMARY KEY, especie VARCHAR(100));"
+      }
+    ]
+  },
+  {
+    "id": 281,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE FK",
+    "titulo": "Habilidades Crawler",
+    "enunciado": "Crea <b>Habilidades_Crawler</b> con <code>id_habilidad</code> (INT PK), <code>nombre</code> (VARCHAR(100)) y <code>id_crawler</code> (INT FK a Crawlers).",
+    "bd": "dungeon",
+    "query_solucion": "CREATE TABLE Habilidades_Crawler (id_habilidad INT PRIMARY KEY, nombre VARCHAR(100), id_crawler INT, FOREIGN KEY (id_crawler) REFERENCES Crawlers(id_crawler));",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE FK",
+    "variaciones": [
+      {
+        "enunciado": "Crea <b>Logros</b> con <code>id_logro</code> (INT PK), <code>titulo</code> (VARCHAR(100)) y <code>id_crawler</code> (INT FK a Crawlers).",
+        "query_solucion": "CREATE TABLE Logros (id_logro INT PRIMARY KEY, titulo VARCHAR(100), id_crawler INT, FOREIGN KEY (id_crawler) REFERENCES Crawlers(id_crawler));"
+      },
+      {
+        "enunciado": "Crea <b>Contratos</b> con <code>id_contrato</code> (INT PK), <code>condicion</code> (VARCHAR(100)) y <code>id_patrocinador</code> (INT FK a Patrocinadores).",
+        "query_solucion": "CREATE TABLE Contratos (id_contrato INT PRIMARY KEY, condicion VARCHAR(100), id_patrocinador INT, FOREIGN KEY (id_patrocinador) REFERENCES Patrocinadores(id_patrocinador));"
+      }
+    ]
+  },
+  {
+    "id": 282,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD",
+    "titulo": "Añadir a Crawlers",
+    "enunciado": "Añade a <b>Crawlers</b> la columna <code>vidas</code> (INT).",
+    "bd": "dungeon",
+    "query_solucion": "ALTER TABLE Crawlers ADD COLUMN vidas INT;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE ADD",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <b>Patrocinadores</b> la columna <code>reputacion</code> (INT).",
+        "query_solucion": "ALTER TABLE Patrocinadores ADD COLUMN reputacion INT;"
+      },
+      {
+        "enunciado": "Añade a <b>Niveles</b> la columna <code>dificultad</code> (INT).",
+        "query_solucion": "ALTER TABLE Niveles ADD COLUMN dificultad INT;"
+      }
+    ]
+  },
+  {
+    "id": 283,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE MODIFY",
+    "titulo": "Modificar Niveles",
+    "enunciado": "Modifica la columna <code>bioma</code> de <b>Niveles</b> a VARCHAR(200).",
+    "bd": "dungeon",
+    "query_solucion": "ALTER TABLE Niveles MODIFY COLUMN bioma VARCHAR(200);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE MODIFY",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <code>jefe_final</code> de <b>Niveles</b> a VARCHAR(150).",
+        "query_solucion": "ALTER TABLE Niveles MODIFY COLUMN jefe_final VARCHAR(150);"
+      },
+      {
+        "enunciado": "Modifica la columna <code>contenido</code> de <b>Cajas_Botin</b> a VARCHAR(250).",
+        "query_solucion": "ALTER TABLE Cajas_Botin MODIFY COLUMN contenido VARCHAR(250);"
+      }
+    ]
+  },
+  {
+    "id": 284,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DROP",
+    "titulo": "Borrar de Cajas",
+    "enunciado": "Elimina la columna <code>valor</code> de la tabla <b>Cajas_Botin</b>.",
+    "bd": "dungeon",
+    "query_solucion": "ALTER TABLE Cajas_Botin DROP COLUMN valor;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE DROP",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <code>contenido</code> de la tabla <b>Cajas_Botin</b>.",
+        "query_solucion": "ALTER TABLE Cajas_Botin DROP COLUMN contenido;"
+      },
+      {
+        "enunciado": "Elimina la columna <code>presupuesto</code> de la tabla <b>Patrocinadores</b>.",
+        "query_solucion": "ALTER TABLE Patrocinadores DROP COLUMN presupuesto;"
+      }
+    ]
+  },
+  {
+    "id": 285,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE CONSTRAINT",
+    "titulo": "Restricción Niveles",
+    "enunciado": "Añade una restricción UNIQUE a <code>numero_planta</code> en <b>Niveles</b>.",
+    "bd": "dungeon",
+    "query_solucion": "ALTER TABLE Niveles ADD CONSTRAINT UNIQUE (numero_planta);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE CONSTRAINT",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción UNIQUE a <code>nombre</code> en <b>Crawlers</b>.",
+        "query_solucion": "ALTER TABLE Crawlers ADD CONSTRAINT UNIQUE (nombre);"
+      },
+      {
+        "enunciado": "Añade una restricción UNIQUE a <code>nombre_raza</code> en <b>Patrocinadores</b>.",
+        "query_solucion": "ALTER TABLE Patrocinadores ADD CONSTRAINT UNIQUE (nombre_raza);"
+      }
+    ]
+  },
+  {
+    "id": 286,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Borrar tabla",
+    "enunciado": "Elimina por completo la tabla <b>Cajas_Botin</b>.",
+    "bd": "dungeon",
+    "query_solucion": "DROP TABLE Cajas_Botin;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de DROP TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Elimina por completo la tabla <b>Crawlers</b>.",
+        "query_solucion": "DROP TABLE Crawlers;"
+      },
+      {
+        "enunciado": "Elimina por completo la tabla <b>Patrocinadores</b>.",
+        "query_solucion": "DROP TABLE Patrocinadores;"
+      }
+    ]
+  },
+  {
+    "id": 287,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar",
+    "enunciado": "Renombra la tabla <b>Crawlers</b> a <b>Exploradores</b>.",
+    "bd": "dungeon",
+    "query_solucion": "RENAME TABLE Crawlers TO Exploradores;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de RENAME TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la tabla <b>Niveles</b> a <b>Pisos</b>.",
+        "query_solucion": "RENAME TABLE Niveles TO Pisos;"
+      },
+      {
+        "enunciado": "Renombra la tabla <b>Cajas_Botin</b> a <b>Lootboxes</b>.",
+        "query_solucion": "RENAME TABLE Cajas_Botin TO Lootboxes;"
+      }
+    ]
+  },
+  {
+    "id": 288,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE DEFAULT",
+    "titulo": "Tabla Visores",
+    "enunciado": "Crea <b>Visores</b> con <code>id</code> (INT PK) y <code>canal</code> (VARCHAR(50) DEFAULT 'General').",
+    "bd": "dungeon",
+    "query_solucion": "CREATE TABLE Visores (id INT PRIMARY KEY, canal VARCHAR(50) DEFAULT 'General');",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE DEFAULT",
+    "variaciones": [
+      {
+        "enunciado": "Crea <b>Apuestas</b> con <code>id</code> (INT PK) y <code>monto</code> (INT DEFAULT 100).",
+        "query_solucion": "CREATE TABLE Apuestas (id INT PRIMARY KEY, monto INT DEFAULT 100);"
+      },
+      {
+        "enunciado": "Crea <b>Trampas</b> con <code>id</code> (INT PK) y <code>daño</code> (INT DEFAULT 50).",
+        "query_solucion": "CREATE TABLE Trampas (id INT PRIMARY KEY, daño INT DEFAULT 50);"
+      }
+    ]
+  },
+  {
+    "id": 289,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DEFAULT",
+    "titulo": "Modificar Default",
+    "enunciado": "Modifica <b>Cajas_Botin</b> para que <code>valor</code> tenga DEFAULT 0.",
+    "bd": "dungeon",
+    "query_solucion": "ALTER TABLE Cajas_Botin ALTER COLUMN valor SET DEFAULT 0;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE DEFAULT",
+    "variaciones": [
+      {
+        "enunciado": "Modifica <b>Crawlers</b> para que <code>clase</code> tenga DEFAULT 'Novato'.",
+        "query_solucion": "ALTER TABLE Crawlers ALTER COLUMN clase SET DEFAULT 'Novato';"
+      },
+      {
+        "enunciado": "Modifica <b>Patrocinadores</b> para que <code>presupuesto</code> tenga DEFAULT 1000.",
+        "query_solucion": "ALTER TABLE Patrocinadores ALTER COLUMN presupuesto SET DEFAULT 1000;"
+      }
+    ]
+  },
+  {
+    "id": 290,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD FK",
+    "titulo": "Clave foránea extra",
+    "enunciado": "Añade a <b>Cajas_Botin</b> la FK de <code>id_crawler</code> referenciando a <b>Crawlers</b>.",
+    "bd": "dungeon",
+    "query_solucion": "ALTER TABLE Cajas_Botin ADD FOREIGN KEY (id_crawler) REFERENCES Crawlers(id_crawler);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE ADD FK",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <b>Crawlers</b> la FK de <code>id_nivel_actual</code> referenciando a <b>Niveles</b>.",
+        "query_solucion": "ALTER TABLE Crawlers ADD FOREIGN KEY (id_nivel_actual) REFERENCES Niveles(id_nivel);"
+      },
+      {
+        "enunciado": "Añade a <b>Cajas_Botin</b> la FK de <code>id_patrocinador</code> referenciando a <b>Patrocinadores</b>.",
+        "query_solucion": "ALTER TABLE Cajas_Botin ADD FOREIGN KEY (id_patrocinador) REFERENCES Patrocinadores(id_patrocinador);"
+      }
+    ]
+  },
+  {
+    "id": 291,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Tabla Doble PK",
+    "enunciado": "Crea <b>Alineaciones</b> con <code>c1</code> (INT) y <code>c2</code> (INT), siendo ambas la PK.",
+    "bd": "dungeon",
+    "query_solucion": "CREATE TABLE Alineaciones (c1 INT, c2 INT, PRIMARY KEY (c1, c2));",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE",
+    "variaciones": [
+      {
+        "enunciado": "Crea <b>Hostilidades</b> con <code>p1</code> (INT) y <code>p2</code> (INT), siendo ambas la PK.",
+        "query_solucion": "CREATE TABLE Hostilidades (p1 INT, p2 INT, PRIMARY KEY (p1, p2));"
+      },
+      {
+        "enunciado": "Crea <b>Registros_Nivel</b> con <code>nivel_id</code> (INT) y <code>crawler_id</code> (INT), siendo ambas la PK.",
+        "query_solucion": "CREATE TABLE Registros_Nivel (nivel_id INT, crawler_id INT, PRIMARY KEY (nivel_id, crawler_id));"
+      }
+    ]
+  },
+  {
+    "id": 292,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE NOT NULL",
+    "titulo": "Tabla Gremios Crawler",
+    "enunciado": "Crea <b>Facciones</b> con <code>id</code> (INT PK) y <code>nombre</code> (VARCHAR(50) NOT NULL).",
+    "bd": "dungeon",
+    "query_solucion": "CREATE TABLE Facciones (id INT PRIMARY KEY, nombre VARCHAR(50) NOT NULL);",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de CREATE TABLE NOT NULL",
+    "variaciones": [
+      {
+        "enunciado": "Crea <b>Clanes</b> con <code>id</code> (INT PK) y <code>lider</code> (VARCHAR(50) NOT NULL).",
+        "query_solucion": "CREATE TABLE Clanes (id INT PRIMARY KEY, lider VARCHAR(50) NOT NULL);"
+      },
+      {
+        "enunciado": "Crea <b>Sectas</b> con <code>id</code> (INT PK) y <code>dios</code> (VARCHAR(50) NOT NULL).",
+        "query_solucion": "CREATE TABLE Sectas (id INT PRIMARY KEY, dios VARCHAR(50) NOT NULL);"
+      }
+    ]
+  },
+  {
+    "id": 293,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE RENAME COLUMN",
+    "titulo": "Renombrar Columna",
+    "enunciado": "En <b>Crawlers</b>, renombra <code>nombre</code> a <code>alias</code>.",
+    "bd": "dungeon",
+    "query_solucion": "ALTER TABLE Crawlers RENAME COLUMN nombre TO alias;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de ALTER TABLE RENAME COLUMN",
+    "variaciones": [
+      {
+        "enunciado": "En <b>Niveles</b>, renombra <code>numero_planta</code> a <code>piso</code>.",
+        "query_solucion": "ALTER TABLE Niveles RENAME COLUMN numero_planta TO piso;"
+      },
+      {
+        "enunciado": "En <b>Patrocinadores</b>, renombra <code>nombre_raza</code> a <code>especie</code>.",
+        "query_solucion": "ALTER TABLE Patrocinadores RENAME COLUMN nombre_raza TO especie;"
+      }
+    ]
+  },
+  {
+    "id": 294,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP CONSTRAINT",
+    "titulo": "Eliminar PK",
+    "enunciado": "Elimina la Primary Key de la tabla <b>Cajas_Botin</b>.",
+    "bd": "dungeon",
+    "query_solucion": "ALTER TABLE Cajas_Botin DROP PRIMARY KEY;",
+    "puntos": 15,
+    "pista": "Revisa la sintaxis de DROP CONSTRAINT",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la Primary Key de la tabla <b>Crawlers</b>.",
+        "query_solucion": "ALTER TABLE Crawlers DROP PRIMARY KEY;"
+      },
+      {
+        "enunciado": "Elimina la Primary Key de la tabla <b>Niveles</b>.",
+        "query_solucion": "ALTER TABLE Niveles DROP PRIMARY KEY;"
+      }
+    ]
+  },
+  {
+    "id": 295,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT *",
+    "titulo": "Todos los crawlers",
+    "enunciado": "Muestra todos los datos de <b>Crawlers</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Crawlers;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción SELECT *",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de <b>Niveles</b>.",
+        "query_solucion": "SELECT * FROM Niveles;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de <b>Patrocinadores</b>.",
+        "query_solucion": "SELECT * FROM Patrocinadores;"
+      }
+    ]
+  },
+  {
+    "id": 296,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT columnas",
+    "titulo": "Clases de crawlers",
+    "enunciado": "Obtén el <code>nombre</code> y <code>clase</code> de todos los <b>Crawlers</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT nombre, clase FROM Crawlers;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción SELECT columnas",
+    "variaciones": [
+      {
+        "enunciado": "Obtén el <code>bioma</code> y <code>jefe_final</code> de los <b>Niveles</b>.",
+        "query_solucion": "SELECT bioma, jefe_final FROM Niveles;"
+      },
+      {
+        "enunciado": "Obtén el <code>contenido</code> y <code>valor</code> de las <b>Cajas_Botin</b>.",
+        "query_solucion": "SELECT contenido, valor FROM Cajas_Botin;"
+      }
+    ]
+  },
+  {
+    "id": 297,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE >",
+    "titulo": "Plantas profundas",
+    "enunciado": "Encuentra <b>Niveles</b> con <code>numero_planta</code> mayor a 10.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Niveles WHERE numero_planta > 10;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción WHERE >",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra <b>Patrocinadores</b> con <code>presupuesto</code> mayor a 5000.",
+        "query_solucion": "SELECT * FROM Patrocinadores WHERE presupuesto > 5000;"
+      },
+      {
+        "enunciado": "Encuentra <b>Cajas_Botin</b> con <code>valor</code> mayor a 1000.",
+        "query_solucion": "SELECT * FROM Cajas_Botin WHERE valor > 1000;"
+      }
+    ]
+  },
+  {
+    "id": 298,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE AND",
+    "titulo": "Cajas ricas",
+    "enunciado": "Busca <b>Cajas_Botin</b> con <code>id_crawler</code> = 1 y <code>valor</code> mayor a 500.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Cajas_Botin WHERE id_crawler = 1 AND valor > 500;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción WHERE AND",
+    "variaciones": [
+      {
+        "enunciado": "Busca <b>Niveles</b> con <code>numero_planta</code> mayor a 5 y <code>bioma</code> = 'Volcán'.",
+        "query_solucion": "SELECT * FROM Niveles WHERE numero_planta > 5 AND bioma = 'Volcán';"
+      },
+      {
+        "enunciado": "Busca <b>Crawlers</b> con <code>clase</code> = 'Mago' y <code>id_nivel_actual</code> mayor a 3.",
+        "query_solucion": "SELECT * FROM Crawlers WHERE clase = 'Mago' AND id_nivel_actual > 3;"
+      }
+    ]
+  },
+  {
+    "id": 299,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE OR",
+    "titulo": "Clases o niveles",
+    "enunciado": "Lista los <b>Crawlers</b> que sean de <code>clase</code> 'Guerrero' o 'Pícaro'.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Crawlers WHERE clase = 'Guerrero' OR clase = 'Pícaro';",
+    "puntos": 15,
+    "pista": "Revisa la instrucción WHERE OR",
+    "variaciones": [
+      {
+        "enunciado": "Lista los <b>Niveles</b> que tengan <code>numero_planta</code> 1 o superior a 50.",
+        "query_solucion": "SELECT * FROM Niveles WHERE numero_planta = 1 OR numero_planta > 50;"
+      },
+      {
+        "enunciado": "Lista las <b>Cajas_Botin</b> con <code>valor</code> 0 o superior a 5000.",
+        "query_solucion": "SELECT * FROM Cajas_Botin WHERE valor = 0 OR valor > 5000;"
+      }
+    ]
+  },
+  {
+    "id": 300,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IN",
+    "titulo": "Biomas específicos",
+    "enunciado": "Busca <b>Niveles</b> cuyo <code>bioma</code> sea 'Desierto' o 'Océano'.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Niveles WHERE bioma IN ('Desierto', 'Océano');",
+    "puntos": 15,
+    "pista": "Revisa la instrucción IN",
+    "variaciones": [
+      {
+        "enunciado": "Busca <b>Crawlers</b> cuya <code>clase</code> sea 'Clérigo' o 'Paladín'.",
+        "query_solucion": "SELECT * FROM Crawlers WHERE clase IN ('Clérigo', 'Paladín');"
+      },
+      {
+        "enunciado": "Busca <b>Patrocinadores</b> cuya <code>nombre_raza</code> sea 'Zeta-Reticulanos' o 'Pleyadianos'.",
+        "query_solucion": "SELECT * FROM Patrocinadores WHERE nombre_raza IN ('Zeta-Reticulanos', 'Pleyadianos');"
+      }
+    ]
+  },
+  {
+    "id": 301,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "BETWEEN",
+    "titulo": "Presupuesto medio",
+    "enunciado": "Encuentra <b>Patrocinadores</b> con <code>presupuesto</code> entre 1000 y 5000.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Patrocinadores WHERE presupuesto BETWEEN 1000 AND 5000;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción BETWEEN",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra <b>Cajas_Botin</b> con <code>valor</code> entre 100 y 500.",
+        "query_solucion": "SELECT * FROM Cajas_Botin WHERE valor BETWEEN 100 AND 500;"
+      },
+      {
+        "enunciado": "Encuentra <b>Niveles</b> con <code>numero_planta</code> entre 10 y 20.",
+        "query_solucion": "SELECT * FROM Niveles WHERE numero_planta BETWEEN 10 AND 20;"
+      }
+    ]
+  },
+  {
+    "id": 302,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIKE",
+    "titulo": "Nombres que empiezan",
+    "enunciado": "Busca <b>Crawlers</b> cuyo <code>nombre</code> empiece por 'Dungeon'.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Crawlers WHERE nombre LIKE 'Dungeon%';",
+    "puntos": 15,
+    "pista": "Revisa la instrucción LIKE",
+    "variaciones": [
+      {
+        "enunciado": "Busca <b>Niveles</b> cuyo <code>jefe_final</code> empiece por 'Reina'.",
+        "query_solucion": "SELECT * FROM Niveles WHERE jefe_final LIKE 'Reina%';"
+      },
+      {
+        "enunciado": "Busca <b>Patrocinadores</b> cuyo <code>nombre_raza</code> termine en 'anos'.",
+        "query_solucion": "SELECT * FROM Patrocinadores WHERE nombre_raza LIKE '%anos';"
+      }
+    ]
+  },
+  {
+    "id": 303,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL",
+    "titulo": "Crawlers perdidos",
+    "enunciado": "Encuentra <b>Crawlers</b> cuyo <code>id_nivel_actual</code> sea nulo.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Crawlers WHERE id_nivel_actual IS NULL;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción IS NULL",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra <b>Cajas_Botin</b> cuyo <code>id_patrocinador</code> sea nulo.",
+        "query_solucion": "SELECT * FROM Cajas_Botin WHERE id_patrocinador IS NULL;"
+      },
+      {
+        "enunciado": "Encuentra <b>Niveles</b> con <code>jefe_final</code> nulo.",
+        "query_solucion": "SELECT * FROM Niveles WHERE jefe_final IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 304,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY",
+    "titulo": "Ranking",
+    "enunciado": "Lista a las <b>Cajas_Botin</b> ordenadas por su <code>valor</code> de mayor a menor.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Cajas_Botin ORDER BY valor DESC;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción ORDER BY",
+    "variaciones": [
+      {
+        "enunciado": "Lista los <b>Niveles</b> ordenados por <code>numero_planta</code> de menor a mayor.",
+        "query_solucion": "SELECT * FROM Niveles ORDER BY numero_planta ASC;"
+      },
+      {
+        "enunciado": "Lista los <b>Patrocinadores</b> ordenados por <code>presupuesto</code> DESC.",
+        "query_solucion": "SELECT * FROM Patrocinadores ORDER BY presupuesto DESC;"
+      }
+    ]
+  },
+  {
+    "id": 305,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Top 3",
+    "enunciado": "Muestra las 3 <b>Cajas_Botin</b> con más <code>valor</code>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Cajas_Botin ORDER BY valor DESC LIMIT 3;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción LIMIT",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los 5 <b>Patrocinadores</b> con más <code>presupuesto</code>.",
+        "query_solucion": "SELECT * FROM Patrocinadores ORDER BY presupuesto DESC LIMIT 5;"
+      },
+      {
+        "enunciado": "Muestra el <b>Nivel</b> más profundo (mayor <code>numero_planta</code>).",
+        "query_solucion": "SELECT * FROM Niveles ORDER BY numero_planta DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 306,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Tipos de clase",
+    "enunciado": "Lista todas las <code>clase</code> únicas de la tabla <b>Crawlers</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT DISTINCT clase FROM Crawlers;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción DISTINCT",
+    "variaciones": [
+      {
+        "enunciado": "Lista los <code>bioma</code> únicos en <b>Niveles</b>.",
+        "query_solucion": "SELECT DISTINCT bioma FROM Niveles;"
+      },
+      {
+        "enunciado": "Lista los <code>id_patrocinador</code> únicos en <b>Cajas_Botin</b>.",
+        "query_solucion": "SELECT DISTINCT id_patrocinador FROM Cajas_Botin;"
+      }
+    ]
+  },
+  {
+    "id": 307,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "AS (Alias)",
+    "titulo": "Alias en columnas",
+    "enunciado": "Muestra el <code>nombre_raza</code> como <b>Aliens</b> de la tabla <b>Patrocinadores</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT nombre_raza AS Aliens FROM Patrocinadores;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción AS (Alias)",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre</code> como <b>Aventurero</b> de la tabla <b>Crawlers</b>.",
+        "query_solucion": "SELECT nombre AS Aventurero FROM Crawlers;"
+      },
+      {
+        "enunciado": "Muestra el <code>bioma</code> como <b>Entorno</b> de la tabla <b>Niveles</b>.",
+        "query_solucion": "SELECT bioma AS Entorno FROM Niveles;"
+      }
+    ]
+  },
+  {
+    "id": 308,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones de texto",
+    "titulo": "Jefes en mayúscula",
+    "enunciado": "Muestra el <code>jefe_final</code> de los <b>Niveles</b> en mayúsculas.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT UPPER(jefe_final) FROM Niveles;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción Funciones de texto",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre</code> de los <b>Crawlers</b> en minúsculas.",
+        "query_solucion": "SELECT LOWER(nombre) FROM Crawlers;"
+      },
+      {
+        "enunciado": "Muestra la longitud (LENGTH) del <code>contenido</code> en <b>Cajas_Botin</b>.",
+        "query_solucion": "SELECT LENGTH(contenido) FROM Cajas_Botin;"
+      }
+    ]
+  },
+  {
+    "id": 309,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Aritmética",
+    "titulo": "Presupuesto extra",
+    "enunciado": "Muestra la <code>nombre_raza</code> y su <code>presupuesto</code> multiplicado por 2.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT nombre_raza, presupuesto * 2 FROM Patrocinadores;",
+    "puntos": 15,
+    "pista": "Revisa la instrucción Aritmética",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>contenido</code> y su <code>valor</code> sumando 100.",
+        "query_solucion": "SELECT contenido, valor + 100 FROM Cajas_Botin;"
+      },
+      {
+        "enunciado": "Muestra el <code>numero_planta</code> de los Niveles restando 1.",
+        "query_solucion": "SELECT bioma, numero_planta - 1 FROM Niveles;"
+      }
+    ]
+  },
+  {
+    "id": 310,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Contar crawlers",
+    "enunciado": "Cuenta el número total de <b>Crawlers</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT COUNT(*) FROM Crawlers;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta el número total de <b>Cajas_Botin</b>.",
+        "query_solucion": "SELECT COUNT(*) FROM Cajas_Botin;"
+      },
+      {
+        "enunciado": "Cuenta el número total de <b>Niveles</b>.",
+        "query_solucion": "SELECT COUNT(*) FROM Niveles;"
+      }
+    ]
+  },
+  {
+    "id": 311,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM",
+    "titulo": "Suma de valores",
+    "enunciado": "Suma todos los <code>valor</code> de las <b>Cajas_Botin</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT SUM(valor) FROM Cajas_Botin;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Suma todos los <code>presupuesto</code> de <b>Patrocinadores</b>.",
+        "query_solucion": "SELECT SUM(presupuesto) FROM Patrocinadores;"
+      },
+      {
+        "enunciado": "Suma todas las <code>numero_planta</code> de <b>Niveles</b>.",
+        "query_solucion": "SELECT SUM(numero_planta) FROM Niveles;"
+      }
+    ]
+  },
+  {
+    "id": 312,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG",
+    "titulo": "Media de presupuesto",
+    "enunciado": "Calcula el <code>presupuesto</code> medio de los <b>Patrocinadores</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT AVG(presupuesto) FROM Patrocinadores;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Calcula el <code>valor</code> medio de las <b>Cajas_Botin</b>.",
+        "query_solucion": "SELECT AVG(valor) FROM Cajas_Botin;"
+      },
+      {
+        "enunciado": "Calcula la media de <code>numero_planta</code> en <b>Niveles</b>.",
+        "query_solucion": "SELECT AVG(numero_planta) FROM Niveles;"
+      }
+    ]
+  },
+  {
+    "id": 313,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX / MIN",
+    "titulo": "Max / Min",
+    "enunciado": "Muestra el <code>valor</code> máximo de la tabla <b>Cajas_Botin</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT MAX(valor) FROM Cajas_Botin;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>presupuesto</code> máximo de <b>Patrocinadores</b>.",
+        "query_solucion": "SELECT MAX(presupuesto) FROM Patrocinadores;"
+      },
+      {
+        "enunciado": "Muestra el <code>numero_planta</code> mínimo de <b>Niveles</b>.",
+        "query_solucion": "SELECT MIN(numero_planta) FROM Niveles;"
+      }
+    ]
+  },
+  {
+    "id": 314,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Cajas por crawler",
+    "enunciado": "Muestra el <code>id_crawler</code> y cuántas cajas tiene agrupando en <b>Cajas_Botin</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT id_crawler, COUNT(*) FROM Cajas_Botin GROUP BY id_crawler;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>id_patrocinador</code> y cuántas cajas ha dado en <b>Cajas_Botin</b>.",
+        "query_solucion": "SELECT id_patrocinador, COUNT(*) FROM Cajas_Botin GROUP BY id_patrocinador;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_nivel_actual</code> y cuántos crawlers hay agrupando en <b>Crawlers</b>.",
+        "query_solucion": "SELECT id_nivel_actual, COUNT(*) FROM Crawlers GROUP BY id_nivel_actual;"
+      }
+    ]
+  },
+  {
+    "id": 315,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY AVG",
+    "titulo": "Media de valor por patrocinador",
+    "enunciado": "Muestra el <code>id_patrocinador</code> y el <code>valor</code> medio de sus cajas.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT id_patrocinador, AVG(valor) FROM Cajas_Botin GROUP BY id_patrocinador;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>clase</code> y el <code>id_nivel_actual</code> medio en <b>Crawlers</b>.",
+        "query_solucion": "SELECT clase, AVG(id_nivel_actual) FROM Crawlers GROUP BY clase;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_crawler</code> y el <code>valor</code> medio de las cajas que posee.",
+        "query_solucion": "SELECT id_crawler, AVG(valor) FROM Cajas_Botin GROUP BY id_crawler;"
+      }
+    ]
+  },
+  {
+    "id": 316,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Filtro en grupos",
+    "enunciado": "Muestra los <code>id_crawler</code> en <b>Cajas_Botin</b> que tienen más de 2 cajas.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT id_crawler, COUNT(*) FROM Cajas_Botin GROUP BY id_crawler HAVING COUNT(*) > 2;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las <code>clase</code> en <b>Crawlers</b> con más de 1 integrante.",
+        "query_solucion": "SELECT clase, COUNT(*) FROM Crawlers GROUP BY clase HAVING COUNT(*) > 1;"
+      },
+      {
+        "enunciado": "Muestra los <code>id_patrocinador</code> cuyas cajas sumen un valor mayor a 2000.",
+        "query_solucion": "SELECT id_patrocinador, SUM(valor) FROM Cajas_Botin GROUP BY id_patrocinador HAVING SUM(valor) > 2000;"
+      }
+    ]
+  },
+  {
+    "id": 317,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "Crawler y su nivel",
+    "enunciado": "Muestra <code>nombre</code> del crawler y el <code>bioma</code> del nivel usando JOIN.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT C.nombre, N.bioma FROM Crawlers C INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <code>nombre</code> del crawler y el <code>jefe_final</code> del nivel usando JOIN.",
+        "query_solucion": "SELECT C.nombre, N.jefe_final FROM Crawlers C INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel;"
+      },
+      {
+        "enunciado": "Muestra <code>clase</code> del crawler y el <code>numero_planta</code> del nivel usando JOIN.",
+        "query_solucion": "SELECT C.clase, N.numero_planta FROM Crawlers C INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel;"
+      }
+    ]
+  },
+  {
+    "id": 318,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN 2",
+    "titulo": "Caja y Crawler",
+    "enunciado": "Muestra <code>contenido</code> de la caja y el <code>nombre</code> del crawler usando JOIN.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT B.contenido, C.nombre FROM Cajas_Botin B INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <code>valor</code> de la caja y la <code>clase</code> del crawler usando JOIN.",
+        "query_solucion": "SELECT B.valor, C.clase FROM Cajas_Botin B INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler;"
+      },
+      {
+        "enunciado": "Muestra <code>id_caja</code> y el <code>nombre</code> del crawler usando JOIN.",
+        "query_solucion": "SELECT B.id_caja, C.nombre FROM Cajas_Botin B INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler;"
+      }
+    ]
+  },
+  {
+    "id": 319,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN 3",
+    "titulo": "Caja y Patrocinador",
+    "enunciado": "Muestra <code>contenido</code> de la caja y la <code>nombre_raza</code> del patrocinador.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT B.contenido, P.nombre_raza FROM Cajas_Botin B INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <code>valor</code> de la caja y el <code>presupuesto</code> del patrocinador.",
+        "query_solucion": "SELECT B.valor, P.presupuesto FROM Cajas_Botin B INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador;"
+      },
+      {
+        "enunciado": "Muestra <code>id_caja</code> y la <code>nombre_raza</code> del patrocinador.",
+        "query_solucion": "SELECT B.id_caja, P.nombre_raza FROM Cajas_Botin B INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador;"
+      }
+    ]
+  },
+  {
+    "id": 320,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN",
+    "titulo": "Todos los niveles",
+    "enunciado": "Muestra el <code>bioma</code> de todos los niveles y el <code>nombre</code> de los crawlers allí (incluso niveles vacíos).",
+    "bd": "dungeon",
+    "query_solucion": "SELECT N.bioma, C.nombre FROM Niveles N LEFT JOIN Crawlers C ON N.id_nivel = C.id_nivel_actual;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>nombre_raza</code> de patrocinadores y el <code>contenido</code> de sus cajas (incluso si no han dado cajas).",
+        "query_solucion": "SELECT P.nombre_raza, B.contenido FROM Patrocinadores P LEFT JOIN Cajas_Botin B ON P.id_patrocinador = B.id_patrocinador;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> de crawlers y el <code>contenido</code> de sus cajas (incluso si no tienen).",
+        "query_solucion": "SELECT C.nombre, B.contenido FROM Crawlers C LEFT JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler;"
+      }
+    ]
+  },
+  {
+    "id": 321,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN + WHERE",
+    "titulo": "Filtro en JOIN",
+    "enunciado": "Muestra el <code>nombre</code> y <code>bioma</code> para crawlers de clase 'Mago'.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT C.nombre, N.bioma FROM Crawlers C INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel WHERE C.clase = 'Mago';",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>contenido</code> y <code>nombre_raza</code> si el valor de la caja es > 1000.",
+        "query_solucion": "SELECT B.contenido, P.nombre_raza FROM Cajas_Botin B INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador WHERE B.valor > 1000;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> y <code>contenido</code> para la clase 'Guerrero'.",
+        "query_solucion": "SELECT C.nombre, B.contenido FROM Crawlers C INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler WHERE C.clase = 'Guerrero';"
+      }
+    ]
+  },
+  {
+    "id": 322,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN + ORDER",
+    "titulo": "Ordenación en JOIN",
+    "enunciado": "Muestra <code>nombre</code> y <code>bioma</code>, ordenado por numero_planta descendente.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT C.nombre, N.bioma FROM Crawlers C INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel ORDER BY N.numero_planta DESC;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <code>contenido</code> y <code>nombre_raza</code>, ordenado por valor de caja ascendente.",
+        "query_solucion": "SELECT B.contenido, P.nombre_raza FROM Cajas_Botin B INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador ORDER BY B.valor ASC;"
+      },
+      {
+        "enunciado": "Muestra <code>nombre</code> y <code>contenido</code> ordenado por nombre del crawler.",
+        "query_solucion": "SELECT C.nombre, B.contenido FROM Crawlers C INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler ORDER BY C.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 323,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "CONCAT",
+    "titulo": "Combinar cadenas",
+    "enunciado": "Usa CONCAT para mostrar 'Planta [numero_planta]' de <b>Niveles</b>.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT CONCAT('Planta ', numero_planta) FROM Niveles;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Usa CONCAT para mostrar '[nombre] - [clase]' en <b>Crawlers</b>.",
+        "query_solucion": "SELECT CONCAT(nombre, ' - ', clase) FROM Crawlers;"
+      },
+      {
+        "enunciado": "Usa CONCAT para mostrar '[nombre_raza] (P:[presupuesto])' en <b>Patrocinadores</b>.",
+        "query_solucion": "SELECT CONCAT(nombre_raza, ' (P:', presupuesto, ')') FROM Patrocinadores;"
+      }
+    ]
+  },
+  {
+    "id": 324,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP + JOIN",
+    "titulo": "Crawlers por nivel con JOIN",
+    "enunciado": "Muestra el <code>bioma</code> del nivel y la cuenta de sus crawlers usando JOIN.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT N.bioma, COUNT(C.id_crawler) FROM Niveles N LEFT JOIN Crawlers C ON N.id_nivel = C.id_nivel_actual GROUP BY N.id_nivel, N.bioma;",
+    "puntos": 25,
+    "pista": "Piensa en agrupar o cruzar tablas",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>nombre_raza</code> y la suma de valor de sus cajas usando JOIN.",
+        "query_solucion": "SELECT P.nombre_raza, SUM(B.valor) FROM Patrocinadores P LEFT JOIN Cajas_Botin B ON P.id_patrocinador = B.id_patrocinador GROUP BY P.id_patrocinador, P.nombre_raza;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> de crawler y la suma de valor de sus cajas usando JOIN.",
+        "query_solucion": "SELECT C.nombre, SUM(B.valor) FROM Crawlers C LEFT JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler GROUP BY C.id_crawler, C.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 325,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN IS NULL",
+    "titulo": "Nivel vacío",
+    "enunciado": "Muestra el <code>bioma</code> de Niveles que NO tienen ningún crawler.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT N.bioma FROM Niveles N LEFT JOIN Crawlers C ON N.id_nivel = C.id_nivel_actual WHERE C.id_crawler IS NULL;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>nombre_raza</code> de Patrocinadores que NO han dado cajas.",
+        "query_solucion": "SELECT P.nombre_raza FROM Patrocinadores P LEFT JOIN Cajas_Botin B ON P.id_patrocinador = B.id_patrocinador WHERE B.id_caja IS NULL;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> de Crawlers que NO tienen ninguna caja.",
+        "query_solucion": "SELECT C.nombre FROM Crawlers C LEFT JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler WHERE B.id_caja IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 326,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Multiple JOIN",
+    "titulo": "Caja completa",
+    "enunciado": "Muestra el <code>contenido</code>, el <code>nombre</code> del crawler y la <code>nombre_raza</code> cruzando 3 tablas.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT B.contenido, C.nombre, P.nombre_raza FROM Cajas_Botin B INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>valor</code>, la <code>clase</code> y la <code>nombre_raza</code> cruzando 3 tablas.",
+        "query_solucion": "SELECT B.valor, C.clase, P.nombre_raza FROM Cajas_Botin B INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_caja</code>, el <code>nombre</code> del crawler y el <code>presupuesto</code> del patrocinador.",
+        "query_solucion": "SELECT B.id_caja, C.nombre, P.presupuesto FROM Cajas_Botin B INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador;"
+      }
+    ]
+  },
+  {
+    "id": 327,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Multiple JOIN 2",
+    "titulo": "Crawler y todo",
+    "enunciado": "Muestra el <code>nombre</code> del crawler, su <code>bioma</code> y el <code>contenido</code> de su caja.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT C.nombre, N.bioma, B.contenido FROM Crawlers C INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre</code> del crawler, el <code>numero_planta</code> y el <code>valor</code> de su caja.",
+        "query_solucion": "SELECT C.nombre, N.numero_planta, B.valor FROM Crawlers C INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler;"
+      },
+      {
+        "enunciado": "Muestra la <code>clase</code> del crawler, <code>jefe_final</code> y <code>contenido</code>.",
+        "query_solucion": "SELECT C.clase, N.jefe_final, B.contenido FROM Crawlers C INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler;"
+      }
+    ]
+  },
+  {
+    "id": 328,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subquery WHERE",
+    "titulo": "Supera la media",
+    "enunciado": "Muestra las <b>Cajas_Botin</b> cuyo <code>valor</code> es superior a la media.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Cajas_Botin WHERE valor > (SELECT AVG(valor) FROM Cajas_Botin);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Patrocinadores</b> cuyo <code>presupuesto</code> es superior a la media.",
+        "query_solucion": "SELECT * FROM Patrocinadores WHERE presupuesto > (SELECT AVG(presupuesto) FROM Patrocinadores);"
+      },
+      {
+        "enunciado": "Muestra los <b>Niveles</b> cuyo <code>numero_planta</code> es superior a la media.",
+        "query_solucion": "SELECT * FROM Niveles WHERE numero_planta > (SELECT AVG(numero_planta) FROM Niveles);"
+      }
+    ]
+  },
+  {
+    "id": 329,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subquery IN",
+    "titulo": "Cajas de la élite",
+    "enunciado": "Muestra las <b>Cajas_Botin</b> dadas por Patrocinadores con presupuesto > 2000 usando IN.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Cajas_Botin WHERE id_patrocinador IN (SELECT id_patrocinador FROM Patrocinadores WHERE presupuesto > 2000);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Crawlers</b> que están en niveles con planta > 5 usando IN.",
+        "query_solucion": "SELECT * FROM Crawlers WHERE id_nivel_actual IN (SELECT id_nivel FROM Niveles WHERE numero_planta > 5);"
+      },
+      {
+        "enunciado": "Muestra los <b>Patrocinadores</b> que han dado cajas de valor > 1000 usando IN.",
+        "query_solucion": "SELECT * FROM Patrocinadores WHERE id_patrocinador IN (SELECT id_patrocinador FROM Cajas_Botin WHERE valor > 1000);"
+      }
+    ]
+  },
+  {
+    "id": 330,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subquery NOT IN",
+    "titulo": "Patrocinador tacaño",
+    "enunciado": "Muestra los <b>Patrocinadores</b> que NO han dado cajas usando NOT IN.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Patrocinadores WHERE id_patrocinador NOT IN (SELECT id_patrocinador FROM Cajas_Botin WHERE id_patrocinador IS NOT NULL);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Crawlers</b> que NO tienen cajas usando NOT IN.",
+        "query_solucion": "SELECT * FROM Crawlers WHERE id_crawler NOT IN (SELECT id_crawler FROM Cajas_Botin WHERE id_crawler IS NOT NULL);"
+      },
+      {
+        "enunciado": "Muestra los <b>Niveles</b> que NO tienen crawlers usando NOT IN.",
+        "query_solucion": "SELECT * FROM Niveles WHERE id_nivel NOT IN (SELECT id_nivel_actual FROM Crawlers WHERE id_nivel_actual IS NOT NULL);"
+      }
+    ]
+  },
+  {
+    "id": 331,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Correlated Subquery",
+    "titulo": "Caja más valiosa por patrocinador",
+    "enunciado": "Muestra la <b>Caja_Botin</b> más valiosa de cada patrocinador.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Cajas_Botin B1 WHERE valor = (SELECT MAX(valor) FROM Cajas_Botin B2 WHERE B1.id_patrocinador = B2.id_patrocinador);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>Crawler</b> en el nivel más profundo para cada clase.",
+        "query_solucion": "SELECT * FROM Crawlers C1 WHERE id_nivel_actual = (SELECT MAX(id_nivel_actual) FROM Crawlers C2 WHERE C1.clase = C2.clase);"
+      },
+      {
+        "enunciado": "Muestra la <b>Caja_Botin</b> más valiosa de cada crawler.",
+        "query_solucion": "SELECT * FROM Cajas_Botin B1 WHERE valor = (SELECT MAX(valor) FROM Cajas_Botin B2 WHERE B1.id_crawler = B2.id_crawler);"
+      }
+    ]
+  },
+  {
+    "id": 332,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP HAVING JOIN",
+    "titulo": "Niveles letales",
+    "enunciado": "Muestra el <code>bioma</code> de niveles donde la suma del valor de cajas de sus crawlers sea > 3000.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT N.bioma FROM Niveles N INNER JOIN Crawlers C ON N.id_nivel = C.id_nivel_actual INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler GROUP BY N.id_nivel, N.bioma HAVING SUM(B.valor) > 3000;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>nombre_raza</code> de patrocinadores que han dado a crawlers en planta > 2.",
+        "query_solucion": "SELECT P.nombre_raza FROM Patrocinadores P INNER JOIN Cajas_Botin B ON P.id_patrocinador = B.id_patrocinador INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel GROUP BY P.id_patrocinador, P.nombre_raza HAVING MAX(N.numero_planta) > 2;"
+      },
+      {
+        "enunciado": "Muestra la <code>clase</code> de crawlers cuya media de valor de cajas recibidas sea > 500.",
+        "query_solucion": "SELECT C.clase FROM Crawlers C INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler GROUP BY C.clase HAVING AVG(B.valor) > 500;"
+      }
+    ]
+  },
+  {
+    "id": 333,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Compleja 1",
+    "titulo": "Patrocinio directo",
+    "enunciado": "Muestra la <code>nombre_raza</code> que ha dado cajas a un Crawler de la clase 'Pícaro'.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT DISTINCT P.nombre_raza FROM Patrocinadores P INNER JOIN Cajas_Botin B ON P.id_patrocinador = B.id_patrocinador INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler WHERE C.clase = 'Pícaro';",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>nombre_raza</code> que ha dado cajas en el bioma 'Cueva Oscura'.",
+        "query_solucion": "SELECT DISTINCT P.nombre_raza FROM Patrocinadores P INNER JOIN Cajas_Botin B ON P.id_patrocinador = B.id_patrocinador INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel WHERE N.bioma = 'Cueva Oscura';"
+      },
+      {
+        "enunciado": "Muestra el <code>bioma</code> donde hay crawlers patrocinados por 'Reptilianos'.",
+        "query_solucion": "SELECT DISTINCT N.bioma FROM Niveles N INNER JOIN Crawlers C ON N.id_nivel = C.id_nivel_actual INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador WHERE P.nombre_raza = 'Reptilianos';"
+      }
+    ]
+  },
+  {
+    "id": 334,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Compleja 2",
+    "titulo": "Inversión total",
+    "enunciado": "Muestra el <code>nombre</code> del crawler y la suma del <code>valor</code> total de sus cajas.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT C.nombre, SUM(B.valor) FROM Crawlers C INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler GROUP BY C.id_crawler, C.nombre;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>bioma</code> del nivel y la suma del <code>valor</code> de las cajas de los crawlers allí.",
+        "query_solucion": "SELECT N.bioma, SUM(B.valor) FROM Niveles N INNER JOIN Crawlers C ON N.id_nivel = C.id_nivel_actual INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler GROUP BY N.id_nivel, N.bioma;"
+      },
+      {
+        "enunciado": "Muestra la <code>clase</code> y el máximo <code>valor</code> de caja recibida por esa clase.",
+        "query_solucion": "SELECT C.clase, MAX(B.valor) FROM Crawlers C INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler GROUP BY C.clase;"
+      }
+    ]
+  },
+  {
+    "id": 335,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subquery SELECT",
+    "titulo": "Cajas en select",
+    "enunciado": "Muestra el <code>nombre</code> del crawler y el total de cajas que tiene (subquery en SELECT).",
+    "bd": "dungeon",
+    "query_solucion": "SELECT nombre, (SELECT COUNT(*) FROM Cajas_Botin WHERE id_crawler = Crawlers.id_crawler) AS total_cajas FROM Crawlers;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>bioma</code> y el total de crawlers que hay allí (subquery en SELECT).",
+        "query_solucion": "SELECT bioma, (SELECT COUNT(*) FROM Crawlers WHERE id_nivel_actual = Niveles.id_nivel) AS num_crawlers FROM Niveles;"
+      },
+      {
+        "enunciado": "Muestra la <code>nombre_raza</code> y la suma de valor que ha dado (subquery en SELECT).",
+        "query_solucion": "SELECT nombre_raza, (SELECT SUM(valor) FROM Cajas_Botin WHERE id_patrocinador = Patrocinadores.id_patrocinador) AS total_valor FROM Patrocinadores;"
+      }
+    ]
+  },
+  {
+    "id": 336,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "ALL / ANY",
+    "titulo": "Más rico que todos",
+    "enunciado": "Muestra las <b>Cajas_Botin</b> cuyo valor es mayor que TODAS las cajas dadas por el patrocinador 1.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Cajas_Botin WHERE valor > ALL(SELECT valor FROM Cajas_Botin WHERE id_patrocinador = 1);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Crawlers</b> cuyo nivel es mayor que TODOS los de clase 'Pícaro'.",
+        "query_solucion": "SELECT * FROM Crawlers WHERE id_nivel_actual > ALL(SELECT id_nivel_actual FROM Crawlers WHERE clase = 'Pícaro' AND id_nivel_actual IS NOT NULL);"
+      },
+      {
+        "enunciado": "Muestra los <b>Patrocinadores</b> cuyo presupuesto es mayor que CUALQUIERA de los patrocinadores que dieron cajas > 1000.",
+        "query_solucion": "SELECT * FROM Patrocinadores WHERE presupuesto > ANY(SELECT P.presupuesto FROM Patrocinadores P INNER JOIN Cajas_Botin B ON P.id_patrocinador = B.id_patrocinador WHERE B.valor > 1000);"
+      }
+    ]
+  },
+  {
+    "id": 337,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "EXISTS",
+    "titulo": "Patrocinador activo",
+    "enunciado": "Muestra los <b>Patrocinadores</b> usando EXISTS que hayan dado al menos una caja.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Patrocinadores P WHERE EXISTS (SELECT 1 FROM Cajas_Botin B WHERE B.id_patrocinador = P.id_patrocinador);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Niveles</b> usando EXISTS que tengan crawlers.",
+        "query_solucion": "SELECT * FROM Niveles N WHERE EXISTS (SELECT 1 FROM Crawlers C WHERE C.id_nivel_actual = N.id_nivel);"
+      },
+      {
+        "enunciado": "Muestra los <b>Crawlers</b> usando EXISTS que tengan al menos una caja.",
+        "query_solucion": "SELECT * FROM Crawlers C WHERE EXISTS (SELECT 1 FROM Cajas_Botin B WHERE B.id_crawler = C.id_crawler);"
+      }
+    ]
+  },
+  {
+    "id": 338,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT EXISTS",
+    "titulo": "Patrocinador pasivo",
+    "enunciado": "Muestra los <b>Patrocinadores</b> usando NOT EXISTS que NO hayan dado cajas.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT * FROM Patrocinadores P WHERE NOT EXISTS (SELECT 1 FROM Cajas_Botin B WHERE B.id_patrocinador = P.id_patrocinador);",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>Niveles</b> usando NOT EXISTS que NO tengan crawlers.",
+        "query_solucion": "SELECT * FROM Niveles N WHERE NOT EXISTS (SELECT 1 FROM Crawlers C WHERE C.id_nivel_actual = N.id_nivel);"
+      },
+      {
+        "enunciado": "Muestra los <b>Crawlers</b> usando NOT EXISTS que NO tengan cajas.",
+        "query_solucion": "SELECT * FROM Crawlers C WHERE NOT EXISTS (SELECT 1 FROM Cajas_Botin B WHERE B.id_crawler = C.id_crawler);"
+      }
+    ]
+  },
+  {
+    "id": 339,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Compleja 3",
+    "titulo": "Top bioma y patrocinador",
+    "enunciado": "Muestra el <code>bioma</code> con la suma total de valor de cajas más alta.",
+    "bd": "dungeon",
+    "query_solucion": "SELECT N.bioma FROM Niveles N INNER JOIN Crawlers C ON N.id_nivel = C.id_nivel_actual INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler GROUP BY N.id_nivel, N.bioma ORDER BY SUM(B.valor) DESC LIMIT 1;",
+    "puntos": 35,
+    "pista": "Combina todo lo que sabes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>nombre_raza</code> que dio la caja de mayor valor al crawler en la planta más alta.",
+        "query_solucion": "SELECT P.nombre_raza FROM Patrocinadores P INNER JOIN Cajas_Botin B ON P.id_patrocinador = B.id_patrocinador INNER JOIN Crawlers C ON B.id_crawler = C.id_crawler INNER JOIN Niveles N ON C.id_nivel_actual = N.id_nivel ORDER BY N.numero_planta DESC, B.valor DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> del crawler que ha recibido más valor total de los 'Zeta-Reticulanos'.",
+        "query_solucion": "SELECT C.nombre FROM Crawlers C INNER JOIN Cajas_Botin B ON C.id_crawler = B.id_crawler INNER JOIN Patrocinadores P ON B.id_patrocinador = P.id_patrocinador WHERE P.nombre_raza = 'Zeta-Reticulanos' GROUP BY C.id_crawler, C.nombre ORDER BY SUM(B.valor) DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 340,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Entrenadores",
+    "enunciado": "Crea la tabla <code>Entrenadores</code> con <b>id_entrenador</b> (INT PK) y <b>nombre</b> (VARCHAR(50)).",
+    "bd": "baloncesto",
+    "query_solucion": "CREATE TABLE Entrenadores (id_entrenador INT PRIMARY KEY, nombre VARCHAR(50));",
+    "puntos": 10,
+    "pista": "Usa PRIMARY KEY.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Arbitros</code> con <b>id_arbitro</b> (INT PK) y <b>nombre</b> (VARCHAR(50)).",
+        "query_solucion": "CREATE TABLE Arbitros (id_arbitro INT PRIMARY KEY, nombre VARCHAR(50));"
+      },
+      {
+        "enunciado": "Crea <code>Medicos</code> con <b>id_medico</b> (INT PK) y <b>nombre</b> (VARCHAR(50)).",
+        "query_solucion": "CREATE TABLE Medicos (id_medico INT PRIMARY KEY, nombre VARCHAR(50));"
+      }
+    ]
+  },
+  {
+    "id": 341,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE 2",
+    "titulo": "Estadios",
+    "enunciado": "Crea <code>Estadios</code> con <b>id_estadio</b> (INT PK), <b>nombre</b> (VARCHAR(100)) y <b>capacidad</b> (INT).",
+    "bd": "baloncesto",
+    "query_solucion": "CREATE TABLE Estadios (id_estadio INT PRIMARY KEY, nombre VARCHAR(100), capacidad INT);",
+    "puntos": 12,
+    "pista": "Separa por comas.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Pabellones</code> con <b>id_pabellon</b> (INT PK), <b>ciudad</b> (VARCHAR(100)) y <b>aforo</b> (INT).",
+        "query_solucion": "CREATE TABLE Pabellones (id_pabellon INT PRIMARY KEY, ciudad VARCHAR(100), aforo INT);"
+      },
+      {
+        "enunciado": "Crea <code>Canchas</code> con <b>id_cancha</b> (INT PK), <b>tipo_suelo</b> (VARCHAR(50)) y <b>año</b> (INT).",
+        "query_solucion": "CREATE TABLE Canchas (id_cancha INT PRIMARY KEY, tipo_suelo VARCHAR(50), año INT);"
+      }
+    ]
+  },
+  {
+    "id": 342,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "UNIQUE",
+    "titulo": "Patrocinadores",
+    "enunciado": "Crea <code>Patrocinadores</code> con <b>id_patrocinador</b> (INT PK) y <b>marca</b> (VARCHAR(50) UNIQUE).",
+    "bd": "baloncesto",
+    "query_solucion": "CREATE TABLE Patrocinadores (id_patrocinador INT PRIMARY KEY, marca VARCHAR(50) UNIQUE);",
+    "puntos": 12,
+    "pista": "Usa UNIQUE.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Marcas</code> con <b>id_marca</b> (INT PK) y <b>nombre_marca</b> (VARCHAR(50) UNIQUE).",
+        "query_solucion": "CREATE TABLE Marcas (id_marca INT PRIMARY KEY, nombre_marca VARCHAR(50) UNIQUE);"
+      },
+      {
+        "enunciado": "Crea <code>Canales</code> con <b>id_canal</b> (INT PK) y <b>nombre_canal</b> (VARCHAR(50) UNIQUE).",
+        "query_solucion": "CREATE TABLE Canales (id_canal INT PRIMARY KEY, nombre_canal VARCHAR(50) UNIQUE);"
+      }
+    ]
+  },
+  {
+    "id": 343,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "FOREIGN KEY",
+    "titulo": "Sanciones",
+    "enunciado": "Crea <code>Sanciones</code> con <b>id_sancion</b> (INT PK) e <b>id_jugador</b> (INT FK a Jugadores).",
+    "bd": "baloncesto",
+    "query_solucion": "CREATE TABLE Sanciones (id_sancion INT PRIMARY KEY, id_jugador INT, FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador));",
+    "puntos": 15,
+    "pista": "Usa REFERENCES.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Premios</code> con <b>id_premio</b> (INT PK) e <b>id_jugador</b> (INT FK a Jugadores).",
+        "query_solucion": "CREATE TABLE Premios (id_premio INT PRIMARY KEY, id_jugador INT, FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador));"
+      },
+      {
+        "enunciado": "Crea <code>Contratos</code> con <b>id_contrato</b> (INT PK) e <b>id_jugador</b> (INT FK).",
+        "query_solucion": "CREATE TABLE Contratos (id_contrato INT PRIMARY KEY, id_jugador INT, FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador));"
+      }
+    ]
+  },
+  {
+    "id": 344,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ADD COLUMN",
+    "titulo": "Añadir datos",
+    "enunciado": "Añade <b>apellidos</b> (VARCHAR(100)) a <code>Jugadores</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "ALTER TABLE Jugadores ADD COLUMN apellidos VARCHAR(100);",
+    "puntos": 10,
+    "pista": "ADD COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Añade <b>nacionalidad</b> (VARCHAR(50)) a <code>Jugadores</code>.",
+        "query_solucion": "ALTER TABLE Jugadores ADD COLUMN nacionalidad VARCHAR(50);"
+      },
+      {
+        "enunciado": "Añade <b>ciudad_natal</b> (VARCHAR(100)) a <code>Jugadores</code>.",
+        "query_solucion": "ALTER TABLE Jugadores ADD COLUMN ciudad_natal VARCHAR(100);"
+      }
+    ]
+  },
+  {
+    "id": 345,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP COLUMN",
+    "titulo": "Borrar dorsal",
+    "enunciado": "Elimina <b>dorsal</b> de <code>Jugadores</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "ALTER TABLE Jugadores DROP COLUMN dorsal;",
+    "puntos": 10,
+    "pista": "DROP COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina <b>edad_maxima</b> de <code>Categorias</code>.",
+        "query_solucion": "ALTER TABLE Categorias DROP COLUMN edad_maxima;"
+      },
+      {
+        "enunciado": "Elimina <b>fecha</b> de <code>Partidos</code>.",
+        "query_solucion": "ALTER TABLE Partidos DROP COLUMN fecha;"
+      }
+    ]
+  },
+  {
+    "id": 346,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "MODIFY COLUMN",
+    "titulo": "Longitud",
+    "enunciado": "Modifica <b>nombre_categoria</b> en <code>Categorias</code> a VARCHAR(150).",
+    "bd": "baloncesto",
+    "query_solucion": "ALTER TABLE Categorias MODIFY COLUMN nombre_categoria VARCHAR(150);",
+    "puntos": 12,
+    "pista": "MODIFY COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica <b>rival</b> en <code>Partidos</code> a VARCHAR(200).",
+        "query_solucion": "ALTER TABLE Partidos MODIFY COLUMN rival VARCHAR(200);"
+      },
+      {
+        "enunciado": "Modifica <b>nombre</b> en <code>Jugadores</code> a VARCHAR(255).",
+        "query_solucion": "ALTER TABLE Jugadores MODIFY COLUMN nombre VARCHAR(255);"
+      }
+    ]
+  },
+  {
+    "id": 347,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DEFAULT",
+    "titulo": "Defectos",
+    "enunciado": "Añade a <code>Partidos</code> <b>asistencia</b> (INT) por defecto 0.",
+    "bd": "baloncesto",
+    "query_solucion": "ALTER TABLE Partidos ADD COLUMN asistencia INT DEFAULT 0;",
+    "puntos": 12,
+    "pista": "DEFAULT 0.",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <code>Partidos</code> <b>recaudacion</b> (INT) por defecto 0.",
+        "query_solucion": "ALTER TABLE Partidos ADD COLUMN recaudacion INT DEFAULT 0;"
+      },
+      {
+        "enunciado": "Añade a <code>Jugadores</code> <b>minutos_jugados</b> (INT) por defecto 0.",
+        "query_solucion": "ALTER TABLE Jugadores ADD COLUMN minutos_jugados INT DEFAULT 0;"
+      }
+    ]
+  },
+  {
+    "id": 348,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Borrar tablas",
+    "enunciado": "Elimina <code>Estadios</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "DROP TABLE Estadios;",
+    "puntos": 10,
+    "pista": "DROP TABLE.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina <code>Arbitros</code>.",
+        "query_solucion": "DROP TABLE Arbitros;"
+      },
+      {
+        "enunciado": "Elimina <code>Medicos</code>.",
+        "query_solucion": "DROP TABLE Medicos;"
+      }
+    ]
+  },
+  {
+    "id": 349,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar",
+    "enunciado": "Renombra <code>Categorias</code> a <code>Ligas</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "RENAME TABLE Categorias TO Ligas;",
+    "puntos": 10,
+    "pista": "RENAME TO.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra <code>Jugadores</code> a <code>Plantilla</code>.",
+        "query_solucion": "RENAME TABLE Jugadores TO Plantilla;"
+      },
+      {
+        "enunciado": "Renombra <code>Partidos</code> a <code>Encuentros</code>.",
+        "query_solucion": "RENAME TABLE Partidos TO Encuentros;"
+      }
+    ]
+  },
+  {
+    "id": 350,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME COLUMN",
+    "titulo": "Columnas",
+    "enunciado": "Renombra <b>nombre</b> de <code>Jugadores</code> a <b>nombre_completo</b>.",
+    "bd": "baloncesto",
+    "query_solucion": "ALTER TABLE Jugadores RENAME COLUMN nombre TO nombre_completo;",
+    "puntos": 12,
+    "pista": "RENAME COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra <b>rival</b> de <code>Partidos</code> a <b>equipo_contrario</b>.",
+        "query_solucion": "ALTER TABLE Partidos RENAME COLUMN rival TO equipo_contrario;"
+      },
+      {
+        "enunciado": "Renombra <b>fecha</b> de <code>Partidos</code> a <b>dia_partido</b>.",
+        "query_solucion": "ALTER TABLE Partidos RENAME COLUMN fecha TO dia_partido;"
+      }
+    ]
+  },
+  {
+    "id": 351,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "NOT NULL",
+    "titulo": "Obligatorios",
+    "enunciado": "Modifica <code>Jugadores</code>: <b>nombre</b> VARCHAR(100) NOT NULL.",
+    "bd": "baloncesto",
+    "query_solucion": "ALTER TABLE Jugadores MODIFY COLUMN nombre VARCHAR(100) NOT NULL;",
+    "puntos": 14,
+    "pista": "Añade NOT NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica <code>Partidos</code>: <b>rival</b> VARCHAR(100) NOT NULL.",
+        "query_solucion": "ALTER TABLE Partidos MODIFY COLUMN rival VARCHAR(100) NOT NULL;"
+      },
+      {
+        "enunciado": "Modifica <code>Categorias</code>: <b>nombre_categoria</b> VARCHAR(50) NOT NULL.",
+        "query_solucion": "ALTER TABLE Categorias MODIFY COLUMN nombre_categoria VARCHAR(50) NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 352,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ADD CONSTRAINT",
+    "titulo": "Unique col",
+    "enunciado": "Añade UNIQUE a <b>nombre_categoria</b> en <code>Categorias</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "ALTER TABLE Categorias ADD CONSTRAINT unique_nombre UNIQUE (nombre_categoria);",
+    "puntos": 14,
+    "pista": "ADD CONSTRAINT.",
+    "variaciones": [
+      {
+        "enunciado": "Añade UNIQUE a <b>dorsal</b> en <code>Jugadores</code>.",
+        "query_solucion": "ALTER TABLE Jugadores ADD CONSTRAINT unique_dorsal UNIQUE (dorsal);"
+      },
+      {
+        "enunciado": "Añade UNIQUE a <b>fecha</b> en <code>Partidos</code>.",
+        "query_solucion": "ALTER TABLE Partidos ADD CONSTRAINT unique_fecha UNIQUE (fecha);"
+      }
+    ]
+  },
+  {
+    "id": 353,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP CONSTRAINT",
+    "titulo": "Quitar Unique",
+    "enunciado": "Elimina restricción <b>unique_nombre</b> de <code>Categorias</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "ALTER TABLE Categorias DROP CONSTRAINT unique_nombre;",
+    "puntos": 15,
+    "pista": "DROP CONSTRAINT.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina restricción <b>unique_dorsal</b> de <code>Jugadores</code>.",
+        "query_solucion": "ALTER TABLE Jugadores DROP CONSTRAINT unique_dorsal;"
+      },
+      {
+        "enunciado": "Elimina restricción <b>unique_fecha</b> de <code>Partidos</code>.",
+        "query_solucion": "ALTER TABLE Partidos DROP CONSTRAINT unique_fecha;"
+      }
+    ]
+  },
+  {
+    "id": 354,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP IF EXISTS",
+    "titulo": "Borrado seguro",
+    "enunciado": "Elimina <code>Sanciones</code> si existe.",
+    "bd": "baloncesto",
+    "query_solucion": "DROP TABLE IF EXISTS Sanciones;",
+    "puntos": 10,
+    "pista": "IF EXISTS.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina <code>Premios</code> si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS Premios;"
+      },
+      {
+        "enunciado": "Elimina <code>Contratos</code> si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS Contratos;"
+      }
+    ]
+  },
+  {
+    "id": 355,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT *",
+    "titulo": "Todos",
+    "enunciado": "Muestra todo de <code>Jugadores</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Jugadores;",
+    "puntos": 10,
+    "pista": "Asterisco.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todo de <code>Partidos</code>.",
+        "query_solucion": "SELECT * FROM Partidos;"
+      },
+      {
+        "enunciado": "Muestra todo de <code>Categorias</code>.",
+        "query_solucion": "SELECT * FROM Categorias;"
+      }
+    ]
+  },
+  {
+    "id": 356,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT cols",
+    "titulo": "Columnas",
+    "enunciado": "Muestra <b>nombre</b> y <b>dorsal</b> de <code>Jugadores</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT nombre, dorsal FROM Jugadores;",
+    "puntos": 10,
+    "pista": "Separadas por coma.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>rival</b> y <b>fecha</b> de <code>Partidos</code>.",
+        "query_solucion": "SELECT rival, fecha FROM Partidos;"
+      },
+      {
+        "enunciado": "Muestra <b>nombre_categoria</b> y <b>edad_maxima</b> de <code>Categorias</code>.",
+        "query_solucion": "SELECT nombre_categoria, edad_maxima FROM Categorias;"
+      }
+    ]
+  },
+  {
+    "id": 357,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE",
+    "titulo": "Filtro",
+    "enunciado": "Categoría con <b>edad_maxima</b> = 12.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Categorias WHERE edad_maxima = 12;",
+    "puntos": 10,
+    "pista": "WHERE.",
+    "variaciones": [
+      {
+        "enunciado": "Categoría con <b>edad_maxima</b> = 10.",
+        "query_solucion": "SELECT * FROM Categorias WHERE edad_maxima = 10;"
+      },
+      {
+        "enunciado": "Categoría con <b>edad_maxima</b> = 8.",
+        "query_solucion": "SELECT * FROM Categorias WHERE edad_maxima = 8;"
+      }
+    ]
+  },
+  {
+    "id": 358,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "AND",
+    "titulo": "Filtro doble",
+    "enunciado": "Partidos con <b>puntos_local</b> > 80 y <b>puntos_visitante</b> < 85.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Partidos WHERE puntos_local > 80 AND puntos_visitante < 85;",
+    "puntos": 12,
+    "pista": "AND.",
+    "variaciones": [
+      {
+        "enunciado": "Partidos con <b>puntos_local</b> > 70 y <b>puntos_visitante</b> < 80.",
+        "query_solucion": "SELECT * FROM Partidos WHERE puntos_local > 70 AND puntos_visitante < 80;"
+      },
+      {
+        "enunciado": "Partidos con <b>puntos_local</b> > 60 y <b>puntos_visitante</b> < 70.",
+        "query_solucion": "SELECT * FROM Partidos WHERE puntos_local > 60 AND puntos_visitante < 70;"
+      }
+    ]
+  },
+  {
+    "id": 359,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "OR",
+    "titulo": "Alternativas",
+    "enunciado": "Partidos contra 'Real Madrid' o 'Barcelona'.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Partidos WHERE rival = 'Real Madrid' OR rival = 'Barcelona';",
+    "puntos": 12,
+    "pista": "OR.",
+    "variaciones": [
+      {
+        "enunciado": "Partidos contra 'Joventut' o 'Estudiantes'.",
+        "query_solucion": "SELECT * FROM Partidos WHERE rival = 'Joventut' OR rival = 'Estudiantes';"
+      },
+      {
+        "enunciado": "Partidos contra 'Baskonia' o 'Valencia'.",
+        "query_solucion": "SELECT * FROM Partidos WHERE rival = 'Baskonia' OR rival = 'Valencia';"
+      }
+    ]
+  },
+  {
+    "id": 360,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IN",
+    "titulo": "Lista",
+    "enunciado": "Jugadores con dorsal 7, 9 o 16.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Jugadores WHERE dorsal IN (7, 9, 16);",
+    "puntos": 12,
+    "pista": "IN(...).",
+    "variaciones": [
+      {
+        "enunciado": "Jugadores con dorsal 4, 10 o 13.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE dorsal IN (4, 10, 13);"
+      },
+      {
+        "enunciado": "Jugadores con dorsal 8, 14 o 23.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE dorsal IN (8, 14, 23);"
+      }
+    ]
+  },
+  {
+    "id": 361,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "BETWEEN",
+    "titulo": "Rangos",
+    "enunciado": "Partidos con fecha entre '2026-03-01' y '2026-03-31'.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Partidos WHERE fecha BETWEEN '2026-03-01' AND '2026-03-31';",
+    "puntos": 14,
+    "pista": "BETWEEN AND.",
+    "variaciones": [
+      {
+        "enunciado": "Partidos entre '2026-04-01' y '2026-04-30'.",
+        "query_solucion": "SELECT * FROM Partidos WHERE fecha BETWEEN '2026-04-01' AND '2026-04-30';"
+      },
+      {
+        "enunciado": "Partidos entre '2026-05-01' y '2026-05-31'.",
+        "query_solucion": "SELECT * FROM Partidos WHERE fecha BETWEEN '2026-05-01' AND '2026-05-31';"
+      }
+    ]
+  },
+  {
+    "id": 362,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIKE",
+    "titulo": "Búsqueda texto",
+    "enunciado": "Jugadores cuyo nombre empieza por 'P'.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Jugadores WHERE nombre LIKE 'P%';",
+    "puntos": 14,
+    "pista": "LIKE y %.",
+    "variaciones": [
+      {
+        "enunciado": "Jugadores cuyo nombre empieza por 'R'.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE nombre LIKE 'R%';"
+      },
+      {
+        "enunciado": "Jugadores cuyo nombre empieza por 'J'.",
+        "query_solucion": "SELECT * FROM Jugadores WHERE nombre LIKE 'J%';"
+      }
+    ]
+  },
+  {
+    "id": 363,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL",
+    "titulo": "Vacíos",
+    "enunciado": "Jugadores sin dorsal (IS NULL).",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Jugadores WHERE dorsal IS NULL;",
+    "puntos": 12,
+    "pista": "IS NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Partidos sin fecha.",
+        "query_solucion": "SELECT * FROM Partidos WHERE fecha IS NULL;"
+      },
+      {
+        "enunciado": "Estadísticas sin faltas.",
+        "query_solucion": "SELECT * FROM Estadisticas WHERE faltas IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 364,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY",
+    "titulo": "Ordenar",
+    "enunciado": "Partidos ordenados por fecha ASC.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Partidos ORDER BY fecha ASC;",
+    "puntos": 12,
+    "pista": "ORDER BY ASC.",
+    "variaciones": [
+      {
+        "enunciado": "Categorias por edad_maxima ASC.",
+        "query_solucion": "SELECT * FROM Categorias ORDER BY edad_maxima ASC;"
+      },
+      {
+        "enunciado": "Jugadores por dorsal ASC.",
+        "query_solucion": "SELECT * FROM Jugadores ORDER BY dorsal ASC;"
+      }
+    ]
+  },
+  {
+    "id": 365,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Mejores",
+    "enunciado": "Partido con más puntos locales (LIMIT 1).",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Partidos ORDER BY puntos_local DESC LIMIT 1;",
+    "puntos": 15,
+    "pista": "DESC LIMIT 1.",
+    "variaciones": [
+      {
+        "enunciado": "Partido con más puntos visitantes.",
+        "query_solucion": "SELECT * FROM Partidos ORDER BY puntos_visitante DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Jugador con dorsal más alto.",
+        "query_solucion": "SELECT * FROM Jugadores ORDER BY dorsal DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 366,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Únicos",
+    "enunciado": "Rivales únicos en Partidos.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT DISTINCT rival FROM Partidos;",
+    "puntos": 12,
+    "pista": "DISTINCT.",
+    "variaciones": [
+      {
+        "enunciado": "IDs de categoría únicos en Jugadores.",
+        "query_solucion": "SELECT DISTINCT id_categoria FROM Jugadores;"
+      },
+      {
+        "enunciado": "IDs de partido únicos en Estadísticas.",
+        "query_solucion": "SELECT DISTINCT id_partido FROM Estadisticas;"
+      }
+    ]
+  },
+  {
+    "id": 367,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones Texto",
+    "titulo": "Mayúsculas",
+    "enunciado": "Nombre de jugadores en mayúsculas como <b>nom_mayus</b>.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT UPPER(nombre) AS nom_mayus FROM Jugadores;",
+    "puntos": 14,
+    "pista": "UPPER().",
+    "variaciones": [
+      {
+        "enunciado": "Rival en minúsculas como <b>riv_min</b>.",
+        "query_solucion": "SELECT LOWER(rival) AS riv_min FROM Partidos;"
+      },
+      {
+        "enunciado": "Longitud de nombre como <b>len_nom</b>.",
+        "query_solucion": "SELECT LENGTH(nombre) AS len_nom FROM Jugadores;"
+      }
+    ]
+  },
+  {
+    "id": 368,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones Num",
+    "titulo": "Diferencias",
+    "enunciado": "id_partido y diferencia absoluta de puntos (ABS) como <b>dif</b>.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT id_partido, ABS(puntos_local - puntos_visitante) AS dif FROM Partidos;",
+    "puntos": 16,
+    "pista": "ABS().",
+    "variaciones": [
+      {
+        "enunciado": "id_partido y el doble de puntos_local como <b>doble</b>.",
+        "query_solucion": "SELECT id_partido, puntos_local * 2 AS doble FROM Partidos;"
+      },
+      {
+        "enunciado": "id_partido y mitad de puntos_visitante como <b>mitad</b>.",
+        "query_solucion": "SELECT id_partido, puntos_visitante / 2 AS mitad FROM Partidos;"
+      }
+    ]
+  },
+  {
+    "id": 369,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Aritmética",
+    "titulo": "Totales",
+    "enunciado": "Suma puntos_local y puntos_visitante como <b>total</b>.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT puntos_local + puntos_visitante AS total FROM Partidos;",
+    "puntos": 12,
+    "pista": "+.",
+    "variaciones": [
+      {
+        "enunciado": "Resta faltas a rebotes como <b>balance</b> en Estadisticas.",
+        "query_solucion": "SELECT rebotes - faltas AS balance FROM Estadisticas;"
+      },
+      {
+        "enunciado": "Suma puntos y rebotes como <b>aportacion</b>.",
+        "query_solucion": "SELECT puntos + rebotes AS aportacion FROM Estadisticas;"
+      }
+    ]
+  },
+  {
+    "id": 370,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Conteo",
+    "enunciado": "Cuenta cuántos <code>Jugadores</code> hay en total.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT COUNT(*) FROM Jugadores;",
+    "puntos": 20,
+    "pista": "COUNT(*)",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta cuántos <code>Partidos</code> hay.",
+        "query_solucion": "SELECT COUNT(*) FROM Partidos;"
+      },
+      {
+        "enunciado": "Cuenta cuántas <code>Categorias</code> hay.",
+        "query_solucion": "SELECT COUNT(*) FROM Categorias;"
+      }
+    ]
+  },
+  {
+    "id": 371,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM",
+    "titulo": "Suma total",
+    "enunciado": "Suma todos los <b>puntos</b> en <code>Estadisticas</code> para el jugador con id 1.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT SUM(puntos) FROM Estadisticas WHERE id_jugador = 1;",
+    "puntos": 20,
+    "pista": "SUM().",
+    "variaciones": [
+      {
+        "enunciado": "Suma los <b>rebotes</b> del jugador 2.",
+        "query_solucion": "SELECT SUM(rebotes) FROM Estadisticas WHERE id_jugador = 2;"
+      },
+      {
+        "enunciado": "Suma las <b>faltas</b> del partido 1.",
+        "query_solucion": "SELECT SUM(faltas) FROM Estadisticas WHERE id_partido = 1;"
+      }
+    ]
+  },
+  {
+    "id": 372,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG",
+    "titulo": "Promedio",
+    "enunciado": "Calcula la media de <b>rebotes</b> en <code>Estadisticas</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT AVG(rebotes) FROM Estadisticas;",
+    "puntos": 20,
+    "pista": "AVG().",
+    "variaciones": [
+      {
+        "enunciado": "Media de <b>puntos</b> en <code>Estadisticas</code>.",
+        "query_solucion": "SELECT AVG(puntos) FROM Estadisticas;"
+      },
+      {
+        "enunciado": "Media de <b>puntos_local</b> en <code>Partidos</code>.",
+        "query_solucion": "SELECT AVG(puntos_local) FROM Partidos;"
+      }
+    ]
+  },
+  {
+    "id": 373,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX",
+    "titulo": "Máximo",
+    "enunciado": "Muestra la cantidad máxima de <b>puntos</b> en <code>Estadisticas</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT MAX(puntos) FROM Estadisticas;",
+    "puntos": 20,
+    "pista": "MAX().",
+    "variaciones": [
+      {
+        "enunciado": "Cantidad máxima de <b>rebotes</b>.",
+        "query_solucion": "SELECT MAX(rebotes) FROM Estadisticas;"
+      },
+      {
+        "enunciado": "Máximo de <b>puntos_visitante</b>.",
+        "query_solucion": "SELECT MAX(puntos_visitante) FROM Partidos;"
+      }
+    ]
+  },
+  {
+    "id": 374,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Agrupación",
+    "enunciado": "Muestra <b>id_categoria</b> y cuántos jugadores hay en cada una.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT id_categoria, COUNT(*) FROM Jugadores GROUP BY id_categoria;",
+    "puntos": 22,
+    "pista": "GROUP BY id_categoria.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>id_partido</b> y suma de puntos por partido en <code>Estadisticas</code>.",
+        "query_solucion": "SELECT id_partido, SUM(puntos) FROM Estadisticas GROUP BY id_partido;"
+      },
+      {
+        "enunciado": "Muestra <b>id_jugador</b> y cuántos partidos ha jugado.",
+        "query_solucion": "SELECT id_jugador, COUNT(id_partido) FROM Estadisticas GROUP BY id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 375,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY SUM",
+    "titulo": "Suma grupal",
+    "enunciado": "Muestra <b>id_jugador</b> y la suma de sus <b>puntos</b> en <code>Estadisticas</code>.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT id_jugador, SUM(puntos) FROM Estadisticas GROUP BY id_jugador;",
+    "puntos": 24,
+    "pista": "SUM con GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>id_jugador</b> y la suma de sus <b>rebotes</b>.",
+        "query_solucion": "SELECT id_jugador, SUM(rebotes) FROM Estadisticas GROUP BY id_jugador;"
+      },
+      {
+        "enunciado": "Muestra <b>id_partido</b> y la suma de <b>faltas</b> por partido.",
+        "query_solucion": "SELECT id_partido, SUM(faltas) FROM Estadisticas GROUP BY id_partido;"
+      }
+    ]
+  },
+  {
+    "id": 376,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY MAX",
+    "titulo": "Máximo grupal",
+    "enunciado": "Muestra <b>id_jugador</b> y su máximo de <b>faltas</b> en un partido.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT id_jugador, MAX(faltas) FROM Estadisticas GROUP BY id_jugador;",
+    "puntos": 24,
+    "pista": "MAX con GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>id_jugador</b> y su récord de <b>puntos</b>.",
+        "query_solucion": "SELECT id_jugador, MAX(puntos) FROM Estadisticas GROUP BY id_jugador;"
+      },
+      {
+        "enunciado": "Muestra <b>id_partido</b> y el máximo de <b>rebotes</b> de un jugador ahí.",
+        "query_solucion": "SELECT id_partido, MAX(rebotes) FROM Estadisticas GROUP BY id_partido;"
+      }
+    ]
+  },
+  {
+    "id": 377,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Filtro de grupo",
+    "enunciado": "Muestra <b>id_jugador</b> y suma de <b>puntos</b> para los que superen los 20 puntos en total.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT id_jugador, SUM(puntos) FROM Estadisticas GROUP BY id_jugador HAVING SUM(puntos) > 20;",
+    "puntos": 26,
+    "pista": "Usa HAVING tras GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>id_jugador</b> y suma de <b>rebotes</b> si superan 10.",
+        "query_solucion": "SELECT id_jugador, SUM(rebotes) FROM Estadisticas GROUP BY id_jugador HAVING SUM(rebotes) > 10;"
+      },
+      {
+        "enunciado": "Muestra <b>id_partido</b> y suma de <b>faltas</b> si superan 5.",
+        "query_solucion": "SELECT id_partido, SUM(faltas) FROM Estadisticas GROUP BY id_partido HAVING SUM(faltas) > 5;"
+      }
+    ]
+  },
+  {
+    "id": 378,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "Unión simple",
+    "enunciado": "Muestra el <b>nombre</b> del jugador y el <b>nombre_categoria</b> usando INNER JOIN.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre, c.nombre_categoria FROM Jugadores j INNER JOIN Categorias c ON j.id_categoria = c.id_categoria;",
+    "puntos": 25,
+    "pista": "ON tabla1.id = tabla2.id.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> del jugador y sus <b>puntos</b> de Estadisticas.",
+        "query_solucion": "SELECT j.nombre, e.puntos FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador;"
+      },
+      {
+        "enunciado": "Muestra el <b>rival</b> y las <b>faltas</b> de Estadisticas en ese partido.",
+        "query_solucion": "SELECT p.rival, e.faltas FROM Partidos p INNER JOIN Estadisticas e ON p.id_partido = e.id_partido;"
+      }
+    ]
+  },
+  {
+    "id": 379,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN 2",
+    "titulo": "Unión y Filtro",
+    "enunciado": "Jugadores (nombre) y Estadisticas (puntos) del jugador 'Pau Gasol Jr.'.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre, e.puntos FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE j.nombre = 'Pau Gasol Jr.';",
+    "puntos": 26,
+    "pista": "Añade WHERE tras el JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Jugadores (nombre) y Estadisticas (rebotes) de 'Ricky Rubio Jr.'.",
+        "query_solucion": "SELECT j.nombre, e.rebotes FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE j.nombre = 'Ricky Rubio Jr.';"
+      },
+      {
+        "enunciado": "Partidos (rival) y Estadisticas (puntos) contra 'Real Madrid'.",
+        "query_solucion": "SELECT p.rival, e.puntos FROM Partidos p INNER JOIN Estadisticas e ON p.id_partido = e.id_partido WHERE p.rival = 'Real Madrid';"
+      }
+    ]
+  },
+  {
+    "id": 380,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN",
+    "titulo": "Inclusión nulos",
+    "enunciado": "Muestra todas las <code>Categorias</code> (nombre) y los <b>nombre</b>s de sus jugadores, aunque no tengan ninguno (LEFT JOIN).",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT c.nombre_categoria, j.nombre FROM Categorias c LEFT JOIN Jugadores j ON c.id_categoria = j.id_categoria;",
+    "puntos": 28,
+    "pista": "Usa LEFT JOIN desde Categorias.",
+    "variaciones": [
+      {
+        "enunciado": "Todas las <code>Categorias</code> y dorsales, aunque no haya jugadores.",
+        "query_solucion": "SELECT c.nombre_categoria, j.dorsal FROM Categorias c LEFT JOIN Jugadores j ON c.id_categoria = j.id_categoria;"
+      },
+      {
+        "enunciado": "Todos los <code>Jugadores</code> (nombre) y sus faltas, aunque no tengan estadísticas.",
+        "query_solucion": "SELECT j.nombre, e.faltas FROM Jugadores j LEFT JOIN Estadisticas e ON j.id_jugador = e.id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 381,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN WHERE",
+    "titulo": "Condiciones",
+    "enunciado": "<b>nombre</b> del jugador y <b>nombre_categoria</b> solo para los que son 'Infantil'.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre, c.nombre_categoria FROM Jugadores j INNER JOIN Categorias c ON j.id_categoria = c.id_categoria WHERE c.nombre_categoria = 'Infantil';",
+    "puntos": 26,
+    "pista": "Combina JOIN y WHERE.",
+    "variaciones": [
+      {
+        "enunciado": "Nombre y categoría para los 'Alevín'.",
+        "query_solucion": "SELECT j.nombre, c.nombre_categoria FROM Jugadores j INNER JOIN Categorias c ON j.id_categoria = c.id_categoria WHERE c.nombre_categoria = 'Alevín';"
+      },
+      {
+        "enunciado": "Nombre y puntos en el partido con id_partido = 1.",
+        "query_solucion": "SELECT j.nombre, e.puntos FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE e.id_partido = 1;"
+      }
+    ]
+  },
+  {
+    "id": 382,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN GROUP",
+    "titulo": "Agrupación unida",
+    "enunciado": "Muestra <b>nombre</b> del jugador y la suma de sus <b>puntos</b> en total.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre, SUM(e.puntos) FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY j.nombre;",
+    "puntos": 28,
+    "pista": "GROUP BY la columna de la tabla original.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>nombre</b> del jugador y suma de sus <b>rebotes</b>.",
+        "query_solucion": "SELECT j.nombre, SUM(e.rebotes) FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY j.nombre;"
+      },
+      {
+        "enunciado": "Muestra <b>rival</b> y suma de <b>faltas</b> cometidas en cada partido.",
+        "query_solucion": "SELECT p.rival, SUM(e.faltas) FROM Partidos p INNER JOIN Estadisticas e ON p.id_partido = e.id_partido GROUP BY p.rival;"
+      }
+    ]
+  },
+  {
+    "id": 383,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN ORDER",
+    "titulo": "Top combinados",
+    "enunciado": "Nombre de jugador y suma de rebotes, ordenado de mayor a menor y muestra el top 3.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre, SUM(e.rebotes) FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY j.nombre ORDER BY SUM(e.rebotes) DESC LIMIT 3;",
+    "puntos": 30,
+    "pista": "Añade ORDER BY y LIMIT al GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Top 3 jugadores con más puntos totales.",
+        "query_solucion": "SELECT j.nombre, SUM(e.puntos) FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY j.nombre ORDER BY SUM(e.puntos) DESC LIMIT 3;"
+      },
+      {
+        "enunciado": "Top 3 partidos (rival) con más faltas totales.",
+        "query_solucion": "SELECT p.rival, SUM(e.faltas) FROM Partidos p INNER JOIN Estadisticas e ON p.id_partido = e.id_partido GROUP BY p.rival ORDER BY SUM(e.faltas) DESC LIMIT 3;"
+      }
+    ]
+  },
+  {
+    "id": 384,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "Funciones Anid",
+    "titulo": "Redondeo",
+    "enunciado": "Calcula la media de <b>puntos</b> en <code>Estadisticas</code> redondeada a 2 decimales.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT ROUND(AVG(puntos), 2) FROM Estadisticas;",
+    "puntos": 25,
+    "pista": "ROUND(AVG(x), 2).",
+    "variaciones": [
+      {
+        "enunciado": "Media de <b>rebotes</b> redondeada a 1 decimal.",
+        "query_solucion": "SELECT ROUND(AVG(rebotes), 1) FROM Estadisticas;"
+      },
+      {
+        "enunciado": "Media de <b>faltas</b> redondeada a 0 decimales.",
+        "query_solucion": "SELECT ROUND(AVG(faltas), 0) FROM Estadisticas;"
+      }
+    ]
+  },
+  {
+    "id": 385,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN NULL",
+    "titulo": "Huérfanos",
+    "enunciado": "Muestra el <b>nombre_categoria</b> de las categorías que NO tienen jugadores.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT c.nombre_categoria FROM Categorias c LEFT JOIN Jugadores j ON c.id_categoria = j.id_categoria WHERE j.id_jugador IS NULL;",
+    "puntos": 32,
+    "pista": "Usa LEFT JOIN y comprueba IS NULL en la tabla derecha.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los jugadores (nombre) que NO tienen estadísticas registradas.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j LEFT JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE e.id_jugador IS NULL;"
+      },
+      {
+        "enunciado": "Partidos (rival) sin estadísticas registradas.",
+        "query_solucion": "SELECT p.rival FROM Partidos p LEFT JOIN Estadisticas e ON p.id_partido = e.id_partido WHERE e.id_partido IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 386,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN 3 TABLAS",
+    "titulo": "Triple Unión",
+    "enunciado": "Muestra <b>nombre</b> (jugador), <b>nombre_categoria</b> y <b>puntos</b> de todas las estadísticas.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre, c.nombre_categoria, e.puntos FROM Jugadores j INNER JOIN Categorias c ON j.id_categoria = c.id_categoria INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador;",
+    "puntos": 34,
+    "pista": "Encadena dos INNER JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>nombre</b>, <b>rival</b> y <b>rebotes</b> de las estadísticas.",
+        "query_solucion": "SELECT j.nombre, p.rival, e.rebotes FROM Jugadores j INNER JOIN Partidos p ON j.id_jugador = j.id_jugador INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador AND p.id_partido = e.id_partido;"
+      },
+      {
+        "enunciado": "Muestra <b>nombre_categoria</b>, <b>rival</b> y <b>faltas</b>.",
+        "query_solucion": "SELECT c.nombre_categoria, p.rival, e.faltas FROM Categorias c INNER JOIN Jugadores j ON c.id_categoria = j.id_categoria INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador INNER JOIN Partidos p ON e.id_partido = p.id_partido;"
+      }
+    ]
+  },
+  {
+    "id": 387,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta",
+    "titulo": "Por encima de",
+    "enunciado": "Jugadores cuya categoría tenga la edad_maxima más alta (usando subconsulta).",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT * FROM Jugadores WHERE id_categoria = (SELECT id_categoria FROM Categorias ORDER BY edad_maxima DESC LIMIT 1);",
+    "puntos": 35,
+    "pista": "Iguala el id_categoria a un SELECT con LIMIT 1.",
+    "variaciones": [
+      {
+        "enunciado": "Partidos con puntos_local superiores a la media de puntos_local.",
+        "query_solucion": "SELECT * FROM Partidos WHERE puntos_local > (SELECT AVG(puntos_local) FROM Partidos);"
+      },
+      {
+        "enunciado": "Partidos con puntos_visitante superiores a la media de puntos_visitante.",
+        "query_solucion": "SELECT * FROM Partidos WHERE puntos_visitante > (SELECT AVG(puntos_visitante) FROM Partidos);"
+      }
+    ]
+  },
+  {
+    "id": 388,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta IN",
+    "titulo": "Conjuntos",
+    "enunciado": "Nombres de jugadores que han jugado contra el 'Real Madrid'.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT nombre FROM Jugadores WHERE id_jugador IN (SELECT id_jugador FROM Estadisticas WHERE id_partido = (SELECT id_partido FROM Partidos WHERE rival = 'Real Madrid'));",
+    "puntos": 36,
+    "pista": "Anida subconsultas con IN.",
+    "variaciones": [
+      {
+        "enunciado": "Nombres de jugadores que jugaron contra el 'Barcelona'.",
+        "query_solucion": "SELECT nombre FROM Jugadores WHERE id_jugador IN (SELECT id_jugador FROM Estadisticas WHERE id_partido = (SELECT id_partido FROM Partidos WHERE rival = 'Barcelona'));"
+      },
+      {
+        "enunciado": "Jugadores que jugaron contra el 'Joventut'.",
+        "query_solucion": "SELECT nombre FROM Jugadores WHERE id_jugador IN (SELECT id_jugador FROM Estadisticas WHERE id_partido = (SELECT id_partido FROM Partidos WHERE rival = 'Joventut'));"
+      }
+    ]
+  },
+  {
+    "id": 389,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT IN",
+    "titulo": "Exclusión",
+    "enunciado": "Nombres de jugadores que NO han cometido ninguna falta (en base a Estadisticas).",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT nombre FROM Jugadores WHERE id_jugador NOT IN (SELECT id_jugador FROM Estadisticas WHERE faltas > 0);",
+    "puntos": 35,
+    "pista": "Usa NOT IN.",
+    "variaciones": [
+      {
+        "enunciado": "Jugadores que NO han cogido ningún rebote (rebotes > 0).",
+        "query_solucion": "SELECT nombre FROM Jugadores WHERE id_jugador NOT IN (SELECT id_jugador FROM Estadisticas WHERE rebotes > 0);"
+      },
+      {
+        "enunciado": "Jugadores que NO han anotado ningún punto (puntos > 0).",
+        "query_solucion": "SELECT nombre FROM Jugadores WHERE id_jugador NOT IN (SELECT id_jugador FROM Estadisticas WHERE puntos > 0);"
+      }
+    ]
+  },
+  {
+    "id": 390,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN HAVING",
+    "titulo": "Promedios altos",
+    "enunciado": "Nombre de categorías con un promedio de puntos por jugador mayor a 15.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT c.nombre_categoria FROM Categorias c INNER JOIN Jugadores j ON c.id_categoria = j.id_categoria INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY c.nombre_categoria HAVING AVG(e.puntos) > 15;",
+    "puntos": 38,
+    "pista": "Une Categorias, Jugadores y Estadisticas, agrupa por categoría y filtra con HAVING.",
+    "variaciones": [
+      {
+        "enunciado": "Categorías con promedio de rebotes > 5.",
+        "query_solucion": "SELECT c.nombre_categoria FROM Categorias c INNER JOIN Jugadores j ON c.id_categoria = j.id_categoria INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY c.nombre_categoria HAVING AVG(e.rebotes) > 5;"
+      },
+      {
+        "enunciado": "Categorías con promedio de faltas < 3.",
+        "query_solucion": "SELECT c.nombre_categoria FROM Categorias c INNER JOIN Jugadores j ON c.id_categoria = j.id_categoria INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY c.nombre_categoria HAVING AVG(e.faltas) < 3;"
+      }
+    ]
+  },
+  {
+    "id": 391,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Condición Compleja",
+    "titulo": "Filtrado Join",
+    "enunciado": "Nombres de jugadores con más de 20 puntos en total contra el 'Barcelona'.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador INNER JOIN Partidos p ON e.id_partido = p.id_partido WHERE p.rival = 'Barcelona' GROUP BY j.nombre HAVING SUM(e.puntos) > 20;",
+    "puntos": 38,
+    "pista": "Triple JOIN, WHERE al rival, GROUP BY jugador, HAVING suma > 20.",
+    "variaciones": [
+      {
+        "enunciado": "Jugadores con más de 10 rebotes en total contra el 'Real Madrid'.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador INNER JOIN Partidos p ON e.id_partido = p.id_partido WHERE p.rival = 'Real Madrid' GROUP BY j.nombre HAVING SUM(e.rebotes) > 10;"
+      },
+      {
+        "enunciado": "Jugadores con más de 5 faltas en total contra el 'Joventut'.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador INNER JOIN Partidos p ON e.id_partido = p.id_partido WHERE p.rival = 'Joventut' GROUP BY j.nombre HAVING SUM(e.faltas) > 5;"
+      }
+    ]
+  },
+  {
+    "id": 392,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Sub FROM",
+    "titulo": "Máximo Promedio",
+    "enunciado": "Calcula el máximo promedio de puntos de los jugadores (usa subconsulta en FROM).",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT MAX(promedio) FROM (SELECT AVG(puntos) AS promedio FROM Estadisticas GROUP BY id_jugador) AS sub;",
+    "puntos": 40,
+    "pista": "SELECT MAX(col) FROM (SELECT AVG... GROUP BY...) AS alias.",
+    "variaciones": [
+      {
+        "enunciado": "Máximo promedio de rebotes de los jugadores.",
+        "query_solucion": "SELECT MAX(promedio) FROM (SELECT AVG(rebotes) AS promedio FROM Estadisticas GROUP BY id_jugador) AS sub;"
+      },
+      {
+        "enunciado": "Máximo promedio de faltas de los jugadores.",
+        "query_solucion": "SELECT MAX(promedio) FROM (SELECT AVG(faltas) AS promedio FROM Estadisticas GROUP BY id_jugador) AS sub;"
+      }
+    ]
+  },
+  {
+    "id": 393,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Diferencia Max",
+    "titulo": "Partido Extremo",
+    "enunciado": "Muestra el <b>rival</b> y la diferencia de puntos a nuestro favor, del partido con mayor diferencia favorable.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT rival, (puntos_local - puntos_visitante) AS diferencia FROM Partidos ORDER BY diferencia DESC LIMIT 1;",
+    "puntos": 36,
+    "pista": "ORDER BY (calculo) DESC LIMIT 1.",
+    "variaciones": [
+      {
+        "enunciado": "Rival y suma de puntos del partido con más puntos en total.",
+        "query_solucion": "SELECT rival, (puntos_local + puntos_visitante) AS suma_total FROM Partidos ORDER BY suma_total DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Rival del partido donde perdimos por más puntos (diferencia visitante - local max).",
+        "query_solucion": "SELECT rival, (puntos_visitante - puntos_local) AS dif_negativa FROM Partidos ORDER BY dif_negativa DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 394,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Correlacionada Eq",
+    "titulo": "Récord Específico",
+    "enunciado": "Nombre del jugador que consiguió el récord absoluto de rebotes en un único partido.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE e.rebotes = (SELECT MAX(rebotes) FROM Estadisticas);",
+    "puntos": 38,
+    "pista": "Filtra rebotes = (SELECT MAX...)",
+    "variaciones": [
+      {
+        "enunciado": "Jugador que consiguió el récord absoluto de puntos en un partido.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE e.puntos = (SELECT MAX(puntos) FROM Estadisticas);"
+      },
+      {
+        "enunciado": "Jugador que cometió el máximo de faltas en un partido.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE e.faltas = (SELECT MAX(faltas) FROM Estadisticas);"
+      }
+    ]
+  },
+  {
+    "id": 395,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT EXISTS",
+    "titulo": "Exclusión Absoluta",
+    "enunciado": "Nombre de categorías donde NINGÚN jugador tenga dorsal menor o igual a 10.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT c.nombre_categoria FROM Categorias c WHERE NOT EXISTS (SELECT 1 FROM Jugadores j WHERE j.id_categoria = c.id_categoria AND j.dorsal <= 10);",
+    "puntos": 40,
+    "pista": "NOT EXISTS correlacionado.",
+    "variaciones": [
+      {
+        "enunciado": "Categorías donde NADIE se llame 'Pau Gasol Jr.'.",
+        "query_solucion": "SELECT c.nombre_categoria FROM Categorias c WHERE NOT EXISTS (SELECT 1 FROM Jugadores j WHERE j.id_categoria = c.id_categoria AND j.nombre = 'Pau Gasol Jr.');"
+      },
+      {
+        "enunciado": "Categorías donde NINGÚN jugador tenga dorsal mayor a 20.",
+        "query_solucion": "SELECT c.nombre_categoria FROM Categorias c WHERE NOT EXISTS (SELECT 1 FROM Jugadores j WHERE j.id_categoria = c.id_categoria AND j.dorsal > 20);"
+      }
+    ]
+  },
+  {
+    "id": 396,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Limit tras Group",
+    "titulo": "Peor Disciplina",
+    "enunciado": "Jugador con mayor número de faltas acumuladas (suma total).",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY j.id_jugador, j.nombre ORDER BY SUM(e.faltas) DESC LIMIT 1;",
+    "puntos": 35,
+    "pista": "GROUP BY, ORDER BY SUM DESC, LIMIT 1.",
+    "variaciones": [
+      {
+        "enunciado": "Jugador con más puntos acumulados en total.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY j.id_jugador, j.nombre ORDER BY SUM(e.puntos) DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Jugador con más rebotes acumulados en total.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY j.id_jugador, j.nombre ORDER BY SUM(e.rebotes) DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 397,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "IN Group",
+    "titulo": "Partidos Duros",
+    "enunciado": "Rivales de los partidos donde entre todos sumaron más de 10 faltas.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT rival FROM Partidos WHERE id_partido IN (SELECT id_partido FROM Estadisticas GROUP BY id_partido HAVING SUM(faltas) > 10);",
+    "puntos": 38,
+    "pista": "IN con subconsulta que usa GROUP BY y HAVING.",
+    "variaciones": [
+      {
+        "enunciado": "Rivales donde se sumaron más de 30 puntos.",
+        "query_solucion": "SELECT rival FROM Partidos WHERE id_partido IN (SELECT id_partido FROM Estadisticas GROUP BY id_partido HAVING SUM(puntos) > 30);"
+      },
+      {
+        "enunciado": "Rivales donde se cogieron más de 15 rebotes.",
+        "query_solucion": "SELECT rival FROM Partidos WHERE id_partido IN (SELECT id_partido FROM Estadisticas GROUP BY id_partido HAVING SUM(rebotes) > 15);"
+      }
+    ]
+  },
+  {
+    "id": 398,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Plenitud",
+    "titulo": "Todos los partidos",
+    "enunciado": "Nombre de los jugadores que han jugado (tienen estadísticas) en TODOS los partidos registrados.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY j.id_jugador, j.nombre HAVING COUNT(DISTINCT e.id_partido) = (SELECT COUNT(*) FROM Partidos);",
+    "puntos": 40,
+    "pista": "HAVING COUNT(id) = (SELECT COUNT(*) FROM Partidos).",
+    "variaciones": [
+      {
+        "enunciado": "Categorías que tienen jugadores en TODOS los partidos.",
+        "query_solucion": "SELECT c.nombre_categoria FROM Categorias c INNER JOIN Jugadores j ON c.id_categoria = j.id_categoria INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador GROUP BY c.id_categoria, c.nombre_categoria HAVING COUNT(DISTINCT e.id_partido) = (SELECT COUNT(*) FROM Partidos);"
+      },
+      {
+        "enunciado": "Rivales que han recibido puntos de TODOS los jugadores registrados.",
+        "query_solucion": "SELECT p.rival FROM Partidos p INNER JOIN Estadisticas e ON p.id_partido = e.id_partido GROUP BY p.id_partido, p.rival HAVING COUNT(DISTINCT e.id_jugador) = (SELECT COUNT(*) FROM Jugadores);"
+      }
+    ]
+  },
+  {
+    "id": 399,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Doble Join Sub",
+    "titulo": "Mejor de los Peores",
+    "enunciado": "Jugador que más puntos anotó en el partido con menos puntos_local.",
+    "bd": "baloncesto",
+    "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE e.id_partido = (SELECT id_partido FROM Partidos ORDER BY puntos_local ASC LIMIT 1) ORDER BY e.puntos DESC LIMIT 1;",
+    "puntos": 40,
+    "pista": "Iguala id_partido a un SELECT LIMIT 1 y ordena fuera.",
+    "variaciones": [
+      {
+        "enunciado": "Jugador con más rebotes en el partido con más puntos_visitante.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE e.id_partido = (SELECT id_partido FROM Partidos ORDER BY puntos_visitante DESC LIMIT 1) ORDER BY e.rebotes DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Jugador con menos faltas en el partido con más puntos_local.",
+        "query_solucion": "SELECT j.nombre FROM Jugadores j INNER JOIN Estadisticas e ON j.id_jugador = e.id_jugador WHERE e.id_partido = (SELECT id_partido FROM Partidos ORDER BY puntos_local DESC LIMIT 1) ORDER BY e.faltas ASC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 400,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Libros",
+    "enunciado": "Crea la tabla <code>Libros</code> con <b>id_libro</b> (INT PK) y <b>titulo</b> (VARCHAR(100)).",
+    "bd": "cosmere",
+    "query_solucion": "CREATE TABLE Libros (id_libro INT PRIMARY KEY, titulo VARCHAR(100));",
+    "puntos": 10,
+    "pista": "Define la PRIMARY KEY.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Ediciones</code> con <b>id_edicion</b> (INT PK) y <b>año</b> (INT).",
+        "query_solucion": "CREATE TABLE Ediciones (id_edicion INT PRIMARY KEY, año INT);"
+      },
+      {
+        "enunciado": "Crea <code>Autores</code> con <b>id_autor</b> (INT PK) y <b>nombre</b> (VARCHAR(100)).",
+        "query_solucion": "CREATE TABLE Autores (id_autor INT PRIMARY KEY, nombre VARCHAR(100));"
+      }
+    ]
+  },
+  {
+    "id": 401,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE 2",
+    "titulo": "Eventos Históricos",
+    "enunciado": "Crea <code>Eventos_Historicos</code> con <b>id_evento</b> (INT PK), <b>descripcion</b> (VARCHAR(200)) y <b>anio</b> (INT).",
+    "bd": "cosmere",
+    "query_solucion": "CREATE TABLE Eventos_Historicos (id_evento INT PRIMARY KEY, descripcion VARCHAR(200), anio INT);",
+    "puntos": 12,
+    "pista": "Separa columnas con coma.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Guerras</code> con <b>id_guerra</b> (INT PK), <b>nombre</b> (VARCHAR(100)) y <b>duracion</b> (INT).",
+        "query_solucion": "CREATE TABLE Guerras (id_guerra INT PRIMARY KEY, nombre VARCHAR(100), duracion INT);"
+      },
+      {
+        "enunciado": "Crea <code>Eras</code> con <b>id_era</b> (INT PK), <b>nombre</b> (VARCHAR(100)) y <b>siglo</b> (INT).",
+        "query_solucion": "CREATE TABLE Eras (id_era INT PRIMARY KEY, nombre VARCHAR(100), siglo INT);"
+      }
+    ]
+  },
+  {
+    "id": 402,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "UNIQUE",
+    "titulo": "Portadores de Esquirla",
+    "enunciado": "Crea <code>Shard_Holders</code> con <b>id_holder</b> (INT PK) y <b>nombre</b> (VARCHAR(100) UNIQUE).",
+    "bd": "cosmere",
+    "query_solucion": "CREATE TABLE Shard_Holders (id_holder INT PRIMARY KEY, nombre VARCHAR(100) UNIQUE);",
+    "puntos": 12,
+    "pista": "Usa UNIQUE.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Fragmentos</code> con <b>id_frag</b> (INT PK) y <b>nombre_frag</b> (VARCHAR(100) UNIQUE).",
+        "query_solucion": "CREATE TABLE Fragmentos (id_frag INT PRIMARY KEY, nombre_frag VARCHAR(100) UNIQUE);"
+      },
+      {
+        "enunciado": "Crea <code>Metales</code> con <b>id_metal</b> (INT PK) y <b>nombre_metal</b> (VARCHAR(50) UNIQUE).",
+        "query_solucion": "CREATE TABLE Metales (id_metal INT PRIMARY KEY, nombre_metal VARCHAR(50) UNIQUE);"
+      }
+    ]
+  },
+  {
+    "id": 403,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "FOREIGN KEY",
+    "titulo": "Armas Mágicas",
+    "enunciado": "Crea <code>Armas_Magicas</code> con <b>id_arma</b> (INT PK) e <b>id_personaje</b> (INT FK a Personajes).",
+    "bd": "cosmere",
+    "query_solucion": "CREATE TABLE Armas_Magicas (id_arma INT PRIMARY KEY, id_personaje INT, FOREIGN KEY (id_personaje) REFERENCES Personajes(id_personaje));",
+    "puntos": 15,
+    "pista": "Sintaxis: FOREIGN KEY(col) REFERENCES tabla(col).",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Artefactos</code> con <b>id_artefacto</b> (INT PK) e <b>id_personaje</b> (INT FK a Personajes).",
+        "query_solucion": "CREATE TABLE Artefactos (id_artefacto INT PRIMARY KEY, id_personaje INT, FOREIGN KEY (id_personaje) REFERENCES Personajes(id_personaje));"
+      },
+      {
+        "enunciado": "Crea <code>Spren</code> con <b>id_spren</b> (INT PK) e <b>id_personaje</b> (INT FK a Personajes).",
+        "query_solucion": "CREATE TABLE Spren (id_spren INT PRIMARY KEY, id_personaje INT, FOREIGN KEY (id_personaje) REFERENCES Personajes(id_personaje));"
+      }
+    ]
+  },
+  {
+    "id": 404,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ADD COLUMN",
+    "titulo": "Expandir Planetas",
+    "enunciado": "Añade <b>galaxia</b> (VARCHAR(50)) a <code>Planetas</code>.",
+    "bd": "cosmere",
+    "query_solucion": "ALTER TABLE Planetas ADD COLUMN galaxia VARCHAR(50);",
+    "puntos": 10,
+    "pista": "ADD COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Añade <b>clima</b> (VARCHAR(100)) a <code>Planetas</code>.",
+        "query_solucion": "ALTER TABLE Planetas ADD COLUMN clima VARCHAR(100);"
+      },
+      {
+        "enunciado": "Añade <b>gravedad</b> (INT) a <code>Planetas</code>.",
+        "query_solucion": "ALTER TABLE Planetas ADD COLUMN gravedad INT;"
+      }
+    ]
+  },
+  {
+    "id": 405,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP COLUMN",
+    "titulo": "Simplificar",
+    "enunciado": "Elimina <b>id_planeta_origen</b> de <code>Sistemas_Magia</code>.",
+    "bd": "cosmere",
+    "query_solucion": "ALTER TABLE Sistemas_Magia DROP COLUMN id_planeta_origen;",
+    "puntos": 10,
+    "pista": "DROP COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina <b>esquirla_residente</b> de <code>Planetas</code>.",
+        "query_solucion": "ALTER TABLE Planetas DROP COLUMN esquirla_residente;"
+      },
+      {
+        "enunciado": "Elimina <b>id_planeta_natal</b> de <code>Personajes</code>.",
+        "query_solucion": "ALTER TABLE Personajes DROP COLUMN id_planeta_natal;"
+      }
+    ]
+  },
+  {
+    "id": 406,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "MODIFY COLUMN",
+    "titulo": "Ajustar nombres",
+    "enunciado": "Modifica <b>nombre</b> en <code>Personajes</code> a VARCHAR(150).",
+    "bd": "cosmere",
+    "query_solucion": "ALTER TABLE Personajes MODIFY COLUMN nombre VARCHAR(150);",
+    "puntos": 12,
+    "pista": "MODIFY COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica <b>esquirla_residente</b> en <code>Planetas</code> a VARCHAR(200).",
+        "query_solucion": "ALTER TABLE Planetas MODIFY COLUMN esquirla_residente VARCHAR(200);"
+      },
+      {
+        "enunciado": "Modifica <b>nombre</b> en <code>Sistemas_Magia</code> a VARCHAR(255).",
+        "query_solucion": "ALTER TABLE Sistemas_Magia MODIFY COLUMN nombre VARCHAR(255);"
+      }
+    ]
+  },
+  {
+    "id": 407,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DEFAULT",
+    "titulo": "Por Defecto",
+    "enunciado": "Añade a <code>Habilidades</code> la columna <b>descripcion</b> (VARCHAR(200)) por defecto 'Desconocido'.",
+    "bd": "cosmere",
+    "query_solucion": "ALTER TABLE Habilidades ADD COLUMN descripcion VARCHAR(200) DEFAULT 'Desconocido';",
+    "puntos": 12,
+    "pista": "DEFAULT '...'.",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <code>Personajes</code> la columna <b>estado</b> (VARCHAR(50)) por defecto 'Vivo'.",
+        "query_solucion": "ALTER TABLE Personajes ADD COLUMN estado VARCHAR(50) DEFAULT 'Vivo';"
+      },
+      {
+        "enunciado": "Añade a <code>Planetas</code> la columna <b>poblacion</b> (INT) por defecto 0.",
+        "query_solucion": "ALTER TABLE Planetas ADD COLUMN poblacion INT DEFAULT 0;"
+      }
+    ]
+  },
+  {
+    "id": 408,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Borrado Total",
+    "enunciado": "Elimina <code>Eventos_Historicos</code>.",
+    "bd": "cosmere",
+    "query_solucion": "DROP TABLE Eventos_Historicos;",
+    "puntos": 10,
+    "pista": "DROP TABLE.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina <code>Guerras</code>.",
+        "query_solucion": "DROP TABLE Guerras;"
+      },
+      {
+        "enunciado": "Elimina <code>Eras</code>.",
+        "query_solucion": "DROP TABLE Eras;"
+      }
+    ]
+  },
+  {
+    "id": 409,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Cambio de Era",
+    "enunciado": "Renombra <code>Shard_Holders</code> a <code>Portadores_Esquirla</code>.",
+    "bd": "cosmere",
+    "query_solucion": "RENAME TABLE Shard_Holders TO Portadores_Esquirla;",
+    "puntos": 10,
+    "pista": "RENAME TO.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra <code>Sistemas_Magia</code> a <code>Magias</code>.",
+        "query_solucion": "RENAME TABLE Sistemas_Magia TO Magias;"
+      },
+      {
+        "enunciado": "Renombra <code>Personajes</code> a <code>Heroes</code>.",
+        "query_solucion": "RENAME TABLE Personajes TO Heroes;"
+      }
+    ]
+  },
+  {
+    "id": 410,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME COLUMN",
+    "titulo": "Refinar esquema",
+    "enunciado": "Renombra <b>nombre</b> en <code>Planetas</code> a <b>nombre_planeta</b>.",
+    "bd": "cosmere",
+    "query_solucion": "ALTER TABLE Planetas RENAME COLUMN nombre TO nombre_planeta;",
+    "puntos": 12,
+    "pista": "RENAME COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra <b>nombre</b> en <code>Sistemas_Magia</code> a <b>tipo_magia</b>.",
+        "query_solucion": "ALTER TABLE Sistemas_Magia RENAME COLUMN nombre TO tipo_magia;"
+      },
+      {
+        "enunciado": "Renombra <b>nivel_poder</b> en <code>Habilidades</code> a <b>poder_magico</b>.",
+        "query_solucion": "ALTER TABLE Habilidades RENAME COLUMN nivel_poder TO poder_magico;"
+      }
+    ]
+  },
+  {
+    "id": 411,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "NOT NULL",
+    "titulo": "Requisitos",
+    "enunciado": "Modifica <code>Planetas</code>: <b>nombre</b> VARCHAR(100) NOT NULL.",
+    "bd": "cosmere",
+    "query_solucion": "ALTER TABLE Planetas MODIFY COLUMN nombre VARCHAR(100) NOT NULL;",
+    "puntos": 14,
+    "pista": "NOT NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica <code>Personajes</code>: <b>nombre</b> VARCHAR(100) NOT NULL.",
+        "query_solucion": "ALTER TABLE Personajes MODIFY COLUMN nombre VARCHAR(100) NOT NULL;"
+      },
+      {
+        "enunciado": "Modifica <code>Sistemas_Magia</code>: <b>nombre</b> VARCHAR(100) NOT NULL.",
+        "query_solucion": "ALTER TABLE Sistemas_Magia MODIFY COLUMN nombre VARCHAR(100) NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 412,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ADD CONSTRAINT",
+    "titulo": "Esquirlas Únicas",
+    "enunciado": "Añade UNIQUE a <b>esquirla_residente</b> en <code>Planetas</code>.",
+    "bd": "cosmere",
+    "query_solucion": "ALTER TABLE Planetas ADD CONSTRAINT unique_esquirla UNIQUE (esquirla_residente);",
+    "puntos": 14,
+    "pista": "ADD CONSTRAINT.",
+    "variaciones": [
+      {
+        "enunciado": "Añade UNIQUE a <b>nombre</b> en <code>Personajes</code>.",
+        "query_solucion": "ALTER TABLE Personajes ADD CONSTRAINT unique_personaje UNIQUE (nombre);"
+      },
+      {
+        "enunciado": "Añade UNIQUE a <b>nombre</b> en <code>Sistemas_Magia</code>.",
+        "query_solucion": "ALTER TABLE Sistemas_Magia ADD CONSTRAINT unique_magia UNIQUE (nombre);"
+      }
+    ]
+  },
+  {
+    "id": 413,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP CONSTRAINT",
+    "titulo": "Libertad Mágica",
+    "enunciado": "Elimina restricción <b>unique_esquirla</b> de <code>Planetas</code>.",
+    "bd": "cosmere",
+    "query_solucion": "ALTER TABLE Planetas DROP CONSTRAINT unique_esquirla;",
+    "puntos": 15,
+    "pista": "DROP CONSTRAINT.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina restricción <b>unique_personaje</b> de <code>Personajes</code>.",
+        "query_solucion": "ALTER TABLE Personajes DROP CONSTRAINT unique_personaje;"
+      },
+      {
+        "enunciado": "Elimina restricción <b>unique_magia</b> de <code>Sistemas_Magia</code>.",
+        "query_solucion": "ALTER TABLE Sistemas_Magia DROP CONSTRAINT unique_magia;"
+      }
+    ]
+  },
+  {
+    "id": 414,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP IF EXISTS",
+    "titulo": "Borrado Condicional",
+    "enunciado": "Elimina <code>Libros</code> si existe.",
+    "bd": "cosmere",
+    "query_solucion": "DROP TABLE IF EXISTS Libros;",
+    "puntos": 10,
+    "pista": "IF EXISTS.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina <code>Ediciones</code> si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS Ediciones;"
+      },
+      {
+        "enunciado": "Elimina <code>Autores</code> si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS Autores;"
+      }
+    ]
+  },
+  {
+    "id": 415,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT *",
+    "titulo": "Vistazo General",
+    "enunciado": "Muestra todo de <code>Planetas</code>.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Planetas;",
+    "puntos": 10,
+    "pista": "Asterisco.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todo de <code>Sistemas_Magia</code>.",
+        "query_solucion": "SELECT * FROM Sistemas_Magia;"
+      },
+      {
+        "enunciado": "Muestra todo de <code>Personajes</code>.",
+        "query_solucion": "SELECT * FROM Personajes;"
+      }
+    ]
+  },
+  {
+    "id": 416,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT cols",
+    "titulo": "Nombres",
+    "enunciado": "Muestra <b>nombre</b> y <b>esquirla_residente</b> de <code>Planetas</code>.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT nombre, esquirla_residente FROM Planetas;",
+    "puntos": 10,
+    "pista": "Comas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>nombre</b> e <b>id_planeta_natal</b> de <code>Personajes</code>.",
+        "query_solucion": "SELECT nombre, id_planeta_natal FROM Personajes;"
+      },
+      {
+        "enunciado": "Muestra <b>id_personaje</b> e <b>id_magia</b> de <code>Habilidades</code>.",
+        "query_solucion": "SELECT id_personaje, id_magia FROM Habilidades;"
+      }
+    ]
+  },
+  {
+    "id": 417,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE",
+    "titulo": "Origen Magia",
+    "enunciado": "Magias con <b>id_planeta_origen</b> = 1.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Sistemas_Magia WHERE id_planeta_origen = 1;",
+    "puntos": 10,
+    "pista": "WHERE.",
+    "variaciones": [
+      {
+        "enunciado": "Personajes con <b>id_planeta_natal</b> = 2.",
+        "query_solucion": "SELECT * FROM Personajes WHERE id_planeta_natal = 2;"
+      },
+      {
+        "enunciado": "Habilidades con <b>nivel_poder</b> = 100.",
+        "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder = 100;"
+      }
+    ]
+  },
+  {
+    "id": 418,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "AND",
+    "titulo": "Poder Medio",
+    "enunciado": "Habilidades con <b>nivel_poder</b> > 50 y <b>nivel_poder</b> < 100.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder > 50 AND nivel_poder < 100;",
+    "puntos": 12,
+    "pista": "AND.",
+    "variaciones": [
+      {
+        "enunciado": "Habilidades con <b>nivel_poder</b> > 20 y <b>nivel_poder</b> < 80.",
+        "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder > 20 AND nivel_poder < 80;"
+      },
+      {
+        "enunciado": "Habilidades con <b>nivel_poder</b> > 10 y <b>nivel_poder</b> < 50.",
+        "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder > 10 AND nivel_poder < 50;"
+      }
+    ]
+  },
+  {
+    "id": 419,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "OR",
+    "titulo": "Mundos Conocidos",
+    "enunciado": "Personajes de id_planeta_natal 1 o 2.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Personajes WHERE id_planeta_natal = 1 OR id_planeta_natal = 2;",
+    "puntos": 12,
+    "pista": "OR.",
+    "variaciones": [
+      {
+        "enunciado": "Personajes de id_planeta_natal 2 o 3.",
+        "query_solucion": "SELECT * FROM Personajes WHERE id_planeta_natal = 2 OR id_planeta_natal = 3;"
+      },
+      {
+        "enunciado": "Magias de id_planeta_origen 1 o 3.",
+        "query_solucion": "SELECT * FROM Sistemas_Magia WHERE id_planeta_origen = 1 OR id_planeta_origen = 3;"
+      }
+    ]
+  },
+  {
+    "id": 420,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IN",
+    "titulo": "Magias Específicas",
+    "enunciado": "Sistemas_Magia con id_magia 1, 3 o 4.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Sistemas_Magia WHERE id_magia IN (1, 3, 4);",
+    "puntos": 12,
+    "pista": "IN.",
+    "variaciones": [
+      {
+        "enunciado": "Sistemas_Magia con id_magia 2, 4 o 5.",
+        "query_solucion": "SELECT * FROM Sistemas_Magia WHERE id_magia IN (2, 4, 5);"
+      },
+      {
+        "enunciado": "Personajes con id_personaje 1, 2 o 4.",
+        "query_solucion": "SELECT * FROM Personajes WHERE id_personaje IN (1, 2, 4);"
+      }
+    ]
+  },
+  {
+    "id": 421,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "BETWEEN",
+    "titulo": "Niveles de Poder",
+    "enunciado": "Habilidades con nivel_poder entre 10 y 50.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder BETWEEN 10 AND 50;",
+    "puntos": 14,
+    "pista": "BETWEEN.",
+    "variaciones": [
+      {
+        "enunciado": "Habilidades con nivel_poder entre 20 y 60.",
+        "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder BETWEEN 20 AND 60;"
+      },
+      {
+        "enunciado": "Habilidades con nivel_poder entre 50 y 100.",
+        "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder BETWEEN 50 AND 100;"
+      }
+    ]
+  },
+  {
+    "id": 422,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIKE",
+    "titulo": "Búsqueda por K",
+    "enunciado": "Personajes cuyo nombre empieza por 'K'.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Personajes WHERE nombre LIKE 'K%';",
+    "puntos": 14,
+    "pista": "LIKE.",
+    "variaciones": [
+      {
+        "enunciado": "Personajes cuyo nombre empieza por 'V'.",
+        "query_solucion": "SELECT * FROM Personajes WHERE nombre LIKE 'V%';"
+      },
+      {
+        "enunciado": "Planetas cuyo nombre empieza por 'S'.",
+        "query_solucion": "SELECT * FROM Planetas WHERE nombre LIKE 'S%';"
+      }
+    ]
+  },
+  {
+    "id": 423,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL",
+    "titulo": "Misteriosos",
+    "enunciado": "Personajes sin planeta natal conocido (IS NULL).",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Personajes WHERE id_planeta_natal IS NULL;",
+    "puntos": 12,
+    "pista": "IS NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Planetas sin esquirla residente.",
+        "query_solucion": "SELECT * FROM Planetas WHERE esquirla_residente IS NULL;"
+      },
+      {
+        "enunciado": "Sistemas de magia sin planeta de origen.",
+        "query_solucion": "SELECT * FROM Sistemas_Magia WHERE id_planeta_origen IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 424,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY",
+    "titulo": "Orden Alfabético",
+    "enunciado": "Planetas ordenados por nombre ASC.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Planetas ORDER BY nombre ASC;",
+    "puntos": 12,
+    "pista": "ORDER BY ASC.",
+    "variaciones": [
+      {
+        "enunciado": "Sistemas de Magia por nombre ASC.",
+        "query_solucion": "SELECT * FROM Sistemas_Magia ORDER BY nombre ASC;"
+      },
+      {
+        "enunciado": "Personajes por nombre ASC.",
+        "query_solucion": "SELECT * FROM Personajes ORDER BY nombre ASC;"
+      }
+    ]
+  },
+  {
+    "id": 425,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Los Más Fuertes",
+    "enunciado": "Top 3 habilidades con más nivel_poder.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Habilidades ORDER BY nivel_poder DESC LIMIT 3;",
+    "puntos": 15,
+    "pista": "DESC LIMIT 3.",
+    "variaciones": [
+      {
+        "enunciado": "Top 2 habilidades con menos nivel_poder.",
+        "query_solucion": "SELECT * FROM Habilidades ORDER BY nivel_poder ASC LIMIT 2;"
+      },
+      {
+        "enunciado": "Personaje con id_personaje más alto.",
+        "query_solucion": "SELECT * FROM Personajes ORDER BY id_personaje DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 426,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Mundos Mágicos",
+    "enunciado": "Distintos id_planeta_origen en Sistemas_Magia.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT DISTINCT id_planeta_origen FROM Sistemas_Magia;",
+    "puntos": 12,
+    "pista": "DISTINCT.",
+    "variaciones": [
+      {
+        "enunciado": "Distintos id_planeta_natal en Personajes.",
+        "query_solucion": "SELECT DISTINCT id_planeta_natal FROM Personajes;"
+      },
+      {
+        "enunciado": "Distintos id_magia en Habilidades.",
+        "query_solucion": "SELECT DISTINCT id_magia FROM Habilidades;"
+      }
+    ]
+  },
+  {
+    "id": 427,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LOWER",
+    "titulo": "Nombres min",
+    "enunciado": "Nombre de personajes en minúsculas como <b>nom_min</b>.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT LOWER(nombre) AS nom_min FROM Personajes;",
+    "puntos": 14,
+    "pista": "LOWER().",
+    "variaciones": [
+      {
+        "enunciado": "Nombre de planetas en minúsculas.",
+        "query_solucion": "SELECT LOWER(nombre) AS nom_min FROM Planetas;"
+      },
+      {
+        "enunciado": "Esquirlas en minúsculas.",
+        "query_solucion": "SELECT LOWER(esquirla_residente) AS esq_min FROM Planetas;"
+      }
+    ]
+  },
+  {
+    "id": 428,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LENGTH",
+    "titulo": "Longitud",
+    "enunciado": "Longitud de la esquirla_residente en Planetas como <b>longitud</b>.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT LENGTH(esquirla_residente) AS longitud FROM Planetas;",
+    "puntos": 14,
+    "pista": "LENGTH().",
+    "variaciones": [
+      {
+        "enunciado": "Longitud del nombre del planeta.",
+        "query_solucion": "SELECT LENGTH(nombre) AS longitud FROM Planetas;"
+      },
+      {
+        "enunciado": "Longitud del nombre del personaje.",
+        "query_solucion": "SELECT LENGTH(nombre) AS longitud FROM Personajes;"
+      }
+    ]
+  },
+  {
+    "id": 429,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Multiplicación",
+    "titulo": "Buff de Poder",
+    "enunciado": "nivel_poder * 2 en Habilidades como <b>poder_doble</b>.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT nivel_poder * 2 AS poder_doble FROM Habilidades;",
+    "puntos": 12,
+    "pista": "Operador *.",
+    "variaciones": [
+      {
+        "enunciado": "nivel_poder * 10 como <b>poder_diez</b>.",
+        "query_solucion": "SELECT nivel_poder * 10 AS poder_diez FROM Habilidades;"
+      },
+      {
+        "enunciado": "nivel_poder / 2 como <b>nerf</b>.",
+        "query_solucion": "SELECT nivel_poder / 2 AS nerf FROM Habilidades;"
+      }
+    ]
+  },
+  {
+    "id": 430,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Cuántos Personajes",
+    "enunciado": "Cuenta cuántos <code>Personajes</code> hay.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT COUNT(*) FROM Personajes;",
+    "puntos": 20,
+    "pista": "COUNT(*).",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta cuántos <code>Planetas</code> hay.",
+        "query_solucion": "SELECT COUNT(*) FROM Planetas;"
+      },
+      {
+        "enunciado": "Cuenta cuántas <code>Habilidades</code> hay.",
+        "query_solucion": "SELECT COUNT(*) FROM Habilidades;"
+      }
+    ]
+  },
+  {
+    "id": 431,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM",
+    "titulo": "Poder Total",
+    "enunciado": "Suma de nivel_poder en Habilidades para id_personaje 1.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT SUM(nivel_poder) FROM Habilidades WHERE id_personaje = 1;",
+    "puntos": 20,
+    "pista": "SUM().",
+    "variaciones": [
+      {
+        "enunciado": "Suma de nivel_poder para id_personaje 2.",
+        "query_solucion": "SELECT SUM(nivel_poder) FROM Habilidades WHERE id_personaje = 2;"
+      },
+      {
+        "enunciado": "Suma de nivel_poder de id_magia 1.",
+        "query_solucion": "SELECT SUM(nivel_poder) FROM Habilidades WHERE id_magia = 1;"
+      }
+    ]
+  },
+  {
+    "id": 432,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG",
+    "titulo": "Poder Medio",
+    "enunciado": "Media de nivel_poder en Habilidades.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT AVG(nivel_poder) FROM Habilidades;",
+    "puntos": 20,
+    "pista": "AVG().",
+    "variaciones": [
+      {
+        "enunciado": "Media de nivel_poder para id_magia 2.",
+        "query_solucion": "SELECT AVG(nivel_poder) FROM Habilidades WHERE id_magia = 2;"
+      },
+      {
+        "enunciado": "Media de nivel_poder para id_personaje 3.",
+        "query_solucion": "SELECT AVG(nivel_poder) FROM Habilidades WHERE id_personaje = 3;"
+      }
+    ]
+  },
+  {
+    "id": 433,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX",
+    "titulo": "Pico de Poder",
+    "enunciado": "Máximo nivel_poder en Habilidades.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT MAX(nivel_poder) FROM Habilidades;",
+    "puntos": 20,
+    "pista": "MAX().",
+    "variaciones": [
+      {
+        "enunciado": "Máximo nivel_poder para id_magia 1.",
+        "query_solucion": "SELECT MAX(nivel_poder) FROM Habilidades WHERE id_magia = 1;"
+      },
+      {
+        "enunciado": "Mínimo nivel_poder en Habilidades (usa MIN).",
+        "query_solucion": "SELECT MIN(nivel_poder) FROM Habilidades;"
+      }
+    ]
+  },
+  {
+    "id": 434,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Habitantes",
+    "enunciado": "id_planeta_natal y cuántos personajes nacieron allí.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT id_planeta_natal, COUNT(*) FROM Personajes GROUP BY id_planeta_natal;",
+    "puntos": 22,
+    "pista": "GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "id_planeta_origen y cuántas magias tiene.",
+        "query_solucion": "SELECT id_planeta_origen, COUNT(*) FROM Sistemas_Magia GROUP BY id_planeta_origen;"
+      },
+      {
+        "enunciado": "id_magia y cuántos personajes la tienen.",
+        "query_solucion": "SELECT id_magia, COUNT(*) FROM Habilidades GROUP BY id_magia;"
+      }
+    ]
+  },
+  {
+    "id": 435,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY SUM",
+    "titulo": "Potencial por Héroe",
+    "enunciado": "id_personaje y suma de su nivel_poder.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT id_personaje, SUM(nivel_poder) FROM Habilidades GROUP BY id_personaje;",
+    "puntos": 24,
+    "pista": "SUM + GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "id_magia y suma del nivel_poder.",
+        "query_solucion": "SELECT id_magia, SUM(nivel_poder) FROM Habilidades GROUP BY id_magia;"
+      },
+      {
+        "enunciado": "id_personaje y promedio de su nivel_poder.",
+        "query_solucion": "SELECT id_personaje, AVG(nivel_poder) FROM Habilidades GROUP BY id_personaje;"
+      }
+    ]
+  },
+  {
+    "id": 436,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY MAX",
+    "titulo": "Especialidad",
+    "enunciado": "id_magia y máximo nivel_poder registrado en ella.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT id_magia, MAX(nivel_poder) FROM Habilidades GROUP BY id_magia;",
+    "puntos": 24,
+    "pista": "MAX + GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "id_personaje y su máximo nivel_poder.",
+        "query_solucion": "SELECT id_personaje, MAX(nivel_poder) FROM Habilidades GROUP BY id_personaje;"
+      },
+      {
+        "enunciado": "id_magia y mínimo nivel_poder registrado.",
+        "query_solucion": "SELECT id_magia, MIN(nivel_poder) FROM Habilidades GROUP BY id_magia;"
+      }
+    ]
+  },
+  {
+    "id": 437,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Filtro Poderosos",
+    "enunciado": "id_personaje y suma de nivel_poder, solo si la suma > 100.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT id_personaje, SUM(nivel_poder) FROM Habilidades GROUP BY id_personaje HAVING SUM(nivel_poder) > 100;",
+    "puntos": 26,
+    "pista": "HAVING.",
+    "variaciones": [
+      {
+        "enunciado": "id_magia y suma de nivel_poder, solo si > 50.",
+        "query_solucion": "SELECT id_magia, SUM(nivel_poder) FROM Habilidades GROUP BY id_magia HAVING SUM(nivel_poder) > 50;"
+      },
+      {
+        "enunciado": "id_personaje y promedio de nivel_poder > 40.",
+        "query_solucion": "SELECT id_personaje, AVG(nivel_poder) FROM Habilidades GROUP BY id_personaje HAVING AVG(nivel_poder) > 40;"
+      }
+    ]
+  },
+  {
+    "id": 438,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "Nombres y Mundos",
+    "enunciado": "Nombre de personaje y nombre de su planeta natal.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre, pl.nombre FROM Personajes p INNER JOIN Planetas pl ON p.id_planeta_natal = pl.id_planeta;",
+    "puntos": 25,
+    "pista": "INNER JOIN ON.",
+    "variaciones": [
+      {
+        "enunciado": "Nombre de magia y nombre de su planeta origen.",
+        "query_solucion": "SELECT m.nombre, pl.nombre FROM Sistemas_Magia m INNER JOIN Planetas pl ON m.id_planeta_origen = pl.id_planeta;"
+      },
+      {
+        "enunciado": "Nombre de personaje y su nivel_poder.",
+        "query_solucion": "SELECT p.nombre, h.nivel_poder FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje;"
+      }
+    ]
+  },
+  {
+    "id": 439,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN 2",
+    "titulo": "Poder de Kelsier",
+    "enunciado": "Todas las Habilidades unidas con Personajes donde el nombre sea 'Kelsier'.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT h.* FROM Habilidades h INNER JOIN Personajes p ON h.id_personaje = p.id_personaje WHERE p.nombre = 'Kelsier';",
+    "puntos": 26,
+    "pista": "JOIN + WHERE.",
+    "variaciones": [
+      {
+        "enunciado": "Habilidades del personaje 'Kaladin'.",
+        "query_solucion": "SELECT h.* FROM Habilidades h INNER JOIN Personajes p ON h.id_personaje = p.id_personaje WHERE p.nombre = 'Kaladin';"
+      },
+      {
+        "enunciado": "Magias del planeta 'Scadrial'.",
+        "query_solucion": "SELECT m.* FROM Sistemas_Magia m INNER JOIN Planetas p ON m.id_planeta_origen = p.id_planeta WHERE p.nombre = 'Scadrial';"
+      }
+    ]
+  },
+  {
+    "id": 440,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN",
+    "titulo": "Planetas Vacíos",
+    "enunciado": "Nombre de planetas y nombre de personajes natales, incluso si no hay ninguno.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT pl.nombre, p.nombre FROM Planetas pl LEFT JOIN Personajes p ON pl.id_planeta = p.id_planeta_natal;",
+    "puntos": 28,
+    "pista": "LEFT JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Planetas y magias originarias, incluso sin magias.",
+        "query_solucion": "SELECT pl.nombre, m.nombre FROM Planetas pl LEFT JOIN Sistemas_Magia m ON pl.id_planeta = m.id_planeta_origen;"
+      },
+      {
+        "enunciado": "Personajes y su nivel de poder, incluso sin habilidades.",
+        "query_solucion": "SELECT p.nombre, h.nivel_poder FROM Personajes p LEFT JOIN Habilidades h ON p.id_personaje = h.id_personaje;"
+      }
+    ]
+  },
+  {
+    "id": 441,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN WHERE",
+    "titulo": "Condiciones Join",
+    "enunciado": "Nombre de personaje y nivel_poder donde el nivel > 50.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre, h.nivel_poder FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje WHERE h.nivel_poder > 50;",
+    "puntos": 26,
+    "pista": "JOIN + WHERE.",
+    "variaciones": [
+      {
+        "enunciado": "Magia y planeta donde el nombre del planeta sea 'Roshar'.",
+        "query_solucion": "SELECT m.nombre, pl.nombre FROM Sistemas_Magia m INNER JOIN Planetas pl ON m.id_planeta_origen = pl.id_planeta WHERE pl.nombre = 'Roshar';"
+      },
+      {
+        "enunciado": "Personaje y planeta donde la esquirla sea 'Ruina'.",
+        "query_solucion": "SELECT p.nombre, pl.nombre FROM Personajes p INNER JOIN Planetas pl ON p.id_planeta_natal = pl.id_planeta WHERE pl.esquirla_residente = 'Ruina';"
+      }
+    ]
+  },
+  {
+    "id": 442,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN GROUP",
+    "titulo": "Poder Promedio",
+    "enunciado": "Nombre del personaje y promedio de su nivel_poder.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre, AVG(h.nivel_poder) FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY p.nombre;",
+    "puntos": 28,
+    "pista": "JOIN + GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Nombre de la magia y promedio de nivel_poder.",
+        "query_solucion": "SELECT m.nombre, AVG(h.nivel_poder) FROM Sistemas_Magia m INNER JOIN Habilidades h ON m.id_magia = h.id_magia GROUP BY m.nombre;"
+      },
+      {
+        "enunciado": "Nombre del personaje y suma de su nivel_poder.",
+        "query_solucion": "SELECT p.nombre, SUM(h.nivel_poder) FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY p.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 443,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN ORDER",
+    "titulo": "El Más Fuerte",
+    "enunciado": "Nombre del personaje y suma de nivel_poder, ordenado desc LIMIT 1.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre, SUM(h.nivel_poder) FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY p.nombre ORDER BY SUM(h.nivel_poder) DESC LIMIT 1;",
+    "puntos": 30,
+    "pista": "ORDER + LIMIT.",
+    "variaciones": [
+      {
+        "enunciado": "Magia con más suma de poder.",
+        "query_solucion": "SELECT m.nombre, SUM(h.nivel_poder) FROM Sistemas_Magia m INNER JOIN Habilidades h ON m.id_magia = h.id_magia GROUP BY m.nombre ORDER BY SUM(h.nivel_poder) DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Planeta con más personajes natales.",
+        "query_solucion": "SELECT pl.nombre, COUNT(p.id_personaje) FROM Planetas pl INNER JOIN Personajes p ON pl.id_planeta = p.id_planeta_natal GROUP BY pl.nombre ORDER BY COUNT(p.id_personaje) DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 444,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "ROUND",
+    "titulo": "Decimales",
+    "enunciado": "Promedio de nivel_poder redondeado a 1 decimal.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT ROUND(AVG(nivel_poder), 1) FROM Habilidades;",
+    "puntos": 25,
+    "pista": "ROUND().",
+    "variaciones": [
+      {
+        "enunciado": "Promedio redondeado a 0 decimales.",
+        "query_solucion": "SELECT ROUND(AVG(nivel_poder), 0) FROM Habilidades;"
+      },
+      {
+        "enunciado": "Promedio redondeado a 2 decimales.",
+        "query_solucion": "SELECT ROUND(AVG(nivel_poder), 2) FROM Habilidades;"
+      }
+    ]
+  },
+  {
+    "id": 445,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN NULL",
+    "titulo": "Planetas Inhabitados",
+    "enunciado": "Nombre de Planetas sin Personajes natales.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT pl.nombre FROM Planetas pl LEFT JOIN Personajes p ON pl.id_planeta = p.id_planeta_natal WHERE p.id_personaje IS NULL;",
+    "puntos": 32,
+    "pista": "LEFT JOIN + IS NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Personajes sin planeta natal registrado.",
+        "query_solucion": "SELECT p.nombre FROM Personajes p LEFT JOIN Planetas pl ON p.id_planeta_natal = pl.id_planeta WHERE pl.id_planeta IS NULL;"
+      },
+      {
+        "enunciado": "Sistemas_Magia sin planeta de origen.",
+        "query_solucion": "SELECT m.nombre FROM Sistemas_Magia m LEFT JOIN Planetas pl ON m.id_planeta_origen = pl.id_planeta WHERE pl.id_planeta IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 446,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN 3 TABLAS",
+    "titulo": "Cruce Completo",
+    "enunciado": "Nombre del personaje, nombre de la magia y nivel de poder.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre, m.nombre, h.nivel_poder FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje INNER JOIN Sistemas_Magia m ON h.id_magia = m.id_magia;",
+    "puntos": 34,
+    "pista": "Doble INNER JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Nombre del planeta, nombre de la magia y planeta origen.",
+        "query_solucion": "SELECT pl.nombre, p.nombre, m.nombre FROM Planetas pl INNER JOIN Personajes p ON pl.id_planeta = p.id_planeta_natal INNER JOIN Sistemas_Magia m ON pl.id_planeta = m.id_planeta_origen;"
+      },
+      {
+        "enunciado": "Personaje, planeta natal y magia que usa.",
+        "query_solucion": "SELECT p.nombre, pl.nombre, m.nombre FROM Personajes p INNER JOIN Planetas pl ON p.id_planeta_natal = pl.id_planeta INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje INNER JOIN Sistemas_Magia m ON h.id_magia = m.id_magia;"
+      }
+    ]
+  },
+  {
+    "id": 447,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta",
+    "titulo": "Mismo Origen",
+    "enunciado": "Personajes cuyo planeta natal es 'Scadrial' (usando subconsulta).",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Personajes WHERE id_planeta_natal = (SELECT id_planeta FROM Planetas WHERE nombre = 'Scadrial');",
+    "puntos": 35,
+    "pista": "= (SELECT).",
+    "variaciones": [
+      {
+        "enunciado": "Personajes de 'Roshar' por subconsulta.",
+        "query_solucion": "SELECT * FROM Personajes WHERE id_planeta_natal = (SELECT id_planeta FROM Planetas WHERE nombre = 'Roshar');"
+      },
+      {
+        "enunciado": "Magias de 'Nalthis' por subconsulta.",
+        "query_solucion": "SELECT * FROM Sistemas_Magia WHERE id_planeta_origen = (SELECT id_planeta FROM Planetas WHERE nombre = 'Nalthis');"
+      }
+    ]
+  },
+  {
+    "id": 448,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta IN",
+    "titulo": "Nombres Alománticos",
+    "enunciado": "Personajes (nombre) que tengan la magia 'Alomancia' (usando subconsultas con IN).",
+    "bd": "cosmere",
+    "query_solucion": "SELECT nombre FROM Personajes WHERE id_personaje IN (SELECT id_personaje FROM Habilidades WHERE id_magia = (SELECT id_magia FROM Sistemas_Magia WHERE nombre = 'Alomancia'));",
+    "puntos": 36,
+    "pista": "IN (SELECT...).",
+    "variaciones": [
+      {
+        "enunciado": "Personajes que tengan 'Potenciación'.",
+        "query_solucion": "SELECT nombre FROM Personajes WHERE id_personaje IN (SELECT id_personaje FROM Habilidades WHERE id_magia = (SELECT id_magia FROM Sistemas_Magia WHERE nombre = 'Potenciación'));"
+      },
+      {
+        "enunciado": "Personajes que tengan 'Despertar'.",
+        "query_solucion": "SELECT nombre FROM Personajes WHERE id_personaje IN (SELECT id_personaje FROM Habilidades WHERE id_magia = (SELECT id_magia FROM Sistemas_Magia WHERE nombre = 'Despertar'));"
+      }
+    ]
+  },
+  {
+    "id": 449,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT IN",
+    "titulo": "Sin Magia",
+    "enunciado": "Nombres de personajes que NO tienen ninguna habilidad.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT nombre FROM Personajes WHERE id_personaje NOT IN (SELECT id_personaje FROM Habilidades);",
+    "puntos": 35,
+    "pista": "NOT IN.",
+    "variaciones": [
+      {
+        "enunciado": "Magias que NADIE posee.",
+        "query_solucion": "SELECT nombre FROM Sistemas_Magia WHERE id_magia NOT IN (SELECT id_magia FROM Habilidades);"
+      },
+      {
+        "enunciado": "Planetas que NO son origen de ninguna magia.",
+        "query_solucion": "SELECT nombre FROM Planetas WHERE id_planeta NOT IN (SELECT id_planeta_origen FROM Sistemas_Magia WHERE id_planeta_origen IS NOT NULL);"
+      }
+    ]
+  },
+  {
+    "id": 450,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta AVG",
+    "titulo": "Sobre la Media",
+    "enunciado": "Habilidades con nivel_poder superior a la media general.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder > (SELECT AVG(nivel_poder) FROM Habilidades);",
+    "puntos": 36,
+    "pista": "> (SELECT AVG()).",
+    "variaciones": [
+      {
+        "enunciado": "Habilidades por debajo de la media.",
+        "query_solucion": "SELECT * FROM Habilidades WHERE nivel_poder < (SELECT AVG(nivel_poder) FROM Habilidades);"
+      },
+      {
+        "enunciado": "Magias con ID superior a la media de IDs.",
+        "query_solucion": "SELECT * FROM Sistemas_Magia WHERE id_magia > (SELECT AVG(id_magia) FROM Sistemas_Magia);"
+      }
+    ]
+  },
+  {
+    "id": 451,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN HAVING",
+    "titulo": "Planetas Poderosos",
+    "enunciado": "Nombre de planetas con personajes cuyo promedio de poder > 50.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT pl.nombre FROM Planetas pl INNER JOIN Personajes p ON pl.id_planeta = p.id_planeta_natal INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY pl.nombre HAVING AVG(h.nivel_poder) > 50;",
+    "puntos": 38,
+    "pista": "JOIN + GROUP + HAVING.",
+    "variaciones": [
+      {
+        "enunciado": "Planetas con personajes de promedio < 30.",
+        "query_solucion": "SELECT pl.nombre FROM Planetas pl INNER JOIN Personajes p ON pl.id_planeta = p.id_planeta_natal INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY pl.nombre HAVING AVG(h.nivel_poder) < 30;"
+      },
+      {
+        "enunciado": "Planetas con suma de poder > 100.",
+        "query_solucion": "SELECT pl.nombre FROM Planetas pl INNER JOIN Personajes p ON pl.id_planeta = p.id_planeta_natal INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY pl.nombre HAVING SUM(h.nivel_poder) > 100;"
+      }
+    ]
+  },
+  {
+    "id": 452,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Condición Compleja",
+    "titulo": "Magia Originaria",
+    "enunciado": "Personajes con magias originarias del planeta 1, con más de 1 magia.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje INNER JOIN Sistemas_Magia m ON h.id_magia = m.id_magia WHERE m.id_planeta_origen = 1 GROUP BY p.nombre HAVING COUNT(h.id_magia) > 1;",
+    "puntos": 38,
+    "pista": "JOIN + WHERE + GROUP BY + HAVING COUNT.",
+    "variaciones": [
+      {
+        "enunciado": "Personajes con magias de planeta 2 y poder > 20.",
+        "query_solucion": "SELECT p.nombre FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje INNER JOIN Sistemas_Magia m ON h.id_magia = m.id_magia WHERE m.id_planeta_origen = 2 GROUP BY p.nombre HAVING AVG(h.nivel_poder) > 20;"
+      },
+      {
+        "enunciado": "Personajes con magias de planeta 3.",
+        "query_solucion": "SELECT p.nombre FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje INNER JOIN Sistemas_Magia m ON h.id_magia = m.id_magia WHERE m.id_planeta_origen = 3 GROUP BY p.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 453,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Sub FROM",
+    "titulo": "Promedio Máximo",
+    "enunciado": "Máximo promedio de nivel_poder de los personajes (Subconsulta en FROM).",
+    "bd": "cosmere",
+    "query_solucion": "SELECT MAX(promedio) FROM (SELECT AVG(nivel_poder) AS promedio FROM Habilidades GROUP BY id_personaje) AS sub;",
+    "puntos": 40,
+    "pista": "MAX sobre subconsulta.",
+    "variaciones": [
+      {
+        "enunciado": "Mínimo promedio de poder.",
+        "query_solucion": "SELECT MIN(promedio) FROM (SELECT AVG(nivel_poder) AS promedio FROM Habilidades GROUP BY id_personaje) AS sub;"
+      },
+      {
+        "enunciado": "Máximo recuento de habilidades por personaje.",
+        "query_solucion": "SELECT MAX(cantidad) FROM (SELECT COUNT(*) AS cantidad FROM Habilidades GROUP BY id_personaje) AS sub;"
+      }
+    ]
+  },
+  {
+    "id": 454,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN GROUP",
+    "titulo": "Planeta Mágico",
+    "enunciado": "Planeta con más Sistemas de Magia (LEFT JOIN, ORDER DESC LIMIT 1).",
+    "bd": "cosmere",
+    "query_solucion": "SELECT pl.nombre, COUNT(m.id_magia) FROM Planetas pl LEFT JOIN Sistemas_Magia m ON pl.id_planeta = m.id_planeta_origen GROUP BY pl.nombre ORDER BY COUNT(m.id_magia) DESC LIMIT 1;",
+    "puntos": 36,
+    "pista": "Agrupa y cuenta en el lado derecho del LEFT JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Planeta con menos sistemas de magia.",
+        "query_solucion": "SELECT pl.nombre, COUNT(m.id_magia) FROM Planetas pl LEFT JOIN Sistemas_Magia m ON pl.id_planeta = m.id_planeta_origen GROUP BY pl.nombre ORDER BY COUNT(m.id_magia) ASC LIMIT 1;"
+      },
+      {
+        "enunciado": "Personaje con menos habilidades.",
+        "query_solucion": "SELECT p.nombre, COUNT(h.id_magia) FROM Personajes p LEFT JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY p.nombre ORDER BY COUNT(h.id_magia) ASC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 455,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Correlacionada",
+    "titulo": "Poder Máximo",
+    "enunciado": "Nombre del personaje con la habilidad más poderosa (Max absoluto).",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje WHERE h.nivel_poder = (SELECT MAX(nivel_poder) FROM Habilidades);",
+    "puntos": 38,
+    "pista": "Iguala el poder al SELECT MAX.",
+    "variaciones": [
+      {
+        "enunciado": "Personaje con la habilidad más débil.",
+        "query_solucion": "SELECT p.nombre FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje WHERE h.nivel_poder = (SELECT MIN(nivel_poder) FROM Habilidades);"
+      },
+      {
+        "enunciado": "Magia que tiene el nivel más alto.",
+        "query_solucion": "SELECT m.nombre FROM Sistemas_Magia m INNER JOIN Habilidades h ON m.id_magia = h.id_magia WHERE h.nivel_poder = (SELECT MAX(nivel_poder) FROM Habilidades);"
+      }
+    ]
+  },
+  {
+    "id": 456,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT EXISTS",
+    "titulo": "Magias Fuertes",
+    "enunciado": "Magias donde NINGÚN personaje la tenga a nivel < 20.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT m.nombre FROM Sistemas_Magia m WHERE NOT EXISTS (SELECT 1 FROM Habilidades h WHERE h.id_magia = m.id_magia AND h.nivel_poder < 20);",
+    "puntos": 40,
+    "pista": "NOT EXISTS correlacionado.",
+    "variaciones": [
+      {
+        "enunciado": "Magias donde NADIE la tenga a nivel < 50.",
+        "query_solucion": "SELECT m.nombre FROM Sistemas_Magia m WHERE NOT EXISTS (SELECT 1 FROM Habilidades h WHERE h.id_magia = m.id_magia AND h.nivel_poder < 50);"
+      },
+      {
+        "enunciado": "Planetas donde NINGÚN personaje tenga la letra Z.",
+        "query_solucion": "SELECT pl.nombre FROM Planetas pl WHERE NOT EXISTS (SELECT 1 FROM Personajes p WHERE p.id_planeta_natal = pl.id_planeta AND p.nombre LIKE '%Z%');"
+      }
+    ]
+  },
+  {
+    "id": 457,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Limit Group",
+    "titulo": "Héroe Supremo",
+    "enunciado": "Personaje con el mayor pico de poder (MAX de nivel_poder) agrupado y ordenado.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY p.id_personaje, p.nombre ORDER BY MAX(h.nivel_poder) DESC LIMIT 1;",
+    "puntos": 35,
+    "pista": "GROUP BY, ORDER BY MAX, LIMIT.",
+    "variaciones": [
+      {
+        "enunciado": "Personaje con menor suma de poder.",
+        "query_solucion": "SELECT p.nombre FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY p.id_personaje, p.nombre ORDER BY SUM(h.nivel_poder) ASC LIMIT 1;"
+      },
+      {
+        "enunciado": "Magia con mayor suma de poder.",
+        "query_solucion": "SELECT m.nombre FROM Sistemas_Magia m INNER JOIN Habilidades h ON m.id_magia = h.id_magia GROUP BY m.id_magia, m.nombre ORDER BY SUM(h.nivel_poder) DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 458,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "IN Group",
+    "titulo": "Magias Populares",
+    "enunciado": "Nombre de las magias que tienen más de 2 personajes que las usan.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT m.nombre FROM Sistemas_Magia m WHERE id_magia IN (SELECT id_magia FROM Habilidades GROUP BY id_magia HAVING COUNT(id_personaje) > 2);",
+    "puntos": 38,
+    "pista": "IN (SELECT ... HAVING).",
+    "variaciones": [
+      {
+        "enunciado": "Magias con más de 1 personaje.",
+        "query_solucion": "SELECT m.nombre FROM Sistemas_Magia m WHERE id_magia IN (SELECT id_magia FROM Habilidades GROUP BY id_magia HAVING COUNT(id_personaje) > 1);"
+      },
+      {
+        "enunciado": "Planetas natales de más de 2 personajes.",
+        "query_solucion": "SELECT pl.nombre FROM Planetas pl WHERE id_planeta IN (SELECT id_planeta_natal FROM Personajes GROUP BY id_planeta_natal HAVING COUNT(id_personaje) > 2);"
+      }
+    ]
+  },
+  {
+    "id": 459,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Plenitud",
+    "titulo": "Omnipotencia",
+    "enunciado": "Nombre de personajes que poseen TODAS las magias existentes.",
+    "bd": "cosmere",
+    "query_solucion": "SELECT p.nombre, COUNT(DISTINCT h.id_magia) FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje GROUP BY p.id_personaje, p.nombre HAVING COUNT(DISTINCT h.id_magia) = (SELECT COUNT(*) FROM Sistemas_Magia);",
+    "puntos": 40,
+    "pista": "HAVING COUNT = (SELECT COUNT(*)).",
+    "variaciones": [
+      {
+        "enunciado": "Planetas de origen de TODAS las magias.",
+        "query_solucion": "SELECT pl.nombre FROM Planetas pl INNER JOIN Sistemas_Magia m ON pl.id_planeta = m.id_planeta_origen GROUP BY pl.id_planeta, pl.nombre HAVING COUNT(m.id_magia) = (SELECT COUNT(*) FROM Sistemas_Magia);"
+      },
+      {
+        "enunciado": "Personajes que conocen al menos una magia de CADA planeta.",
+        "query_solucion": "SELECT p.nombre FROM Personajes p INNER JOIN Habilidades h ON p.id_personaje = h.id_personaje INNER JOIN Sistemas_Magia m ON h.id_magia = m.id_magia GROUP BY p.id_personaje, p.nombre HAVING COUNT(DISTINCT m.id_planeta_origen) = (SELECT COUNT(*) FROM Planetas);"
+      }
+    ]
+  },
+  {
+    "id": 460,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con PRIMARY KEY",
+    "titulo": "Crear tabla Equipos",
+    "enunciado": "Crea una tabla llamada <code>Equipos</code> con las columnas: <b>id_equipo</b> (entero, clave primaria), <b>nombre_equipo</b> (texto de hasta 100 caracteres, no nulo) y <b>ciudad</b> (texto de hasta 80 caracteres).",
+    "bd": "futbol",
+    "query_solucion": "CREATE TABLE Equipos (\n  id_equipo INT PRIMARY KEY,\n  nombre_equipo VARCHAR(100) NOT NULL,\n  ciudad VARCHAR(80)\n);",
+    "puntos": 10,
+    "pista": "Usa CREATE TABLE seguido del nombre de la tabla y entre paréntesis las columnas con sus tipos. La clave primaria se indica con PRIMARY KEY.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>Estadios</code> con las columnas: <b>id_estadio</b> (entero, clave primaria), <b>nombre_estadio</b> (texto de hasta 100 caracteres, no nulo) y <b>aforo</b> (entero).",
+        "query_solucion": "CREATE TABLE Estadios (\n  id_estadio INT PRIMARY KEY,\n  nombre_estadio VARCHAR(100) NOT NULL,\n  aforo INT\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>Arbitros</code> con las columnas: <b>id_arbitro</b> (entero, clave primaria), <b>nombre</b> (texto de hasta 100 caracteres, no nulo) y <b>pais</b> (texto de hasta 60 caracteres).",
+        "query_solucion": "CREATE TABLE Arbitros (\n  id_arbitro INT PRIMARY KEY,\n  nombre VARCHAR(100) NOT NULL,\n  pais VARCHAR(60)\n);"
+      }
+    ]
+  },
+  {
+    "id": 461,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con NOT NULL y UNIQUE",
+    "titulo": "Crear tabla Partidos con restricciones",
+    "enunciado": "Crea una tabla llamada <code>Partidos</code> con: <b>id_partido</b> (entero, PK), <b>codigo_partido</b> (texto de 20 caracteres, único y no nulo), <b>fecha</b> (DATE, no nula) y <b>goles_totales</b> (entero).",
+    "bd": "futbol",
+    "query_solucion": "CREATE TABLE Partidos (\n  id_partido INT PRIMARY KEY,\n  codigo_partido VARCHAR(20) UNIQUE NOT NULL,\n  fecha DATE NOT NULL,\n  goles_totales INT\n);",
+    "puntos": 12,
+    "pista": "Usa <code>UNIQUE</code> después del tipo de dato para evitar valores duplicados en esa columna.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>Ligas</code> con: <b>id_liga</b> (entero, PK), <b>codigo_liga</b> (texto de 10 caracteres, único y no nulo), <b>nombre_liga</b> (texto de hasta 100 caracteres, no nulo) y <b>año_fundacion</b> (entero).",
+        "query_solucion": "CREATE TABLE Ligas (\n  id_liga INT PRIMARY KEY,\n  codigo_liga VARCHAR(10) UNIQUE NOT NULL,\n  nombre_liga VARCHAR(100) NOT NULL,\n  año_fundacion INT\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>Uniformes</code> con: <b>id_uniforme</b> (entero, PK), <b>codigo_uniforme</b> (texto de 15 caracteres, único y no nulo), <b>color_principal</b> (texto de hasta 50 caracteres, no nulo) y <b>temporada</b> (texto de 10 caracteres).",
+        "query_solucion": "CREATE TABLE Uniformes (\n  id_uniforme INT PRIMARY KEY,\n  codigo_uniforme VARCHAR(15) UNIQUE NOT NULL,\n  color_principal VARCHAR(50) NOT NULL,\n  temporada VARCHAR(10)\n);"
+      }
+    ]
+  },
+  {
+    "id": 462,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con DEFAULT",
+    "titulo": "Crear tabla Goles con valor por defecto",
+    "enunciado": "Crea una tabla <code>Goles</code> con: <b>id_gol</b> (entero, PK), <b>id_partido</b> (entero, no nulo), <b>minuto</b> (entero, no nulo) y <b>tipo_gol</b> (texto de 50 caracteres, con valor por defecto <code>'Normal'</code>).",
+    "bd": "futbol",
+    "query_solucion": "CREATE TABLE Goles (\n  id_gol INT PRIMARY KEY,\n  id_partido INT NOT NULL,\n  minuto INT NOT NULL,\n  tipo_gol VARCHAR(50) DEFAULT 'Normal'\n);",
+    "puntos": 12,
+    "pista": "Para definir un valor por defecto usa <code>DEFAULT 'valor'</code> después del tipo de dato de la columna.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Sanciones</code> con: <b>id_sancion</b> (entero, PK), <b>id_jugador</b> (entero, no nulo), <b>partidos_suspension</b> (entero con valor por defecto <code>1</code>) y <b>motivo</b> (texto de hasta 200 caracteres).",
+        "query_solucion": "CREATE TABLE Sanciones (\n  id_sancion INT PRIMARY KEY,\n  id_jugador INT NOT NULL,\n  partidos_suspension INT DEFAULT 1,\n  motivo VARCHAR(200)\n);"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Convocatorias</code> con: <b>id_convocatoria</b> (entero, PK), <b>id_jugador</b> (entero, no nulo), <b>posicion</b> (texto de 30 caracteres con valor por defecto <code>'Delantero'</code>) y <b>activo</b> (BOOLEAN con valor por defecto <code>TRUE</code>).",
+        "query_solucion": "CREATE TABLE Convocatorias (\n  id_convocatoria INT PRIMARY KEY,\n  id_jugador INT NOT NULL,\n  posicion VARCHAR(30) DEFAULT 'Delantero',\n  activo BOOLEAN DEFAULT TRUE\n);"
+      }
+    ]
+  },
+  {
+    "id": 463,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con FOREIGN KEY",
+    "titulo": "Crear tabla Partidos con clave foránea",
+    "enunciado": "Crea la tabla <code>Partidos</code> con: <b>id_partido</b> (entero, PK), <b>id_estadio</b> (entero, FK que referencia a <code>Estadios(id_estadio)</code>), <b>resultado</b> (texto de 10 caracteres) y <b>fecha</b> (DATE no nula). Asume que la tabla <code>Estadios</code> ya existe.",
+    "bd": "futbol",
+    "query_solucion": "CREATE TABLE Partidos (\n  id_partido INT PRIMARY KEY,\n  id_estadio INT,\n  resultado VARCHAR(10),\n  fecha DATE NOT NULL,\n  FOREIGN KEY (id_estadio) REFERENCES Estadios(id_estadio)\n);",
+    "puntos": 13,
+    "pista": "Define la clave foránea al final con <code>FOREIGN KEY (columna) REFERENCES tabla_padre(columna_padre)</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Contrataciones</code> con: <b>id_contrato</b> (entero, PK), <b>id_jugador</b> (entero, FK que referencia a <code>Jugadores(id_jugador)</code>), <b>salario</b> (decimal) y <b>fecha_inicio</b> (DATE no nula). Asume que la tabla <code>Jugadores</code> ya existe.",
+        "query_solucion": "CREATE TABLE Contrataciones (\n  id_contrato INT PRIMARY KEY,\n  id_jugador INT,\n  salario DECIMAL(10,2),\n  fecha_inicio DATE NOT NULL,\n  FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador)\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Resultados_Fase</code> con: <b>id_resultado</b> (entero, PK), <b>id_fase</b> (entero, FK que referencia a <code>Fases(id_fase)</code>), <b>fecha_celebracion</b> (DATE no nula) y <b>observaciones</b> (texto de hasta 300 caracteres). Asume que la tabla <code>Fases</code> ya existe.",
+        "query_solucion": "CREATE TABLE Resultados_Fase (\n  id_resultado INT PRIMARY KEY,\n  id_fase INT,\n  fecha_celebracion DATE NOT NULL,\n  observaciones VARCHAR(300),\n  FOREIGN KEY (id_fase) REFERENCES Fases(id_fase)\n);"
+      }
+    ]
+  },
+  {
+    "id": 464,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE compleja con múltiples restricciones",
+    "titulo": "Crear tabla Equipos completa",
+    "enunciado": "Crea la tabla <code>Equipos</code> con: <b>id_equipo</b> (entero, PK), <b>nombre_equipo</b> (VARCHAR 100, NOT NULL, UNIQUE), <b>ciudad</b> (VARCHAR 80, NOT NULL), <b>puntos_totales</b> (entero, DEFAULT 0) y <b>activo</b> (BOOLEAN, DEFAULT TRUE).",
+    "bd": "futbol",
+    "query_solucion": "CREATE TABLE Equipos (\n  id_equipo INT PRIMARY KEY,\n  nombre_equipo VARCHAR(100) NOT NULL UNIQUE,\n  ciudad VARCHAR(80) NOT NULL,\n  puntos_totales INT DEFAULT 0,\n  activo BOOLEAN DEFAULT TRUE\n);",
+    "puntos": 15,
+    "pista": "Puedes combinar varias restricciones en la misma columna: <code>NOT NULL UNIQUE DEFAULT valor</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Entrenadores</code> con: <b>id_entrenador</b> (entero, PK), <b>nombre</b> (VARCHAR 100, NOT NULL, UNIQUE), <b>nacionalidad</b> (VARCHAR 60, NOT NULL), <b>años_experiencia</b> (entero, DEFAULT 0) y <b>disponible</b> (BOOLEAN, DEFAULT TRUE).",
+        "query_solucion": "CREATE TABLE Entrenadores (\n  id_entrenador INT PRIMARY KEY,\n  nombre VARCHAR(100) NOT NULL UNIQUE,\n  nacionalidad VARCHAR(60) NOT NULL,\n  años_experiencia INT DEFAULT 0,\n  disponible BOOLEAN DEFAULT TRUE\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Torneos</code> con: <b>id_torneo</b> (entero, PK), <b>nombre_torneo</b> (VARCHAR 120, NOT NULL, UNIQUE), <b>pais_sede</b> (VARCHAR 80, NOT NULL), <b>premio_total</b> (entero, DEFAULT 0) y <b>finalizado</b> (BOOLEAN, DEFAULT FALSE).",
+        "query_solucion": "CREATE TABLE Torneos (\n  id_torneo INT PRIMARY KEY,\n  nombre_torneo VARCHAR(120) NOT NULL UNIQUE,\n  pais_sede VARCHAR(80) NOT NULL,\n  premio_total INT DEFAULT 0,\n  finalizado BOOLEAN DEFAULT FALSE\n);"
+      }
+    ]
+  },
+  {
+    "id": 465,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD COLUMN",
+    "titulo": "Añadir columna a Jugadores",
+    "enunciado": "Añade la columna <b>posicion</b> (texto de hasta 50 caracteres) a la tabla <code>Jugadores</code>.",
+    "bd": "futbol",
+    "query_solucion": "ALTER TABLE Jugadores\nADD COLUMN posicion VARCHAR(50);",
+    "puntos": 10,
+    "pista": "Usa <code>ALTER TABLE nombre_tabla ADD COLUMN nombre_columna tipo</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Añade la columna <b>pais_origen</b> (texto de hasta 80 caracteres) a la tabla <code>Jugadores</code>.",
+        "query_solucion": "ALTER TABLE Jugadores\nADD COLUMN pais_origen VARCHAR(80);"
+      },
+      {
+        "enunciado": "Añade la columna <b>fecha_nacimiento</b> (DATE) a la tabla <code>Jugadores</code>.",
+        "query_solucion": "ALTER TABLE Jugadores\nADD COLUMN fecha_nacimiento DATE;"
+      }
+    ]
+  },
+  {
+    "id": 466,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD COLUMN con restricción",
+    "titulo": "Añadir columna con DEFAULT a Fases",
+    "enunciado": "Añade la columna <b>activa</b> de tipo BOOLEAN con valor por defecto <code>TRUE</code> a la tabla <code>Fases</code>.",
+    "bd": "futbol",
+    "query_solucion": "ALTER TABLE Fases\nADD COLUMN activa BOOLEAN DEFAULT TRUE;",
+    "puntos": 12,
+    "pista": "Al añadir una columna con ALTER TABLE también puedes especificar <code>DEFAULT valor</code> al final.",
+    "variaciones": [
+      {
+        "enunciado": "Añade la columna <b>dificultad</b> de tipo VARCHAR(30) con valor por defecto <code>'Media'</code> a la tabla <code>Fases</code>.",
+        "query_solucion": "ALTER TABLE Fases\nADD COLUMN dificultad VARCHAR(30) DEFAULT 'Media';"
+      },
+      {
+        "enunciado": "Añade la columna <b>intentos_permitidos</b> de tipo INT con valor por defecto <code>3</code> a la tabla <code>Armas_Especiales</code>.",
+        "query_solucion": "ALTER TABLE Armas_Especiales\nADD COLUMN intentos_permitidos INT DEFAULT 3;"
+      }
+    ]
+  },
+  {
+    "id": 467,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE MODIFY COLUMN",
+    "titulo": "Modificar tipo de columna en Jugadores",
+    "enunciado": "Modifica la columna <b>nombre</b> de la tabla <code>Jugadores</code> para que admita hasta 200 caracteres (actualmente es VARCHAR(100)).",
+    "bd": "futbol",
+    "query_solucion": "ALTER TABLE Jugadores\nMODIFY COLUMN nombre VARCHAR(200);",
+    "puntos": 10,
+    "pista": "Usa <code>ALTER TABLE ... MODIFY COLUMN nombre_columna nuevo_tipo</code> para cambiar el tipo o tamaño.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <b>descripcion</b> de la tabla <code>Armas_Especiales</code> para que admita hasta 500 caracteres (actualmente es VARCHAR(200)).",
+        "query_solucion": "ALTER TABLE Armas_Especiales\nMODIFY COLUMN descripcion VARCHAR(500);"
+      },
+      {
+        "enunciado": "Modifica la columna <b>nombre_fase</b> de la tabla <code>Fases</code> para que sea NOT NULL y admita hasta 150 caracteres.",
+        "query_solucion": "ALTER TABLE Fases\nMODIFY COLUMN nombre_fase VARCHAR(150) NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 468,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DROP COLUMN",
+    "titulo": "Eliminar columna de Armas_Especiales",
+    "enunciado": "Elimina la columna <b>tipo</b> de la tabla <code>Armas_Especiales</code>.",
+    "bd": "futbol",
+    "query_solucion": "ALTER TABLE Armas_Especiales\nDROP COLUMN tipo;",
+    "puntos": 10,
+    "pista": "Usa <code>ALTER TABLE ... DROP COLUMN nombre_columna</code>. ¡Cuidado! Esta operación no se puede deshacer.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <b>plazas_supervivencia</b> de la tabla <code>Fases</code>.",
+        "query_solucion": "ALTER TABLE Fases\nDROP COLUMN plazas_supervivencia;"
+      },
+      {
+        "enunciado": "Elimina la columna <b>ego_score</b> de la tabla <code>Jugadores</code>.",
+        "query_solucion": "ALTER TABLE Jugadores\nDROP COLUMN ego_score;"
+      }
+    ]
+  },
+  {
+    "id": 469,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD CONSTRAINT FOREIGN KEY",
+    "titulo": "Añadir restricción de clave foránea",
+    "enunciado": "Añade una restricción de clave foránea en la tabla <code>Clasificaciones</code> para que la columna <b>id_jugador</b> referencie a <code>Jugadores(id_jugador)</code>.",
+    "bd": "futbol",
+    "query_solucion": "ALTER TABLE Clasificaciones\nADD CONSTRAINT fk_clasificaciones_jugador\nFOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador);",
+    "puntos": 13,
+    "pista": "Usa <code>ADD CONSTRAINT nombre_fk FOREIGN KEY (col) REFERENCES tabla(col)</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción de clave foránea en la tabla <code>Clasificaciones</code> para que la columna <b>id_fase</b> referencie a <code>Fases(id_fase)</code>.",
+        "query_solucion": "ALTER TABLE Clasificaciones\nADD CONSTRAINT fk_clasificaciones_fase\nFOREIGN KEY (id_fase) REFERENCES Fases(id_fase);"
+      },
+      {
+        "enunciado": "Añade una restricción de clave foránea en la tabla <code>Jugadores</code> para que la columna <b>id_arma</b> referencie a <code>Armas_Especiales(id_arma)</code>.",
+        "query_solucion": "ALTER TABLE Jugadores\nADD CONSTRAINT fk_jugadores_arma\nFOREIGN KEY (id_arma) REFERENCES Armas_Especiales(id_arma);"
+      }
+    ]
+  },
+  {
+    "id": 470,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Eliminar tabla Partidos",
+    "enunciado": "Elimina la tabla <code>Partidos</code> de la base de datos si existe.",
+    "bd": "futbol",
+    "query_solucion": "DROP TABLE IF EXISTS Partidos;",
+    "puntos": 10,
+    "pista": "Usa <code>DROP TABLE IF EXISTS nombre_tabla</code> para eliminar sin error si la tabla no existe.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la tabla <code>Estadios</code> de la base de datos si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS Estadios;"
+      },
+      {
+        "enunciado": "Elimina la tabla <code>Goles</code> de la base de datos si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS Goles;"
+      }
+    ]
+  },
+  {
+    "id": 471,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar tabla Equipos",
+    "enunciado": "Renombra la tabla <code>Equipos</code> a <code>Clubes</code>.",
+    "bd": "futbol",
+    "query_solucion": "RENAME TABLE Equipos TO Clubes;",
+    "puntos": 10,
+    "pista": "Usa <code>RENAME TABLE nombre_actual TO nombre_nuevo</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la tabla <code>Partidos</code> a <code>Encuentros</code>.",
+        "query_solucion": "RENAME TABLE Partidos TO Encuentros;"
+      },
+      {
+        "enunciado": "Renombra la tabla <code>Goles</code> a <code>Anotaciones</code>.",
+        "query_solucion": "RENAME TABLE Goles TO Anotaciones;"
+      }
+    ]
+  },
+  {
+    "id": 472,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE tabla intermedia (relación N:M)",
+    "titulo": "Crear tabla Jugadores_Equipos",
+    "enunciado": "Crea la tabla <code>Jugadores_Equipos</code> para relacionar jugadores con equipos. Debe tener: <b>id_jugador</b> (entero, FK → <code>Jugadores</code>), <b>id_equipo</b> (entero, FK → <code>Equipos</code>) y <b>fecha_incorporacion</b> (DATE). La PK debe ser la combinación de <b>id_jugador</b> e <b>id_equipo</b>.",
+    "bd": "futbol",
+    "query_solucion": "CREATE TABLE Jugadores_Equipos (\n  id_jugador INT,\n  id_equipo INT,\n  fecha_incorporacion DATE,\n  PRIMARY KEY (id_jugador, id_equipo),\n  FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador),\n  FOREIGN KEY (id_equipo) REFERENCES Equipos(id_equipo)\n);",
+    "puntos": 15,
+    "pista": "Una clave primaria compuesta se define con <code>PRIMARY KEY (col1, col2)</code> al final de la definición de la tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Jugadores_Fases</code> para registrar qué jugadores participaron en qué fases. Columnas: <b>id_jugador</b> (entero, FK → <code>Jugadores</code>), <b>id_fase</b> (entero, FK → <code>Fases</code>) y <b>resultado</b> (VARCHAR 50). La PK es la combinación de ambas FKs.",
+        "query_solucion": "CREATE TABLE Jugadores_Fases (\n  id_jugador INT,\n  id_fase INT,\n  resultado VARCHAR(50),\n  PRIMARY KEY (id_jugador, id_fase),\n  FOREIGN KEY (id_jugador) REFERENCES Jugadores(id_jugador),\n  FOREIGN KEY (id_fase) REFERENCES Fases(id_fase)\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Partidos_Arbitros</code> para relacionar partidos con árbitros. Columnas: <b>id_partido</b> (entero, FK → <code>Partidos</code>), <b>id_arbitro</b> (entero, FK → <code>Arbitros</code>) y <b>rol</b> (VARCHAR 30, DEFAULT 'Principal'). La PK es la combinación de ambas FKs.",
+        "query_solucion": "CREATE TABLE Partidos_Arbitros (\n  id_partido INT,\n  id_arbitro INT,\n  rol VARCHAR(30) DEFAULT 'Principal',\n  PRIMARY KEY (id_partido, id_arbitro),\n  FOREIGN KEY (id_partido) REFERENCES Partidos(id_partido),\n  FOREIGN KEY (id_arbitro) REFERENCES Arbitros(id_arbitro)\n);"
+      }
+    ]
+  },
+  {
+    "id": 473,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE RENAME COLUMN",
+    "titulo": "Renombrar columna en Jugadores",
+    "enunciado": "Renombra la columna <b>ego_score</b> de la tabla <code>Jugadores</code> a <b>nivel_ego</b>.",
+    "bd": "futbol",
+    "query_solucion": "ALTER TABLE Jugadores\nRENAME COLUMN ego_score TO nivel_ego;",
+    "puntos": 10,
+    "pista": "Usa <code>ALTER TABLE ... RENAME COLUMN nombre_actual TO nombre_nuevo</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la columna <b>nombre_fase</b> de la tabla <code>Fases</code> a <b>nombre</b>.",
+        "query_solucion": "ALTER TABLE Fases\nRENAME COLUMN nombre_fase TO nombre;"
+      },
+      {
+        "enunciado": "Renombra la columna <b>ranking_obtenido</b> de la tabla <code>Clasificaciones</code> a <b>posicion_final</b>.",
+        "query_solucion": "ALTER TABLE Clasificaciones\nRENAME COLUMN ranking_obtenido TO posicion_final;"
+      }
+    ]
+  },
+  {
+    "id": 474,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con CHECK",
+    "titulo": "Crear tabla Estadios con CHECK",
+    "enunciado": "Crea la tabla <code>Estadios</code> con: <b>id_estadio</b> (entero, PK), <b>nombre</b> (VARCHAR 100, NOT NULL), <b>aforo</b> (entero, con restricción CHECK de que sea mayor que 0) y <b>ciudad</b> (VARCHAR 80).",
+    "bd": "futbol",
+    "query_solucion": "CREATE TABLE Estadios (\n  id_estadio INT PRIMARY KEY,\n  nombre VARCHAR(100) NOT NULL,\n  aforo INT CHECK (aforo > 0),\n  ciudad VARCHAR(80)\n);",
+    "puntos": 13,
+    "pista": "Usa <code>CHECK (condicion)</code> después del tipo de dato para añadir una validación al insertar datos.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Puntuaciones</code> con: <b>id_puntuacion</b> (entero, PK), <b>id_jugador</b> (entero, no nulo), <b>puntos</b> (entero, con CHECK de que esté entre 0 y 100) y <b>comentario</b> (VARCHAR 200).",
+        "query_solucion": "CREATE TABLE Puntuaciones (\n  id_puntuacion INT PRIMARY KEY,\n  id_jugador INT NOT NULL,\n  puntos INT CHECK (puntos >= 0 AND puntos <= 100),\n  comentario VARCHAR(200)\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Clasificaciones_Liga</code> con: <b>id_registro</b> (entero, PK), <b>id_equipo</b> (entero, no nulo), <b>victorias</b> (entero, CHECK mayor o igual a 0) y <b>derrotas</b> (entero, CHECK mayor o igual a 0).",
+        "query_solucion": "CREATE TABLE Clasificaciones_Liga (\n  id_registro INT PRIMARY KEY,\n  id_equipo INT NOT NULL,\n  victorias INT CHECK (victorias >= 0),\n  derrotas INT CHECK (derrotas >= 0)\n);"
+      }
+    ]
+  },
+  {
+    "id": 475,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT *",
+    "titulo": "Ver todos los jugadores",
+    "enunciado": "Muestra <b>todos los datos</b> de todos los jugadores registrados en la tabla <code>Jugadores</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT * FROM Jugadores;",
+    "puntos": 10,
+    "pista": "Usa <code>SELECT *</code> para seleccionar todas las columnas de una tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>todos los datos</b> de todas las fases registradas en la tabla <code>Fases</code>.",
+        "query_solucion": "SELECT * FROM Fases;"
+      },
+      {
+        "enunciado": "Muestra <b>todos los datos</b> de todas las armas especiales registradas en la tabla <code>Armas_Especiales</code>.",
+        "query_solucion": "SELECT * FROM Armas_Especiales;"
+      }
+    ]
+  },
+  {
+    "id": 476,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT columnas específicas",
+    "titulo": "Nombre y ego de jugadores",
+    "enunciado": "Muestra solo el <b>nombre</b> y el <b>ego_score</b> de todos los jugadores.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre, ego_score FROM Jugadores;",
+    "puntos": 10,
+    "pista": "Especifica las columnas que quieres ver separadas por comas después de SELECT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra solo el <b>nombre_fase</b> y las <b>plazas_supervivencia</b> de todas las fases.",
+        "query_solucion": "SELECT nombre_fase, plazas_supervivencia FROM Fases;"
+      },
+      {
+        "enunciado": "Muestra solo la <b>descripcion</b> y el <b>tipo</b> de todas las armas especiales.",
+        "query_solucion": "SELECT descripcion, tipo FROM Armas_Especiales;"
+      }
+    ]
+  },
+  {
+    "id": 477,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con comparadores",
+    "titulo": "Jugadores con ego alto",
+    "enunciado": "Muestra el <b>nombre</b> y el <b>ego_score</b> de los jugadores cuyo <code>ego_score</code> sea <b>mayor que 90</b>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre, ego_score FROM Jugadores WHERE ego_score > 90;",
+    "puntos": 10,
+    "pista": "Usa la cláusula <code>WHERE</code> con el operador <code>></code> para filtrar filas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases que tienen <b>menos de 50 plazas</b> de supervivencia.",
+        "query_solucion": "SELECT nombre_fase FROM Fases WHERE plazas_supervivencia < 50;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de las clasificaciones donde el <b>ranking_obtenido</b> sea <b>igual a 1</b>.",
+        "query_solucion": "SELECT * FROM Clasificaciones WHERE ranking_obtenido = 1;"
+      }
+    ]
+  },
+  {
+    "id": 478,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con AND/OR",
+    "titulo": "Jugadores con ego alto que superaron la fase",
+    "enunciado": "Muestra el <b>id_jugador</b> y el <b>ranking_obtenido</b> de las clasificaciones donde el jugador haya <b>superado la fase</b> (<code>superada_bool = TRUE</code>) <b>y</b> el <b>ranking_obtenido</b> sea <b>menor o igual a 5</b>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT id_jugador, ranking_obtenido FROM Clasificaciones WHERE superada_bool = TRUE AND ranking_obtenido <= 5;",
+    "puntos": 12,
+    "pista": "Combina dos condiciones con <code>AND</code>. Ambas deben cumplirse al mismo tiempo.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los jugadores cuyo <code>ego_score</code> sea <b>mayor que 85</b> <b>o</b> cuyo <b>id_arma</b> sea <b>1</b>.",
+        "query_solucion": "SELECT nombre FROM Jugadores WHERE ego_score > 85 OR id_arma = 1;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de las fases cuyo <b>nombre_fase</b> sea <code>'Primera Selección'</code> <b>o</b> cuyas <b>plazas_supervivencia</b> sean <b>menores de 20</b>.",
+        "query_solucion": "SELECT * FROM Fases WHERE nombre_fase = 'Primera Selección' OR plazas_supervivencia < 20;"
+      }
+    ]
+  },
+  {
+    "id": 479,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con IN",
+    "titulo": "Jugadores con armas específicas",
+    "enunciado": "Muestra el <b>nombre</b> y el <b>id_arma</b> de los jugadores cuyo <code>id_arma</code> sea <b>1 o 3</b> (usando <code>IN</code>).",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre, id_arma FROM Jugadores WHERE id_arma IN (1, 3);",
+    "puntos": 12,
+    "pista": "El operador <code>IN (val1, val2, ...)</code> comprueba si el valor está en una lista.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de las armas especiales cuyo <code>tipo</code> sea <code>'Disparo'</code> o <code>'Mental'</code> (usando <code>IN</code>).",
+        "query_solucion": "SELECT * FROM Armas_Especiales WHERE tipo IN ('Disparo', 'Mental');"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases cuya <b>id_fase</b> sea <b>1, 2 o 3</b> (usando <code>IN</code>).",
+        "query_solucion": "SELECT nombre_fase FROM Fases WHERE id_fase IN (1, 2, 3);"
+      }
+    ]
+  },
+  {
+    "id": 480,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con BETWEEN",
+    "titulo": "Clasificaciones con ranking intermedio",
+    "enunciado": "Muestra todos los datos de las clasificaciones donde el <b>ranking_obtenido</b> esté <b>entre 1 y 10</b> (ambos incluidos).",
+    "bd": "futbol",
+    "query_solucion": "SELECT * FROM Clasificaciones WHERE ranking_obtenido BETWEEN 1 AND 10;",
+    "puntos": 12,
+    "pista": "Usa <code>BETWEEN valor1 AND valor2</code> para filtrar rangos. Incluye los extremos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los jugadores cuyo <code>ego_score</code> esté <b>entre 85 y 95</b> (ambos incluidos).",
+        "query_solucion": "SELECT nombre FROM Jugadores WHERE ego_score BETWEEN 85 AND 95;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> y las <b>plazas_supervivencia</b> de las fases con entre <b>10 y 50</b> plazas.",
+        "query_solucion": "SELECT nombre_fase, plazas_supervivencia FROM Fases WHERE plazas_supervivencia BETWEEN 10 AND 50;"
+      }
+    ]
+  },
+  {
+    "id": 481,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con LIKE",
+    "titulo": "Jugadores cuyo nombre empieza por 'Ba'",
+    "enunciado": "Muestra el <b>nombre</b> de los jugadores cuyo <code>nombre</code> <b>empiece por 'Ba'</b>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre FROM Jugadores WHERE nombre LIKE 'Ba%';",
+    "puntos": 12,
+    "pista": "Usa <code>LIKE 'patrón%'</code>. El símbolo <code>%</code> representa cualquier secuencia de caracteres.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de las armas especiales cuya <b>descripcion</b> contenga la palabra <code>'Explosivo'</code>.",
+        "query_solucion": "SELECT * FROM Armas_Especiales WHERE descripcion LIKE '%Explosivo%';"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases cuyo nombre <b>termine en 'ción'</b>.",
+        "query_solucion": "SELECT nombre_fase FROM Fases WHERE nombre_fase LIKE '%ción';"
+      }
+    ]
+  },
+  {
+    "id": 482,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL / IS NOT NULL",
+    "titulo": "Jugadores sin arma asignada",
+    "enunciado": "Muestra el <b>nombre</b> de los jugadores que <b>no tienen</b> un arma asignada (<code>id_arma</code> es NULL).",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre FROM Jugadores WHERE id_arma IS NULL;",
+    "puntos": 12,
+    "pista": "Para comprobar si un valor es nulo usa <code>IS NULL</code>. No uses <code>= NULL</code>, no funciona en SQL.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de los jugadores que <b>sí tienen</b> un arma asignada (<code>id_arma</code> no es NULL).",
+        "query_solucion": "SELECT * FROM Jugadores WHERE id_arma IS NOT NULL;"
+      },
+      {
+        "enunciado": "Muestra el <b>id_jugador</b> e <b>id_fase</b> de las clasificaciones cuyo <b>ranking_obtenido</b> sea NULL.",
+        "query_solucion": "SELECT id_jugador, id_fase FROM Clasificaciones WHERE ranking_obtenido IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 483,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY ASC/DESC",
+    "titulo": "Jugadores ordenados por ego",
+    "enunciado": "Muestra el <b>nombre</b> y el <b>ego_score</b> de todos los jugadores ordenados de <b>mayor a menor</b> ego_score.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre, ego_score FROM Jugadores ORDER BY ego_score DESC;",
+    "puntos": 10,
+    "pista": "Usa <code>ORDER BY columna DESC</code> para ordenar de mayor a menor. Sin DESC, el orden es ascendente.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> y las <b>plazas_supervivencia</b> ordenadas de <b>menor a mayor</b> número de plazas.",
+        "query_solucion": "SELECT nombre_fase, plazas_supervivencia FROM Fases ORDER BY plazas_supervivencia ASC;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de las clasificaciones ordenadas por <b>ranking_obtenido</b> de <b>menor a mayor</b>.",
+        "query_solucion": "SELECT * FROM Clasificaciones ORDER BY ranking_obtenido ASC;"
+      }
+    ]
+  },
+  {
+    "id": 484,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Los 2 jugadores con mayor ego",
+    "enunciado": "Muestra el <b>nombre</b> y el <b>ego_score</b> de los <b>2 jugadores con mayor ego_score</b>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre, ego_score FROM Jugadores ORDER BY ego_score DESC LIMIT 2;",
+    "puntos": 12,
+    "pista": "Combina <code>ORDER BY ... DESC</code> con <code>LIMIT n</code> para obtener los primeros n resultados.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de la fase con <b>mayor número de plazas</b> (solo 1 resultado).",
+        "query_solucion": "SELECT nombre_fase FROM Fases ORDER BY plazas_supervivencia DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra los datos de las <b>3 clasificaciones con menor ranking_obtenido</b>.",
+        "query_solucion": "SELECT * FROM Clasificaciones ORDER BY ranking_obtenido ASC LIMIT 3;"
+      }
+    ]
+  },
+  {
+    "id": 485,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Tipos de armas distintos",
+    "enunciado": "Muestra los <b>tipos de armas distintos</b> que existen en la tabla <code>Armas_Especiales</code>, sin repeticiones.",
+    "bd": "futbol",
+    "query_solucion": "SELECT DISTINCT tipo FROM Armas_Especiales;",
+    "puntos": 10,
+    "pista": "Usa <code>SELECT DISTINCT columna</code> para eliminar filas duplicadas en el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>id_arma distintos</b> que tienen asignados los jugadores (sin repeticiones).",
+        "query_solucion": "SELECT DISTINCT id_arma FROM Jugadores;"
+      },
+      {
+        "enunciado": "Muestra los <b>id_fase distintos</b> que aparecen en la tabla <code>Clasificaciones</code> (sin repeticiones).",
+        "query_solucion": "SELECT DISTINCT id_fase FROM Clasificaciones;"
+      }
+    ]
+  },
+  {
+    "id": 486,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Alias con AS",
+    "titulo": "Columnas con alias descriptivos",
+    "enunciado": "Muestra el <b>nombre</b> de los jugadores con el alias <code>Jugador</code> y el <b>ego_score</b> con el alias <code>Nivel_Ego</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre AS Jugador, ego_score AS Nivel_Ego FROM Jugadores;",
+    "puntos": 10,
+    "pista": "Usa <code>columna AS alias</code> para dar un nombre más descriptivo a la columna en el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> con alias <code>Nombre</code> y las <b>plazas_supervivencia</b> con alias <code>Plazas</code> de todas las fases.",
+        "query_solucion": "SELECT nombre_fase AS Nombre, plazas_supervivencia AS Plazas FROM Fases;"
+      },
+      {
+        "enunciado": "Muestra la <b>descripcion</b> con alias <code>Habilidad</code> y el <b>tipo</b> con alias <code>Categoria</code> de todas las armas especiales.",
+        "query_solucion": "SELECT descripcion AS Habilidad, tipo AS Categoria FROM Armas_Especiales;"
+      }
+    ]
+  },
+  {
+    "id": 487,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones de texto",
+    "titulo": "Nombre en mayúsculas y longitud",
+    "enunciado": "Muestra el <b>nombre</b> de cada jugador en <b>mayúsculas</b> (con alias <code>nombre_mayusculas</code>) y la <b>longitud</b> de su nombre (con alias <code>longitud_nombre</code>).",
+    "bd": "futbol",
+    "query_solucion": "SELECT UPPER(nombre) AS nombre_mayusculas, LENGTH(nombre) AS longitud_nombre FROM Jugadores;",
+    "puntos": 15,
+    "pista": "Usa <code>UPPER(col)</code> para mayúsculas y <code>LENGTH(col)</code> para contar caracteres.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> en <b>minúsculas</b> (alias <code>fase_minusculas</code>) y la longitud del nombre (alias <code>longitud</code>) de todas las fases.",
+        "query_solucion": "SELECT LOWER(nombre_fase) AS fase_minusculas, LENGTH(nombre_fase) AS longitud FROM Fases;"
+      },
+      {
+        "enunciado": "Muestra la concatenación del <b>nombre</b> del jugador con su <b>ego_score</b> (en el formato <code>'Isagi Yoichi - 85'</code>) con alias <code>ficha_jugador</code>.",
+        "query_solucion": "SELECT CONCAT(nombre, ' - ', ego_score) AS ficha_jugador FROM Jugadores;"
+      }
+    ]
+  },
+  {
+    "id": 488,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Aritmética básica",
+    "titulo": "Plazas eliminadas en cada fase",
+    "enunciado": "Suponiendo que en la <code>Primera Selección</code> hay 300 participantes iniciales, muestra el <b>nombre_fase</b> y calcula cuántos jugadores son <b>eliminados</b> en cada fase como <code>300 - plazas_supervivencia</code> con alias <code>eliminados</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre_fase, 300 - plazas_supervivencia AS eliminados FROM Fases;",
+    "puntos": 15,
+    "pista": "Puedes usar operaciones aritméticas directamente en el SELECT: <code>col1 - col2</code>, <code>col * 2</code>, etc.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de cada jugador y su <b>ego_score multiplicado por 10</b> (alias <code>ego_puntuacion</code>).",
+        "query_solucion": "SELECT nombre, ego_score * 10 AS ego_puntuacion FROM Jugadores;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> y el resultado de dividir las <b>plazas_supervivencia</b> entre 5 (alias <code>grupos</code>, redondeado a 0 decimales) de todas las fases.",
+        "query_solucion": "SELECT nombre_fase, ROUND(plazas_supervivencia / 5, 0) AS grupos FROM Fases;"
+      }
+    ]
+  },
+  {
+    "id": 489,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Combinación WHERE + ORDER BY + LIMIT",
+    "titulo": "Top jugador de ego muy alto",
+    "enunciado": "Muestra el <b>nombre</b> del jugador con <b>ego_score mayor que 80</b>, ordenado de <b>mayor a menor ego</b> y mostrando solo el <b>primero</b>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre FROM Jugadores WHERE ego_score > 80 ORDER BY ego_score DESC LIMIT 1;",
+    "puntos": 15,
+    "pista": "Puedes encadenar WHERE, ORDER BY y LIMIT en ese orden.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_jugador</b> y el <b>ranking_obtenido</b> de las clasificaciones donde se haya superado la fase (<code>superada_bool = TRUE</code>), ordenadas por <b>ranking_obtenido ascendente</b>, mostrando solo las <b>2 primeras</b>.",
+        "query_solucion": "SELECT id_jugador, ranking_obtenido FROM Clasificaciones WHERE superada_bool = TRUE ORDER BY ranking_obtenido ASC LIMIT 2;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases con <b>más de 10 plazas</b> de supervivencia, ordenadas de <b>mayor a menor plazas</b>, mostrando solo la <b>primera</b>.",
+        "query_solucion": "SELECT nombre_fase FROM Fases WHERE plazas_supervivencia > 10 ORDER BY plazas_supervivencia DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 490,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Contar jugadores totales",
+    "enunciado": "Cuenta el <b>número total de jugadores</b> registrados en la tabla <code>Jugadores</code>. Muestra el resultado con alias <code>total_jugadores</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT COUNT(*) AS total_jugadores FROM Jugadores;",
+    "puntos": 20,
+    "pista": "Usa <code>COUNT(*)</code> para contar todas las filas de la tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta cuántas clasificaciones tienen <code>superada_bool = TRUE</code>. Muestra el resultado con alias <code>fases_superadas</code>.",
+        "query_solucion": "SELECT COUNT(*) AS fases_superadas FROM Clasificaciones WHERE superada_bool = TRUE;"
+      },
+      {
+        "enunciado": "Cuenta cuántas armas especiales existen en total. Muestra el resultado con alias <code>total_armas</code>.",
+        "query_solucion": "SELECT COUNT(*) AS total_armas FROM Armas_Especiales;"
+      }
+    ]
+  },
+  {
+    "id": 491,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM y AVG",
+    "titulo": "Total y media de plazas en fases",
+    "enunciado": "Calcula la <b>suma total</b> de plazas de supervivencia de todas las fases (alias <code>total_plazas</code>) y la <b>media</b> (alias <code>media_plazas</code>).",
+    "bd": "futbol",
+    "query_solucion": "SELECT SUM(plazas_supervivencia) AS total_plazas, AVG(plazas_supervivencia) AS media_plazas FROM Fases;",
+    "puntos": 20,
+    "pista": "Usa <code>SUM(col)</code> para sumar y <code>AVG(col)</code> para la media aritmética.",
+    "variaciones": [
+      {
+        "enunciado": "Calcula el <b>ego_score promedio</b> de todos los jugadores (alias <code>media_ego</code>) y el <b>ego_score total</b> (alias <code>suma_ego</code>).",
+        "query_solucion": "SELECT AVG(ego_score) AS media_ego, SUM(ego_score) AS suma_ego FROM Jugadores;"
+      },
+      {
+        "enunciado": "Calcula el <b>ranking promedio</b> de las clasificaciones (alias <code>ranking_medio</code>) redondeado a 2 decimales.",
+        "query_solucion": "SELECT ROUND(AVG(ranking_obtenido), 2) AS ranking_medio FROM Clasificaciones;"
+      }
+    ]
+  },
+  {
+    "id": 492,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX y MIN",
+    "titulo": "Mayor y menor ego_score",
+    "enunciado": "Muestra el <b>mayor ego_score</b> (alias <code>max_ego</code>) y el <b>menor ego_score</b> (alias <code>min_ego</code>) entre todos los jugadores.",
+    "bd": "futbol",
+    "query_solucion": "SELECT MAX(ego_score) AS max_ego, MIN(ego_score) AS min_ego FROM Jugadores;",
+    "puntos": 20,
+    "pista": "Usa <code>MAX(col)</code> y <code>MIN(col)</code> para obtener el valor máximo y mínimo.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>mayor ranking_obtenido</b> (alias <code>peor_ranking</code>) y el <b>menor ranking_obtenido</b> (alias <code>mejor_ranking</code>) de la tabla <code>Clasificaciones</code>.",
+        "query_solucion": "SELECT MAX(ranking_obtenido) AS peor_ranking, MIN(ranking_obtenido) AS mejor_ranking FROM Clasificaciones;"
+      },
+      {
+        "enunciado": "Muestra la <b>fase con más plazas</b> (alias <code>max_plazas</code>) y la fase con <b>menos plazas</b> (alias <code>min_plazas</code>).",
+        "query_solucion": "SELECT MAX(plazas_supervivencia) AS max_plazas, MIN(plazas_supervivencia) AS min_plazas FROM Fases;"
+      }
+    ]
+  },
+  {
+    "id": 493,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Jugadores por tipo de arma",
+    "enunciado": "Muestra el <b>id_arma</b> y el <b>número de jugadores</b> que tiene cada arma asignada (alias <code>num_jugadores</code>). Agrupa por <code>id_arma</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT id_arma, COUNT(*) AS num_jugadores FROM Jugadores GROUP BY id_arma;",
+    "puntos": 22,
+    "pista": "Usa <code>GROUP BY columna</code> para agrupar filas con el mismo valor. Luego aplica funciones de agregación.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_fase</b> y el <b>número de clasificaciones</b> registradas por fase (alias <code>num_clasificaciones</code>).",
+        "query_solucion": "SELECT id_fase, COUNT(*) AS num_clasificaciones FROM Clasificaciones GROUP BY id_fase;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo</b> de arma y el <b>número de armas</b> de ese tipo (alias <code>num_armas</code>). Agrupa por tipo.",
+        "query_solucion": "SELECT tipo, COUNT(*) AS num_armas FROM Armas_Especiales GROUP BY tipo;"
+      }
+    ]
+  },
+  {
+    "id": 494,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY con funciones de agregación",
+    "titulo": "Media de ranking por fase",
+    "enunciado": "Muestra el <b>id_fase</b> y el <b>promedio del ranking_obtenido</b> (alias <code>ranking_medio</code>) para cada fase. Agrupa por <code>id_fase</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT id_fase, AVG(ranking_obtenido) AS ranking_medio FROM Clasificaciones GROUP BY id_fase;",
+    "puntos": 22,
+    "pista": "GROUP BY puede combinarse con AVG, SUM, MAX, MIN y COUNT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_arma</b> y el <b>ego_score máximo</b> (alias <code>max_ego</code>) de los jugadores con ese arma.",
+        "query_solucion": "SELECT id_arma, MAX(ego_score) AS max_ego FROM Jugadores GROUP BY id_arma;"
+      },
+      {
+        "enunciado": "Muestra el <b>superada_bool</b> y el <b>número de registros</b> (alias <code>cantidad</code>) agrupando las clasificaciones por si fueron superadas o no.",
+        "query_solucion": "SELECT superada_bool, COUNT(*) AS cantidad FROM Clasificaciones GROUP BY superada_bool;"
+      }
+    ]
+  },
+  {
+    "id": 495,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Fases con más de 1 clasificación",
+    "enunciado": "Muestra el <b>id_fase</b> y el <b>número de clasificaciones</b> (alias <code>total</code>) de aquellas fases que tengan <b>más de 1 clasificación</b> registrada.",
+    "bd": "futbol",
+    "query_solucion": "SELECT id_fase, COUNT(*) AS total FROM Clasificaciones GROUP BY id_fase HAVING COUNT(*) > 1;",
+    "puntos": 25,
+    "pista": "<code>HAVING</code> filtra después de agrupar. Es como el WHERE pero para grupos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_arma</b> de los armas que tengan asignados <b>más de 1 jugador</b>, junto con el conteo (alias <code>jugadores_asignados</code>).",
+        "query_solucion": "SELECT id_arma, COUNT(*) AS jugadores_asignados FROM Jugadores GROUP BY id_arma HAVING COUNT(*) > 1;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo</b> de arma para los tipos que tengan un <b>ranking promedio menor que 5</b>, junto con el promedio (alias <code>ranking_avg</code>). (Combina Armas con Clasificaciones si es posible, o trabaja solo con Armas_Especiales).",
+        "query_solucion": "SELECT tipo, COUNT(*) AS total FROM Armas_Especiales GROUP BY tipo HAVING COUNT(*) >= 1;"
+      }
+    ]
+  },
+  {
+    "id": 496,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN (2 tablas)",
+    "titulo": "Jugadores con nombre de arma",
+    "enunciado": "Muestra el <b>nombre del jugador</b> y la <b>descripcion</b> de su arma especial. Usa <code>INNER JOIN</code> entre <code>Jugadores</code> y <code>Armas_Especiales</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, a.descripcion\nFROM Jugadores j\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma;",
+    "puntos": 22,
+    "pista": "Usa <code>INNER JOIN tabla ON tabla1.col = tabla2.col</code> para unir las tablas por la clave foránea.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>nombre_fase</b> en la que está clasificado. Usa <code>INNER JOIN</code> entre <code>Clasificaciones</code> y <code>Fases</code>.",
+        "query_solucion": "SELECT j.nombre, f.nombre_fase\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b>, su <b>ego_score</b> y el <b>tipo</b> de su arma especial. Usa <code>INNER JOIN</code>.",
+        "query_solucion": "SELECT j.nombre, j.ego_score, a.tipo\nFROM Jugadores j\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma;"
+      }
+    ]
+  },
+  {
+    "id": 497,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN con WHERE",
+    "titulo": "Jugadores con arma de tipo Mental que superaron fase",
+    "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>tipo de arma</b> de los jugadores cuya arma sea de tipo <code>'Mental'</code>. Usa <code>INNER JOIN</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, a.tipo\nFROM Jugadores j\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nWHERE a.tipo = 'Mental';",
+    "puntos": 23,
+    "pista": "Puedes añadir un <code>WHERE</code> después del <code>INNER JOIN</code> para filtrar el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>nombre_fase</b> de las clasificaciones donde <code>superada_bool = TRUE</code>. Usa <code>INNER JOIN</code>.",
+        "query_solucion": "SELECT j.nombre, f.nombre_fase\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nWHERE c.superada_bool = TRUE;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b> y la <b>descripcion del arma</b> solo de los jugadores con <b>ego_score mayor que 90</b>. Usa <code>INNER JOIN</code>.",
+        "query_solucion": "SELECT j.nombre, a.descripcion\nFROM Jugadores j\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nWHERE j.ego_score > 90;"
+      }
+    ]
+  },
+  {
+    "id": 498,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN básico",
+    "titulo": "Todos los jugadores y su arma (si tienen)",
+    "enunciado": "Muestra el <b>nombre</b> de todos los jugadores y la <b>descripcion</b> de su arma especial. Si un jugador no tiene arma, muestra igualmente el jugador (con NULL en descripcion). Usa <code>LEFT JOIN</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, a.descripcion\nFROM Jugadores j\nLEFT JOIN Armas_Especiales a ON j.id_arma = a.id_arma;",
+    "puntos": 23,
+    "pista": "<code>LEFT JOIN</code> devuelve todas las filas de la tabla izquierda aunque no haya coincidencia en la derecha.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de todas las fases y el <b>ranking_obtenido</b> de las clasificaciones asociadas, aunque una fase no tenga clasificaciones. Usa <code>LEFT JOIN</code>.",
+        "query_solucion": "SELECT f.nombre_fase, c.ranking_obtenido\nFROM Fases f\nLEFT JOIN Clasificaciones c ON f.id_fase = c.id_fase;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> de todos los jugadores y su <b>ranking_obtenido</b> en cualquier fase, aunque no tengan clasificación. Usa <code>LEFT JOIN</code>.",
+        "query_solucion": "SELECT j.nombre, c.ranking_obtenido\nFROM Jugadores j\nLEFT JOIN Clasificaciones c ON j.id_jugador = c.id_jugador;"
+      }
+    ]
+  },
+  {
+    "id": 499,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT con GROUP BY y JOIN",
+    "titulo": "Fases superadas por jugador",
+    "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>número de fases superadas</b> (alias <code>fases_superadas</code>). Usa <code>INNER JOIN</code> y <code>GROUP BY</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, COUNT(*) AS fases_superadas\nFROM Jugadores j\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nWHERE c.superada_bool = TRUE\nGROUP BY j.nombre;",
+    "puntos": 25,
+    "pista": "Haz primero el JOIN, luego filtra con WHERE y finalmente agrupa con GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> y el <b>número de jugadores</b> que se clasificaron en ella (alias <code>total_jugadores</code>). Usa JOIN y GROUP BY.",
+        "query_solucion": "SELECT f.nombre_fase, COUNT(*) AS total_jugadores\nFROM Fases f\nINNER JOIN Clasificaciones c ON f.id_fase = c.id_fase\nGROUP BY f.nombre_fase;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo de arma</b> y el <b>ego_score promedio</b> de los jugadores que tienen ese tipo de arma (alias <code>ego_medio</code>). Usa JOIN y GROUP BY.",
+        "query_solucion": "SELECT a.tipo, AVG(j.ego_score) AS ego_medio\nFROM Armas_Especiales a\nINNER JOIN Jugadores j ON a.id_arma = j.id_arma\nGROUP BY a.tipo;"
+      }
+    ]
+  },
+  {
+    "id": 500,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM con GROUP BY y JOIN",
+    "titulo": "Total de plazas por tipo de arma de los jugadores",
+    "enunciado": "Muestra el <b>nombre del jugador</b> y la <b>suma de los rankings obtenidos</b> en todas sus clasificaciones (alias <code>suma_rankings</code>). Agrupa por jugador.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, SUM(c.ranking_obtenido) AS suma_rankings\nFROM Jugadores j\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nGROUP BY j.nombre;",
+    "puntos": 25,
+    "pista": "Combina JOIN con GROUP BY y usa SUM sobre la columna que quieres sumar.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> y la <b>suma de rankings_obtenidos</b> de todas las clasificaciones en esa fase (alias <code>suma_rankings</code>).",
+        "query_solucion": "SELECT f.nombre_fase, SUM(c.ranking_obtenido) AS suma_rankings\nFROM Fases f\nINNER JOIN Clasificaciones c ON f.id_fase = c.id_fase\nGROUP BY f.nombre_fase;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo de arma</b> y el <b>ego_score máximo</b> de los jugadores con ese tipo de arma (alias <code>max_ego</code>). Usa JOIN y GROUP BY.",
+        "query_solucion": "SELECT a.tipo, MAX(j.ego_score) AS max_ego\nFROM Armas_Especiales a\nINNER JOIN Jugadores j ON a.id_arma = j.id_arma\nGROUP BY a.tipo;"
+      }
+    ]
+  },
+  {
+    "id": 501,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING con JOIN",
+    "titulo": "Jugadores con más de 1 clasificación",
+    "enunciado": "Muestra el <b>nombre</b> de los jugadores que tienen registradas <b>más de 1 clasificación</b> (alias <code>num_clasificaciones</code>). Usa JOIN, GROUP BY y HAVING.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, COUNT(*) AS num_clasificaciones\nFROM Jugadores j\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nGROUP BY j.nombre\nHAVING COUNT(*) > 1;",
+    "puntos": 27,
+    "pista": "Usa HAVING después del GROUP BY para filtrar grupos por condición de agregación.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases que tienen <b>más de 2 jugadores</b> clasificados (alias <code>total</code>). Usa JOIN, GROUP BY y HAVING.",
+        "query_solucion": "SELECT f.nombre_fase, COUNT(*) AS total\nFROM Fases f\nINNER JOIN Clasificaciones c ON f.id_fase = c.id_fase\nGROUP BY f.nombre_fase\nHAVING COUNT(*) > 2;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo de arma</b> de los tipos cuyo <b>ego_score promedio</b> sea <b>mayor que 88</b> (alias <code>ego_medio</code>). Usa JOIN, GROUP BY y HAVING.",
+        "query_solucion": "SELECT a.tipo, AVG(j.ego_score) AS ego_medio\nFROM Armas_Especiales a\nINNER JOIN Jugadores j ON a.id_arma = j.id_arma\nGROUP BY a.tipo\nHAVING AVG(j.ego_score) > 88;"
+      }
+    ]
+  },
+  {
+    "id": 502,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN con ORDER BY y LIMIT",
+    "titulo": "Jugador con el mayor ego y su arma",
+    "enunciado": "Muestra el <b>nombre del jugador</b>, su <b>ego_score</b> y la <b>descripcion de su arma</b>. Ordena por ego_score de mayor a menor y muestra solo el <b>primero</b>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, j.ego_score, a.descripcion\nFROM Jugadores j\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nORDER BY j.ego_score DESC\nLIMIT 1;",
+    "puntos": 23,
+    "pista": "Combina JOIN con ORDER BY y LIMIT para obtener el top resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>nombre_fase</b> de la clasificación con el <b>mejor ranking (menor número)</b>. Muestra solo 1 resultado.",
+        "query_solucion": "SELECT j.nombre, f.nombre_fase\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nORDER BY c.ranking_obtenido ASC\nLIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra los <b>2 jugadores con mayor ego_score</b> junto con el <b>tipo de su arma</b>.",
+        "query_solucion": "SELECT j.nombre, j.ego_score, a.tipo\nFROM Jugadores j\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nORDER BY j.ego_score DESC\nLIMIT 2;"
+      }
+    ]
+  },
+  {
+    "id": 503,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT DISTINCT con JOIN",
+    "titulo": "Fases distintas por jugador",
+    "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>número de fases distintas</b> en las que ha participado (alias <code>num_fases</code>). Usa JOIN y GROUP BY.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, COUNT(DISTINCT c.id_fase) AS num_fases\nFROM Jugadores j\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nGROUP BY j.nombre;",
+    "puntos": 25,
+    "pista": "Usa <code>COUNT(DISTINCT columna)</code> para contar valores únicos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> y el <b>número de jugadores distintos</b> que participaron en ella (alias <code>jugadores_distintos</code>).",
+        "query_solucion": "SELECT f.nombre_fase, COUNT(DISTINCT c.id_jugador) AS jugadores_distintos\nFROM Fases f\nINNER JOIN Clasificaciones c ON f.id_fase = c.id_fase\nGROUP BY f.nombre_fase;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo de arma</b> y el <b>número de jugadores distintos</b> que usan ese tipo de arma (alias <code>num_usuarios</code>).",
+        "query_solucion": "SELECT a.tipo, COUNT(DISTINCT j.id_jugador) AS num_usuarios\nFROM Armas_Especiales a\nINNER JOIN Jugadores j ON a.id_arma = j.id_arma\nGROUP BY a.tipo;"
+      }
+    ]
+  },
+  {
+    "id": 504,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY múltiples columnas",
+    "titulo": "Clasificaciones agrupadas por jugador y fase",
+    "enunciado": "Muestra el <b>id_jugador</b>, el <b>id_fase</b> y el <b>número de registros</b> (alias <code>registros</code>) agrupando por ambas columnas en la tabla <code>Clasificaciones</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT id_jugador, id_fase, COUNT(*) AS registros FROM Clasificaciones GROUP BY id_jugador, id_fase;",
+    "puntos": 25,
+    "pista": "Puedes agrupar por varias columnas listándolas separadas por comas: <code>GROUP BY col1, col2</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b>, el <b>nombre_fase</b> y el <b>ranking_obtenido</b> de cada clasificación usando JOIN entre las 3 tablas.",
+        "query_solucion": "SELECT j.nombre, f.nombre_fase, c.ranking_obtenido\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo de arma</b>, el <b>id_fase</b> y el <b>número de clasificaciones</b> (alias <code>total</code>) usando JOIN y GROUP BY en 2 columnas.",
+        "query_solucion": "SELECT a.tipo, c.id_fase, COUNT(*) AS total\nFROM Jugadores j\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nGROUP BY a.tipo, c.id_fase;"
+      }
+    ]
+  },
+  {
+    "id": 505,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN con IS NULL (anti-join)",
+    "titulo": "Jugadores sin clasificación",
+    "enunciado": "Muestra el <b>nombre</b> de los jugadores que <b>NO tienen ninguna clasificación</b> registrada. Usa <code>LEFT JOIN</code> e <code>IS NULL</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre\nFROM Jugadores j\nLEFT JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nWHERE c.id_jugador IS NULL;",
+    "puntos": 30,
+    "pista": "Haz un LEFT JOIN y luego filtra con WHERE la columna de la tabla derecha <code>IS NULL</code>. Esto devuelve solo los que no tienen coincidencia.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases que <b>no tienen ningún jugador clasificado</b>. Usa <code>LEFT JOIN</code> e <code>IS NULL</code>.",
+        "query_solucion": "SELECT f.nombre_fase\nFROM Fases f\nLEFT JOIN Clasificaciones c ON f.id_fase = c.id_fase\nWHERE c.id_fase IS NULL;"
+      },
+      {
+        "enunciado": "Muestra la <b>descripcion</b> de las armas especiales que <b>no tiene ningún jugador</b> asignada. Usa <code>LEFT JOIN</code> e <code>IS NULL</code>.",
+        "query_solucion": "SELECT a.descripcion\nFROM Armas_Especiales a\nLEFT JOIN Jugadores j ON a.id_arma = j.id_arma\nWHERE j.id_arma IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 506,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en WHERE",
+    "titulo": "Jugadores con ego mayor que la media",
+    "enunciado": "Muestra el <b>nombre</b> y el <b>ego_score</b> de los jugadores cuyo <code>ego_score</code> sea <b>mayor que la media de todos los jugadores</b>. Usa una subconsulta.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre, ego_score\nFROM Jugadores\nWHERE ego_score > (SELECT AVG(ego_score) FROM Jugadores);",
+    "puntos": 32,
+    "pista": "Usa una subconsulta dentro del WHERE: <code>WHERE col > (SELECT AVG(col) FROM tabla)</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases cuyas <b>plazas_supervivencia</b> sean <b>menores que el máximo de plazas</b>. Usa una subconsulta.",
+        "query_solucion": "SELECT nombre_fase\nFROM Fases\nWHERE plazas_supervivencia < (SELECT MAX(plazas_supervivencia) FROM Fases);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los jugadores cuyo <code>ego_score</code> sea <b>igual al máximo ego_score</b> registrado. Usa una subconsulta.",
+        "query_solucion": "SELECT nombre\nFROM Jugadores\nWHERE ego_score = (SELECT MAX(ego_score) FROM Jugadores);"
+      }
+    ]
+  },
+  {
+    "id": 507,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con IN",
+    "titulo": "Jugadores que han superado alguna fase",
+    "enunciado": "Muestra el <b>nombre</b> de los jugadores que tienen al menos una clasificación con <code>superada_bool = TRUE</code>. Usa una subconsulta con <code>IN</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre\nFROM Jugadores\nWHERE id_jugador IN (\n  SELECT id_jugador FROM Clasificaciones WHERE superada_bool = TRUE\n);",
+    "puntos": 32,
+    "pista": "Usa <code>WHERE columna IN (SELECT columna FROM ...)</code> para filtrar con una subconsulta.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los jugadores que <b>NO han superado ninguna fase</b>. Usa una subconsulta con <code>NOT IN</code>.",
+        "query_solucion": "SELECT nombre\nFROM Jugadores\nWHERE id_jugador NOT IN (\n  SELECT id_jugador FROM Clasificaciones WHERE superada_bool = TRUE\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases en las que ha participado el jugador con mayor ego_score. Usa una subconsulta con <code>IN</code>.",
+        "query_solucion": "SELECT f.nombre_fase\nFROM Fases f\nWHERE f.id_fase IN (\n  SELECT c.id_fase FROM Clasificaciones c\n  WHERE c.id_jugador = (SELECT id_jugador FROM Jugadores ORDER BY ego_score DESC LIMIT 1)\n);"
+      }
+    ]
+  },
+  {
+    "id": 508,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Múltiples JOINs (3 tablas)",
+    "titulo": "Jugador, arma y resultado completo",
+    "enunciado": "Muestra el <b>nombre del jugador</b>, la <b>descripcion de su arma</b>, el <b>nombre_fase</b> y el <b>ranking_obtenido</b>. Usa 3 tablas: <code>Jugadores</code>, <code>Armas_Especiales</code> y <code>Clasificaciones</code> y <code>Fases</code>.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, a.descripcion, f.nombre_fase, c.ranking_obtenido\nFROM Jugadores j\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase;",
+    "puntos": 35,
+    "pista": "Encadena varios INNER JOIN uno tras otro. Cada JOIN une una nueva tabla con una ya existente en la consulta.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b>, el <b>tipo de arma</b> y el <b>nombre_fase</b> de las clasificaciones que fueron superadas. Usa 4 tablas con JOINs.",
+        "query_solucion": "SELECT j.nombre, a.tipo, f.nombre_fase\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nWHERE c.superada_bool = TRUE;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b>, su <b>ego_score</b>, el <b>nombre_fase</b> y las <b>plazas_supervivencia</b> de esa fase, ordenado por ego_score descendente.",
+        "query_solucion": "SELECT j.nombre, j.ego_score, f.nombre_fase, f.plazas_supervivencia\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nORDER BY j.ego_score DESC;"
+      }
+    ]
+  },
+  {
+    "id": 509,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP BY + HAVING + JOIN",
+    "titulo": "Fases con ranking promedio bajo",
+    "enunciado": "Muestra el <b>nombre_fase</b> y el <b>ranking promedio</b> (alias <code>ranking_medio</code>) de las fases cuyo ranking promedio sea <b>menor que 5</b>. Usa JOIN, GROUP BY y HAVING.",
+    "bd": "futbol",
+    "query_solucion": "SELECT f.nombre_fase, AVG(c.ranking_obtenido) AS ranking_medio\nFROM Fases f\nINNER JOIN Clasificaciones c ON f.id_fase = c.id_fase\nGROUP BY f.nombre_fase\nHAVING AVG(c.ranking_obtenido) < 5;",
+    "puntos": 35,
+    "pista": "El orden es: FROM → JOIN → WHERE → GROUP BY → HAVING → ORDER BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>número de fases superadas</b> (alias <code>fases_ok</code>) de los jugadores que han superado <b>más de 0 fases</b>. Usa JOIN, GROUP BY y HAVING.",
+        "query_solucion": "SELECT j.nombre, COUNT(*) AS fases_ok\nFROM Jugadores j\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nWHERE c.superada_bool = TRUE\nGROUP BY j.nombre\nHAVING COUNT(*) > 0;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo de arma</b> y el <b>ego_score promedio</b> (alias <code>ego_medio</code>) de los tipos cuyo ego promedio supere 88. Usa JOIN, GROUP BY y HAVING.",
+        "query_solucion": "SELECT a.tipo, AVG(j.ego_score) AS ego_medio\nFROM Armas_Especiales a\nINNER JOIN Jugadores j ON a.id_arma = j.id_arma\nGROUP BY a.tipo\nHAVING AVG(j.ego_score) > 88;"
+      }
+    ]
+  },
+  {
+    "id": 510,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta correlacionada",
+    "titulo": "Jugadores con ego mayor al promedio de su arma",
+    "enunciado": "Muestra el <b>nombre</b> de los jugadores cuyo <code>ego_score</code> sea mayor que el <b>promedio del ego_score de los jugadores que usan el mismo tipo de arma</b>. Usa una subconsulta correlacionada.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j1.nombre\nFROM Jugadores j1\nWHERE j1.ego_score > (\n  SELECT AVG(j2.ego_score)\n  FROM Jugadores j2\n  WHERE j2.id_arma = j1.id_arma\n);",
+    "puntos": 38,
+    "pista": "Una subconsulta correlacionada referencia columnas de la consulta externa. La subconsulta se ejecuta una vez por cada fila.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases con <b>más plazas que la media</b> de todas las fases. Usa subconsulta.",
+        "query_solucion": "SELECT nombre_fase\nFROM Fases f1\nWHERE f1.plazas_supervivencia > (\n  SELECT AVG(f2.plazas_supervivencia) FROM Fases f2\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los jugadores cuyo <b>ranking_obtenido mínimo</b> (en cualquier fase) sea menor que el promedio de rankings de todos. Usa subconsulta.",
+        "query_solucion": "SELECT j.nombre\nFROM Jugadores j\nWHERE (\n  SELECT MIN(c.ranking_obtenido)\n  FROM Clasificaciones c\n  WHERE c.id_jugador = j.id_jugador\n) < (SELECT AVG(ranking_obtenido) FROM Clasificaciones);"
+      }
+    ]
+  },
+  {
+    "id": 511,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con NOT IN",
+    "titulo": "Armas sin ningún jugador asignado",
+    "enunciado": "Muestra la <b>descripcion</b> de las armas especiales que <b>no están asignadas a ningún jugador</b>. Usa <code>NOT IN</code> con subconsulta.",
+    "bd": "futbol",
+    "query_solucion": "SELECT descripcion\nFROM Armas_Especiales\nWHERE id_arma NOT IN (\n  SELECT id_arma FROM Jugadores WHERE id_arma IS NOT NULL\n);",
+    "puntos": 32,
+    "pista": "Usa <code>NOT IN (SELECT ...)</code> para excluir los registros que aparecen en la subconsulta. Ten cuidado con los NULLs.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases en las que <b>ningún jugador</b> aparece clasificado. Usa <code>NOT IN</code>.",
+        "query_solucion": "SELECT nombre_fase\nFROM Fases\nWHERE id_fase NOT IN (\n  SELECT id_fase FROM Clasificaciones\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los jugadores que <b>no aparecen en ninguna clasificación</b>. Usa <code>NOT IN</code>.",
+        "query_solucion": "SELECT nombre\nFROM Jugadores\nWHERE id_jugador NOT IN (\n  SELECT id_jugador FROM Clasificaciones\n);"
+      }
+    ]
+  },
+  {
+    "id": 512,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN + subconsulta en WHERE",
+    "titulo": "Jugadores de la fase con más plazas",
+    "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>nombre_fase</b> de los jugadores que participaron en la <b>fase con más plazas de supervivencia</b>. Usa JOIN y subconsulta.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, f.nombre_fase\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nWHERE f.plazas_supervivencia = (\n  SELECT MAX(plazas_supervivencia) FROM Fases\n);",
+    "puntos": 36,
+    "pista": "La subconsulta devuelve un único valor (el máximo). Úsala en el WHERE después del JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> y el <b>nombre del jugador</b> con el <b>mayor ego_score</b> que participó en cada fase. Usa JOIN y subconsulta.",
+        "query_solucion": "SELECT f.nombre_fase, j.nombre, j.ego_score\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nWHERE j.ego_score = (SELECT MAX(ego_score) FROM Jugadores);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y el <b>ego_score</b> del jugador que tiene el arma de tipo <code>'Disparo'</code>. Usa subconsulta en WHERE.",
+        "query_solucion": "SELECT nombre, ego_score\nFROM Jugadores\nWHERE id_arma = (\n  SELECT id_arma FROM Armas_Especiales WHERE tipo = 'Disparo' LIMIT 1\n);"
+      }
+    ]
+  },
+  {
+    "id": 513,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Múltiples JOINs con filtros complejos",
+    "titulo": "Ranking completo de la segunda selección",
+    "enunciado": "Muestra el <b>nombre del jugador</b>, su <b>ego_score</b>, el <b>tipo de arma</b> y el <b>ranking_obtenido</b> en la fase llamada <code>'Segunda Selección'</code>. Ordena por ranking ascendente.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, j.ego_score, a.tipo, c.ranking_obtenido\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nWHERE f.nombre_fase = 'Segunda Selección'\nORDER BY c.ranking_obtenido ASC;",
+    "puntos": 37,
+    "pista": "Encadena los JOINs y usa WHERE sobre la columna de la tabla Fases para filtrar por nombre.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b>, el <b>nombre_fase</b> y el <b>ranking_obtenido</b> de las clasificaciones de jugadores con arma de tipo <code>'Dribbling'</code>. Ordena por ranking.",
+        "query_solucion": "SELECT j.nombre, f.nombre_fase, c.ranking_obtenido\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nWHERE a.tipo = 'Dribbling'\nORDER BY c.ranking_obtenido ASC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b>, el <b>número de jugadores</b> con arma de tipo <code>'Mental'</code> que participaron (alias <code>mentales</code>) y el <b>ranking promedio</b> de esos jugadores (alias <code>avg_ranking</code>).",
+        "query_solucion": "SELECT f.nombre_fase, COUNT(*) AS mentales, AVG(c.ranking_obtenido) AS avg_ranking\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nWHERE a.tipo = 'Mental'\nGROUP BY f.nombre_fase;"
+      }
+    ]
+  },
+  {
+    "id": 514,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN con IS NULL + múltiples tablas",
+    "titulo": "Jugadores sin arma que tampoco tienen clasificación",
+    "enunciado": "Muestra el <b>nombre</b> de los jugadores que <b>no tienen arma asignada</b> Y que <b>tampoco tienen clasificación</b>. Usa LEFT JOINs e IS NULL.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre\nFROM Jugadores j\nLEFT JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nLEFT JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nWHERE j.id_arma IS NULL AND c.id_jugador IS NULL;",
+    "puntos": 38,
+    "pista": "Puedes hacer varios LEFT JOINs y filtrar con IS NULL en múltiples condiciones.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b> de las fases que no tienen ninguna clasificación superada. Usa LEFT JOIN, WHERE y condición de superada_bool.",
+        "query_solucion": "SELECT f.nombre_fase\nFROM Fases f\nLEFT JOIN Clasificaciones c ON f.id_fase = c.id_fase AND c.superada_bool = TRUE\nWHERE c.id_fase IS NULL;"
+      },
+      {
+        "enunciado": "Muestra la <b>descripcion del arma</b> de las armas que ningún jugador con <b>ego_score mayor que 90</b> usa. Usa LEFT JOIN con condición y IS NULL.",
+        "query_solucion": "SELECT a.descripcion\nFROM Armas_Especiales a\nLEFT JOIN Jugadores j ON a.id_arma = j.id_arma AND j.ego_score > 90\nWHERE j.id_arma IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 515,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en SELECT (columna calculada)",
+    "titulo": "Diferencia de ego respecto a la media",
+    "enunciado": "Muestra el <b>nombre</b> del jugador, su <b>ego_score</b> y la <b>diferencia</b> entre su ego y el <b>ego promedio global</b> (alias <code>diferencia_media</code>). Usa una subconsulta en el SELECT.",
+    "bd": "futbol",
+    "query_solucion": "SELECT nombre, ego_score,\n  ego_score - (SELECT AVG(ego_score) FROM Jugadores) AS diferencia_media\nFROM Jugadores;",
+    "puntos": 38,
+    "pista": "Puedes poner una subconsulta directamente en el SELECT como columna calculada.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b>, sus <b>plazas_supervivencia</b> y la diferencia con el <b>máximo de plazas</b> (alias <code>diferencia_max</code>). Usa subconsulta en SELECT.",
+        "query_solucion": "SELECT nombre_fase, plazas_supervivencia,\n  (SELECT MAX(plazas_supervivencia) FROM Fases) - plazas_supervivencia AS diferencia_max\nFROM Fases;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>número total de clasificaciones</b> que tiene ese jugador (alias <code>total_clasificaciones</code>). Usa subconsulta correlacionada en SELECT.",
+        "query_solucion": "SELECT j.nombre,\n  (SELECT COUNT(*) FROM Clasificaciones c WHERE c.id_jugador = j.id_jugador) AS total_clasificaciones\nFROM Jugadores j;"
+      }
+    ]
+  },
+  {
+    "id": 516,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP BY + HAVING + subconsulta",
+    "titulo": "Fases con ranking promedio menor al global",
+    "enunciado": "Muestra el <b>nombre_fase</b> y el <b>ranking promedio</b> (alias <code>avg_ranking</code>) de las fases cuyo ranking promedio sea <b>inferior al ranking promedio global</b> de todas las clasificaciones. Usa subconsulta.",
+    "bd": "futbol",
+    "query_solucion": "SELECT f.nombre_fase, AVG(c.ranking_obtenido) AS avg_ranking\nFROM Fases f\nINNER JOIN Clasificaciones c ON f.id_fase = c.id_fase\nGROUP BY f.nombre_fase\nHAVING AVG(c.ranking_obtenido) < (SELECT AVG(ranking_obtenido) FROM Clasificaciones);",
+    "puntos": 40,
+    "pista": "Puedes usar una subconsulta dentro del HAVING para comparar el grupo con un valor global.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo de arma</b> y el <b>ego_score promedio</b> (alias <code>ego_medio</code>) de los tipos cuyo promedio supere el ego promedio global de todos los jugadores. Usa subconsulta en HAVING.",
+        "query_solucion": "SELECT a.tipo, AVG(j.ego_score) AS ego_medio\nFROM Armas_Especiales a\nINNER JOIN Jugadores j ON a.id_arma = j.id_arma\nGROUP BY a.tipo\nHAVING AVG(j.ego_score) > (SELECT AVG(ego_score) FROM Jugadores);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>número de clasificaciones</b> (alias <code>total</code>) de aquellos jugadores que tienen más clasificaciones que el promedio de clasificaciones por jugador.",
+        "query_solucion": "SELECT j.nombre, COUNT(*) AS total\nFROM Jugadores j\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nGROUP BY j.nombre\nHAVING COUNT(*) > (\n  SELECT AVG(cnt) FROM (\n    SELECT COUNT(*) AS cnt FROM Clasificaciones GROUP BY id_jugador\n  ) AS sub\n);"
+      }
+    ]
+  },
+  {
+    "id": 517,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Combinación compleja JOIN + GROUP BY + HAVING + ORDER BY",
+    "titulo": "Ranking de jugadores por fases superadas",
+    "enunciado": "Muestra el <b>nombre del jugador</b>, el <b>número de fases superadas</b> (alias <code>fases_superadas</code>) y el <b>ego_score</b>. Solo incluye jugadores que hayan superado <b>al menos 1 fase</b>. Ordena por fases superadas descendente.",
+    "bd": "futbol",
+    "query_solucion": "SELECT j.nombre, COUNT(*) AS fases_superadas, j.ego_score\nFROM Jugadores j\nINNER JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nWHERE c.superada_bool = TRUE\nGROUP BY j.nombre, j.ego_score\nHAVING COUNT(*) >= 1\nORDER BY fases_superadas DESC;",
+    "puntos": 38,
+    "pista": "Recuerda: WHERE va antes de GROUP BY para filtrar filas, HAVING va después para filtrar grupos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre_fase</b>, el <b>número de jugadores</b> que superaron esa fase (alias <code>superaron</code>) y el <b>ego_score promedio</b> de esos jugadores (alias <code>ego_medio</code>). Solo fases con más de 0 superaciones. Ordena por superaron descendente.",
+        "query_solucion": "SELECT f.nombre_fase, COUNT(*) AS superaron, AVG(j.ego_score) AS ego_medio\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Fases f ON c.id_fase = f.id_fase\nWHERE c.superada_bool = TRUE\nGROUP BY f.nombre_fase\nHAVING COUNT(*) > 0\nORDER BY superaron DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo de arma</b>, el <b>número de fases superadas</b> (alias <code>total_superadas</code>) por jugadores con ese arma, y el <b>ranking mínimo</b> (alias <code>mejor_ranking</code>). Solo tipos con al menos 1 superación. Ordena por ranking mínimo ascendente.",
+        "query_solucion": "SELECT a.tipo, COUNT(*) AS total_superadas, MIN(c.ranking_obtenido) AS mejor_ranking\nFROM Clasificaciones c\nINNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\nINNER JOIN Armas_Especiales a ON j.id_arma = a.id_arma\nWHERE c.superada_bool = TRUE\nGROUP BY a.tipo\nHAVING COUNT(*) >= 1\nORDER BY mejor_ranking ASC;"
+      }
+    ]
+  },
+  {
+    "id": 518,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN + GROUP BY + HAVING con IS NULL",
+    "titulo": "Fases con poca participación o ninguna",
+    "enunciado": "Muestra el <b>nombre_fase</b> y el <b>número de jugadores clasificados</b> (alias <code>jugadores</code>), incluyendo las fases con <b>0 jugadores</b>. Muestra solo las que tienen <b>menos de 2 jugadores</b> clasificados.",
+    "bd": "futbol",
+    "query_solucion": "SELECT f.nombre_fase, COUNT(c.id_jugador) AS jugadores\nFROM Fases f\nLEFT JOIN Clasificaciones c ON f.id_fase = c.id_fase\nGROUP BY f.nombre_fase\nHAVING COUNT(c.id_jugador) < 2;",
+    "puntos": 38,
+    "pista": "Con LEFT JOIN y COUNT sobre la columna de la tabla derecha, los registros sin coincidencia cuentan como 0.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del jugador</b> y el <b>número de clasificaciones</b> (alias <code>total</code>) que tiene, incluyendo los que tienen 0. Solo muestra los que tienen <b>menos de 2</b>.",
+        "query_solucion": "SELECT j.nombre, COUNT(c.id_fase) AS total\nFROM Jugadores j\nLEFT JOIN Clasificaciones c ON j.id_jugador = c.id_jugador\nGROUP BY j.nombre\nHAVING COUNT(c.id_fase) < 2;"
+      },
+      {
+        "enunciado": "Muestra la <b>descripcion del arma</b> y el <b>número de jugadores</b> que la usan (alias <code>usuarios</code>), incluyendo armas con 0 usuarios. Solo las armas con <b>0 o 1</b> usuarios.",
+        "query_solucion": "SELECT a.descripcion, COUNT(j.id_jugador) AS usuarios\nFROM Armas_Especiales a\nLEFT JOIN Jugadores j ON a.id_arma = j.id_arma\nGROUP BY a.descripcion\nHAVING COUNT(j.id_jugador) <= 1;"
+      }
+    ]
+  },
+  {
+    "id": 519,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Consulta completa con EXISTS",
+    "titulo": "Fases en las que al menos un jugador con ego > 90 participó",
+    "enunciado": "Muestra el <b>nombre_fase</b> de las fases en las que <b>existe al menos un jugador con ego_score mayor que 90</b>. Usa <code>EXISTS</code> con una subconsulta.",
+    "bd": "futbol",
+    "query_solucion": "SELECT f.nombre_fase\nFROM Fases f\nWHERE EXISTS (\n  SELECT 1\n  FROM Clasificaciones c\n  INNER JOIN Jugadores j ON c.id_jugador = j.id_jugador\n  WHERE c.id_fase = f.id_fase AND j.ego_score > 90\n);",
+    "puntos": 40,
+    "pista": "<code>EXISTS</code> devuelve verdadero si la subconsulta devuelve al menos una fila. La subconsulta puede referenciar columnas de la consulta exterior.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los jugadores para los que <b>NO EXISTE</b> ninguna clasificación con <code>superada_bool = FALSE</code> (es decir, jugadores que siempre superan). Usa <code>NOT EXISTS</code>.",
+        "query_solucion": "SELECT j.nombre\nFROM Jugadores j\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM Clasificaciones c\n  WHERE c.id_jugador = j.id_jugador AND c.superada_bool = FALSE\n);"
+      },
+      {
+        "enunciado": "Muestra la <b>descripcion del arma</b> de las armas para las que <b>existe algún jugador con ego_score mayor que 92</b>. Usa <code>EXISTS</code>.",
+        "query_solucion": "SELECT a.descripcion\nFROM Armas_Especiales a\nWHERE EXISTS (\n  SELECT 1\n  FROM Jugadores j\n  WHERE j.id_arma = a.id_arma AND j.ego_score > 92\n);"
+      }
+    ]
+  },
+  {
+    "id": 520,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con PRIMARY KEY",
+    "titulo": "Crear tabla Radiacion",
+    "enunciado": "Crea una tabla llamada <code>Radiacion</code> con las columnas: <b>id_zona</b> (entero, clave primaria), <b>nombre_zona</b> (texto de hasta 100 caracteres, no nulo) y <b>nivel_rads</b> (entero).",
+    "bd": "refugio",
+    "query_solucion": "CREATE TABLE Radiacion (\n  id_zona INT PRIMARY KEY,\n  nombre_zona VARCHAR(100) NOT NULL,\n  nivel_rads INT\n);",
+    "puntos": 10,
+    "pista": "Usa CREATE TABLE seguido del nombre de la tabla y entre paréntesis las columnas con sus tipos. La clave primaria se indica con PRIMARY KEY.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>Enemigos</code> con las columnas: <b>id_enemigo</b> (entero, clave primaria), <b>nombre_enemigo</b> (texto de hasta 100 caracteres, no nulo) y <b>nivel_peligro</b> (entero).",
+        "query_solucion": "CREATE TABLE Enemigos (\n  id_enemigo INT PRIMARY KEY,\n  nombre_enemigo VARCHAR(100) NOT NULL,\n  nivel_peligro INT\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>Refugios_Hermanos</code> con las columnas: <b>id_refugio</b> (entero, clave primaria), <b>nombre_refugio</b> (texto de hasta 100 caracteres, no nulo) y <b>estado</b> (texto de hasta 50 caracteres).",
+        "query_solucion": "CREATE TABLE Refugios_Hermanos (\n  id_refugio INT PRIMARY KEY,\n  nombre_refugio VARCHAR(100) NOT NULL,\n  estado VARCHAR(50)\n);"
+      }
+    ]
+  },
+  {
+    "id": 521,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con NOT NULL y UNIQUE",
+    "titulo": "Crear tabla Armas con restricciones",
+    "enunciado": "Crea una tabla llamada <code>Armas</code> con: <b>id_arma</b> (entero, PK), <b>codigo_serie</b> (texto de 20 caracteres, único y no nulo), <b>nombre</b> (texto de hasta 80 caracteres, no nulo) y <b>daño</b> (entero).",
+    "bd": "refugio",
+    "query_solucion": "CREATE TABLE Armas (\n  id_arma INT PRIMARY KEY,\n  codigo_serie VARCHAR(20) UNIQUE NOT NULL,\n  nombre VARCHAR(80) NOT NULL,\n  daño INT\n);",
+    "puntos": 12,
+    "pista": "Usa <code>UNIQUE</code> después del tipo de dato para evitar valores duplicados en esa columna.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>Tecnologias</code> con: <b>id_tecnologia</b> (entero, PK), <b>codigo_tech</b> (texto de 15 caracteres, único y no nulo), <b>descripcion</b> (texto de hasta 200 caracteres, no nulo) y <b>nivel_requerido</b> (entero).",
+        "query_solucion": "CREATE TABLE Tecnologias (\n  id_tecnologia INT PRIMARY KEY,\n  codigo_tech VARCHAR(15) UNIQUE NOT NULL,\n  descripcion VARCHAR(200) NOT NULL,\n  nivel_requerido INT\n);"
+      },
+      {
+        "enunciado": "Crea una tabla llamada <code>Enfermedades</code> con: <b>id_enfermedad</b> (entero, PK), <b>codigo_medico</b> (texto de 10 caracteres, único y no nulo), <b>nombre_enfermedad</b> (texto de hasta 100 caracteres, no nulo) y <b>mortalidad</b> (texto de 20 caracteres).",
+        "query_solucion": "CREATE TABLE Enfermedades (\n  id_enfermedad INT PRIMARY KEY,\n  codigo_medico VARCHAR(10) UNIQUE NOT NULL,\n  nombre_enfermedad VARCHAR(100) NOT NULL,\n  mortalidad VARCHAR(20)\n);"
+      }
+    ]
+  },
+  {
+    "id": 522,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con DEFAULT",
+    "titulo": "Crear tabla Alertas con valor por defecto",
+    "enunciado": "Crea una tabla <code>Alertas</code> con: <b>id_alerta</b> (entero, PK), <b>mensaje</b> (texto de hasta 300 caracteres, no nulo), <b>nivel</b> (texto de 30 caracteres con valor por defecto <code>'Bajo'</code>) y <b>activa</b> (BOOLEAN con valor por defecto <code>TRUE</code>).",
+    "bd": "refugio",
+    "query_solucion": "CREATE TABLE Alertas (\n  id_alerta INT PRIMARY KEY,\n  mensaje VARCHAR(300) NOT NULL,\n  nivel VARCHAR(30) DEFAULT 'Bajo',\n  activa BOOLEAN DEFAULT TRUE\n);",
+    "puntos": 12,
+    "pista": "Para definir un valor por defecto usa <code>DEFAULT 'valor'</code> después del tipo de dato de la columna.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Misiones</code> con: <b>id_mision</b> (entero, PK), <b>nombre_mision</b> (texto de hasta 100 caracteres, no nulo), <b>dificultad</b> (texto de 20 caracteres con valor por defecto <code>'Normal'</code>) y <b>completada</b> (BOOLEAN con valor por defecto <code>FALSE</code>).",
+        "query_solucion": "CREATE TABLE Misiones (\n  id_mision INT PRIMARY KEY,\n  nombre_mision VARCHAR(100) NOT NULL,\n  dificultad VARCHAR(20) DEFAULT 'Normal',\n  completada BOOLEAN DEFAULT FALSE\n);"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Raciones</code> con: <b>id_racion</b> (entero, PK), <b>tipo_alimento</b> (texto de hasta 80 caracteres, no nulo), <b>calorias</b> (entero con valor por defecto <code>200</code>) y <b>disponible</b> (BOOLEAN con valor por defecto <code>TRUE</code>).",
+        "query_solucion": "CREATE TABLE Raciones (\n  id_racion INT PRIMARY KEY,\n  tipo_alimento VARCHAR(80) NOT NULL,\n  calorias INT DEFAULT 200,\n  disponible BOOLEAN DEFAULT TRUE\n);"
+      }
+    ]
+  },
+  {
+    "id": 523,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con FOREIGN KEY",
+    "titulo": "Crear tabla Expediciones con clave foránea",
+    "enunciado": "Crea la tabla <code>Expediciones_Nuevas</code> con: <b>id_expedicion</b> (entero, PK), <b>id_morador</b> (entero, FK que referencia a <code>Moradores(id_morador)</code>), <b>destino</b> (texto de hasta 100 caracteres) y <b>fecha_salida</b> (DATE no nula). Asume que la tabla <code>Moradores</code> ya existe.",
+    "bd": "refugio",
+    "query_solucion": "CREATE TABLE Expediciones_Nuevas (\n  id_expedicion INT PRIMARY KEY,\n  id_morador INT,\n  destino VARCHAR(100),\n  fecha_salida DATE NOT NULL,\n  FOREIGN KEY (id_morador) REFERENCES Moradores(id_morador)\n);",
+    "puntos": 13,
+    "pista": "Define la clave foránea al final con <code>FOREIGN KEY (columna) REFERENCES tabla_padre(columna_padre)</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Asignaciones_Trabajo</code> con: <b>id_asignacion</b> (entero, PK), <b>id_morador</b> (entero, FK → <code>Moradores(id_morador)</code>), <b>id_trabajo</b> (entero, FK → <code>Trabajos(id_trabajo)</code>) y <b>fecha</b> (DATE). Asume que ambas tablas existen.",
+        "query_solucion": "CREATE TABLE Asignaciones_Trabajo (\n  id_asignacion INT PRIMARY KEY,\n  id_morador INT,\n  id_trabajo INT,\n  fecha DATE,\n  FOREIGN KEY (id_morador) REFERENCES Moradores(id_morador),\n  FOREIGN KEY (id_trabajo) REFERENCES Trabajos(id_trabajo)\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Inventario_Morador</code> con: <b>id_inventario</b> (entero, PK), <b>id_morador</b> (entero, FK → <code>Moradores(id_morador)</code>), <b>nombre_objeto</b> (texto de 80 caracteres) y <b>cantidad</b> (entero). Asume que <code>Moradores</code> ya existe.",
+        "query_solucion": "CREATE TABLE Inventario_Morador (\n  id_inventario INT PRIMARY KEY,\n  id_morador INT,\n  nombre_objeto VARCHAR(80),\n  cantidad INT,\n  FOREIGN KEY (id_morador) REFERENCES Moradores(id_morador)\n);"
+      }
+    ]
+  },
+  {
+    "id": 524,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE compleja con múltiples restricciones",
+    "titulo": "Crear tabla Refugios_Hermanos completa",
+    "enunciado": "Crea la tabla <code>Refugios_Hermanos</code> con: <b>id_refugio</b> (entero, PK), <b>nombre_refugio</b> (VARCHAR 100, NOT NULL, UNIQUE), <b>ubicacion</b> (VARCHAR 150, NOT NULL), <b>capacidad</b> (entero, DEFAULT 100) y <b>activo</b> (BOOLEAN, DEFAULT TRUE).",
+    "bd": "refugio",
+    "query_solucion": "CREATE TABLE Refugios_Hermanos (\n  id_refugio INT PRIMARY KEY,\n  nombre_refugio VARCHAR(100) NOT NULL UNIQUE,\n  ubicacion VARCHAR(150) NOT NULL,\n  capacidad INT DEFAULT 100,\n  activo BOOLEAN DEFAULT TRUE\n);",
+    "puntos": 15,
+    "pista": "Puedes combinar varias restricciones en la misma columna: <code>NOT NULL UNIQUE DEFAULT valor</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Facciones</code> con: <b>id_faccion</b> (entero, PK), <b>nombre_faccion</b> (VARCHAR 100, NOT NULL, UNIQUE), <b>ideologia</b> (VARCHAR 200, NOT NULL), <b>miembros</b> (entero, DEFAULT 0) y <b>aliada</b> (BOOLEAN, DEFAULT FALSE).",
+        "query_solucion": "CREATE TABLE Facciones (\n  id_faccion INT PRIMARY KEY,\n  nombre_faccion VARCHAR(100) NOT NULL UNIQUE,\n  ideologia VARCHAR(200) NOT NULL,\n  miembros INT DEFAULT 0,\n  aliada BOOLEAN DEFAULT FALSE\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Zonas_Yermo</code> con: <b>id_zona</b> (entero, PK), <b>nombre_zona</b> (VARCHAR 120, NOT NULL, UNIQUE), <b>descripcion</b> (VARCHAR 300, NOT NULL), <b>nivel_radiacion</b> (entero, DEFAULT 0) y <b>explorada</b> (BOOLEAN, DEFAULT FALSE).",
+        "query_solucion": "CREATE TABLE Zonas_Yermo (\n  id_zona INT PRIMARY KEY,\n  nombre_zona VARCHAR(120) NOT NULL UNIQUE,\n  descripcion VARCHAR(300) NOT NULL,\n  nivel_radiacion INT DEFAULT 0,\n  explorada BOOLEAN DEFAULT FALSE\n);"
+      }
+    ]
+  },
+  {
+    "id": 525,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD COLUMN",
+    "titulo": "Añadir columna a Moradores",
+    "enunciado": "Añade la columna <b>edad</b> (entero) a la tabla <code>Moradores</code>.",
+    "bd": "refugio",
+    "query_solucion": "ALTER TABLE Moradores\nADD COLUMN edad INT;",
+    "puntos": 10,
+    "pista": "Usa <code>ALTER TABLE nombre_tabla ADD COLUMN nombre_columna tipo</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Añade la columna <b>zona_origen</b> (texto de hasta 100 caracteres) a la tabla <code>Moradores</code>.",
+        "query_solucion": "ALTER TABLE Moradores\nADD COLUMN zona_origen VARCHAR(100);"
+      },
+      {
+        "enunciado": "Añade la columna <b>descripcion_riesgo</b> (texto de hasta 200 caracteres) a la tabla <code>Trabajos</code>.",
+        "query_solucion": "ALTER TABLE Trabajos\nADD COLUMN descripcion_riesgo VARCHAR(200);"
+      }
+    ]
+  },
+  {
+    "id": 526,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD COLUMN con restricción",
+    "titulo": "Añadir columna con DEFAULT a Suministros",
+    "enunciado": "Añade la columna <b>caducado</b> de tipo BOOLEAN con valor por defecto <code>FALSE</code> a la tabla <code>Suministros</code>.",
+    "bd": "refugio",
+    "query_solucion": "ALTER TABLE Suministros\nADD COLUMN caducado BOOLEAN DEFAULT FALSE;",
+    "puntos": 12,
+    "pista": "Al añadir una columna con ALTER TABLE también puedes especificar <code>DEFAULT valor</code> al final.",
+    "variaciones": [
+      {
+        "enunciado": "Añade la columna <b>prioridad</b> de tipo VARCHAR(20) con valor por defecto <code>'Normal'</code> a la tabla <code>Expediciones</code>.",
+        "query_solucion": "ALTER TABLE Expediciones\nADD COLUMN prioridad VARCHAR(20) DEFAULT 'Normal';"
+      },
+      {
+        "enunciado": "Añade la columna <b>nivel_requerido</b> de tipo INT con valor por defecto <code>1</code> a la tabla <code>Trabajos</code>.",
+        "query_solucion": "ALTER TABLE Trabajos\nADD COLUMN nivel_requerido INT DEFAULT 1;"
+      }
+    ]
+  },
+  {
+    "id": 527,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE MODIFY COLUMN",
+    "titulo": "Modificar tipo de columna en Moradores",
+    "enunciado": "Modifica la columna <b>nombre</b> de la tabla <code>Moradores</code> para que admita hasta 200 caracteres (actualmente es VARCHAR(100)).",
+    "bd": "refugio",
+    "query_solucion": "ALTER TABLE Moradores\nMODIFY COLUMN nombre VARCHAR(200);",
+    "puntos": 10,
+    "pista": "Usa <code>ALTER TABLE ... MODIFY COLUMN nombre_columna nuevo_tipo</code> para cambiar el tipo o tamaño.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <b>tipo</b> de la tabla <code>Suministros</code> para que admita hasta 100 caracteres y sea NOT NULL.",
+        "query_solucion": "ALTER TABLE Suministros\nMODIFY COLUMN tipo VARCHAR(100) NOT NULL;"
+      },
+      {
+        "enunciado": "Modifica la columna <b>titulo</b> de la tabla <code>Trabajos</code> para que admita hasta 150 caracteres.",
+        "query_solucion": "ALTER TABLE Trabajos\nMODIFY COLUMN titulo VARCHAR(150);"
+      }
+    ]
+  },
+  {
+    "id": 528,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DROP COLUMN",
+    "titulo": "Eliminar columna de Expediciones",
+    "enunciado": "Elimina la columna <b>botin_recuperado</b> de la tabla <code>Expediciones</code>.",
+    "bd": "refugio",
+    "query_solucion": "ALTER TABLE Expediciones\nDROP COLUMN botin_recuperado;",
+    "puntos": 10,
+    "pista": "Usa <code>ALTER TABLE ... DROP COLUMN nombre_columna</code>. ¡Cuidado! Esta operación no se puede deshacer.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <b>atributos_SPECIAL</b> de la tabla <code>Moradores</code>.",
+        "query_solucion": "ALTER TABLE Moradores\nDROP COLUMN atributos_SPECIAL;"
+      },
+      {
+        "enunciado": "Elimina la columna <b>riesgo</b> de la tabla <code>Trabajos</code>.",
+        "query_solucion": "ALTER TABLE Trabajos\nDROP COLUMN riesgo;"
+      }
+    ]
+  },
+  {
+    "id": 529,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD CONSTRAINT FOREIGN KEY",
+    "titulo": "Añadir restricción de clave foránea a Expediciones",
+    "enunciado": "Añade una restricción de clave foránea en la tabla <code>Expediciones</code> para que la columna <b>id_morador</b> referencie a <code>Moradores(id_morador)</code>.",
+    "bd": "refugio",
+    "query_solucion": "ALTER TABLE Expediciones\nADD CONSTRAINT fk_expediciones_morador\nFOREIGN KEY (id_morador) REFERENCES Moradores(id_morador);",
+    "puntos": 13,
+    "pista": "Usa <code>ADD CONSTRAINT nombre_fk FOREIGN KEY (col) REFERENCES tabla(col)</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción de clave foránea en la tabla <code>Moradores</code> para que la columna <b>id_trabajo</b> referencie a <code>Trabajos(id_trabajo)</code>.",
+        "query_solucion": "ALTER TABLE Moradores\nADD CONSTRAINT fk_moradores_trabajo\nFOREIGN KEY (id_trabajo) REFERENCES Trabajos(id_trabajo);"
+      },
+      {
+        "enunciado": "Añade una restricción UNIQUE sobre la columna <b>nombre</b> de la tabla <code>Moradores</code>.",
+        "query_solucion": "ALTER TABLE Moradores\nADD CONSTRAINT uq_moradores_nombre UNIQUE (nombre);"
+      }
+    ]
+  },
+  {
+    "id": 530,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Eliminar tabla Enemigos",
+    "enunciado": "Elimina la tabla <code>Enemigos</code> de la base de datos si existe.",
+    "bd": "refugio",
+    "query_solucion": "DROP TABLE IF EXISTS Enemigos;",
+    "puntos": 10,
+    "pista": "Usa <code>DROP TABLE IF EXISTS nombre_tabla</code> para eliminar sin error si la tabla no existe.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la tabla <code>Radiacion</code> de la base de datos si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS Radiacion;"
+      },
+      {
+        "enunciado": "Elimina la tabla <code>Alertas</code> de la base de datos si existe.",
+        "query_solucion": "DROP TABLE IF EXISTS Alertas;"
+      }
+    ]
+  },
+  {
+    "id": 531,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar tabla Suministros",
+    "enunciado": "Renombra la tabla <code>Suministros</code> a <code>Recursos</code>.",
+    "bd": "refugio",
+    "query_solucion": "RENAME TABLE Suministros TO Recursos;",
+    "puntos": 10,
+    "pista": "Usa <code>RENAME TABLE nombre_actual TO nombre_nuevo</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la tabla <code>Expediciones</code> a <code>Misiones_Exteriores</code>.",
+        "query_solucion": "RENAME TABLE Expediciones TO Misiones_Exteriores;"
+      },
+      {
+        "enunciado": "Renombra la tabla <code>Trabajos</code> a <code>Ocupaciones</code>.",
+        "query_solucion": "RENAME TABLE Trabajos TO Ocupaciones;"
+      }
+    ]
+  },
+  {
+    "id": 532,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE tabla intermedia (relación N:M)",
+    "titulo": "Crear tabla Moradores_Suministros",
+    "enunciado": "Crea la tabla <code>Moradores_Suministros</code> para registrar qué moradores consumen qué suministros. Columnas: <b>id_morador</b> (entero, FK → <code>Moradores</code>), <b>id_suministro</b> (entero, FK → <code>Suministros</code>) y <b>fecha_consumo</b> (DATE). La PK es la combinación de ambas FKs.",
+    "bd": "refugio",
+    "query_solucion": "CREATE TABLE Moradores_Suministros (\n  id_morador INT,\n  id_suministro INT,\n  fecha_consumo DATE,\n  PRIMARY KEY (id_morador, id_suministro),\n  FOREIGN KEY (id_morador) REFERENCES Moradores(id_morador),\n  FOREIGN KEY (id_suministro) REFERENCES Suministros(id_suministro)\n);",
+    "puntos": 15,
+    "pista": "Una clave primaria compuesta se define con <code>PRIMARY KEY (col1, col2)</code> al final de la definición.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Moradores_Expediciones</code> con: <b>id_morador</b> (entero, FK → <code>Moradores</code>), <b>id_expedicion</b> (entero, FK → <code>Expediciones</code>) y <b>rol</b> (VARCHAR 50). La PK es la combinación de ambas FKs.",
+        "query_solucion": "CREATE TABLE Moradores_Expediciones (\n  id_morador INT,\n  id_expedicion INT,\n  rol VARCHAR(50),\n  PRIMARY KEY (id_morador, id_expedicion),\n  FOREIGN KEY (id_morador) REFERENCES Moradores(id_morador),\n  FOREIGN KEY (id_expedicion) REFERENCES Expediciones(id_expedicion)\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Refugios_Suministros</code> para asociar refugios hermanos con suministros. Columnas: <b>id_refugio</b> (entero, FK → <code>Refugios_Hermanos</code>), <b>id_suministro</b> (entero, FK → <code>Suministros</code>) y <b>cantidad_enviada</b> (entero, DEFAULT 0). PK compuesta.",
+        "query_solucion": "CREATE TABLE Refugios_Suministros (\n  id_refugio INT,\n  id_suministro INT,\n  cantidad_enviada INT DEFAULT 0,\n  PRIMARY KEY (id_refugio, id_suministro),\n  FOREIGN KEY (id_refugio) REFERENCES Refugios_Hermanos(id_refugio),\n  FOREIGN KEY (id_suministro) REFERENCES Suministros(id_suministro)\n);"
+      }
+    ]
+  },
+  {
+    "id": 533,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE RENAME COLUMN",
+    "titulo": "Renombrar columna en Moradores",
+    "enunciado": "Renombra la columna <b>atributos_SPECIAL</b> de la tabla <code>Moradores</code> a <b>estadisticas</b>.",
+    "bd": "refugio",
+    "query_solucion": "ALTER TABLE Moradores\nRENAME COLUMN atributos_SPECIAL TO estadisticas;",
+    "puntos": 10,
+    "pista": "Usa <code>ALTER TABLE ... RENAME COLUMN nombre_actual TO nombre_nuevo</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la columna <b>botin_recuperado</b> de la tabla <code>Expediciones</code> a <b>recompensa</b>.",
+        "query_solucion": "ALTER TABLE Expediciones\nRENAME COLUMN botin_recuperado TO recompensa;"
+      },
+      {
+        "enunciado": "Renombra la columna <b>cantidad_kilos</b> de la tabla <code>Suministros</code> a <b>stock_kg</b>.",
+        "query_solucion": "ALTER TABLE Suministros\nRENAME COLUMN cantidad_kilos TO stock_kg;"
+      }
+    ]
+  },
+  {
+    "id": 534,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con CHECK",
+    "titulo": "Crear tabla Enemigos con CHECK",
+    "enunciado": "Crea la tabla <code>Enemigos</code> con: <b>id_enemigo</b> (entero, PK), <b>nombre</b> (VARCHAR 100, NOT NULL), <b>vida_maxima</b> (entero, con CHECK de que sea mayor que 0) y <b>zona</b> (VARCHAR 80).",
+    "bd": "refugio",
+    "query_solucion": "CREATE TABLE Enemigos (\n  id_enemigo INT PRIMARY KEY,\n  nombre VARCHAR(100) NOT NULL,\n  vida_maxima INT CHECK (vida_maxima > 0),\n  zona VARCHAR(80)\n);",
+    "puntos": 13,
+    "pista": "Usa <code>CHECK (condicion)</code> después del tipo de dato para añadir una validación al insertar datos.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Radiacion</code> con: <b>id_zona</b> (entero, PK), <b>nombre_zona</b> (VARCHAR 100, NOT NULL), <b>nivel_rads</b> (entero, CHECK de que sea mayor o igual a 0) y <b>peligrosa</b> (BOOLEAN, DEFAULT FALSE).",
+        "query_solucion": "CREATE TABLE Radiacion (\n  id_zona INT PRIMARY KEY,\n  nombre_zona VARCHAR(100) NOT NULL,\n  nivel_rads INT CHECK (nivel_rads >= 0),\n  peligrosa BOOLEAN DEFAULT FALSE\n);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Suministros_Extra</code> con: <b>id_suministro</b> (entero, PK), <b>tipo</b> (VARCHAR 50, NOT NULL), <b>cantidad_kilos</b> (entero, CHECK de que sea mayor que 0) y <b>fecha_caducidad</b> (DATE).",
+        "query_solucion": "CREATE TABLE Suministros_Extra (\n  id_suministro INT PRIMARY KEY,\n  tipo VARCHAR(50) NOT NULL,\n  cantidad_kilos INT CHECK (cantidad_kilos > 0),\n  fecha_caducidad DATE\n);"
+      }
+    ]
+  },
+  {
+    "id": 535,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT *",
+    "titulo": "Ver todos los moradores",
+    "enunciado": "Muestra <b>todos los datos</b> de todos los moradores registrados en la tabla <code>Moradores</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT * FROM Moradores;",
+    "puntos": 10,
+    "pista": "Usa <code>SELECT *</code> para seleccionar todas las columnas de una tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>todos los datos</b> de todos los trabajos registrados en la tabla <code>Trabajos</code>.",
+        "query_solucion": "SELECT * FROM Trabajos;"
+      },
+      {
+        "enunciado": "Muestra <b>todos los datos</b> de todos los suministros registrados en la tabla <code>Suministros</code>.",
+        "query_solucion": "SELECT * FROM Suministros;"
+      }
+    ]
+  },
+  {
+    "id": 536,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT columnas específicas",
+    "titulo": "Nombre y trabajo de moradores",
+    "enunciado": "Muestra solo el <b>nombre</b> y el <b>id_trabajo</b> de todos los moradores.",
+    "bd": "refugio",
+    "query_solucion": "SELECT nombre, id_trabajo FROM Moradores;",
+    "puntos": 10,
+    "pista": "Especifica las columnas que quieres ver separadas por comas después de SELECT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra solo el <b>tipo</b> y la <b>cantidad_kilos</b> de todos los suministros.",
+        "query_solucion": "SELECT tipo, cantidad_kilos FROM Suministros;"
+      },
+      {
+        "enunciado": "Muestra solo el <b>titulo</b> y el <b>riesgo</b> de todos los trabajos.",
+        "query_solucion": "SELECT titulo, riesgo FROM Trabajos;"
+      }
+    ]
+  },
+  {
+    "id": 537,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con comparadores",
+    "titulo": "Expediciones con mucho botín",
+    "enunciado": "Muestra el <b>id_expedicion</b> y el <b>botin_recuperado</b> de las expediciones cuyo botín sea <b>mayor que 100</b>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT id_expedicion, botin_recuperado FROM Expediciones WHERE botin_recuperado > 100;",
+    "puntos": 10,
+    "pista": "Usa la cláusula <code>WHERE</code> con el operador <code>></code> para filtrar filas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> y la <b>cantidad_kilos</b> de los suministros con <b>más de 100 kilos</b>.",
+        "query_solucion": "SELECT tipo, cantidad_kilos FROM Suministros WHERE cantidad_kilos > 100;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de las expediciones donde los <b>dias_fuera</b> sean <b>mayores o iguales a 5</b>.",
+        "query_solucion": "SELECT * FROM Expediciones WHERE dias_fuera >= 5;"
+      }
+    ]
+  },
+  {
+    "id": 538,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con AND/OR",
+    "titulo": "Expediciones largas con buen botín",
+    "enunciado": "Muestra el <b>id_expedicion</b> y el <b>botin_recuperado</b> de las expediciones con <b>más de 5 días fuera</b> <b>y</b> <b>botín mayor que 200</b>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT id_expedicion, botin_recuperado FROM Expediciones WHERE dias_fuera > 5 AND botin_recuperado > 200;",
+    "puntos": 12,
+    "pista": "Combina dos condiciones con <code>AND</code>. Ambas deben cumplirse al mismo tiempo.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los moradores cuyo <code>id_trabajo</code> sea <b>1</b> <b>o</b> <b>3</b>.",
+        "query_solucion": "SELECT nombre FROM Moradores WHERE id_trabajo = 1 OR id_trabajo = 3;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de los suministros cuya <b>cantidad_kilos</b> sea <b>menor que 100</b> <b>o</b> cuyo <b>tipo</b> sea <code>'Agua Purificada'</code>.",
+        "query_solucion": "SELECT * FROM Suministros WHERE cantidad_kilos < 100 OR tipo = 'Agua Purificada';"
+      }
+    ]
+  },
+  {
+    "id": 539,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con IN",
+    "titulo": "Moradores con trabajos específicos",
+    "enunciado": "Muestra el <b>nombre</b> y el <b>id_trabajo</b> de los moradores cuyo <code>id_trabajo</code> sea <b>1 o 2</b> (usando <code>IN</code>).",
+    "bd": "refugio",
+    "query_solucion": "SELECT nombre, id_trabajo FROM Moradores WHERE id_trabajo IN (1, 2);",
+    "puntos": 12,
+    "pista": "El operador <code>IN (val1, val2, ...)</code> comprueba si el valor está en una lista.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de los trabajos cuyo <code>riesgo</code> sea <code>'Bajo'</code> o <code>'Medio'</code> (usando <code>IN</code>).",
+        "query_solucion": "SELECT * FROM Trabajos WHERE riesgo IN ('Bajo', 'Medio');"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo</b> de los suministros cuyo <b>id_suministro</b> sea <b>1, 2 o 3</b> (usando <code>IN</code>).",
+        "query_solucion": "SELECT tipo FROM Suministros WHERE id_suministro IN (1, 2, 3);"
+      }
+    ]
+  },
+  {
+    "id": 540,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con BETWEEN",
+    "titulo": "Suministros con stock intermedio",
+    "enunciado": "Muestra todos los datos de los suministros cuya <b>cantidad_kilos</b> esté <b>entre 10 y 200</b> (ambos incluidos).",
+    "bd": "refugio",
+    "query_solucion": "SELECT * FROM Suministros WHERE cantidad_kilos BETWEEN 10 AND 200;",
+    "puntos": 12,
+    "pista": "Usa <code>BETWEEN valor1 AND valor2</code> para filtrar rangos. Incluye los extremos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_expedicion</b> y los <b>dias_fuera</b> de las expediciones que duraron <b>entre 3 y 10 días</b>.",
+        "query_solucion": "SELECT id_expedicion, dias_fuera FROM Expediciones WHERE dias_fuera BETWEEN 3 AND 10;"
+      },
+      {
+        "enunciado": "Muestra el <b>id_expedicion</b> y el <b>botin_recuperado</b> de las expediciones con botín <b>entre 100 y 500</b>.",
+        "query_solucion": "SELECT id_expedicion, botin_recuperado FROM Expediciones WHERE botin_recuperado BETWEEN 100 AND 500;"
+      }
+    ]
+  },
+  {
+    "id": 541,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con LIKE",
+    "titulo": "Moradores cuyo nombre empieza por 'L'",
+    "enunciado": "Muestra el <b>nombre</b> de los moradores cuyo <code>nombre</code> <b>empiece por la letra 'L'</b>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT nombre FROM Moradores WHERE nombre LIKE 'L%';",
+    "puntos": 12,
+    "pista": "Usa <code>LIKE 'patrón%'</code>. El símbolo <code>%</code> representa cualquier secuencia de caracteres.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de los suministros cuyo <b>tipo</b> contenga la palabra <code>'Puri'</code>.",
+        "query_solucion": "SELECT * FROM Suministros WHERE tipo LIKE '%Puri%';"
+      },
+      {
+        "enunciado": "Muestra el <b>titulo</b> de los trabajos cuyo nombre <b>termine en 'or'</b>.",
+        "query_solucion": "SELECT titulo FROM Trabajos WHERE titulo LIKE '%or';"
+      }
+    ]
+  },
+  {
+    "id": 542,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL / IS NOT NULL",
+    "titulo": "Moradores sin trabajo asignado",
+    "enunciado": "Muestra el <b>nombre</b> de los moradores que <b>no tienen</b> trabajo asignado (<code>id_trabajo</code> es NULL).",
+    "bd": "refugio",
+    "query_solucion": "SELECT nombre FROM Moradores WHERE id_trabajo IS NULL;",
+    "puntos": 12,
+    "pista": "Para comprobar si un valor es nulo usa <code>IS NULL</code>. No uses <code>= NULL</code>, no funciona en SQL.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de los moradores que <b>sí tienen</b> trabajo asignado (<code>id_trabajo</code> no es NULL).",
+        "query_solucion": "SELECT * FROM Moradores WHERE id_trabajo IS NOT NULL;"
+      },
+      {
+        "enunciado": "Muestra el <b>id_expedicion</b> de las expediciones donde el <b>botin_recuperado</b> sea NULL.",
+        "query_solucion": "SELECT id_expedicion FROM Expediciones WHERE botin_recuperado IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 543,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY ASC/DESC",
+    "titulo": "Suministros ordenados por cantidad",
+    "enunciado": "Muestra el <b>tipo</b> y la <b>cantidad_kilos</b> de todos los suministros ordenados de <b>mayor a menor</b> cantidad.",
+    "bd": "refugio",
+    "query_solucion": "SELECT tipo, cantidad_kilos FROM Suministros ORDER BY cantidad_kilos DESC;",
+    "puntos": 10,
+    "pista": "Usa <code>ORDER BY columna DESC</code> para ordenar de mayor a menor. Sin DESC, el orden es ascendente.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_expedicion</b> y los <b>dias_fuera</b> de todas las expediciones ordenadas de <b>menor a mayor</b> duración.",
+        "query_solucion": "SELECT id_expedicion, dias_fuera FROM Expediciones ORDER BY dias_fuera ASC;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> de todos los moradores ordenados <b>alfabéticamente</b>.",
+        "query_solucion": "SELECT nombre FROM Moradores ORDER BY nombre ASC;"
+      }
+    ]
+  },
+  {
+    "id": 544,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "La expedición con más botín",
+    "enunciado": "Muestra el <b>id_expedicion</b> y el <b>botin_recuperado</b> de la expedición con <b>mayor botín</b> (solo 1 resultado).",
+    "bd": "refugio",
+    "query_solucion": "SELECT id_expedicion, botin_recuperado FROM Expediciones ORDER BY botin_recuperado DESC LIMIT 1;",
+    "puntos": 12,
+    "pista": "Combina <code>ORDER BY ... DESC</code> con <code>LIMIT n</code> para obtener los primeros n resultados.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> del suministro con <b>menor cantidad_kilos</b> (solo 1 resultado).",
+        "query_solucion": "SELECT tipo FROM Suministros ORDER BY cantidad_kilos ASC LIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra los datos de las <b>2 expediciones más largas</b> (más días fuera).",
+        "query_solucion": "SELECT * FROM Expediciones ORDER BY dias_fuera DESC LIMIT 2;"
+      }
+    ]
+  },
+  {
+    "id": 545,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Tipos de trabajo distintos",
+    "enunciado": "Muestra los <b>valores de riesgo distintos</b> que existen en la tabla <code>Trabajos</code>, sin repeticiones.",
+    "bd": "refugio",
+    "query_solucion": "SELECT DISTINCT riesgo FROM Trabajos;",
+    "puntos": 10,
+    "pista": "Usa <code>SELECT DISTINCT columna</code> para eliminar filas duplicadas en el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <b>id_trabajo distintos</b> que aparecen asignados en la tabla <code>Moradores</code> (sin repeticiones).",
+        "query_solucion": "SELECT DISTINCT id_trabajo FROM Moradores;"
+      },
+      {
+        "enunciado": "Muestra los <b>tipos distintos</b> de suministros que existen (sin repeticiones).",
+        "query_solucion": "SELECT DISTINCT tipo FROM Suministros;"
+      }
+    ]
+  },
+  {
+    "id": 546,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Alias con AS",
+    "titulo": "Columnas con alias descriptivos",
+    "enunciado": "Muestra el <b>nombre</b> de los moradores con el alias <code>Morador</code> y el <b>id_trabajo</b> con el alias <code>Trabajo_Asignado</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT nombre AS Morador, id_trabajo AS Trabajo_Asignado FROM Moradores;",
+    "puntos": 10,
+    "pista": "Usa <code>columna AS alias</code> para dar un nombre más descriptivo a la columna en el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> con alias <code>Suministro</code> y la <b>cantidad_kilos</b> con alias <code>Stock_Kilos</code> de todos los suministros.",
+        "query_solucion": "SELECT tipo AS Suministro, cantidad_kilos AS Stock_Kilos FROM Suministros;"
+      },
+      {
+        "enunciado": "Muestra el <b>titulo</b> con alias <code>Profesion</code> y el <b>riesgo</b> con alias <code>Nivel_Peligro</code> de todos los trabajos.",
+        "query_solucion": "SELECT titulo AS Profesion, riesgo AS Nivel_Peligro FROM Trabajos;"
+      }
+    ]
+  },
+  {
+    "id": 547,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones de texto",
+    "titulo": "Nombre en mayúsculas y longitud",
+    "enunciado": "Muestra el <b>nombre</b> de cada morador en <b>mayúsculas</b> (alias <code>nombre_may</code>) y la <b>longitud</b> de su nombre (alias <code>longitud</code>).",
+    "bd": "refugio",
+    "query_solucion": "SELECT UPPER(nombre) AS nombre_may, LENGTH(nombre) AS longitud FROM Moradores;",
+    "puntos": 15,
+    "pista": "Usa <code>UPPER(col)</code> para mayúsculas y <code>LENGTH(col)</code> para contar caracteres.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> de suministro en <b>minúsculas</b> (alias <code>tipo_minus</code>) y la longitud del tipo (alias <code>longitud_tipo</code>) de todos los suministros.",
+        "query_solucion": "SELECT LOWER(tipo) AS tipo_minus, LENGTH(tipo) AS longitud_tipo FROM Suministros;"
+      },
+      {
+        "enunciado": "Muestra la concatenación del <b>nombre</b> del morador con su <b>atributos_SPECIAL</b> (en el formato <code>'Vault Boy - S10P10'</code>) con alias <code>ficha_morador</code>.",
+        "query_solucion": "SELECT CONCAT(nombre, ' - ', atributos_SPECIAL) AS ficha_morador FROM Moradores;"
+      }
+    ]
+  },
+  {
+    "id": 548,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Aritmética básica",
+    "titulo": "Botín diario de las expediciones",
+    "enunciado": "Muestra el <b>id_expedicion</b> y calcula el <b>botín promedio por día</b> de cada expedición como <code>botin_recuperado / dias_fuera</code> con alias <code>botin_diario</code>. Solo muestra expediciones con días mayores que 0.",
+    "bd": "refugio",
+    "query_solucion": "SELECT id_expedicion, ROUND(botin_recuperado / dias_fuera, 2) AS botin_diario FROM Expediciones WHERE dias_fuera > 0;",
+    "puntos": 15,
+    "pista": "Puedes usar operaciones aritméticas directamente en el SELECT. Usa ROUND para redondear el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> de suministro y su <b>cantidad_kilos multiplicada por 1000</b> para convertir a gramos (alias <code>cantidad_gramos</code>).",
+        "query_solucion": "SELECT tipo, cantidad_kilos * 1000 AS cantidad_gramos FROM Suministros;"
+      },
+      {
+        "enunciado": "Muestra el <b>id_expedicion</b> y el resultado de restar el <b>botin_recuperado</b> menos <b>100</b> (alias <code>botin_neto</code>). Muestra todos.",
+        "query_solucion": "SELECT id_expedicion, botin_recuperado - 100 AS botin_neto FROM Expediciones;"
+      }
+    ]
+  },
+  {
+    "id": 549,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Combinación WHERE + ORDER BY + LIMIT",
+    "titulo": "Top expedición de más de 5 días",
+    "enunciado": "Muestra el <b>id_expedicion</b> y el <b>botin_recuperado</b> de la expedición con <b>más de 5 días fuera</b> que <b>más botín</b> recuperó. Muestra solo <b>1</b>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT id_expedicion, botin_recuperado FROM Expediciones WHERE dias_fuera > 5 ORDER BY botin_recuperado DESC LIMIT 1;",
+    "puntos": 15,
+    "pista": "Puedes encadenar WHERE, ORDER BY y LIMIT en ese orden.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> y la <b>cantidad_kilos</b> de los suministros con <b>más de 50 kilos</b>, ordenados de <b>mayor a menor</b>, mostrando solo los <b>2 primeros</b>.",
+        "query_solucion": "SELECT tipo, cantidad_kilos FROM Suministros WHERE cantidad_kilos > 50 ORDER BY cantidad_kilos DESC LIMIT 2;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> del morador con <b>id_trabajo igual a 3</b>, ordenado <b>alfabéticamente</b>, mostrando solo el <b>primero</b>.",
+        "query_solucion": "SELECT nombre FROM Moradores WHERE id_trabajo = 3 ORDER BY nombre ASC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 550,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Contar moradores totales",
+    "enunciado": "Cuenta el <b>número total de moradores</b> registrados en la tabla <code>Moradores</code>. Muestra el resultado con alias <code>total_moradores</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT COUNT(*) AS total_moradores FROM Moradores;",
+    "puntos": 20,
+    "pista": "Usa <code>COUNT(*)</code> para contar todas las filas de la tabla.",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta cuántas expediciones tienen <b>más de 0 días fuera</b>. Muestra el resultado con alias <code>expediciones_reales</code>.",
+        "query_solucion": "SELECT COUNT(*) AS expediciones_reales FROM Expediciones WHERE dias_fuera > 0;"
+      },
+      {
+        "enunciado": "Cuenta cuántos suministros existen en total. Muestra el resultado con alias <code>total_suministros</code>.",
+        "query_solucion": "SELECT COUNT(*) AS total_suministros FROM Suministros;"
+      }
+    ]
+  },
+  {
+    "id": 551,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM y AVG",
+    "titulo": "Total y media de suministros",
+    "enunciado": "Calcula la <b>suma total</b> de kilos de todos los suministros (alias <code>total_kilos</code>) y la <b>media</b> (alias <code>media_kilos</code>).",
+    "bd": "refugio",
+    "query_solucion": "SELECT SUM(cantidad_kilos) AS total_kilos, AVG(cantidad_kilos) AS media_kilos FROM Suministros;",
+    "puntos": 20,
+    "pista": "Usa <code>SUM(col)</code> para sumar y <code>AVG(col)</code> para la media aritmética.",
+    "variaciones": [
+      {
+        "enunciado": "Calcula el <b>botín total recuperado</b> en todas las expediciones (alias <code>botin_total</code>) y el <b>promedio</b> (alias <code>botin_medio</code>).",
+        "query_solucion": "SELECT SUM(botin_recuperado) AS botin_total, AVG(botin_recuperado) AS botin_medio FROM Expediciones;"
+      },
+      {
+        "enunciado": "Calcula el <b>promedio de días fuera</b> de las expediciones (alias <code>dias_medios</code>) redondeado a 1 decimal.",
+        "query_solucion": "SELECT ROUND(AVG(dias_fuera), 1) AS dias_medios FROM Expediciones;"
+      }
+    ]
+  },
+  {
+    "id": 552,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX y MIN",
+    "titulo": "Mayor y menor botín de expedición",
+    "enunciado": "Muestra el <b>mayor botín</b> (alias <code>max_botin</code>) y el <b>menor botín</b> (alias <code>min_botin</code>) recuperado en todas las expediciones.",
+    "bd": "refugio",
+    "query_solucion": "SELECT MAX(botin_recuperado) AS max_botin, MIN(botin_recuperado) AS min_botin FROM Expediciones;",
+    "puntos": 20,
+    "pista": "Usa <code>MAX(col)</code> y <code>MIN(col)</code> para obtener el valor máximo y mínimo.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <b>mayor cantidad_kilos</b> (alias <code>max_kilos</code>) y la <b>menor cantidad_kilos</b> (alias <code>min_kilos</code>) entre todos los suministros.",
+        "query_solucion": "SELECT MAX(cantidad_kilos) AS max_kilos, MIN(cantidad_kilos) AS min_kilos FROM Suministros;"
+      },
+      {
+        "enunciado": "Muestra la <b>expedición más larga</b> en días (alias <code>max_dias</code>) y la <b>más corta</b> (alias <code>min_dias</code>).",
+        "query_solucion": "SELECT MAX(dias_fuera) AS max_dias, MIN(dias_fuera) AS min_dias FROM Expediciones;"
+      }
+    ]
+  },
+  {
+    "id": 553,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Moradores por trabajo",
+    "enunciado": "Muestra el <b>id_trabajo</b> y el <b>número de moradores</b> con ese trabajo (alias <code>num_moradores</code>). Agrupa por <code>id_trabajo</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT id_trabajo, COUNT(*) AS num_moradores FROM Moradores GROUP BY id_trabajo;",
+    "puntos": 22,
+    "pista": "Usa <code>GROUP BY columna</code> para agrupar filas con el mismo valor. Luego aplica funciones de agregación.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_morador</b> y el <b>número de expediciones</b> que ha realizado (alias <code>num_expediciones</code>). Agrupa por <code>id_morador</code>.",
+        "query_solucion": "SELECT id_morador, COUNT(*) AS num_expediciones FROM Expediciones GROUP BY id_morador;"
+      },
+      {
+        "enunciado": "Muestra el <b>riesgo</b> y el <b>número de trabajos</b> de ese nivel de riesgo (alias <code>num_trabajos</code>). Agrupa por riesgo.",
+        "query_solucion": "SELECT riesgo, COUNT(*) AS num_trabajos FROM Trabajos GROUP BY riesgo;"
+      }
+    ]
+  },
+  {
+    "id": 554,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY con funciones de agregación",
+    "titulo": "Botín total por morador",
+    "enunciado": "Muestra el <b>id_morador</b> y el <b>botín total recuperado</b> en sus expediciones (alias <code>botin_total</code>). Agrupa por <code>id_morador</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT id_morador, SUM(botin_recuperado) AS botin_total FROM Expediciones GROUP BY id_morador;",
+    "puntos": 22,
+    "pista": "GROUP BY puede combinarse con AVG, SUM, MAX, MIN y COUNT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_morador</b> y el <b>promedio de días fuera</b> en sus expediciones (alias <code>dias_medios</code>). Agrupa por <code>id_morador</code>.",
+        "query_solucion": "SELECT id_morador, AVG(dias_fuera) AS dias_medios FROM Expediciones GROUP BY id_morador;"
+      },
+      {
+        "enunciado": "Muestra el <b>id_trabajo</b> y el <b>máximo de días fuera</b> de las expediciones de los moradores con ese trabajo (alias <code>max_dias</code>). Agrupa por id_trabajo. Pista: necesitarás un JOIN.",
+        "query_solucion": "SELECT m.id_trabajo, MAX(e.dias_fuera) AS max_dias\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.id_trabajo;"
+      }
+    ]
+  },
+  {
+    "id": 555,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Moradores con más de 1 expedición",
+    "enunciado": "Muestra el <b>id_morador</b> y el <b>número de expediciones</b> (alias <code>total</code>) de los moradores que tienen <b>más de 1 expedición</b> registrada.",
+    "bd": "refugio",
+    "query_solucion": "SELECT id_morador, COUNT(*) AS total FROM Expediciones GROUP BY id_morador HAVING COUNT(*) > 1;",
+    "puntos": 25,
+    "pista": "<code>HAVING</code> filtra después de agrupar. Es como el WHERE pero para grupos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>id_trabajo</b> de los trabajos que tienen <b>más de 1 morador</b> asignado, junto con el conteo (alias <code>moradores_asignados</code>).",
+        "query_solucion": "SELECT id_trabajo, COUNT(*) AS moradores_asignados FROM Moradores GROUP BY id_trabajo HAVING COUNT(*) > 1;"
+      },
+      {
+        "enunciado": "Muestra el <b>id_morador</b> y el <b>botín total</b> (alias <code>botin_total</code>) de los moradores cuyo botín total supere 300. Usa GROUP BY y HAVING.",
+        "query_solucion": "SELECT id_morador, SUM(botin_recuperado) AS botin_total FROM Expediciones GROUP BY id_morador HAVING SUM(botin_recuperado) > 300;"
+      }
+    ]
+  },
+  {
+    "id": 556,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN (2 tablas)",
+    "titulo": "Moradores con nombre de trabajo",
+    "enunciado": "Muestra el <b>nombre del morador</b> y el <b>titulo</b> de su trabajo. Usa <code>INNER JOIN</code> entre <code>Moradores</code> y <code>Trabajos</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, t.titulo\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo;",
+    "puntos": 22,
+    "pista": "Usa <code>INNER JOIN tabla ON tabla1.col = tabla2.col</code> para unir las tablas por la clave foránea.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>botin_recuperado</b> de sus expediciones. Usa <code>INNER JOIN</code> entre <code>Moradores</code> y <code>Expediciones</code>.",
+        "query_solucion": "SELECT m.nombre, e.botin_recuperado\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b>, su <b>atributos_SPECIAL</b> y el <b>riesgo</b> de su trabajo. Usa <code>INNER JOIN</code>.",
+        "query_solucion": "SELECT m.nombre, m.atributos_SPECIAL, t.riesgo\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo;"
+      }
+    ]
+  },
+  {
+    "id": 557,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN con WHERE",
+    "titulo": "Moradores exploradores con expediciones",
+    "enunciado": "Muestra el <b>nombre del morador</b> y el <b>titulo del trabajo</b> de los moradores cuyo trabajo tenga <b>riesgo 'Alto'</b>. Usa <code>INNER JOIN</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, t.titulo\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nWHERE t.riesgo = 'Alto';",
+    "puntos": 23,
+    "pista": "Puedes añadir un <code>WHERE</code> después del <code>INNER JOIN</code> para filtrar el resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>botin_recuperado</b> de las expediciones donde el botín sea <b>mayor que 200</b>. Usa <code>INNER JOIN</code>.",
+        "query_solucion": "SELECT m.nombre, e.botin_recuperado\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE e.botin_recuperado > 200;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>titulo del trabajo</b> de los moradores que tienen trabajo de <b>riesgo 'Bajo'</b> o <b>'Medio'</b>. Usa <code>INNER JOIN</code> e <code>IN</code>.",
+        "query_solucion": "SELECT m.nombre, t.titulo\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nWHERE t.riesgo IN ('Bajo', 'Medio');"
+      }
+    ]
+  },
+  {
+    "id": 558,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN básico",
+    "titulo": "Todos los moradores y sus expediciones",
+    "enunciado": "Muestra el <b>nombre</b> de todos los moradores y el <b>botin_recuperado</b> de sus expediciones. Si un morador no tiene expedición, muéstralo igualmente con NULL. Usa <code>LEFT JOIN</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, e.botin_recuperado\nFROM Moradores m\nLEFT JOIN Expediciones e ON m.id_morador = e.id_morador;",
+    "puntos": 23,
+    "pista": "<code>LEFT JOIN</code> devuelve todas las filas de la tabla izquierda aunque no haya coincidencia en la derecha.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>titulo</b> de todos los trabajos y el <b>nombre</b> de los moradores que los realizan, aunque un trabajo no tenga moradores. Usa <code>LEFT JOIN</code>.",
+        "query_solucion": "SELECT t.titulo, m.nombre\nFROM Trabajos t\nLEFT JOIN Moradores m ON t.id_trabajo = m.id_trabajo;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> de todos los moradores y los <b>dias_fuera</b> de sus expediciones, aunque no tengan expedición. Usa <code>LEFT JOIN</code>.",
+        "query_solucion": "SELECT m.nombre, e.dias_fuera\nFROM Moradores m\nLEFT JOIN Expediciones e ON m.id_morador = e.id_morador;"
+      }
+    ]
+  },
+  {
+    "id": 559,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT con GROUP BY y JOIN",
+    "titulo": "Expediciones por morador con nombre",
+    "enunciado": "Muestra el <b>nombre del morador</b> y el <b>número de expediciones</b> que ha realizado (alias <code>num_expediciones</code>). Usa JOIN y GROUP BY.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, COUNT(*) AS num_expediciones\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre;",
+    "puntos": 25,
+    "pista": "Haz primero el JOIN y luego agrupa con GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>titulo del trabajo</b> y el <b>número de moradores</b> que lo realizan (alias <code>total_moradores</code>). Usa JOIN y GROUP BY.",
+        "query_solucion": "SELECT t.titulo, COUNT(*) AS total_moradores\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nGROUP BY t.titulo;"
+      },
+      {
+        "enunciado": "Muestra el <b>riesgo del trabajo</b> y el <b>botín total</b> (alias <code>botin_total</code>) conseguido por los moradores con ese nivel de riesgo. Usa JOIN y GROUP BY.",
+        "query_solucion": "SELECT t.riesgo, SUM(e.botin_recuperado) AS botin_total\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.riesgo;"
+      }
+    ]
+  },
+  {
+    "id": 560,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM con GROUP BY y JOIN",
+    "titulo": "Botín total por morador con nombre",
+    "enunciado": "Muestra el <b>nombre del morador</b> y la <b>suma del botín recuperado</b> en todas sus expediciones (alias <code>botin_total</code>). Agrupa por nombre.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, SUM(e.botin_recuperado) AS botin_total\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre;",
+    "puntos": 25,
+    "pista": "Combina JOIN con GROUP BY y usa SUM sobre la columna que quieres sumar.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>titulo del trabajo</b> y el <b>total de días fuera</b> (alias <code>dias_totales</code>) de las expediciones de los moradores con ese trabajo. Usa JOIN y GROUP BY.",
+        "query_solucion": "SELECT t.titulo, SUM(e.dias_fuera) AS dias_totales\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.titulo;"
+      },
+      {
+        "enunciado": "Muestra el <b>riesgo del trabajo</b> y el <b>botín máximo</b> (alias <code>max_botin</code>) conseguido por los moradores con ese riesgo. Usa JOIN y GROUP BY.",
+        "query_solucion": "SELECT t.riesgo, MAX(e.botin_recuperado) AS max_botin\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.riesgo;"
+      }
+    ]
+  },
+  {
+    "id": 561,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING con JOIN",
+    "titulo": "Moradores con más de 1 expedición",
+    "enunciado": "Muestra el <b>nombre</b> de los moradores que tienen <b>más de 1 expedición</b> registrada (alias <code>num_expediciones</code>). Usa JOIN, GROUP BY y HAVING.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, COUNT(*) AS num_expediciones\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre\nHAVING COUNT(*) > 1;",
+    "puntos": 27,
+    "pista": "Usa HAVING después del GROUP BY para filtrar grupos por condición de agregación.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>titulo del trabajo</b> de los trabajos que tienen <b>más de 1 morador</b> asignado (alias <code>total</code>). Usa JOIN, GROUP BY y HAVING.",
+        "query_solucion": "SELECT t.titulo, COUNT(*) AS total\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nGROUP BY t.titulo\nHAVING COUNT(*) > 1;"
+      },
+      {
+        "enunciado": "Muestra el <b>riesgo del trabajo</b> de los niveles cuyo <b>botín promedio</b> sea <b>mayor que 150</b> (alias <code>botin_medio</code>). Usa JOIN, GROUP BY y HAVING.",
+        "query_solucion": "SELECT t.riesgo, AVG(e.botin_recuperado) AS botin_medio\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.riesgo\nHAVING AVG(e.botin_recuperado) > 150;"
+      }
+    ]
+  },
+  {
+    "id": 562,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN con ORDER BY y LIMIT",
+    "titulo": "El morador con más botín y su trabajo",
+    "enunciado": "Muestra el <b>nombre del morador</b>, el <b>titulo de su trabajo</b> y su <b>botin_recuperado</b>. Ordena por botín de mayor a menor y muestra solo el <b>primero</b>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, t.titulo, e.botin_recuperado\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nORDER BY e.botin_recuperado DESC\nLIMIT 1;",
+    "puntos": 23,
+    "pista": "Combina JOIN con ORDER BY y LIMIT para obtener el top resultado.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>titulo del trabajo</b> del morador que más días ha estado fuera en expediciones. Muestra solo 1.",
+        "query_solucion": "SELECT m.nombre, t.titulo\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nORDER BY e.dias_fuera DESC\nLIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra los <b>2 moradores</b> con <b>mayor botín total</b> en todas sus expediciones junto con su <b>nombre</b>.",
+        "query_solucion": "SELECT m.nombre, SUM(e.botin_recuperado) AS botin_total\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre\nORDER BY botin_total DESC\nLIMIT 2;"
+      }
+    ]
+  },
+  {
+    "id": 563,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT DISTINCT con JOIN",
+    "titulo": "Trabajos distintos realizados por moradores con expediciones",
+    "enunciado": "Muestra cuántos <b>tipos de trabajo distintos</b> tienen los moradores que han realizado al menos una expedición (alias <code>trabajos_distintos</code>).",
+    "bd": "refugio",
+    "query_solucion": "SELECT COUNT(DISTINCT m.id_trabajo) AS trabajos_distintos\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador;",
+    "puntos": 25,
+    "pista": "Usa <code>COUNT(DISTINCT columna)</code> para contar valores únicos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>titulo del trabajo</b> y el <b>número de moradores distintos</b> que lo realizan (alias <code>moradores_distintos</code>).",
+        "query_solucion": "SELECT t.titulo, COUNT(DISTINCT m.id_morador) AS moradores_distintos\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nGROUP BY t.titulo;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>número de expediciones distintas</b> que ha realizado (alias <code>expediciones_distintas</code>).",
+        "query_solucion": "SELECT m.nombre, COUNT(DISTINCT e.id_expedicion) AS expediciones_distintas\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 564,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY múltiples columnas",
+    "titulo": "Expediciones agrupadas por morador y días",
+    "enunciado": "Muestra el <b>nombre del morador</b>, el <b>titulo del trabajo</b> y el <b>número de expediciones</b> (alias <code>total</code>) agrupando por morador y trabajo. Usa JOIN.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, t.titulo, COUNT(*) AS total\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre, t.titulo;",
+    "puntos": 25,
+    "pista": "Puedes agrupar por varias columnas listándolas separadas por comas: <code>GROUP BY col1, col2</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>riesgo del trabajo</b>, el <b>nombre del morador</b> y el <b>botín total</b> (alias <code>botin</code>) de cada morador, agrupando por riesgo y nombre.",
+        "query_solucion": "SELECT t.riesgo, m.nombre, SUM(e.botin_recuperado) AS botin\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.riesgo, m.nombre;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b>, el <b>titulo del trabajo</b> y el <b>botín total</b> (alias <code>botin_total</code>). Usa JOIN de las 3 tablas.",
+        "query_solucion": "SELECT m.nombre, t.titulo, SUM(e.botin_recuperado) AS botin_total\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre, t.titulo;"
+      }
+    ]
+  },
+  {
+    "id": 565,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN con IS NULL (anti-join)",
+    "titulo": "Moradores sin expediciones",
+    "enunciado": "Muestra el <b>nombre</b> de los moradores que <b>NO tienen ninguna expedición</b> registrada. Usa <code>LEFT JOIN</code> e <code>IS NULL</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre\nFROM Moradores m\nLEFT JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE e.id_morador IS NULL;",
+    "puntos": 30,
+    "pista": "Haz un LEFT JOIN y luego filtra con WHERE la columna de la tabla derecha <code>IS NULL</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>titulo</b> de los trabajos que <b>no tienen ningún morador</b> asignado. Usa <code>LEFT JOIN</code> e <code>IS NULL</code>.",
+        "query_solucion": "SELECT t.titulo\nFROM Trabajos t\nLEFT JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nWHERE m.id_trabajo IS NULL;"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo</b> de los suministros que <b>no aparecen</b> en ninguna expedición (tabla Expediciones no tiene referencia a suministros, así que muestra los suministros con <code>cantidad_kilos = 0</code>).",
+        "query_solucion": "SELECT tipo FROM Suministros WHERE cantidad_kilos = 0;"
+      }
+    ]
+  },
+  {
+    "id": 566,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en WHERE",
+    "titulo": "Moradores con botín mayor que la media",
+    "enunciado": "Muestra el <b>nombre del morador</b> y el <b>botin_recuperado</b> de las expediciones cuyo botín sea <b>mayor que el promedio</b> de todos los botines. Usa una subconsulta.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, e.botin_recuperado\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE e.botin_recuperado > (SELECT AVG(botin_recuperado) FROM Expediciones);",
+    "puntos": 32,
+    "pista": "Usa una subconsulta dentro del WHERE: <code>WHERE col > (SELECT AVG(col) FROM tabla)</code>.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> de los suministros cuya <b>cantidad_kilos</b> sea <b>mayor que la media</b> de todos los suministros. Usa una subconsulta.",
+        "query_solucion": "SELECT tipo\nFROM Suministros\nWHERE cantidad_kilos > (SELECT AVG(cantidad_kilos) FROM Suministros);"
+      },
+      {
+        "enunciado": "Muestra el <b>id_expedicion</b> de las expediciones cuyo <b>botín</b> sea <b>igual al máximo botín</b> registrado. Usa una subconsulta.",
+        "query_solucion": "SELECT id_expedicion\nFROM Expediciones\nWHERE botin_recuperado = (SELECT MAX(botin_recuperado) FROM Expediciones);"
+      }
+    ]
+  },
+  {
+    "id": 567,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con IN",
+    "titulo": "Moradores que han hecho expediciones largas",
+    "enunciado": "Muestra el <b>nombre</b> de los moradores que han realizado alguna expedición con <b>más de 5 días fuera</b>. Usa una subconsulta con <code>IN</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT nombre\nFROM Moradores\nWHERE id_morador IN (\n  SELECT id_morador FROM Expediciones WHERE dias_fuera > 5\n);",
+    "puntos": 32,
+    "pista": "Usa <code>WHERE columna IN (SELECT columna FROM ...)</code> para filtrar con una subconsulta.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los moradores que <b>NO han hecho ninguna expedición con botín mayor que 0</b>. Usa <code>NOT IN</code>.",
+        "query_solucion": "SELECT nombre\nFROM Moradores\nWHERE id_morador NOT IN (\n  SELECT id_morador FROM Expediciones WHERE botin_recuperado > 0\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>titulo</b> de los trabajos que tienen asignado algún morador que haya realizado expediciones. Usa <code>IN</code> con subconsulta.",
+        "query_solucion": "SELECT titulo\nFROM Trabajos\nWHERE id_trabajo IN (\n  SELECT id_trabajo FROM Moradores\n  WHERE id_morador IN (SELECT id_morador FROM Expediciones)\n);"
+      }
+    ]
+  },
+  {
+    "id": 568,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Múltiples JOINs (3 tablas)",
+    "titulo": "Morador, trabajo y expedición completa",
+    "enunciado": "Muestra el <b>nombre del morador</b>, el <b>titulo de su trabajo</b>, los <b>dias_fuera</b> y el <b>botin_recuperado</b>. Usa las 3 tablas: <code>Moradores</code>, <code>Trabajos</code> y <code>Expediciones</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, t.titulo, e.dias_fuera, e.botin_recuperado\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador;",
+    "puntos": 35,
+    "pista": "Encadena varios INNER JOIN uno tras otro. Cada JOIN une una nueva tabla con una ya existente en la consulta.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b>, el <b>riesgo del trabajo</b> y el <b>botín total</b> (alias <code>botin_total</code>) de las expediciones de moradores con trabajo de riesgo <code>'Alto'</code>. Usa 3 tablas.",
+        "query_solucion": "SELECT m.nombre, t.riesgo, SUM(e.botin_recuperado) AS botin_total\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE t.riesgo = 'Alto'\nGROUP BY m.nombre, t.riesgo;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b>, el <b>titulo del trabajo</b> y el <b>botin_recuperado</b> de las expediciones con <b>más de 5 días fuera</b>. Ordena por botín descendente.",
+        "query_solucion": "SELECT m.nombre, t.titulo, e.botin_recuperado\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE e.dias_fuera > 5\nORDER BY e.botin_recuperado DESC;"
+      }
+    ]
+  },
+  {
+    "id": 569,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP BY + HAVING + JOIN",
+    "titulo": "Trabajos con botín promedio alto",
+    "enunciado": "Muestra el <b>titulo del trabajo</b> y el <b>botín promedio</b> (alias <code>botin_medio</code>) de las expediciones de moradores con ese trabajo. Solo incluye los trabajos cuyo botín promedio supere <b>100</b>. Usa JOIN, GROUP BY y HAVING.",
+    "bd": "refugio",
+    "query_solucion": "SELECT t.titulo, AVG(e.botin_recuperado) AS botin_medio\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.titulo\nHAVING AVG(e.botin_recuperado) > 100;",
+    "puntos": 35,
+    "pista": "El orden es: FROM → JOIN → WHERE → GROUP BY → HAVING → ORDER BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>número de expediciones</b> (alias <code>total</code>) de los que han salido <b>más de 1 vez</b> y cuyo <b>botín total supere 300</b>. Usa JOIN, GROUP BY y HAVING.",
+        "query_solucion": "SELECT m.nombre, COUNT(*) AS total\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre\nHAVING COUNT(*) > 1 AND SUM(e.botin_recuperado) > 300;"
+      },
+      {
+        "enunciado": "Muestra el <b>riesgo del trabajo</b> y el <b>promedio de días fuera</b> (alias <code>dias_medios</code>) de los moradores con ese riesgo. Solo muestra los que tienen promedio mayor que 4.",
+        "query_solucion": "SELECT t.riesgo, AVG(e.dias_fuera) AS dias_medios\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.riesgo\nHAVING AVG(e.dias_fuera) > 4;"
+      }
+    ]
+  },
+  {
+    "id": 570,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta correlacionada",
+    "titulo": "Moradores con botín mayor que el promedio de su trabajo",
+    "enunciado": "Muestra el <b>nombre</b> de los moradores cuyo <b>botín total en expediciones</b> sea mayor que el <b>promedio de botín de los moradores con el mismo trabajo</b>. Usa subconsulta correlacionada.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m1.nombre\nFROM Moradores m1\nWHERE (\n  SELECT SUM(e.botin_recuperado)\n  FROM Expediciones e\n  WHERE e.id_morador = m1.id_morador\n) > (\n  SELECT AVG(sub.botin)\n  FROM (\n    SELECT SUM(e2.botin_recuperado) AS botin\n    FROM Moradores m2\n    INNER JOIN Expediciones e2 ON m2.id_morador = e2.id_morador\n    WHERE m2.id_trabajo = m1.id_trabajo\n    GROUP BY m2.id_morador\n  ) AS sub\n);",
+    "puntos": 38,
+    "pista": "Una subconsulta correlacionada referencia columnas de la consulta externa. Puedes anidar subconsultas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> de los suministros con <b>más kilos que la media</b> de todos los suministros. Usa subconsulta.",
+        "query_solucion": "SELECT tipo\nFROM Suministros s1\nWHERE s1.cantidad_kilos > (\n  SELECT AVG(s2.cantidad_kilos) FROM Suministros s2\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los moradores cuyo <b>número de expediciones</b> sea mayor al <b>promedio de expediciones por morador</b>. Usa subconsulta.",
+        "query_solucion": "SELECT m.nombre\nFROM Moradores m\nWHERE (\n  SELECT COUNT(*) FROM Expediciones e WHERE e.id_morador = m.id_morador\n) > (\n  SELECT AVG(cnt) FROM (SELECT COUNT(*) AS cnt FROM Expediciones GROUP BY id_morador) AS sub\n);"
+      }
+    ]
+  },
+  {
+    "id": 571,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con NOT IN",
+    "titulo": "Trabajos sin moradores con expediciones",
+    "enunciado": "Muestra el <b>titulo</b> de los trabajos cuyos moradores <b>no han realizado ninguna expedición</b>. Usa <code>NOT IN</code> con subconsulta.",
+    "bd": "refugio",
+    "query_solucion": "SELECT titulo\nFROM Trabajos\nWHERE id_trabajo NOT IN (\n  SELECT m.id_trabajo\n  FROM Moradores m\n  INNER JOIN Expediciones e ON m.id_morador = e.id_morador\n  WHERE m.id_trabajo IS NOT NULL\n);",
+    "puntos": 32,
+    "pista": "Usa <code>NOT IN (SELECT ...)</code> para excluir los registros que aparecen en la subconsulta.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los moradores que <b>no tienen ninguna expedición</b> registrada. Usa <code>NOT IN</code>.",
+        "query_solucion": "SELECT nombre\nFROM Moradores\nWHERE id_morador NOT IN (\n  SELECT id_morador FROM Expediciones\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo</b> de los suministros que <b>no son de tipo 'Estimulantes'</b> ni <code>'Agua Purificada'</code>. Usa <code>NOT IN</code>.",
+        "query_solucion": "SELECT tipo\nFROM Suministros\nWHERE tipo NOT IN ('Estimulantes', 'Agua Purificada');"
+      }
+    ]
+  },
+  {
+    "id": 572,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN + subconsulta en WHERE",
+    "titulo": "Morador de la expedición con más botín",
+    "enunciado": "Muestra el <b>nombre del morador</b> y el <b>titulo del trabajo</b> del morador que realizó la expedición con <b>mayor botín recuperado</b>. Usa JOIN y subconsulta.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, t.titulo\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE e.botin_recuperado = (\n  SELECT MAX(botin_recuperado) FROM Expediciones\n);",
+    "puntos": 36,
+    "pista": "La subconsulta devuelve un único valor (el máximo). Úsala en el WHERE después del JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>riesgo del trabajo</b> del morador que más días ha estado fuera en una sola expedición. Usa JOIN y subconsulta.",
+        "query_solucion": "SELECT m.nombre, t.riesgo\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE e.dias_fuera = (\n  SELECT MAX(dias_fuera) FROM Expediciones\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y el <b>titulo del trabajo</b> del morador que tiene el trabajo de mayor id. Usa subconsulta en WHERE.",
+        "query_solucion": "SELECT m.nombre, t.titulo\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nWHERE m.id_trabajo = (\n  SELECT MAX(id_trabajo) FROM Trabajos\n);"
+      }
+    ]
+  },
+  {
+    "id": 573,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Múltiples JOINs con filtros complejos",
+    "titulo": "Expediciones de exploradores de alto riesgo",
+    "enunciado": "Muestra el <b>nombre del morador</b>, el <b>titulo del trabajo</b>, los <b>dias_fuera</b> y el <b>botin_recuperado</b> de las expediciones de moradores con trabajo de <b>riesgo 'Alto'</b>. Ordena por botín descendente.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, t.titulo, e.dias_fuera, e.botin_recuperado\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE t.riesgo = 'Alto'\nORDER BY e.botin_recuperado DESC;",
+    "puntos": 37,
+    "pista": "Encadena los JOINs y usa WHERE sobre la columna de Trabajos para filtrar por riesgo.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b>, el <b>riesgo del trabajo</b>, el <b>número de expediciones</b> (alias <code>total_exp</code>) y el <b>botín total</b> (alias <code>botin</code>) de los moradores con trabajo de riesgo <code>'Medio'</code> o <code>'Alto'</code>. Agrupa por morador.",
+        "query_solucion": "SELECT m.nombre, t.riesgo, COUNT(*) AS total_exp, SUM(e.botin_recuperado) AS botin\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE t.riesgo IN ('Medio', 'Alto')\nGROUP BY m.nombre, t.riesgo;"
+      },
+      {
+        "enunciado": "Muestra el <b>titulo del trabajo</b>, el <b>número de exploradores</b> (alias <code>exploradores</code>) y el <b>botín promedio</b> (alias <code>botin_medio</code>) de las expediciones de moradores de ese trabajo.",
+        "query_solucion": "SELECT t.titulo, COUNT(DISTINCT m.id_morador) AS exploradores, AVG(e.botin_recuperado) AS botin_medio\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.titulo;"
+      }
+    ]
+  },
+  {
+    "id": 574,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN + GROUP BY + HAVING con IS NULL",
+    "titulo": "Trabajos con pocos o ningún morador",
+    "enunciado": "Muestra el <b>titulo del trabajo</b> y el <b>número de moradores</b> (alias <code>moradores</code>), incluyendo trabajos con <b>0 moradores</b>. Muestra solo los que tienen <b>menos de 2 moradores</b>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT t.titulo, COUNT(m.id_morador) AS moradores\nFROM Trabajos t\nLEFT JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nGROUP BY t.titulo\nHAVING COUNT(m.id_morador) < 2;",
+    "puntos": 38,
+    "pista": "Con LEFT JOIN y COUNT sobre la columna de la tabla derecha, los registros sin coincidencia cuentan como 0.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>número de expediciones</b> (alias <code>total</code>), incluyendo moradores con 0 expediciones. Solo muestra los que tienen <b>menos de 2</b> expediciones.",
+        "query_solucion": "SELECT m.nombre, COUNT(e.id_expedicion) AS total\nFROM Moradores m\nLEFT JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre\nHAVING COUNT(e.id_expedicion) < 2;"
+      },
+      {
+        "enunciado": "Muestra el <b>titulo del trabajo</b> y el <b>botín total</b> (alias <code>botin_total</code>) de los moradores con ese trabajo, incluyendo trabajos sin expediciones (botin_total = 0). Solo muestra trabajos con botín total menor de 300.",
+        "query_solucion": "SELECT t.titulo, COALESCE(SUM(e.botin_recuperado), 0) AS botin_total\nFROM Trabajos t\nLEFT JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nLEFT JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.titulo\nHAVING COALESCE(SUM(e.botin_recuperado), 0) < 300;"
+      }
+    ]
+  },
+  {
+    "id": 575,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en SELECT (columna calculada)",
+    "titulo": "Diferencia de botín respecto a la media",
+    "enunciado": "Muestra el <b>nombre del morador</b>, el <b>botin_recuperado</b> de su mejor expedición y la <b>diferencia</b> respecto al botín promedio global (alias <code>diferencia_media</code>). Usa subconsulta en el SELECT.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, e.botin_recuperado,\n  e.botin_recuperado - (SELECT AVG(botin_recuperado) FROM Expediciones) AS diferencia_media\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador;",
+    "puntos": 38,
+    "pista": "Puedes poner una subconsulta directamente en el SELECT como columna calculada.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>tipo</b> de suministro, su <b>cantidad_kilos</b> y la diferencia con el <b>máximo de kilos</b> (alias <code>diferencia_max</code>). Usa subconsulta en SELECT.",
+        "query_solucion": "SELECT tipo, cantidad_kilos,\n  (SELECT MAX(cantidad_kilos) FROM Suministros) - cantidad_kilos AS diferencia_max\nFROM Suministros;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>número total de expediciones</b> que ha realizado (alias <code>total_expediciones</code>). Usa subconsulta correlacionada en SELECT.",
+        "query_solucion": "SELECT m.nombre,\n  (SELECT COUNT(*) FROM Expediciones e WHERE e.id_morador = m.id_morador) AS total_expediciones\nFROM Moradores m;"
+      }
+    ]
+  },
+  {
+    "id": 576,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP BY + HAVING + subconsulta",
+    "titulo": "Trabajos con botín promedio menor al global",
+    "enunciado": "Muestra el <b>titulo del trabajo</b> y el <b>botín promedio</b> (alias <code>avg_botin</code>) de las expediciones de moradores con ese trabajo, donde el promedio sea <b>inferior al promedio global</b> de todos los botines. Usa subconsulta en HAVING.",
+    "bd": "refugio",
+    "query_solucion": "SELECT t.titulo, AVG(e.botin_recuperado) AS avg_botin\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.titulo\nHAVING AVG(e.botin_recuperado) < (SELECT AVG(botin_recuperado) FROM Expediciones);",
+    "puntos": 40,
+    "pista": "Puedes usar una subconsulta dentro del HAVING para comparar el grupo con un valor global.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> y el <b>botín total</b> (alias <code>botin_total</code>) de los moradores cuyo botín total supere el botín total promedio por morador. Usa subconsulta en HAVING.",
+        "query_solucion": "SELECT m.nombre, SUM(e.botin_recuperado) AS botin_total\nFROM Moradores m\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre\nHAVING SUM(e.botin_recuperado) > (\n  SELECT AVG(sub.total) FROM (\n    SELECT SUM(botin_recuperado) AS total FROM Expediciones GROUP BY id_morador\n  ) AS sub\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>riesgo del trabajo</b> y el <b>número de moradores</b> (alias <code>total</code>) de los niveles de riesgo que tienen más moradores que el promedio de moradores por nivel de riesgo.",
+        "query_solucion": "SELECT t.riesgo, COUNT(*) AS total\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nGROUP BY t.riesgo\nHAVING COUNT(*) > (\n  SELECT AVG(cnt) FROM (\n    SELECT COUNT(*) AS cnt FROM Moradores GROUP BY id_trabajo\n  ) AS sub\n);"
+      }
+    ]
+  },
+  {
+    "id": 577,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Combinación compleja JOIN + GROUP BY + HAVING + ORDER BY",
+    "titulo": "Ranking de moradores por botín total",
+    "enunciado": "Muestra el <b>nombre del morador</b>, el <b>titulo del trabajo</b>, el <b>botín total</b> (alias <code>botin_total</code>) y el <b>número de expediciones</b> (alias <code>num_exp</code>). Solo moradores con <b>al menos 1 expedición</b>. Ordena por botín total descendente.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre, t.titulo, SUM(e.botin_recuperado) AS botin_total, COUNT(*) AS num_exp\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY m.nombre, t.titulo\nHAVING COUNT(*) >= 1\nORDER BY botin_total DESC;",
+    "puntos": 38,
+    "pista": "Recuerda: WHERE va antes de GROUP BY para filtrar filas, HAVING va después para filtrar grupos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>titulo del trabajo</b>, el <b>número de moradores</b> (alias <code>moradores</code>), el <b>botín total</b> (alias <code>botin</code>) y los <b>dias_fuera promedio</b> (alias <code>dias_medios</code>). Solo trabajos con más de 0 moradores con expediciones. Ordena por botín descendente.",
+        "query_solucion": "SELECT t.titulo, COUNT(DISTINCT m.id_morador) AS moradores, SUM(e.botin_recuperado) AS botin, AVG(e.dias_fuera) AS dias_medios\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.titulo\nHAVING COUNT(DISTINCT m.id_morador) > 0\nORDER BY botin DESC;"
+      },
+      {
+        "enunciado": "Muestra el <b>riesgo del trabajo</b>, el <b>número de expediciones</b> (alias <code>expediciones</code>) y el <b>botín máximo</b> (alias <code>max_botin</code>). Solo niveles de riesgo con al menos 1 expedición. Ordena por max_botin descendente.",
+        "query_solucion": "SELECT t.riesgo, COUNT(*) AS expediciones, MAX(e.botin_recuperado) AS max_botin\nFROM Trabajos t\nINNER JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nINNER JOIN Expediciones e ON m.id_morador = e.id_morador\nGROUP BY t.riesgo\nHAVING COUNT(*) >= 1\nORDER BY max_botin DESC;"
+      }
+    ]
+  },
+  {
+    "id": 578,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN + IS NULL + múltiples tablas",
+    "titulo": "Moradores sin expedición y sin trabajo de alto riesgo",
+    "enunciado": "Muestra el <b>nombre</b> de los moradores que <b>no tienen expedición</b> Y cuyo trabajo <b>no es de riesgo 'Alto'</b>. Usa LEFT JOIN, IS NULL y JOIN.",
+    "bd": "refugio",
+    "query_solucion": "SELECT m.nombre\nFROM Moradores m\nINNER JOIN Trabajos t ON m.id_trabajo = t.id_trabajo\nLEFT JOIN Expediciones e ON m.id_morador = e.id_morador\nWHERE e.id_morador IS NULL AND t.riesgo != 'Alto';",
+    "puntos": 38,
+    "pista": "Puedes combinar INNER JOIN con LEFT JOIN en la misma consulta y filtrar con IS NULL y condiciones adicionales.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>titulo del trabajo</b> de los trabajos que no tienen moradores asignados Y cuyo riesgo no es <code>'Bajo'</code>. Usa LEFT JOIN e IS NULL.",
+        "query_solucion": "SELECT t.titulo\nFROM Trabajos t\nLEFT JOIN Moradores m ON t.id_trabajo = m.id_trabajo\nWHERE m.id_trabajo IS NULL AND t.riesgo != 'Bajo';"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre del morador</b> de los moradores que no tienen expedición con <b>botín mayor que 0</b>. Usa LEFT JOIN con condición e IS NULL.",
+        "query_solucion": "SELECT m.nombre\nFROM Moradores m\nLEFT JOIN Expediciones e ON m.id_morador = e.id_morador AND e.botin_recuperado > 0\nWHERE e.id_morador IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 579,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Consulta completa con EXISTS",
+    "titulo": "Trabajos con al menos un morador explorador activo",
+    "enunciado": "Muestra el <b>titulo del trabajo</b> de los trabajos para los que <b>existe al menos un morador</b> que haya realizado alguna expedición con <b>más de 0 días fuera</b>. Usa <code>EXISTS</code>.",
+    "bd": "refugio",
+    "query_solucion": "SELECT t.titulo\nFROM Trabajos t\nWHERE EXISTS (\n  SELECT 1\n  FROM Moradores m\n  INNER JOIN Expediciones e ON m.id_morador = e.id_morador\n  WHERE m.id_trabajo = t.id_trabajo AND e.dias_fuera > 0\n);",
+    "puntos": 40,
+    "pista": "<code>EXISTS</code> devuelve verdadero si la subconsulta devuelve al menos una fila. La subconsulta puede referenciar columnas de la consulta exterior.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los moradores para los que <b>NO EXISTE</b> ninguna expedición con <code>botin_recuperado = 0</code>. Usa <code>NOT EXISTS</code>.",
+        "query_solucion": "SELECT m.nombre\nFROM Moradores m\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM Expediciones e\n  WHERE e.id_morador = m.id_morador AND e.botin_recuperado = 0\n);"
+      },
+      {
+        "enunciado": "Muestra el <b>tipo</b> de los suministros para los que <b>existe algún morador</b> cuyo <b>atributos_SPECIAL</b> contenga <code>'S10'</code>. Usa <code>EXISTS</code> (es una consulta creativa que mezcla tablas no relacionadas directamente).",
+        "query_solucion": "SELECT tipo\nFROM Suministros\nWHERE EXISTS (\n  SELECT 1\n  FROM Moradores m\n  WHERE m.atributos_SPECIAL LIKE 'S10%'\n);"
+      }
+    ]
+  },
+  {
+    "id": 580,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Registrar Villanos",
+    "enunciado": "Crea una tabla <code>Villanos</code> con <code>id_villano</code> (entero, clave primaria), <code>nombre</code> (texto hasta 100 caracteres) y <code>nivel_peligro</code> (texto hasta 50 caracteres).",
+    "bd": "heroes",
+    "query_solucion": "CREATE TABLE Villanos (id_villano INT PRIMARY KEY, nombre VARCHAR(100), nivel_peligro VARCHAR(50));",
+    "puntos": 10,
+    "pista": "Usa CREATE TABLE y define los tipos de datos INT y VARCHAR.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Prisiones</code> con <code>id_prision</code> (entero, clave primaria), <code>nombre</code> (texto hasta 100 caracteres) y <code>seguridad</code> (texto hasta 50 caracteres).",
+        "query_solucion": "CREATE TABLE Prisiones (id_prision INT PRIMARY KEY, nombre VARCHAR(100), seguridad VARCHAR(50));"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Equipos_Apoyo</code> con <code>id_equipo</code> (entero, clave primaria), <code>nombre</code> (texto hasta 100 caracteres) y <code>tipo</code> (texto hasta 50 caracteres).",
+        "query_solucion": "CREATE TABLE Equipos_Apoyo (id_equipo INT PRIMARY KEY, nombre VARCHAR(100), tipo VARCHAR(50));"
+      }
+    ]
+  },
+  {
+    "id": 581,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con NOT NULL",
+    "titulo": "Estudiantes de la UA",
+    "enunciado": "Crea una tabla <code>Estudiantes_UA</code> con <code>id_estudiante</code> (INT, clave primaria), <code>nombre</code> (VARCHAR 100, no nulo) y <code>curso</code> (VARCHAR 10).",
+    "bd": "heroes",
+    "query_solucion": "CREATE TABLE Estudiantes_UA (id_estudiante INT PRIMARY KEY, nombre VARCHAR(100) NOT NULL, curso VARCHAR(10));",
+    "puntos": 15,
+    "pista": "Usa la restricción NOT NULL después del tipo de dato.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Profesores_UA</code> con <code>id_profesor</code> (INT, clave primaria), <code>alias</code> (VARCHAR 100, no nulo) y <code>departamento</code> (VARCHAR 50).",
+        "query_solucion": "CREATE TABLE Profesores_UA (id_profesor INT PRIMARY KEY, alias VARCHAR(100) NOT NULL, departamento VARCHAR(50));"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Patrocinadores</code> con <code>id_patrocinador</code> (INT, clave primaria), <code>empresa</code> (VARCHAR 100, no nulo) y <code>presupuesto</code> (INT).",
+        "query_solucion": "CREATE TABLE Patrocinadores (id_patrocinador INT PRIMARY KEY, empresa VARCHAR(100) NOT NULL, presupuesto INT);"
+      }
+    ]
+  },
+  {
+    "id": 582,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con DEFAULT",
+    "titulo": "Licencias Provisionales",
+    "enunciado": "Crea una tabla <code>Licencias</code> con <code>id_licencia</code> (INT, clave primaria), <code>id_heroe</code> (INT) y <code>estado</code> (VARCHAR 20) que por defecto sea 'Activa'.",
+    "bd": "heroes",
+    "query_solucion": "CREATE TABLE Licencias (id_licencia INT PRIMARY KEY, id_heroe INT, estado VARCHAR(20) DEFAULT 'Activa');",
+    "puntos": 15,
+    "pista": "La palabra clave DEFAULT permite establecer un valor predeterminado.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Trajes</code> con <code>id_traje</code> (INT, clave primaria), <code>id_heroe</code> (INT) y <code>condicion</code> (VARCHAR 20) por defecto 'Óptima'.",
+        "query_solucion": "CREATE TABLE Trajes (id_traje INT PRIMARY KEY, id_heroe INT, condicion VARCHAR(20) DEFAULT 'Óptima');"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Vehiculos</code> con <code>id_vehiculo</code> (INT, clave primaria), <code>tipo</code> (VARCHAR 50) y <code>disponibilidad</code> (VARCHAR 20) por defecto 'Disponible'.",
+        "query_solucion": "CREATE TABLE Vehiculos (id_vehiculo INT PRIMARY KEY, tipo VARCHAR(50), disponibilidad VARCHAR(20) DEFAULT 'Disponible');"
+      }
+    ]
+  },
+  {
+    "id": 583,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con UNIQUE",
+    "titulo": "Registro de Dones",
+    "enunciado": "Crea una tabla <code>Dones_Registrados</code> con <code>id_don</code> (INT, clave primaria), <code>nombre_don</code> (VARCHAR 100) que debe ser único y <code>tipo</code> (VARCHAR 50).",
+    "bd": "heroes",
+    "query_solucion": "CREATE TABLE Dones_Registrados (id_don INT PRIMARY KEY, nombre_don VARCHAR(100) UNIQUE, tipo VARCHAR(50));",
+    "puntos": 15,
+    "pista": "Usa la restricción UNIQUE para evitar duplicados.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Nombres_Clave</code> con <code>id_clave</code> (INT, clave primaria), <code>alias_propuesto</code> (VARCHAR 100) único y <code>aprobado</code> (VARCHAR 10).",
+        "query_solucion": "CREATE TABLE Nombres_Clave (id_clave INT PRIMARY KEY, alias_propuesto VARCHAR(100) UNIQUE, aprobado VARCHAR(10));"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Frecuencias_Radio</code> con <code>id_frecuencia</code> (INT, clave primaria), <code>codigo_frecuencia</code> (VARCHAR 20) único y <code>uso</code> (VARCHAR 50).",
+        "query_solucion": "CREATE TABLE Frecuencias_Radio (id_frecuencia INT PRIMARY KEY, codigo_frecuencia VARCHAR(20) UNIQUE, uso VARCHAR(50));"
+      }
+    ]
+  },
+  {
+    "id": 584,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con FK",
+    "titulo": "Tabla Nomus",
+    "enunciado": "Crea una tabla <code>Nomus</code> con <code>id_nomu</code> (INT, clave primaria), <code>tipo</code> (VARCHAR 50) y <code>id_mision</code> (INT). Define <code>id_mision</code> como clave foránea que referencia a <code>id_mision</code> de la tabla <code>Misiones</code>.",
+    "bd": "heroes",
+    "query_solucion": "CREATE TABLE Nomus (id_nomu INT PRIMARY KEY, tipo VARCHAR(50), id_mision INT, FOREIGN KEY (id_mision) REFERENCES Misiones(id_mision));",
+    "puntos": 15,
+    "pista": "Usa FOREIGN KEY (...) REFERENCES tabla(columna).",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla <code>Reportes</code> con <code>id_reporte</code> (INT, clave primaria), <code>texto</code> (TEXT) y <code>id_agencia</code> (INT). Haz que <code>id_agencia</code> referencie a <code>id_agencia</code> de <code>Agencias</code>.",
+        "query_solucion": "CREATE TABLE Reportes (id_reporte INT PRIMARY KEY, texto TEXT, id_agencia INT, FOREIGN KEY (id_agencia) REFERENCES Agencias(id_agencia));"
+      },
+      {
+        "enunciado": "Crea una tabla <code>Patrullas</code> con <code>id_patrulla</code> (INT, clave primaria), <code>zona</code> (VARCHAR 100) y <code>id_heroe</code> (INT). Haz que <code>id_heroe</code> referencie a <code>id_heroe</code> de <code>Heroes</code>.",
+        "query_solucion": "CREATE TABLE Patrullas (id_patrulla INT PRIMARY KEY, zona VARCHAR(100), id_heroe INT, FOREIGN KEY (id_heroe) REFERENCES Heroes(id_heroe));"
+      }
+    ]
+  },
+  {
+    "id": 585,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD COLUMN",
+    "titulo": "Añadir experiencia",
+    "enunciado": "Añade a la tabla <code>Heroes</code> una columna llamada <code>anos_experiencia</code> de tipo INT.",
+    "bd": "heroes",
+    "query_solucion": "ALTER TABLE Heroes ADD COLUMN anos_experiencia INT;",
+    "puntos": 10,
+    "pista": "Usa ALTER TABLE y ADD COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Añade a la tabla <code>Agencias</code> una columna llamada <code>presupuesto</code> de tipo DECIMAL(12,2).",
+        "query_solucion": "ALTER TABLE Agencias ADD COLUMN presupuesto DECIMAL(12,2);"
+      },
+      {
+        "enunciado": "Añade a la tabla <code>Misiones</code> una columna llamada <code>exitosa</code> de tipo VARCHAR(2).",
+        "query_solucion": "ALTER TABLE Misiones ADD COLUMN exitosa VARCHAR(2);"
+      }
+    ]
+  },
+  {
+    "id": 586,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DROP COLUMN",
+    "titulo": "Eliminar nivel de amenaza",
+    "enunciado": "Elimina la columna <code>nivel_amenaza</code> de la tabla <code>Misiones</code>.",
+    "bd": "heroes",
+    "query_solucion": "ALTER TABLE Misiones DROP COLUMN nivel_amenaza;",
+    "puntos": 10,
+    "pista": "Usa ALTER TABLE junto con DROP COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <code>ciudad</code> de la tabla <code>Agencias</code>.",
+        "query_solucion": "ALTER TABLE Agencias DROP COLUMN ciudad;"
+      },
+      {
+        "enunciado": "Elimina la columna <code>don</code> de la tabla <code>Heroes</code>.",
+        "query_solucion": "ALTER TABLE Heroes DROP COLUMN don;"
+      }
+    ]
+  },
+  {
+    "id": 587,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE MODIFY COLUMN",
+    "titulo": "Ampliar alias",
+    "enunciado": "Modifica la columna <code>alias</code> de la tabla <code>Heroes</code> para que pueda almacenar hasta 150 caracteres (VARCHAR(150)).",
+    "bd": "heroes",
+    "query_solucion": "ALTER TABLE Heroes MODIFY COLUMN alias VARCHAR(150);",
+    "puntos": 15,
+    "pista": "En MySQL se usa MODIFY COLUMN o MODIFY para cambiar el tipo de dato.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <code>nombre_agencia</code> de la tabla <code>Agencias</code> para que pueda almacenar hasta 200 caracteres.",
+        "query_solucion": "ALTER TABLE Agencias MODIFY COLUMN nombre_agencia VARCHAR(200);"
+      },
+      {
+        "enunciado": "Modifica la columna <code>nivel_amenaza</code> de la tabla <code>Misiones</code> para que pueda almacenar hasta 100 caracteres.",
+        "query_solucion": "ALTER TABLE Misiones MODIFY COLUMN nivel_amenaza VARCHAR(100);"
+      }
+    ]
+  },
+  {
+    "id": 588,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE RENAME COLUMN",
+    "titulo": "Renombrar don",
+    "enunciado": "Cambia el nombre de la columna <code>don</code> a <code>kosei</code> en la tabla <code>Heroes</code> manteniendo el tipo VARCHAR(100).",
+    "bd": "heroes",
+    "query_solucion": "ALTER TABLE Heroes CHANGE COLUMN don kosei VARCHAR(100);",
+    "puntos": 15,
+    "pista": "Puedes usar CHANGE COLUMN nombre_viejo nombre_nuevo tipo.",
+    "variaciones": [
+      {
+        "enunciado": "Cambia el nombre de la columna <code>alias</code> a <code>nombre_heroico</code> en <code>Heroes</code> manteniendo VARCHAR(100).",
+        "query_solucion": "ALTER TABLE Heroes CHANGE COLUMN alias nombre_heroico VARCHAR(100);"
+      },
+      {
+        "enunciado": "Cambia el nombre de la columna <code>ciudad</code> a <code>ubicacion</code> en <code>Agencias</code> manteniendo VARCHAR(100).",
+        "query_solucion": "ALTER TABLE Agencias CHANGE COLUMN ciudad ubicacion VARCHAR(100);"
+      }
+    ]
+  },
+  {
+    "id": 589,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Eliminar Registro",
+    "enunciado": "Elimina completamente la tabla <code>Registro_Misiones</code>.",
+    "bd": "heroes",
+    "query_solucion": "DROP TABLE Registro_Misiones;",
+    "puntos": 10,
+    "pista": "Cuidado, esta instrucción borra la tabla y sus datos de forma irreversible.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina completamente la tabla <code>Misiones</code>.",
+        "query_solucion": "DROP TABLE Misiones;"
+      },
+      {
+        "enunciado": "Elimina completamente la tabla <code>Agencias</code>.",
+        "query_solucion": "DROP TABLE Agencias;"
+      }
+    ]
+  },
+  {
+    "id": 590,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar tabla",
+    "enunciado": "Renombra la tabla <code>Heroes</code> a <code>Pro_Heroes</code>.",
+    "bd": "heroes",
+    "query_solucion": "RENAME TABLE Heroes TO Pro_Heroes;",
+    "puntos": 10,
+    "pista": "Usa RENAME TABLE nombre_viejo TO nombre_nuevo.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la tabla <code>Agencias</code> a <code>Oficinas_Heroicas</code>.",
+        "query_solucion": "RENAME TABLE Agencias TO Oficinas_Heroicas;"
+      },
+      {
+        "enunciado": "Renombra la tabla <code>Misiones</code> a <code>Operaciones</code>.",
+        "query_solucion": "RENAME TABLE Misiones TO Operaciones;"
+      }
+    ]
+  },
+  {
+    "id": 591,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD CONSTRAINT",
+    "titulo": "Añadir UNIQUE",
+    "enunciado": "Haz que la columna <code>nombre_agencia</code> de <code>Agencias</code> sea única.",
+    "bd": "heroes",
+    "query_solucion": "ALTER TABLE Agencias ADD UNIQUE (nombre_agencia);",
+    "puntos": 15,
+    "pista": "Usa ADD UNIQUE (columna) en un ALTER TABLE.",
+    "variaciones": [
+      {
+        "enunciado": "Haz que la columna <code>alias</code> de <code>Heroes</code> sea única.",
+        "query_solucion": "ALTER TABLE Heroes ADD UNIQUE (alias);"
+      },
+      {
+        "enunciado": "Haz que la combinación de <code>id_heroe</code> e <code>id_mision</code> sea única en <code>Registro_Misiones</code> (como constraint explícito).",
+        "query_solucion": "ALTER TABLE Registro_Misiones ADD UNIQUE (id_heroe, id_mision);"
+      }
+    ]
+  },
+  {
+    "id": 592,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD PRIMARY KEY",
+    "titulo": "Añadir PK compuesta",
+    "enunciado": "Imagina que <code>Registro_Misiones</code> no tiene clave primaria. Añádele una clave primaria compuesta por <code>id_heroe</code> e <code>id_mision</code>.",
+    "bd": "heroes",
+    "query_solucion": "ALTER TABLE Registro_Misiones ADD PRIMARY KEY (id_heroe, id_mision);",
+    "puntos": 15,
+    "pista": "Usa ADD PRIMARY KEY (col1, col2).",
+    "variaciones": [
+      {
+        "enunciado": "Imagina que <code>Heroes</code> no tiene clave primaria. Añade <code>id_heroe</code> como clave primaria.",
+        "query_solucion": "ALTER TABLE Heroes ADD PRIMARY KEY (id_heroe);"
+      },
+      {
+        "enunciado": "Imagina que <code>Agencias</code> no tiene clave primaria. Añade <code>id_agencia</code> como clave primaria.",
+        "query_solucion": "ALTER TABLE Agencias ADD PRIMARY KEY (id_agencia);"
+      }
+    ]
+  },
+  {
+    "id": 593,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD FOREIGN KEY",
+    "titulo": "Añadir FK",
+    "enunciado": "Añade a <code>Heroes</code> una clave foránea en <code>id_agencia</code> que referencie a <code>id_agencia</code> en <code>Agencias</code>.",
+    "bd": "heroes",
+    "query_solucion": "ALTER TABLE Heroes ADD FOREIGN KEY (id_agencia) REFERENCES Agencias(id_agencia);",
+    "puntos": 15,
+    "pista": "Usa ADD FOREIGN KEY (col) REFERENCES tabla(col).",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <code>Registro_Misiones</code> una clave foránea en <code>id_heroe</code> que referencie a <code>id_heroe</code> en <code>Heroes</code>.",
+        "query_solucion": "ALTER TABLE Registro_Misiones ADD FOREIGN KEY (id_heroe) REFERENCES Heroes(id_heroe);"
+      },
+      {
+        "enunciado": "Añade a <code>Registro_Misiones</code> una clave foránea en <code>id_mision</code> que referencie a <code>id_mision</code> en <code>Misiones</code>.",
+        "query_solucion": "ALTER TABLE Registro_Misiones ADD FOREIGN KEY (id_mision) REFERENCES Misiones(id_mision);"
+      }
+    ]
+  },
+  {
+    "id": 594,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE AS",
+    "titulo": "Clonar estructura",
+    "enunciado": "Crea una nueva tabla <code>Archivo_Misiones</code> que tenga exactamente las mismas columnas y datos que <code>Misiones</code>.",
+    "bd": "heroes",
+    "query_solucion": "CREATE TABLE Archivo_Misiones AS SELECT * FROM Misiones;",
+    "puntos": 15,
+    "pista": "Usa CREATE TABLE nueva_tabla AS SELECT ...",
+    "variaciones": [
+      {
+        "enunciado": "Crea una nueva tabla <code>Directorio_Heroes</code> como copia exacta de la tabla <code>Heroes</code>.",
+        "query_solucion": "CREATE TABLE Directorio_Heroes AS SELECT * FROM Heroes;"
+      },
+      {
+        "enunciado": "Crea una nueva tabla <code>Sedes_Antiguas</code> como copia exacta de la tabla <code>Agencias</code>.",
+        "query_solucion": "CREATE TABLE Sedes_Antiguas AS SELECT * FROM Agencias;"
+      }
+    ]
+  },
+  {
+    "id": 595,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT simple",
+    "titulo": "Todos los héroes",
+    "enunciado": "Muestra todos los datos de la tabla <code>Heroes</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Heroes;",
+    "puntos": 10,
+    "pista": "Usa SELECT * para obtener todas las columnas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de la tabla <code>Agencias</code>.",
+        "query_solucion": "SELECT * FROM Agencias;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de la tabla <code>Misiones</code>.",
+        "query_solucion": "SELECT * FROM Misiones;"
+      }
+    ]
+  },
+  {
+    "id": 596,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT columnas",
+    "titulo": "Nombres de agencias",
+    "enunciado": "Selecciona únicamente el <code>nombre_agencia</code> y la <code>ciudad</code> de todas las agencias.",
+    "bd": "heroes",
+    "query_solucion": "SELECT nombre_agencia, ciudad FROM Agencias;",
+    "puntos": 10,
+    "pista": "Especifica los nombres de las columnas separados por comas.",
+    "variaciones": [
+      {
+        "enunciado": "Selecciona únicamente el <code>alias</code> y el <code>don</code> de todos los héroes.",
+        "query_solucion": "SELECT alias, don FROM Heroes;"
+      },
+      {
+        "enunciado": "Selecciona la <code>descripcion</code> y el <code>nivel_amenaza</code> de todas las misiones.",
+        "query_solucion": "SELECT descripcion, nivel_amenaza FROM Misiones;"
+      }
+    ]
+  },
+  {
+    "id": 597,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE exacto",
+    "titulo": "Héroes de la agencia 1",
+    "enunciado": "Muestra los datos de los héroes que pertenecen a la agencia con <code>id_agencia = 1</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Heroes WHERE id_agencia = 1;",
+    "puntos": 10,
+    "pista": "Usa la cláusula WHERE para filtrar.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los datos de las agencias ubicadas en la <code>ciudad</code> de 'Tokio'.",
+        "query_solucion": "SELECT * FROM Agencias WHERE ciudad = 'Tokio';"
+      },
+      {
+        "enunciado": "Muestra las misiones cuyo <code>nivel_amenaza</code> sea 'Nivel Dragón'.",
+        "query_solucion": "SELECT * FROM Misiones WHERE nivel_amenaza = 'Nivel Dragón';"
+      }
+    ]
+  },
+  {
+    "id": 598,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE operadores",
+    "titulo": "Daños masivos",
+    "enunciado": "Busca los registros de misiones (<code>Registro_Misiones</code>) donde los <code>daños_colaterales_euros</code> sean mayores a 5000.",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros > 5000;",
+    "puntos": 10,
+    "pista": "Usa el operador mayor que (>).",
+    "variaciones": [
+      {
+        "enunciado": "Busca los registros de misiones donde los <code>daños_colaterales_euros</code> sean menores a 1000.",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros < 1000;"
+      },
+      {
+        "enunciado": "Busca los registros de misiones donde los <code>daños_colaterales_euros</code> sean mayores o iguales a 10000.",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros >= 10000;"
+      }
+    ]
+  },
+  {
+    "id": 599,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "AND / OR",
+    "titulo": "Misiones peligrosas y costosas",
+    "enunciado": "Encuentra los registros de misiones con la misión ID 2 (<code>id_mision = 2</code>) <b>Y</b> donde los daños colaterales superen los 2000 euros.",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Registro_Misiones WHERE id_mision = 2 AND daños_colaterales_euros > 2000;",
+    "puntos": 15,
+    "pista": "Combina condiciones usando AND.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los héroes que pertenezcan a la agencia 1 <b>O</b> a la agencia 2.",
+        "query_solucion": "SELECT * FROM Heroes WHERE id_agencia = 1 OR id_agencia = 2;"
+      },
+      {
+        "enunciado": "Muestra los registros del héroe ID 1 donde los daños sean menores a 500.",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE id_heroe = 1 AND daños_colaterales_euros < 500;"
+      }
+    ]
+  },
+  {
+    "id": 600,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IN",
+    "titulo": "Agencias específicas",
+    "enunciado": "Encuentra las agencias ubicadas en 'Tokio', 'Osaka' o 'Kioto' usando la cláusula IN.",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Agencias WHERE ciudad IN ('Tokio', 'Osaka', 'Kioto');",
+    "puntos": 10,
+    "pista": "IN permite comprobar si un valor está dentro de una lista.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra los héroes cuyo <code>don</code> sea 'Llamas', 'Endurecimiento' o 'Explosión'.",
+        "query_solucion": "SELECT * FROM Heroes WHERE don IN ('Llamas', 'Endurecimiento', 'Explosión');"
+      },
+      {
+        "enunciado": "Encuentra las misiones con <code>nivel_amenaza</code> 'Nivel Demonio' o 'Nivel Dios' usando IN.",
+        "query_solucion": "SELECT * FROM Misiones WHERE nivel_amenaza IN ('Nivel Demonio', 'Nivel Dios');"
+      }
+    ]
+  },
+  {
+    "id": 601,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "BETWEEN",
+    "titulo": "Daños intermedios",
+    "enunciado": "Muestra los registros de misiones cuyos <code>daños_colaterales_euros</code> estén entre 1000 y 5000 (ambos inclusive).",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros BETWEEN 1000 AND 5000;",
+    "puntos": 10,
+    "pista": "BETWEEN valor1 AND valor2 incluye los límites.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los registros de misiones cuyos <code>daños_colaterales_euros</code> estén entre 500 y 1500.",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros BETWEEN 500 AND 1500;"
+      },
+      {
+        "enunciado": "Muestra los registros de misiones cuyos <code>daños_colaterales_euros</code> estén entre 10000 y 50000.",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros BETWEEN 10000 AND 50000;"
+      }
+    ]
+  },
+  {
+    "id": 602,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIKE",
+    "titulo": "Nombres que empiezan por",
+    "enunciado": "Busca los héroes cuyo <code>alias</code> empiece por la letra 'R'.",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Heroes WHERE alias LIKE 'R%';",
+    "puntos": 10,
+    "pista": "El comodín % representa cero, uno o múltiples caracteres.",
+    "variaciones": [
+      {
+        "enunciado": "Busca las agencias cuyo <code>nombre_agencia</code> termine en 'Agency'.",
+        "query_solucion": "SELECT * FROM Agencias WHERE nombre_agencia LIKE '%Agency';"
+      },
+      {
+        "enunciado": "Busca las misiones cuya <code>descripcion</code> contenga la palabra 'Ataque'.",
+        "query_solucion": "SELECT * FROM Misiones WHERE descripcion LIKE '%Ataque%';"
+      }
+    ]
+  },
+  {
+    "id": 603,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL",
+    "titulo": "Lobos solitarios",
+    "enunciado": "Encuentra los héroes que <b>NO</b> están asignados a ninguna agencia (<code>id_agencia</code> es nulo).",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Heroes WHERE id_agencia IS NULL;",
+    "puntos": 10,
+    "pista": "Para comprobar valores nulos no uses = NULL, usa IS NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra los héroes que <b>SÍ</b> están asignados a una agencia (no es nulo).",
+        "query_solucion": "SELECT * FROM Heroes WHERE id_agencia IS NOT NULL;"
+      },
+      {
+        "enunciado": "Supón que hay misiones sin nivel definido. Encuentra misiones donde <code>nivel_amenaza</code> sea NULL.",
+        "query_solucion": "SELECT * FROM Misiones WHERE nivel_amenaza IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 604,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY",
+    "titulo": "Ranking de daños",
+    "enunciado": "Muestra todos los registros de misiones ordenados por <code>daños_colaterales_euros</code> de forma descendente (los más caros primero).",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Registro_Misiones ORDER BY daños_colaterales_euros DESC;",
+    "puntos": 10,
+    "pista": "Añade DESC al final para orden descendente.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los héroes ordenados por su <code>alias</code> alfabéticamente (ascendente).",
+        "query_solucion": "SELECT * FROM Heroes ORDER BY alias ASC;"
+      },
+      {
+        "enunciado": "Muestra todas las agencias ordenadas por <code>ciudad</code> de la Z a la A.",
+        "query_solucion": "SELECT * FROM Agencias ORDER BY ciudad DESC;"
+      }
+    ]
+  },
+  {
+    "id": 605,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "El peor incidente",
+    "enunciado": "Muestra el registro de misión con el mayor valor en <code>daños_colaterales_euros</code>. (Muestra solo 1 resultado).",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Registro_Misiones ORDER BY daños_colaterales_euros DESC LIMIT 1;",
+    "puntos": 15,
+    "pista": "Combina ORDER BY DESC con LIMIT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los 3 registros de misiones con los menores daños colaterales.",
+        "query_solucion": "SELECT * FROM Registro_Misiones ORDER BY daños_colaterales_euros ASC LIMIT 3;"
+      },
+      {
+        "enunciado": "Muestra los 2 primeros héroes al ordenarlos alfabéticamente por su <code>alias</code>.",
+        "query_solucion": "SELECT * FROM Heroes ORDER BY alias ASC LIMIT 2;"
+      }
+    ]
+  },
+  {
+    "id": 606,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Ciudades con agencias",
+    "enunciado": "Obtén una lista de las distintas ciudades donde hay al menos una agencia (sin repetir).",
+    "bd": "heroes",
+    "query_solucion": "SELECT DISTINCT ciudad FROM Agencias;",
+    "puntos": 10,
+    "pista": "Usa DISTINCT antes del nombre de la columna.",
+    "variaciones": [
+      {
+        "enunciado": "Obtén una lista de los diferentes niveles de amenaza de las misiones (sin repetir).",
+        "query_solucion": "SELECT DISTINCT nivel_amenaza FROM Misiones;"
+      },
+      {
+        "enunciado": "Obtén los distintos IDs de héroes que aparecen en <code>Registro_Misiones</code>.",
+        "query_solucion": "SELECT DISTINCT id_heroe FROM Registro_Misiones;"
+      }
+    ]
+  },
+  {
+    "id": 607,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones texto",
+    "titulo": "Alias en mayúsculas",
+    "enunciado": "Selecciona el <code>alias</code> de todos los héroes, pero muéstralo todo en mayúsculas usando un alias de columna llamado <code>alias_grito</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT UPPER(alias) AS alias_grito FROM Heroes;",
+    "puntos": 15,
+    "pista": "Usa la función UPPER().",
+    "variaciones": [
+      {
+        "enunciado": "Selecciona el nombre de la agencia en minúsculas bajo el alias <code>nombre_min</code>.",
+        "query_solucion": "SELECT LOWER(nombre_agencia) AS nombre_min FROM Agencias;"
+      },
+      {
+        "enunciado": "Muestra el <code>alias</code> y la longitud del mismo usando <code>LENGTH()</code> bajo el alias <code>longitud_alias</code>.",
+        "query_solucion": "SELECT alias, LENGTH(alias) AS longitud_alias FROM Heroes;"
+      }
+    ]
+  },
+  {
+    "id": 608,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones numéricas",
+    "titulo": "Redondeo de daños",
+    "enunciado": "Selecciona el ID del registro y los <code>daños_colaterales_euros</code> redondeados a números enteros. Llama a la nueva columna <code>daños_aprox</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT id_heroe, id_mision, ROUND(daños_colaterales_euros) AS daños_aprox FROM Registro_Misiones;",
+    "puntos": 15,
+    "pista": "Usa la función ROUND().",
+    "variaciones": [
+      {
+        "enunciado": "Imagina que hay registros de devoluciones. Muestra el valor absoluto de <code>daños_colaterales_euros</code> usando <code>ABS()</code> con el alias <code>danos_absolutos</code>.",
+        "query_solucion": "SELECT id_heroe, id_mision, ABS(daños_colaterales_euros) AS danos_absolutos FROM Registro_Misiones;"
+      },
+      {
+        "enunciado": "Selecciona los daños redondeados a 1 decimal bajo el alias <code>danos_decimal</code>.",
+        "query_solucion": "SELECT id_heroe, id_mision, ROUND(daños_colaterales_euros, 1) AS danos_decimal FROM Registro_Misiones;"
+      }
+    ]
+  },
+  {
+    "id": 609,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Aritmética",
+    "titulo": "Cálculo de penalización",
+    "enunciado": "El gobierno cobra un 10% extra por daños. Muestra el ID de héroe, ID de misión y los daños multiplicados por 1.10 bajo el alias <code>daños_con_multa</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT id_heroe, id_mision, daños_colaterales_euros * 1.10 AS daños_con_multa FROM Registro_Misiones;",
+    "puntos": 15,
+    "pista": "Puedes hacer operaciones matemáticas directamente en el SELECT.",
+    "variaciones": [
+      {
+        "enunciado": "La asociación subvenciona 500 euros por misión. Muestra los daños restando 500 bajo el alias <code>daños_reales</code>.",
+        "query_solucion": "SELECT id_heroe, id_mision, daños_colaterales_euros - 500 AS daños_reales FROM Registro_Misiones;"
+      },
+      {
+        "enunciado": "Calcula el daño medio por héroe en cada registro dividiendo los daños entre 2 (suponiendo que son un duo) con el alias <code>mitad_danos</code>.",
+        "query_solucion": "SELECT id_heroe, id_mision, daños_colaterales_euros / 2 AS mitad_danos FROM Registro_Misiones;"
+      }
+    ]
+  },
+  {
+    "id": 610,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Número de Héroes",
+    "enunciado": "Cuenta cuántos héroes hay registrados en la tabla <code>Heroes</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT COUNT(*) FROM Heroes;",
+    "puntos": 20,
+    "pista": "Usa COUNT(*).",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta cuántas misiones hay registradas en total.",
+        "query_solucion": "SELECT COUNT(*) FROM Misiones;"
+      },
+      {
+        "enunciado": "Cuenta cuántas agencias existen en la base de datos.",
+        "query_solucion": "SELECT COUNT(*) FROM Agencias;"
+      }
+    ]
+  },
+  {
+    "id": 611,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM",
+    "titulo": "Total de daños",
+    "enunciado": "Calcula la suma total de todos los <code>daños_colaterales_euros</code> causados en todas las misiones. Ponle el alias <code>total_danos</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT SUM(daños_colaterales_euros) AS total_danos FROM Registro_Misiones;",
+    "puntos": 20,
+    "pista": "Usa la función SUM().",
+    "variaciones": [
+      {
+        "enunciado": "Calcula la suma de los daños en los registros del héroe con ID 1.",
+        "query_solucion": "SELECT SUM(daños_colaterales_euros) FROM Registro_Misiones WHERE id_heroe = 1;"
+      },
+      {
+        "enunciado": "Calcula la suma de los daños en los registros de la misión con ID 2.",
+        "query_solucion": "SELECT SUM(daños_colaterales_euros) FROM Registro_Misiones WHERE id_mision = 2;"
+      }
+    ]
+  },
+  {
+    "id": 612,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG",
+    "titulo": "Media de daños",
+    "enunciado": "Calcula la media de <code>daños_colaterales_euros</code> de los registros de misiones. Llama al resultado <code>media_danos</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT AVG(daños_colaterales_euros) AS media_danos FROM Registro_Misiones;",
+    "puntos": 20,
+    "pista": "Usa la función AVG().",
+    "variaciones": [
+      {
+        "enunciado": "Calcula el promedio de daños para los registros que superen los 1000 euros.",
+        "query_solucion": "SELECT AVG(daños_colaterales_euros) FROM Registro_Misiones WHERE daños_colaterales_euros > 1000;"
+      },
+      {
+        "enunciado": "Calcula el promedio de daños para el héroe con ID 3.",
+        "query_solucion": "SELECT AVG(daños_colaterales_euros) FROM Registro_Misiones WHERE id_heroe = 3;"
+      }
+    ]
+  },
+  {
+    "id": 613,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX / MIN",
+    "titulo": "Récords de daños",
+    "enunciado": "Encuentra el valor <b>máximo</b> de <code>daños_colaterales_euros</code> entre todos los registros.",
+    "bd": "heroes",
+    "query_solucion": "SELECT MAX(daños_colaterales_euros) FROM Registro_Misiones;",
+    "puntos": 20,
+    "pista": "Usa MAX() o MIN().",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra el valor <b>mínimo</b> de <code>daños_colaterales_euros</code> entre todos los registros.",
+        "query_solucion": "SELECT MIN(daños_colaterales_euros) FROM Registro_Misiones;"
+      },
+      {
+        "enunciado": "Encuentra el mayor daño causado en la misión con ID 1.",
+        "query_solucion": "SELECT MAX(daños_colaterales_euros) FROM Registro_Misiones WHERE id_mision = 1;"
+      }
+    ]
+  },
+  {
+    "id": 614,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY simple",
+    "titulo": "Agencias por ciudad",
+    "enunciado": "Muestra cada <code>ciudad</code> y el número de agencias que hay en cada una.",
+    "bd": "heroes",
+    "query_solucion": "SELECT ciudad, COUNT(*) FROM Agencias GROUP BY ciudad;",
+    "puntos": 25,
+    "pista": "Agrupa por la columna que quieres categorizar.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra cada <code>nivel_amenaza</code> y el número de misiones de ese nivel.",
+        "query_solucion": "SELECT nivel_amenaza, COUNT(*) FROM Misiones GROUP BY nivel_amenaza;"
+      },
+      {
+        "enunciado": "Muestra cada <code>id_agencia</code> y cuántos héroes le pertenecen.",
+        "query_solucion": "SELECT id_agencia, COUNT(*) FROM Heroes GROUP BY id_agencia;"
+      }
+    ]
+  },
+  {
+    "id": 615,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY sumatorias",
+    "titulo": "Daños por misión",
+    "enunciado": "Muestra el <code>id_mision</code> y la <b>suma</b> total de <code>daños_colaterales_euros</code> para esa misión agrupando los registros.",
+    "bd": "heroes",
+    "query_solucion": "SELECT id_mision, SUM(daños_colaterales_euros) FROM Registro_Misiones GROUP BY id_mision;",
+    "puntos": 25,
+    "pista": "Usa SUM() junto con GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>id_heroe</code> y la <b>suma</b> total de sus daños colaterales a lo largo de todas sus misiones.",
+        "query_solucion": "SELECT id_heroe, SUM(daños_colaterales_euros) FROM Registro_Misiones GROUP BY id_heroe;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_heroe</code> y el <b>daño promedio</b> (AVG) en sus misiones.",
+        "query_solucion": "SELECT id_heroe, AVG(daños_colaterales_euros) FROM Registro_Misiones GROUP BY id_heroe;"
+      }
+    ]
+  },
+  {
+    "id": 616,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Misiones muy destructivas",
+    "enunciado": "Muestra el <code>id_mision</code> y la suma de daños, pero <b>SOLO</b> para aquellas misiones cuya suma total de daños supere los 10000 euros.",
+    "bd": "heroes",
+    "query_solucion": "SELECT id_mision, SUM(daños_colaterales_euros) FROM Registro_Misiones GROUP BY id_mision HAVING SUM(daños_colaterales_euros) > 10000;",
+    "puntos": 25,
+    "pista": "HAVING filtra los resultados después de agruparlos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>id_heroe</code> y la suma de sus daños, solo para aquellos héroes cuya suma supere los 5000.",
+        "query_solucion": "SELECT id_heroe, SUM(daños_colaterales_euros) FROM Registro_Misiones GROUP BY id_heroe HAVING SUM(daños_colaterales_euros) > 5000;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_mision</code> y el daño máximo, solo para aquellas misiones cuyo daño máximo por un héroe sea mayor a 3000.",
+        "query_solucion": "SELECT id_mision, MAX(daños_colaterales_euros) FROM Registro_Misiones GROUP BY id_mision HAVING MAX(daños_colaterales_euros) > 3000;"
+      }
+    ]
+  },
+  {
+    "id": 617,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN básico",
+    "titulo": "Héroes y sus agencias",
+    "enunciado": "Muestra el <code>alias</code> del héroe y el <code>nombre_agencia</code> a la que pertenece uniendo <code>Heroes</code> y <code>Agencias</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias, Agencias.nombre_agencia FROM Heroes INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia;",
+    "puntos": 25,
+    "pista": "Une las tablas en el campo que comparten (id_agencia).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>alias</code> del héroe y la <code>ciudad</code> de su agencia.",
+        "query_solucion": "SELECT Heroes.alias, Agencias.ciudad FROM Heroes INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia;"
+      },
+      {
+        "enunciado": "Muestra el <code>don</code> del héroe y el <code>nombre_agencia</code>.",
+        "query_solucion": "SELECT Heroes.don, Agencias.nombre_agencia FROM Heroes INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia;"
+      }
+    ]
+  },
+  {
+    "id": 618,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN misiones",
+    "titulo": "Detalles de participación",
+    "enunciado": "Muestra el <code>id_heroe</code> y la <code>descripcion</code> de la misión en las que ha participado uniendo <code>Registro_Misiones</code> y <code>Misiones</code>.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Registro_Misiones.id_heroe, Misiones.descripcion FROM Registro_Misiones INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision;",
+    "puntos": 25,
+    "pista": "La tabla puente Registro_Misiones enlaza con Misiones por id_mision.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>id_heroe</code> y el <code>nivel_amenaza</code> de las misiones en las que ha participado.",
+        "query_solucion": "SELECT Registro_Misiones.id_heroe, Misiones.nivel_amenaza FROM Registro_Misiones INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_mision</code> y los <code>daños_colaterales_euros</code> junto con la <code>descripcion</code> uniendo ambas tablas.",
+        "query_solucion": "SELECT Registro_Misiones.id_mision, Registro_Misiones.daños_colaterales_euros, Misiones.descripcion FROM Registro_Misiones INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision;"
+      }
+    ]
+  },
+  {
+    "id": 619,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN",
+    "titulo": "Héroes sin importar agencia",
+    "enunciado": "Muestra el <code>alias</code> de <b>TODOS</b> los héroes y el <code>nombre_agencia</code>. Si no tienen agencia, debe aparecer nulo (usa LEFT JOIN).",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias, Agencias.nombre_agencia FROM Heroes LEFT JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia;",
+    "puntos": 25,
+    "pista": "LEFT JOIN asegura que todos los registros de la primera tabla aparezcan.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>alias</code> de todos los héroes y la <code>ciudad</code> de su agencia, manteniendo a los héroes solitarios.",
+        "query_solucion": "SELECT Heroes.alias, Agencias.ciudad FROM Heroes LEFT JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code> de todas las agencias y los <code>alias</code> de sus héroes (RIGHT JOIN o LEFT JOIN invertido).",
+        "query_solucion": "SELECT Agencias.nombre_agencia, Heroes.alias FROM Agencias LEFT JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia;"
+      }
+    ]
+  },
+  {
+    "id": 620,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY + JOIN",
+    "titulo": "Héroes por agencia",
+    "enunciado": "Muestra el <code>nombre_agencia</code> y cuántos héroes tiene contratados. Une Agencias y Heroes y agrupa.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Agencias.nombre_agencia, COUNT(Heroes.id_heroe) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia GROUP BY Agencias.nombre_agencia;",
+    "puntos": 25,
+    "pista": "Haz el JOIN y luego agrupa por el nombre de la agencia.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>ciudad</code> y cuántos héroes operan desde agencias en esa ciudad.",
+        "query_solucion": "SELECT Agencias.ciudad, COUNT(Heroes.id_heroe) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia GROUP BY Agencias.ciudad;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code> y el número de héroes usando un alias <code>total_heroes</code>.",
+        "query_solucion": "SELECT Agencias.nombre_agencia, COUNT(Heroes.id_heroe) AS total_heroes FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia GROUP BY Agencias.nombre_agencia;"
+      }
+    ]
+  },
+  {
+    "id": 621,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN con WHERE",
+    "titulo": "Filtrando unidos",
+    "enunciado": "Muestra el <code>alias</code> de los héroes y el <code>nombre_agencia</code>, pero SOLO de los héroes que operan en 'Tokio'.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias, Agencias.nombre_agencia FROM Heroes INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia WHERE Agencias.ciudad = 'Tokio';",
+    "puntos": 25,
+    "pista": "Añade un WHERE al final de tu INNER JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>alias</code> de los héroes y el <code>nombre_agencia</code> SOLO para agencias en 'Osaka'.",
+        "query_solucion": "SELECT Heroes.alias, Agencias.nombre_agencia FROM Heroes INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia WHERE Agencias.ciudad = 'Osaka';"
+      },
+      {
+        "enunciado": "Muestra el <code>alias</code> del héroe y la <code>descripcion</code> de la misión SOLO para misiones de 'Nivel Demonio'.",
+        "query_solucion": "SELECT Heroes.alias, Misiones.descripcion FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision WHERE Misiones.nivel_amenaza = 'Nivel Demonio';"
+      }
+    ]
+  },
+  {
+    "id": 622,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "ORDER BY + JOIN",
+    "titulo": "Ordenando resultados unidos",
+    "enunciado": "Muestra el <code>alias</code> del héroe y los <code>daños_colaterales_euros</code> de sus registros, ordenados por daños de mayor a menor.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias, Registro_Misiones.daños_colaterales_euros FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe ORDER BY Registro_Misiones.daños_colaterales_euros DESC;",
+    "puntos": 25,
+    "pista": "Añade ORDER BY DESC al final de la consulta.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>descripcion</code> de la misión y los <code>daños_colaterales_euros</code> ordenados de menor a mayor.",
+        "query_solucion": "SELECT Misiones.descripcion, Registro_Misiones.daños_colaterales_euros FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision ORDER BY Registro_Misiones.daños_colaterales_euros ASC;"
+      },
+      {
+        "enunciado": "Muestra el <code>alias</code> del héroe y el <code>nombre_agencia</code> ordenados alfabéticamente por el alias.",
+        "query_solucion": "SELECT Heroes.alias, Agencias.nombre_agencia FROM Heroes INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia ORDER BY Heroes.alias ASC;"
+      }
+    ]
+  },
+  {
+    "id": 623,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING + JOIN",
+    "titulo": "Grandes daños por misión",
+    "enunciado": "Muestra la <code>descripcion</code> de la misión y la suma total de daños, solo para aquellas misiones con una suma mayor a 5000.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Misiones.descripcion, SUM(Registro_Misiones.daños_colaterales_euros) FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision GROUP BY Misiones.descripcion HAVING SUM(Registro_Misiones.daños_colaterales_euros) > 5000;",
+    "puntos": 30,
+    "pista": "Combina JOIN, GROUP BY y HAVING.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>alias</code> del héroe y la suma de sus daños, solo si supera los 2000 euros.",
+        "query_solucion": "SELECT Heroes.alias, SUM(Registro_Misiones.daños_colaterales_euros) FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Heroes.alias HAVING SUM(Registro_Misiones.daños_colaterales_euros) > 2000;"
+      },
+      {
+        "enunciado": "Muestra el <code>alias</code> del héroe y su daño promedio, solo si el promedio supera 1000 euros.",
+        "query_solucion": "SELECT Heroes.alias, AVG(Registro_Misiones.daños_colaterales_euros) FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Heroes.alias HAVING AVG(Registro_Misiones.daños_colaterales_euros) > 1000;"
+      }
+    ]
+  },
+  {
+    "id": 624,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "Múltiples JOINs simples",
+    "titulo": "Nombres completos",
+    "enunciado": "Muestra el <code>alias</code> del héroe, el <code>nombre_agencia</code> y los <code>daños_colaterales_euros</code> de sus misiones (necesitas 3 tablas).",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias, Agencias.nombre_agencia, Registro_Misiones.daños_colaterales_euros FROM Heroes INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe;",
+    "puntos": 30,
+    "pista": "Encadena dos INNER JOIN sucesivos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>alias</code> del héroe, la <code>descripcion</code> de la misión y los <code>daños_colaterales_euros</code>.",
+        "query_solucion": "SELECT Heroes.alias, Misiones.descripcion, Registro_Misiones.daños_colaterales_euros FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code>, el <code>alias</code> del héroe y los <code>daños_colaterales_euros</code> de las misiones que han realizado.",
+        "query_solucion": "SELECT Agencias.nombre_agencia, Heroes.alias, Registro_Misiones.daños_colaterales_euros FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe;"
+      }
+    ]
+  },
+  {
+    "id": 625,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Anti-JOIN (LEFT + IS NULL)",
+    "titulo": "Vigilantes sin licencia",
+    "enunciado": "Muestra el <code>alias</code> de los héroes que <b>no pertenecen a ninguna agencia</b> usando LEFT JOIN y IS NULL.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias FROM Heroes LEFT JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia WHERE Agencias.id_agencia IS NULL;",
+    "puntos": 35,
+    "pista": "Filtra los resultados del LEFT JOIN buscando nulos en el lado derecho.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code> de aquellas agencias que <b>no tienen ningún héroe</b> contratado.",
+        "query_solucion": "SELECT Agencias.nombre_agencia FROM Agencias LEFT JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia WHERE Heroes.id_heroe IS NULL;"
+      },
+      {
+        "enunciado": "Muestra la <code>descripcion</code> de las misiones en las que <b>nadie ha participado</b> (no están en Registro_Misiones).",
+        "query_solucion": "SELECT Misiones.descripcion FROM Misiones LEFT JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision WHERE Registro_Misiones.id_heroe IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 626,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta WHERE",
+    "titulo": "Misiones por encima de la media",
+    "enunciado": "Muestra los registros de <code>Registro_Misiones</code> donde los <code>daños_colaterales_euros</code> sean superiores a la media de daños de todas las misiones.",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros > (SELECT AVG(daños_colaterales_euros) FROM Registro_Misiones);",
+    "puntos": 35,
+    "pista": "Usa una subconsulta dentro del WHERE para calcular la media dinámicamente.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los registros de misiones que tengan daños superiores al daño de la misión con el ID 1.",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros > (SELECT MAX(daños_colaterales_euros) FROM Registro_Misiones WHERE id_mision = 1);"
+      },
+      {
+        "enunciado": "Encuentra el registro con el daño máximo absoluto usando una subconsulta que busque el MAX().",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros = (SELECT MAX(daños_colaterales_euros) FROM Registro_Misiones);"
+      }
+    ]
+  },
+  {
+    "id": 627,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta IN",
+    "titulo": "Héroes en la capital",
+    "enunciado": "Usando una subconsulta con IN, muestra el <code>alias</code> de los héroes cuyas agencias están en 'Tokio'.",
+    "bd": "heroes",
+    "query_solucion": "SELECT alias FROM Heroes WHERE id_agencia IN (SELECT id_agencia FROM Agencias WHERE ciudad = 'Tokio');",
+    "puntos": 35,
+    "pista": "En lugar de un JOIN, extrae los IDs con una subconsulta.",
+    "variaciones": [
+      {
+        "enunciado": "Usando IN, muestra el <code>alias</code> de los héroes cuyas agencias están en 'Osaka'.",
+        "query_solucion": "SELECT alias FROM Heroes WHERE id_agencia IN (SELECT id_agencia FROM Agencias WHERE ciudad = 'Osaka');"
+      },
+      {
+        "enunciado": "Usando IN, muestra la <code>descripcion</code> de las misiones que tienen registros de daños mayores a 5000.",
+        "query_solucion": "SELECT descripcion FROM Misiones WHERE id_mision IN (SELECT id_mision FROM Registro_Misiones WHERE daños_colaterales_euros > 5000);"
+      }
+    ]
+  },
+  {
+    "id": 628,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "3 JOINs",
+    "titulo": "El reporte completo",
+    "enunciado": "Muestra el <code>alias</code> del héroe, la <code>descripcion</code> de la misión y los <code>daños_colaterales_euros</code> uniendo Heroes, Misiones y Registro_Misiones.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias, Misiones.descripcion, Registro_Misiones.daños_colaterales_euros FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision;",
+    "puntos": 35,
+    "pista": "Debes usar INNER JOIN dos veces, pasando a través de la tabla intermedia.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code>, el <code>alias</code> y los <code>daños_colaterales_euros</code> de sus misiones.",
+        "query_solucion": "SELECT Agencias.nombre_agencia, Heroes.alias, Registro_Misiones.daños_colaterales_euros FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code>, la <code>descripcion</code> de la misión y los daños (requiere unir 4 tablas pero usa estas 3 básicas desde Registro).",
+        "query_solucion": "SELECT Agencias.nombre_agencia, Misiones.descripcion, Registro_Misiones.daños_colaterales_euros FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision;"
+      }
+    ]
+  },
+  {
+    "id": 629,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "3 JOINs + SUM",
+    "titulo": "Daños totales por agencia",
+    "enunciado": "Muestra el <code>nombre_agencia</code> y la <b>suma</b> de todos los daños colaterales de todos sus héroes.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Agencias.nombre_agencia, SUM(Registro_Misiones.daños_colaterales_euros) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Agencias.nombre_agencia;",
+    "puntos": 40,
+    "pista": "Une las 3 tablas y agrupa por agencia.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>ciudad</code> y la suma de daños causados por todas las agencias en esa ciudad.",
+        "query_solucion": "SELECT Agencias.ciudad, SUM(Registro_Misiones.daños_colaterales_euros) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Agencias.ciudad;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code> y el daño promedio (AVG) causado por sus héroes.",
+        "query_solucion": "SELECT Agencias.nombre_agencia, AVG(Registro_Misiones.daños_colaterales_euros) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Agencias.nombre_agencia;"
+      }
+    ]
+  },
+  {
+    "id": 630,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "3 JOINs + HAVING",
+    "titulo": "Agencias destructivas",
+    "enunciado": "Como en el ejercicio anterior, muestra el <code>nombre_agencia</code> y la suma de daños, pero SOLO de aquellas que sumen más de 8000 euros.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Agencias.nombre_agencia, SUM(Registro_Misiones.daños_colaterales_euros) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Agencias.nombre_agencia HAVING SUM(Registro_Misiones.daños_colaterales_euros) > 8000;",
+    "puntos": 40,
+    "pista": "No olvides el HAVING después del GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code> y la suma de daños, solo para agencias que sumen menos de 5000 euros.",
+        "query_solucion": "SELECT Agencias.nombre_agencia, SUM(Registro_Misiones.daños_colaterales_euros) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Agencias.nombre_agencia HAVING SUM(Registro_Misiones.daños_colaterales_euros) < 5000;"
+      },
+      {
+        "enunciado": "Muestra la <code>ciudad</code> y la suma de daños, solo si la suma de esa ciudad supera 10000 euros.",
+        "query_solucion": "SELECT Agencias.ciudad, SUM(Registro_Misiones.daños_colaterales_euros) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Agencias.ciudad HAVING SUM(Registro_Misiones.daños_colaterales_euros) > 10000;"
+      }
+    ]
+  },
+  {
+    "id": 631,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en WHERE + JOIN",
+    "titulo": "El héroe más torpe",
+    "enunciado": "Muestra el <code>alias</code> del héroe que ha causado el daño máximo registrado en una sola misión. (Combina subconsulta con JOIN).",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe WHERE Registro_Misiones.daños_colaterales_euros = (SELECT MAX(daños_colaterales_euros) FROM Registro_Misiones);",
+    "puntos": 40,
+    "pista": "Usa = (SELECT MAX(...) ...) en el WHERE tras unir las tablas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>alias</code> del héroe que causó el daño mínimo en una misión.",
+        "query_solucion": "SELECT Heroes.alias FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe WHERE Registro_Misiones.daños_colaterales_euros = (SELECT MIN(daños_colaterales_euros) FROM Registro_Misiones);"
+      },
+      {
+        "enunciado": "Muestra la <code>descripcion</code> de la misión con el daño máximo registrado.",
+        "query_solucion": "SELECT Misiones.descripcion FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision WHERE Registro_Misiones.daños_colaterales_euros = (SELECT MAX(daños_colaterales_euros) FROM Registro_Misiones);"
+      }
+    ]
+  },
+  {
+    "id": 632,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN Múltiple + ORDER + LIMIT",
+    "titulo": "Top destructores",
+    "enunciado": "Muestra el <code>alias</code> del héroe y la suma total de sus daños, ordenados de mayor a menor y limitando a los 2 primeros.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias, SUM(Registro_Misiones.daños_colaterales_euros) FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Heroes.alias ORDER BY SUM(Registro_Misiones.daños_colaterales_euros) DESC LIMIT 2;",
+    "puntos": 40,
+    "pista": "La cadena entera: JOIN, GROUP BY, ORDER BY, LIMIT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>descripcion</code> de la misión y el daño total, ordenado de mayor a menor, mostrando solo el primer resultado (limit 1).",
+        "query_solucion": "SELECT Misiones.descripcion, SUM(Registro_Misiones.daños_colaterales_euros) FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision GROUP BY Misiones.descripcion ORDER BY SUM(Registro_Misiones.daños_colaterales_euros) DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code> y sus daños totales, ordenados de menor a mayor, mostrando solo 1.",
+        "query_solucion": "SELECT Agencias.nombre_agencia, SUM(Registro_Misiones.daños_colaterales_euros) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe GROUP BY Agencias.nombre_agencia ORDER BY SUM(Registro_Misiones.daños_colaterales_euros) ASC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 633,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta NOT IN",
+    "titulo": "Héroes pacifistas",
+    "enunciado": "Usando NOT IN, muestra el <code>alias</code> de los héroes que NO tienen ningún registro de misiones (no han causado daños).",
+    "bd": "heroes",
+    "query_solucion": "SELECT alias FROM Heroes WHERE id_heroe NOT IN (SELECT id_heroe FROM Registro_Misiones);",
+    "puntos": 35,
+    "pista": "NOT IN filtra los que no estén en la lista obtenida por la subconsulta.",
+    "variaciones": [
+      {
+        "enunciado": "Usando NOT IN, muestra el <code>nombre_agencia</code> de agencias que no tienen héroes asignados.",
+        "query_solucion": "SELECT nombre_agencia FROM Agencias WHERE id_agencia NOT IN (SELECT id_agencia FROM Heroes WHERE id_agencia IS NOT NULL);"
+      },
+      {
+        "enunciado": "Usando NOT IN, muestra la <code>descripcion</code> de las misiones que no aparecen en Registro_Misiones.",
+        "query_solucion": "SELECT descripcion FROM Misiones WHERE id_mision NOT IN (SELECT id_mision FROM Registro_Misiones);"
+      }
+    ]
+  },
+  {
+    "id": 634,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN + Agregación Compuesta",
+    "titulo": "Niveles de amenaza y daños",
+    "enunciado": "Muestra el <code>nivel_amenaza</code> y la suma de daños de todas las misiones de ese nivel.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Misiones.nivel_amenaza, SUM(Registro_Misiones.daños_colaterales_euros) FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision GROUP BY Misiones.nivel_amenaza;",
+    "puntos": 35,
+    "pista": "Une las tablas y agrupa por nivel de amenaza.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nivel_amenaza</code> y el promedio de daños por misión de ese nivel.",
+        "query_solucion": "SELECT Misiones.nivel_amenaza, AVG(Registro_Misiones.daños_colaterales_euros) FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision GROUP BY Misiones.nivel_amenaza;"
+      },
+      {
+        "enunciado": "Muestra el <code>nivel_amenaza</code> y el daño máximo registrado para misiones de ese nivel.",
+        "query_solucion": "SELECT Misiones.nivel_amenaza, MAX(Registro_Misiones.daños_colaterales_euros) FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision GROUP BY Misiones.nivel_amenaza;"
+      }
+    ]
+  },
+  {
+    "id": 635,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOINs y Multiples WHERE",
+    "titulo": "Ataques de Demonio",
+    "enunciado": "Muestra el <code>alias</code> de los héroes que participaron en misiones cuyo <code>nivel_amenaza</code> sea 'Nivel Demonio'.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Heroes.alias FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision WHERE Misiones.nivel_amenaza = 'Nivel Demonio';",
+    "puntos": 35,
+    "pista": "Requiere 3 tablas unidas y una condición WHERE al final.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>alias</code> de los héroes que participaron en misiones de 'Nivel Dragón'.",
+        "query_solucion": "SELECT Heroes.alias FROM Heroes INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision WHERE Misiones.nivel_amenaza = 'Nivel Dragón';"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code> de agencias con héroes en misiones de 'Nivel Demonio'.",
+        "query_solucion": "SELECT DISTINCT Agencias.nombre_agencia FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision WHERE Misiones.nivel_amenaza = 'Nivel Demonio';"
+      }
+    ]
+  },
+  {
+    "id": 636,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Correlacionada Básico",
+    "titulo": "Héroes sobre la media",
+    "enunciado": "Muestra todos los datos de <code>Registro_Misiones</code> donde los daños de ese registro superen la media total de daños, usando una subconsulta.",
+    "bd": "heroes",
+    "query_solucion": "SELECT * FROM Registro_Misiones r1 WHERE daños_colaterales_euros > (SELECT AVG(daños_colaterales_euros) FROM Registro_Misiones);",
+    "puntos": 40,
+    "pista": "Usa la estructura WHERE col > (SELECT AVG...).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los registros con daños menores a la media.",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros < (SELECT AVG(daños_colaterales_euros) FROM Registro_Misiones);"
+      },
+      {
+        "enunciado": "Muestra los registros con daños iguales al máximo daño registrado.",
+        "query_solucion": "SELECT * FROM Registro_Misiones WHERE daños_colaterales_euros = (SELECT MAX(daños_colaterales_euros) FROM Registro_Misiones);"
+      }
+    ]
+  },
+  {
+    "id": 637,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Auto-JOIN",
+    "titulo": "Comparando héroes",
+    "enunciado": "Encuentra pares de héroes (sus <code>alias</code>) que pertenezcan a la misma agencia (id_agencia).",
+    "bd": "heroes",
+    "query_solucion": "SELECT h1.alias, h2.alias FROM Heroes h1 INNER JOIN Heroes h2 ON h1.id_agencia = h2.id_agencia WHERE h1.id_heroe < h2.id_heroe;",
+    "puntos": 40,
+    "pista": "Une la tabla consigo misma usando alias (h1, h2) y evita que se crucen consigo mismos con <.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra pares de agencias que estén en la misma ciudad.",
+        "query_solucion": "SELECT a1.nombre_agencia, a2.nombre_agencia FROM Agencias a1 INNER JOIN Agencias a2 ON a1.ciudad = a2.ciudad WHERE a1.id_agencia < a2.id_agencia;"
+      },
+      {
+        "enunciado": "Encuentra pares de misiones que tengan el mismo <code>nivel_amenaza</code>.",
+        "query_solucion": "SELECT m1.descripcion, m2.descripcion FROM Misiones m1 INNER JOIN Misiones m2 ON m1.nivel_amenaza = m2.nivel_amenaza WHERE m1.id_mision < m2.id_mision;"
+      }
+    ]
+  },
+  {
+    "id": 638,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Contar distintos en JOIN",
+    "titulo": "Ciudades protegidas",
+    "enunciado": "Muestra la <code>descripcion</code> de la misión y cuántas <b>ciudades distintas</b> se han visto involucradas a través de las agencias de los héroes que participaron.",
+    "bd": "heroes",
+    "query_solucion": "SELECT Misiones.descripcion, COUNT(DISTINCT Agencias.ciudad) FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision INNER JOIN Heroes ON Registro_Misiones.id_heroe = Heroes.id_heroe INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia GROUP BY Misiones.descripcion;",
+    "puntos": 40,
+    "pista": "Usa COUNT(DISTINCT ...) al unir las 4 tablas y agrupar por misión.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la <code>descripcion</code> y cuántas agencias distintas participaron en cada misión.",
+        "query_solucion": "SELECT Misiones.descripcion, COUNT(DISTINCT Agencias.id_agencia) FROM Misiones INNER JOIN Registro_Misiones ON Misiones.id_mision = Registro_Misiones.id_mision INNER JOIN Heroes ON Registro_Misiones.id_heroe = Heroes.id_heroe INNER JOIN Agencias ON Heroes.id_agencia = Agencias.id_agencia GROUP BY Misiones.descripcion;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_agencia</code> y cuántas misiones distintas ha realizado.",
+        "query_solucion": "SELECT Agencias.nombre_agencia, COUNT(DISTINCT Misiones.id_mision) FROM Agencias INNER JOIN Heroes ON Agencias.id_agencia = Heroes.id_agencia INNER JOIN Registro_Misiones ON Heroes.id_heroe = Registro_Misiones.id_heroe INNER JOIN Misiones ON Registro_Misiones.id_mision = Misiones.id_mision GROUP BY Agencias.nombre_agencia;"
+      }
+    ]
+  },
+  {
+    "id": 639,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en FROM",
+    "titulo": "Promedio de totales",
+    "enunciado": "Calcula la suma de daños por héroe en una subconsulta y luego obtén el promedio (AVG) de esas sumas.",
+    "bd": "heroes",
+    "query_solucion": "SELECT AVG(total_heroe) FROM (SELECT SUM(daños_colaterales_euros) AS total_heroe FROM Registro_Misiones GROUP BY id_heroe) AS subt;",
+    "puntos": 40,
+    "pista": "Pon la consulta de suma dentro del FROM y llámala como una tabla temporal.",
+    "variaciones": [
+      {
+        "enunciado": "Calcula la suma de daños por misión y luego obtén el valor máximo de esas sumas.",
+        "query_solucion": "SELECT MAX(total_mision) FROM (SELECT SUM(daños_colaterales_euros) AS total_mision FROM Registro_Misiones GROUP BY id_mision) AS subt;"
+      },
+      {
+        "enunciado": "Calcula el recuento de héroes por agencia y luego obtén la media de esos recuentos.",
+        "query_solucion": "SELECT AVG(conteo_heroes) FROM (SELECT COUNT(id_heroe) AS conteo_heroes FROM Heroes GROUP BY id_agencia) AS subt;"
+      }
+    ]
+  },
+  {
+    "id": 640,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE PK",
+    "titulo": "Tabla Hechizos",
+    "enunciado": "Crea la tabla <code>Hechizos</code> con las columnas <code>id_hechizo</code> (INT y Clave Primaria) y <code>nombre</code> (VARCHAR 50).",
+    "bd": "hogwarts",
+    "query_solucion": "CREATE TABLE Hechizos (id_hechizo INT PRIMARY KEY, nombre VARCHAR(50));",
+    "puntos": 10,
+    "pista": "Usa CREATE TABLE y define PRIMARY KEY en el campo correspondiente.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Pociones</code> con <code>id_pocion</code> INT PK y <code>nombre</code> VARCHAR(50).",
+        "query_solucion": "CREATE TABLE Pociones (id_pocion INT PRIMARY KEY, nombre VARCHAR(50));"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Varitas</code> con <code>id_varita</code> INT PK y <code>material</code> VARCHAR(50).",
+        "query_solucion": "CREATE TABLE Varitas (id_varita INT PRIMARY KEY, material VARCHAR(50));"
+      }
+    ]
+  },
+  {
+    "id": 641,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE NOT NULL",
+    "titulo": "Tabla Libros obligatorios",
+    "enunciado": "Crea la tabla <code>Libros</code> con <code>id_libro</code> INT PRIMARY KEY y <code>titulo</code> VARCHAR(100) que <b>no puede quedar vacío</b> (NOT NULL).",
+    "bd": "hogwarts",
+    "query_solucion": "CREATE TABLE Libros (id_libro INT PRIMARY KEY, titulo VARCHAR(100) NOT NULL);",
+    "puntos": 10,
+    "pista": "Añade NOT NULL después de definir el tipo de la columna titulo.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Escobas</code> con <code>id_escoba</code> INT PK y <code>modelo</code> VARCHAR(50) NOT NULL.",
+        "query_solucion": "CREATE TABLE Escobas (id_escoba INT PRIMARY KEY, modelo VARCHAR(50) NOT NULL);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Aulas</code> con <code>id_aula</code> INT PK y <code>nombre</code> VARCHAR(50) NOT NULL.",
+        "query_solucion": "CREATE TABLE Aulas (id_aula INT PRIMARY KEY, nombre VARCHAR(50) NOT NULL);"
+      }
+    ]
+  },
+  {
+    "id": 642,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE DEFAULT",
+    "titulo": "Tabla Equipos de Quidditch",
+    "enunciado": "Crea la tabla <code>Equipos</code> con <code>id_equipo</code> INT PK y <code>puntos</code> INT con <b>valor por defecto 0</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "CREATE TABLE Equipos (id_equipo INT PRIMARY KEY, puntos INT DEFAULT 0);",
+    "puntos": 10,
+    "pista": "Usa la restricción DEFAULT 0 para establecer el valor inicial de la columna.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Duelos</code> con <code>id_duelo</code> INT PK y <code>ganador</code> VARCHAR(50) por defecto 'Empate'.",
+        "query_solucion": "CREATE TABLE Duelos (id_duelo INT PRIMARY KEY, ganador VARCHAR(50) DEFAULT 'Empate');"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Clubes</code> con <code>id_club</code> INT PK y <code>miembros</code> INT por defecto 1.",
+        "query_solucion": "CREATE TABLE Clubes (id_club INT PRIMARY KEY, miembros INT DEFAULT 1);"
+      }
+    ]
+  },
+  {
+    "id": 643,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE UNIQUE",
+    "titulo": "Tabla Artefactos",
+    "enunciado": "Crea la tabla <code>Artefactos</code> con <code>id_artefacto</code> INT PK y <code>nombre</code> VARCHAR(100) que debe ser <b>único</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "CREATE TABLE Artefactos (id_artefacto INT PRIMARY KEY, nombre VARCHAR(100) UNIQUE);",
+    "puntos": 10,
+    "pista": "Utiliza la palabra UNIQUE después del tipo de dato.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Fantasmas</code> con <code>id_fantasma</code> INT PK y <code>apodo</code> VARCHAR(50) UNIQUE.",
+        "query_solucion": "CREATE TABLE Fantasmas (id_fantasma INT PRIMARY KEY, apodo VARCHAR(50) UNIQUE);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Torneos</code> con <code>id_torneo</code> INT PK y <code>edicion</code> VARCHAR(50) UNIQUE.",
+        "query_solucion": "CREATE TABLE Torneos (id_torneo INT PRIMARY KEY, edicion VARCHAR(50) UNIQUE);"
+      }
+    ]
+  },
+  {
+    "id": 644,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE FK",
+    "titulo": "Mascotas de Alumnos",
+    "enunciado": "Crea la tabla <code>Mascotas</code> con <code>id_mascota</code> INT PK, <code>nombre</code> VARCHAR(50) e <code>id_alumno</code> INT que sea <b>clave foránea</b> referenciando a <code>Alumnos(id_alumno)</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "CREATE TABLE Mascotas (id_mascota INT PRIMARY KEY, nombre VARCHAR(50), id_alumno INT, FOREIGN KEY (id_alumno) REFERENCES Alumnos(id_alumno));",
+    "puntos": 15,
+    "pista": "Usa FOREIGN KEY (columna) REFERENCES Tabla(columna).",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Castigos</code> con <code>id_castigo</code> INT PK, <code>motivo</code> VARCHAR(100) e <code>id_alumno</code> INT FK a Alumnos(id_alumno).",
+        "query_solucion": "CREATE TABLE Castigos (id_castigo INT PRIMARY KEY, motivo VARCHAR(100), id_alumno INT, FOREIGN KEY (id_alumno) REFERENCES Alumnos(id_alumno));"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Prefectos</code> con <code>id_prefecto</code> INT PK, <code>anio</code> INT e <code>id_casa</code> INT FK a Casas(id_casa).",
+        "query_solucion": "CREATE TABLE Prefectos (id_prefecto INT PRIMARY KEY, anio INT, id_casa INT, FOREIGN KEY (id_casa) REFERENCES Casas(id_casa));"
+      }
+    ]
+  },
+  {
+    "id": 645,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD",
+    "titulo": "Nueva columna en Alumnos",
+    "enunciado": "Añade a la tabla <code>Alumnos</code> la columna <code>patronus</code> de tipo VARCHAR(50).",
+    "bd": "hogwarts",
+    "query_solucion": "ALTER TABLE Alumnos ADD COLUMN patronus VARCHAR(50);",
+    "puntos": 10,
+    "pista": "La sintaxis es ALTER TABLE tabla ADD COLUMN nueva_columna tipo;",
+    "variaciones": [
+      {
+        "enunciado": "Añade a la tabla <code>Casas</code> la columna <code>fantasma</code> VARCHAR(50).",
+        "query_solucion": "ALTER TABLE Casas ADD COLUMN fantasma VARCHAR(50);"
+      },
+      {
+        "enunciado": "Añade a la tabla <code>Asignaturas</code> la columna <code>aula</code> VARCHAR(20).",
+        "query_solucion": "ALTER TABLE Asignaturas ADD COLUMN aula VARCHAR(20);"
+      }
+    ]
+  },
+  {
+    "id": 646,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE MODIFY",
+    "titulo": "Modificar tipo de dato",
+    "enunciado": "Modifica la columna <code>nombre</code> de la tabla <code>Alumnos</code> para que acepte <b>VARCHAR(150)</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "ALTER TABLE Alumnos MODIFY COLUMN nombre VARCHAR(150);",
+    "puntos": 10,
+    "pista": "Usa MODIFY COLUMN (o ALTER COLUMN dependiendo del SGBD, aquí asumimos MySQL) con el nuevo tipo.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <code>fundador</code> de la tabla <code>Casas</code> a VARCHAR(150).",
+        "query_solucion": "ALTER TABLE Casas MODIFY COLUMN fundador VARCHAR(150);"
+      },
+      {
+        "enunciado": "Modifica la columna <code>profesor</code> de la tabla <code>Asignaturas</code> a VARCHAR(150).",
+        "query_solucion": "ALTER TABLE Asignaturas MODIFY COLUMN profesor VARCHAR(150);"
+      }
+    ]
+  },
+  {
+    "id": 647,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DROP",
+    "titulo": "Eliminar columna",
+    "enunciado": "Elimina la columna <code>curso</code> de la tabla <code>Alumnos</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "ALTER TABLE Alumnos DROP COLUMN curso;",
+    "puntos": 10,
+    "pista": "Usa DROP COLUMN nombre_columna.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <code>fundador</code> de la tabla <code>Casas</code>.",
+        "query_solucion": "ALTER TABLE Casas DROP COLUMN fundador;"
+      },
+      {
+        "enunciado": "Elimina la columna <code>profesor</code> de la tabla <code>Asignaturas</code>.",
+        "query_solucion": "ALTER TABLE Asignaturas DROP COLUMN profesor;"
+      }
+    ]
+  },
+  {
+    "id": 648,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD CONSTRAINT",
+    "titulo": "Añadir NOT NULL",
+    "enunciado": "Modifica la tabla <code>Asignaturas</code> para asegurar que <code>nombre_asig</code> <b>no pueda ser NULL</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "ALTER TABLE Asignaturas MODIFY COLUMN nombre_asig VARCHAR(100) NOT NULL;",
+    "puntos": 10,
+    "pista": "Aplica un MODIFY COLUMN y vuelve a declarar el tipo añadiendo NOT NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica <code>Alumnos</code> para que <code>nombre</code> no sea NULL.",
+        "query_solucion": "ALTER TABLE Alumnos MODIFY COLUMN nombre VARCHAR(100) NOT NULL;"
+      },
+      {
+        "enunciado": "Modifica <code>Casas</code> para que <code>nombre_casa</code> no sea NULL.",
+        "query_solucion": "ALTER TABLE Casas MODIFY COLUMN nombre_casa VARCHAR(50) NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 649,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Borrar tabla",
+    "enunciado": "Elimina la tabla <code>Matriculas</code> de la base de datos.",
+    "bd": "hogwarts",
+    "query_solucion": "DROP TABLE Matriculas;",
+    "puntos": 10,
+    "pista": "Usa la instrucción DROP TABLE.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la tabla <code>Asignaturas</code>.",
+        "query_solucion": "DROP TABLE Asignaturas;"
+      },
+      {
+        "enunciado": "Elimina la tabla <code>Casas</code>.",
+        "query_solucion": "DROP TABLE Casas;"
+      }
+    ]
+  },
+  {
+    "id": 650,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Renombrar tabla",
+    "enunciado": "Cambia el nombre de la tabla <code>Asignaturas</code> a <code>Materias</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "RENAME TABLE Asignaturas TO Materias;",
+    "puntos": 10,
+    "pista": "Usa RENAME TABLE tabla_vieja TO tabla_nueva;",
+    "variaciones": [
+      {
+        "enunciado": "Cambia el nombre de la tabla <code>Alumnos</code> a <code>Estudiantes</code>.",
+        "query_solucion": "RENAME TABLE Alumnos TO Estudiantes;"
+      },
+      {
+        "enunciado": "Cambia el nombre de la tabla <code>Matriculas</code> a <code>Inscripciones</code>.",
+        "query_solucion": "RENAME TABLE Matriculas TO Inscripciones;"
+      }
+    ]
+  },
+  {
+    "id": 651,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE Avanzado",
+    "titulo": "Tabla con múltiples restricciones",
+    "enunciado": "Crea la tabla <code>Inventario</code> con <code>id_item</code> INT PK, <code>nombre</code> VARCHAR(50) UNIQUE, y <code>cantidad</code> INT DEFAULT 0.",
+    "bd": "hogwarts",
+    "query_solucion": "CREATE TABLE Inventario (id_item INT PRIMARY KEY, nombre VARCHAR(50) UNIQUE, cantidad INT DEFAULT 0);",
+    "puntos": 15,
+    "pista": "Combina las palabras clave PRIMARY KEY, UNIQUE y DEFAULT en cada columna según corresponda.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Criaturas</code> con <code>id_criatura</code> INT PK, <code>especie</code> VARCHAR(50) NOT NULL, y <code>peligrosidad</code> INT DEFAULT 1.",
+        "query_solucion": "CREATE TABLE Criaturas (id_criatura INT PRIMARY KEY, especie VARCHAR(50) NOT NULL, peligrosidad INT DEFAULT 1);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Tiendas</code> con <code>id_tienda</code> INT PK, <code>nombre</code> VARCHAR(50) UNIQUE, y <code>abierta</code> BOOLEAN DEFAULT TRUE.",
+        "query_solucion": "CREATE TABLE Tiendas (id_tienda INT PRIMARY KEY, nombre VARCHAR(50) UNIQUE, abierta BOOLEAN DEFAULT TRUE);"
+      }
+    ]
+  },
+  {
+    "id": 652,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE RENAME COLUMN",
+    "titulo": "Renombrar columna",
+    "enunciado": "Cambia el nombre de la columna <code>nota_timos</code> en la tabla <code>Matriculas</code> por <code>calificacion</code> (mantén el tipo DECIMAL(4,2)).",
+    "bd": "hogwarts",
+    "query_solucion": "ALTER TABLE Matriculas CHANGE COLUMN nota_timos calificacion DECIMAL(4,2);",
+    "puntos": 10,
+    "pista": "Usa CHANGE COLUMN vieja nueva TIPO (en MySQL).",
+    "variaciones": [
+      {
+        "enunciado": "Cambia la columna <code>nombre_asig</code> en <code>Asignaturas</code> por <code>titulo</code> VARCHAR(100).",
+        "query_solucion": "ALTER TABLE Asignaturas CHANGE COLUMN nombre_asig titulo VARCHAR(100);"
+      },
+      {
+        "enunciado": "Cambia la columna <code>nombre_casa</code> en <code>Casas</code> por <code>denominacion</code> VARCHAR(50).",
+        "query_solucion": "ALTER TABLE Casas CHANGE COLUMN nombre_casa denominacion VARCHAR(50);"
+      }
+    ]
+  },
+  {
+    "id": 653,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE con PK Compuesta",
+    "titulo": "Tabla Clases",
+    "enunciado": "Crea la tabla <code>Clases</code> con <code>id_asig</code> INT, <code>dia</code> VARCHAR(20) y que <b>ambas columnas formen la clave primaria</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "CREATE TABLE Clases (id_asig INT, dia VARCHAR(20), PRIMARY KEY (id_asig, dia));",
+    "puntos": 15,
+    "pista": "Define la PRIMARY KEY al final con los campos entre paréntesis.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Asistencia</code> con <code>id_alumno</code> INT, <code>fecha</code> DATE y ambas como PRIMARY KEY.",
+        "query_solucion": "CREATE TABLE Asistencia (id_alumno INT, fecha DATE, PRIMARY KEY (id_alumno, fecha));"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Turnos</code> con <code>id_profesor</code> INT, <code>hora</code> TIME y ambas como PRIMARY KEY.",
+        "query_solucion": "CREATE TABLE Turnos (id_profesor INT, hora TIME, PRIMARY KEY (id_profesor, hora));"
+      }
+    ]
+  },
+  {
+    "id": 654,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD UNIQUE",
+    "titulo": "Restricción UNIQUE",
+    "enunciado": "Añade a la tabla <code>Asignaturas</code> una restricción para que el <code>profesor</code> sea <b>único</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "ALTER TABLE Asignaturas ADD UNIQUE (profesor);",
+    "puntos": 10,
+    "pista": "Usa ADD UNIQUE (columna).",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <code>Casas</code> una restricción para que el <code>fundador</code> sea único.",
+        "query_solucion": "ALTER TABLE Casas ADD UNIQUE (fundador);"
+      },
+      {
+        "enunciado": "Añade a <code>Alumnos</code> una restricción para que el <code>nombre</code> sea único.",
+        "query_solucion": "ALTER TABLE Alumnos ADD UNIQUE (nombre);"
+      }
+    ]
+  },
+  {
+    "id": 655,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT simple",
+    "titulo": "Todos los alumnos",
+    "enunciado": "Muestra <b>todos</b> los datos de todos los estudiantes de la tabla <code>Alumnos</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Alumnos;",
+    "puntos": 10,
+    "pista": "Usa el asterisco (*) para seleccionar todas las columnas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los datos de las <code>Casas</code>.",
+        "query_solucion": "SELECT * FROM Casas;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de las <code>Asignaturas</code>.",
+        "query_solucion": "SELECT * FROM Asignaturas;"
+      }
+    ]
+  },
+  {
+    "id": 656,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT columnas",
+    "titulo": "Nombres de asignaturas",
+    "enunciado": "Muestra solo el <code>nombre_asig</code> y el <code>profesor</code> de todas las <code>Asignaturas</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre_asig, profesor FROM Asignaturas;",
+    "puntos": 10,
+    "pista": "Indica los nombres de las columnas separadas por comas en lugar del asterisco.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre</code> y el <code>curso</code> de todos los <code>Alumnos</code>.",
+        "query_solucion": "SELECT nombre, curso FROM Alumnos;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre_casa</code> y el <code>fundador</code> de las <code>Casas</code>.",
+        "query_solucion": "SELECT nombre_casa, fundador FROM Casas;"
+      }
+    ]
+  },
+  {
+    "id": 657,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE",
+    "titulo": "Alumnos de 5º",
+    "enunciado": "Muestra los nombres de los <code>Alumnos</code> que están en el <code>curso</code> 5.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre FROM Alumnos WHERE curso = 5;",
+    "puntos": 10,
+    "pista": "Filtra usando la cláusula WHERE y el comparador de igualdad (=).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los nombres de los <code>Alumnos</code> en el <code>curso</code> 4.",
+        "query_solucion": "SELECT nombre FROM Alumnos WHERE curso = 4;"
+      },
+      {
+        "enunciado": "Muestra el nombre de la <code>Casa</code> con el id_casa 1.",
+        "query_solucion": "SELECT nombre_casa FROM Casas WHERE id_casa = 1;"
+      }
+    ]
+  },
+  {
+    "id": 658,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE con texto",
+    "titulo": "El profesor de Defensa",
+    "enunciado": "Muestra el nombre de la asignatura (<code>nombre_asig</code>) que imparte el profesor 'Lupin'.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre_asig FROM Asignaturas WHERE profesor = 'Lupin';",
+    "puntos": 10,
+    "pista": "Recuerda poner el texto entre comillas simples.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el profesor que imparte 'Pociones'.",
+        "query_solucion": "SELECT profesor FROM Asignaturas WHERE nombre_asig = 'Pociones';"
+      },
+      {
+        "enunciado": "Muestra el nombre de la Casa fundada por 'Rowena Ravenclaw'.",
+        "query_solucion": "SELECT nombre_casa FROM Casas WHERE fundador = 'Rowena Ravenclaw';"
+      }
+    ]
+  },
+  {
+    "id": 659,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE mayor/menor",
+    "titulo": "Notas altas",
+    "enunciado": "Muestra el <code>id_alumno</code> y <code>nota_timos</code> de las matrículas cuya nota sea <b>mayor o igual a 8</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_alumno, nota_timos FROM Matriculas WHERE nota_timos >= 8;",
+    "puntos": 10,
+    "pista": "Utiliza el operador >= en la cláusula WHERE.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el id_alumno de las matrículas con nota menor a 5.",
+        "query_solucion": "SELECT id_alumno FROM Matriculas WHERE nota_timos < 5;"
+      },
+      {
+        "enunciado": "Muestra el id_alumno de las matrículas con nota mayor a 9.",
+        "query_solucion": "SELECT id_alumno FROM Matriculas WHERE nota_timos > 9;"
+      }
+    ]
+  },
+  {
+    "id": 660,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "AND",
+    "titulo": "Filtro múltiple",
+    "enunciado": "Muestra los <code>Alumnos</code> que están en <code>curso</code> 5 <b>y</b> pertenecen a la casa con <code>id_casa</code> 1.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Alumnos WHERE curso = 5 AND id_casa = 1;",
+    "puntos": 15,
+    "pista": "Usa AND para que se cumplan ambas condiciones.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los Alumnos de curso 4 e id_casa 3.",
+        "query_solucion": "SELECT * FROM Alumnos WHERE curso = 4 AND id_casa = 3;"
+      },
+      {
+        "enunciado": "Muestra las matrículas con id_alumno 1 y nota_timos mayor a 8.",
+        "query_solucion": "SELECT * FROM Matriculas WHERE id_alumno = 1 AND nota_timos > 8;"
+      }
+    ]
+  },
+  {
+    "id": 661,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "OR",
+    "titulo": "Varias opciones",
+    "enunciado": "Muestra las <code>Asignaturas</code> impartidas por 'Snape' <b>o</b> 'McGonagall'.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Asignaturas WHERE profesor = 'Snape' OR profesor = 'McGonagall';",
+    "puntos": 15,
+    "pista": "Usa OR para que sirva cualquiera de las dos condiciones.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los alumnos de curso 4 o curso 5.",
+        "query_solucion": "SELECT * FROM Alumnos WHERE curso = 4 OR curso = 5;"
+      },
+      {
+        "enunciado": "Muestra las casas con id_casa 1 o id_casa 2.",
+        "query_solucion": "SELECT * FROM Casas WHERE id_casa = 1 OR id_casa = 2;"
+      }
+    ]
+  },
+  {
+    "id": 662,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IN",
+    "titulo": "Lista de valores",
+    "enunciado": "Muestra los alumnos cuyo <code>curso</code> sea 1, 3 o 5 utilizando la cláusula <b>IN</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Alumnos WHERE curso IN (1, 3, 5);",
+    "puntos": 15,
+    "pista": "La cláusula IN comprueba si un valor está dentro de una lista separada por comas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las asignaturas impartidas por 'Snape', 'Lupin' o 'Flitwick' usando IN.",
+        "query_solucion": "SELECT * FROM Asignaturas WHERE profesor IN ('Snape', 'Lupin', 'Flitwick');"
+      },
+      {
+        "enunciado": "Muestra las casas cuyo nombre sea 'Gryffindor', 'Slytherin' o 'Hufflepuff' usando IN.",
+        "query_solucion": "SELECT * FROM Casas WHERE nombre_casa IN ('Gryffindor', 'Slytherin', 'Hufflepuff');"
+      }
+    ]
+  },
+  {
+    "id": 663,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "BETWEEN",
+    "titulo": "Rangos",
+    "enunciado": "Muestra las matrículas cuya <code>nota_timos</code> esté <b>entre 5 y 8</b> (ambos incluidos).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Matriculas WHERE nota_timos BETWEEN 5 AND 8;",
+    "puntos": 15,
+    "pista": "Utiliza BETWEEN min AND max para filtrar rangos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los alumnos cuyo curso esté entre 2 y 4.",
+        "query_solucion": "SELECT * FROM Alumnos WHERE curso BETWEEN 2 AND 4;"
+      },
+      {
+        "enunciado": "Muestra las matrículas con notas entre 7 y 10.",
+        "query_solucion": "SELECT * FROM Matriculas WHERE nota_timos BETWEEN 7 AND 10;"
+      }
+    ]
+  },
+  {
+    "id": 664,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIKE",
+    "titulo": "Patrones de texto",
+    "enunciado": "Muestra los <code>Alumnos</code> cuyo <code>nombre</code> <b>empiece por la letra 'H'</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Alumnos WHERE nombre LIKE 'H%';",
+    "puntos": 15,
+    "pista": "El comodín % representa cualquier conjunto de caracteres.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los profesores cuyo nombre empiece por 'M'.",
+        "query_solucion": "SELECT profesor FROM Asignaturas WHERE profesor LIKE 'M%';"
+      },
+      {
+        "enunciado": "Muestra las asignaturas cuyo nombre empiece por 'P'.",
+        "query_solucion": "SELECT nombre_asig FROM Asignaturas WHERE nombre_asig LIKE 'P%';"
+      }
+    ]
+  },
+  {
+    "id": 665,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY",
+    "titulo": "Ordenación simple",
+    "enunciado": "Muestra el <code>nombre</code> de todos los alumnos ordenados <b>alfabéticamente</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre FROM Alumnos ORDER BY nombre ASC;",
+    "puntos": 10,
+    "pista": "Usa ORDER BY columna ASC para orden ascendente.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los nombres de las casas ordenados alfabéticamente.",
+        "query_solucion": "SELECT nombre_casa FROM Casas ORDER BY nombre_casa ASC;"
+      },
+      {
+        "enunciado": "Muestra los nombres de las asignaturas ordenados alfabéticamente.",
+        "query_solucion": "SELECT nombre_asig FROM Asignaturas ORDER BY nombre_asig ASC;"
+      }
+    ]
+  },
+  {
+    "id": 666,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY DESC",
+    "titulo": "Ordenación inversa",
+    "enunciado": "Muestra todas las <code>Matriculas</code> ordenadas por <code>nota_timos</code> de <b>mayor a menor</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Matriculas ORDER BY nota_timos DESC;",
+    "puntos": 10,
+    "pista": "Añade DESC al final para orden descendente.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los alumnos ordenados por curso de mayor a menor.",
+        "query_solucion": "SELECT * FROM Alumnos ORDER BY curso DESC;"
+      },
+      {
+        "enunciado": "Muestra las asignaturas ordenadas por profesor de la Z a la A.",
+        "query_solucion": "SELECT * FROM Asignaturas ORDER BY profesor DESC;"
+      }
+    ]
+  },
+  {
+    "id": 667,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Limitar resultados",
+    "enunciado": "Muestra la matrícula con la <b>nota más alta</b> (solo el primer resultado al ordenar de mayor a menor).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Matriculas ORDER BY nota_timos DESC LIMIT 1;",
+    "puntos": 15,
+    "pista": "Combina ORDER BY con LIMIT 1.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el alumno de mayor curso (solo uno).",
+        "query_solucion": "SELECT * FROM Alumnos ORDER BY curso DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra la casa con el id_casa más alto.",
+        "query_solucion": "SELECT * FROM Casas ORDER BY id_casa DESC LIMIT 1;"
+      }
+    ]
+  },
+  {
+    "id": 668,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL",
+    "titulo": "Buscar nulos",
+    "enunciado": "Muestra los alumnos cuyo <code>id_casa</code> <b>no está asignado</b> (es NULL).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT * FROM Alumnos WHERE id_casa IS NULL;",
+    "puntos": 15,
+    "pista": "Nunca uses = NULL, usa IS NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las asignaturas cuyo profesor es NULL.",
+        "query_solucion": "SELECT * FROM Asignaturas WHERE profesor IS NULL;"
+      },
+      {
+        "enunciado": "Muestra las matrículas cuya nota_timos es NULL.",
+        "query_solucion": "SELECT * FROM Matriculas WHERE nota_timos IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 669,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Valores únicos",
+    "enunciado": "Muestra una lista de los <b>cursos distintos</b> que hay en la tabla de <code>Alumnos</code> (sin repetir).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT DISTINCT curso FROM Alumnos;",
+    "puntos": 15,
+    "pista": "Usa la palabra DISTINCT justo después del SELECT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los ids de casa distintos que tienen alumnos asignados.",
+        "query_solucion": "SELECT DISTINCT id_casa FROM Alumnos;"
+      },
+      {
+        "enunciado": "Muestra los ids de asignatura distintos donde hay estudiantes matriculados.",
+        "query_solucion": "SELECT DISTINCT id_asignatura FROM Matriculas;"
+      }
+    ]
+  },
+  {
+    "id": 670,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT simple",
+    "titulo": "Contar alumnos",
+    "enunciado": "Muestra <b>cuántos alumnos</b> hay registrados en total. Llama a la columna <code>total_alumnos</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT COUNT(*) AS total_alumnos FROM Alumnos;",
+    "puntos": 20,
+    "pista": "La función COUNT(*) cuenta filas, y AS permite renombrar la columna de salida.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra cuántas casas hay, llamado 'total_casas'.",
+        "query_solucion": "SELECT COUNT(*) AS total_casas FROM Casas;"
+      },
+      {
+        "enunciado": "Muestra cuántas asignaturas hay, llamado 'total_asig'.",
+        "query_solucion": "SELECT COUNT(*) AS total_asig FROM Asignaturas;"
+      }
+    ]
+  },
+  {
+    "id": 671,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG",
+    "titulo": "Nota media",
+    "enunciado": "Muestra la <b>nota media</b> de todas las <code>nota_timos</code>. Renombra a <code>media_global</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT AVG(nota_timos) AS media_global FROM Matriculas;",
+    "puntos": 20,
+    "pista": "La función AVG() calcula el promedio numérico.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el curso medio de los alumnos, renombrado a 'curso_medio'.",
+        "query_solucion": "SELECT AVG(curso) AS curso_medio FROM Alumnos;"
+      },
+      {
+        "enunciado": "Muestra la nota media de las matrículas del id_asignatura 1.",
+        "query_solucion": "SELECT AVG(nota_timos) FROM Matriculas WHERE id_asignatura = 1;"
+      }
+    ]
+  },
+  {
+    "id": 672,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX y MIN",
+    "titulo": "Valores extremos",
+    "enunciado": "Muestra la <b>nota más alta</b> y la <b>nota más baja</b> de <code>Matriculas</code> en una sola consulta.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT MAX(nota_timos), MIN(nota_timos) FROM Matriculas;",
+    "puntos": 20,
+    "pista": "Las funciones MAX() y MIN() pueden usarse juntas separadas por comas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el curso máximo y el mínimo de los alumnos.",
+        "query_solucion": "SELECT MAX(curso), MIN(curso) FROM Alumnos;"
+      },
+      {
+        "enunciado": "Muestra el id_casa máximo y mínimo en la tabla Casas.",
+        "query_solucion": "SELECT MAX(id_casa), MIN(id_casa) FROM Casas;"
+      }
+    ]
+  },
+  {
+    "id": 673,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY simple",
+    "titulo": "Alumnos por curso",
+    "enunciado": "Muestra el <code>curso</code> y <b>cuántos alumnos</b> hay en cada uno.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT curso, COUNT(*) FROM Alumnos GROUP BY curso;",
+    "puntos": 20,
+    "pista": "Para agrupar por una columna y contar, usa GROUP BY con esa columna.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el id_casa y cuántos alumnos tiene cada casa.",
+        "query_solucion": "SELECT id_casa, COUNT(*) FROM Alumnos GROUP BY id_casa;"
+      },
+      {
+        "enunciado": "Muestra el id_asignatura y cuántos alumnos tiene matriculados.",
+        "query_solucion": "SELECT id_asignatura, COUNT(*) FROM Matriculas GROUP BY id_asignatura;"
+      }
+    ]
+  },
+  {
+    "id": 674,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY con AVG",
+    "titulo": "Media por asignatura",
+    "enunciado": "Calcula la <b>nota media</b> (<code>nota_timos</code>) para cada <code>id_asignatura</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_asignatura, AVG(nota_timos) FROM Matriculas GROUP BY id_asignatura;",
+    "puntos": 25,
+    "pista": "Agrupa por id_asignatura y calcula AVG en las notas.",
+    "variaciones": [
+      {
+        "enunciado": "Calcula la nota media para cada id_alumno.",
+        "query_solucion": "SELECT id_alumno, AVG(nota_timos) FROM Matriculas GROUP BY id_alumno;"
+      },
+      {
+        "enunciado": "Calcula el curso medio de los alumnos para cada id_casa.",
+        "query_solucion": "SELECT id_casa, AVG(curso) FROM Alumnos GROUP BY id_casa;"
+      }
+    ]
+  },
+  {
+    "id": 675,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Filtro de grupos",
+    "enunciado": "Muestra el <code>id_asignatura</code> de aquellas asignaturas cuya <b>nota media sea mayor a 7</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_asignatura FROM Matriculas GROUP BY id_asignatura HAVING AVG(nota_timos) > 7;",
+    "puntos": 25,
+    "pista": "Usa HAVING después del GROUP BY para filtrar el resultado de una función de agregación.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el id_alumno de los alumnos con nota media mayor a 8.",
+        "query_solucion": "SELECT id_alumno FROM Matriculas GROUP BY id_alumno HAVING AVG(nota_timos) > 8;"
+      },
+      {
+        "enunciado": "Muestra el id_casa de las casas con más de 1 alumno.",
+        "query_solucion": "SELECT id_casa FROM Alumnos GROUP BY id_casa HAVING COUNT(*) > 1;"
+      }
+    ]
+  },
+  {
+    "id": 676,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "Alumno y su casa",
+    "enunciado": "Une <code>Alumnos</code> y <code>Casas</code> para mostrar el <code>nombre</code> del alumno y el <code>nombre_casa</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT Alumnos.nombre, Casas.nombre_casa FROM Alumnos INNER JOIN Casas ON Alumnos.id_casa = Casas.id_casa;",
+    "puntos": 25,
+    "pista": "Usa INNER JOIN tabla ON condicion de igualdad entre PK y FK.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el id_alumno y nombre_asig uniendo Matriculas y Asignaturas.",
+        "query_solucion": "SELECT Matriculas.id_alumno, Asignaturas.nombre_asig FROM Matriculas INNER JOIN Asignaturas ON Matriculas.id_asignatura = Asignaturas.id_asignatura;"
+      },
+      {
+        "enunciado": "Muestra nombre de alumno y nota_timos uniendo Alumnos y Matriculas.",
+        "query_solucion": "SELECT Alumnos.nombre, Matriculas.nota_timos FROM Alumnos INNER JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno;"
+      }
+    ]
+  },
+  {
+    "id": 677,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN con WHERE",
+    "titulo": "Gryffindors",
+    "enunciado": "Muestra los nombres de los <code>Alumnos</code> que están en 'Gryffindor' (usa JOIN con <code>Casas</code> y filtra por nombre_casa).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT Alumnos.nombre FROM Alumnos INNER JOIN Casas ON Alumnos.id_casa = Casas.id_casa WHERE Casas.nombre_casa = 'Gryffindor';",
+    "puntos": 25,
+    "pista": "Haz el INNER JOIN y luego añade un WHERE.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de los Alumnos que están en 'Slytherin'.",
+        "query_solucion": "SELECT Alumnos.nombre FROM Alumnos INNER JOIN Casas ON Alumnos.id_casa = Casas.id_casa WHERE Casas.nombre_casa = 'Slytherin';"
+      },
+      {
+        "enunciado": "Muestra los nombres de alumnos con nota mayor a 9 uniendo con Matriculas.",
+        "query_solucion": "SELECT Alumnos.nombre FROM Alumnos INNER JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno WHERE Matriculas.nota_timos > 9;"
+      }
+    ]
+  },
+  {
+    "id": 678,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "Funciones de texto",
+    "titulo": "Nombres en mayúsculas",
+    "enunciado": "Muestra el <code>nombre</code> de los alumnos en <b>mayúsculas</b>. Renombra a <code>nombre_mayus</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT UPPER(nombre) AS nombre_mayus FROM Alumnos;",
+    "puntos": 20,
+    "pista": "La función UPPER() convierte a mayúsculas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre_casa en mayúsculas.",
+        "query_solucion": "SELECT UPPER(nombre_casa) AS casa_mayus FROM Casas;"
+      },
+      {
+        "enunciado": "Muestra los profesores en minúsculas usando LOWER().",
+        "query_solucion": "SELECT LOWER(profesor) FROM Asignaturas;"
+      }
+    ]
+  },
+  {
+    "id": 679,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LENGTH",
+    "titulo": "Longitud de nombres",
+    "enunciado": "Muestra el <code>nombre</code> de las asignaturas y su <b>longitud en caracteres</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre_asig, LENGTH(nombre_asig) FROM Asignaturas;",
+    "puntos": 20,
+    "pista": "Usa LENGTH(columna) para ver cuántas letras tiene.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de los alumnos y la longitud de su nombre.",
+        "query_solucion": "SELECT nombre, LENGTH(nombre) FROM Alumnos;"
+      },
+      {
+        "enunciado": "Muestra el nombre de las casas y la longitud del nombre.",
+        "query_solucion": "SELECT nombre_casa, LENGTH(nombre_casa) FROM Casas;"
+      }
+    ]
+  },
+  {
+    "id": 680,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "CONCAT",
+    "titulo": "Etiquetas",
+    "enunciado": "Muestra el texto 'Alumno: [nombre]' para todos los estudiantes utilizando <code>CONCAT</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT CONCAT('Alumno: ', nombre) FROM Alumnos;",
+    "puntos": 20,
+    "pista": "CONCAT() permite unir textos fijos y el valor de columnas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra 'Casa: [nombre_casa]' para todas las casas.",
+        "query_solucion": "SELECT CONCAT('Casa: ', nombre_casa) FROM Casas;"
+      },
+      {
+        "enunciado": "Muestra 'Profesor: [profesor]' para las asignaturas.",
+        "query_solucion": "SELECT CONCAT('Profesor: ', profesor) FROM Asignaturas;"
+      }
+    ]
+  },
+  {
+    "id": 681,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN",
+    "titulo": "Todos los alumnos",
+    "enunciado": "Haz un <code>LEFT JOIN</code> entre <code>Alumnos</code> y <code>Casas</code>. Queremos ver a TODOS los alumnos y el <code>nombre_casa</code> (incluso si no tienen casa).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT Alumnos.nombre, Casas.nombre_casa FROM Alumnos LEFT JOIN Casas ON Alumnos.id_casa = Casas.id_casa;",
+    "puntos": 25,
+    "pista": "LEFT JOIN asegura que todos los registros de la primera tabla aparezcan.",
+    "variaciones": [
+      {
+        "enunciado": "Haz un LEFT JOIN entre Casas y Alumnos para ver TODAS las casas y sus alumnos.",
+        "query_solucion": "SELECT Casas.nombre_casa, Alumnos.nombre FROM Casas LEFT JOIN Alumnos ON Casas.id_casa = Alumnos.id_casa;"
+      },
+      {
+        "enunciado": "Haz un LEFT JOIN entre Alumnos y Matriculas para ver a TODOS los alumnos y sus notas.",
+        "query_solucion": "SELECT Alumnos.nombre, Matriculas.nota_timos FROM Alumnos LEFT JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno;"
+      }
+    ]
+  },
+  {
+    "id": 682,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "ROUND",
+    "titulo": "Redondear notas",
+    "enunciado": "Muestra el <code>id_alumno</code> y la <code>nota_timos</code> <b>redondeada a 0 decimales</b> usando <code>ROUND()</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_alumno, ROUND(nota_timos, 0) FROM Matriculas;",
+    "puntos": 20,
+    "pista": "ROUND(columna, decimales) redondea el número.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la nota media de las matrículas redondeada a 1 decimal.",
+        "query_solucion": "SELECT ROUND(AVG(nota_timos), 1) FROM Matriculas;"
+      },
+      {
+        "enunciado": "Muestra las notas de los estudiantes multiplicadas por 1.1 y redondeadas a 2 decimales.",
+        "query_solucion": "SELECT ROUND(nota_timos * 1.1, 2) FROM Matriculas;"
+      }
+    ]
+  },
+  {
+    "id": 683,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY múltiple",
+    "titulo": "Alumnos por curso y casa",
+    "enunciado": "Muestra cuántos alumnos hay por <b>cada combinación</b> de <code>curso</code> y <code>id_casa</code>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT curso, id_casa, COUNT(*) FROM Alumnos GROUP BY curso, id_casa;",
+    "puntos": 25,
+    "pista": "En el GROUP BY puedes indicar varias columnas separadas por coma.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la nota media por id_alumno y id_asignatura (aunque la combinación sea única en este esquema, pruébalo).",
+        "query_solucion": "SELECT id_alumno, id_asignatura, AVG(nota_timos) FROM Matriculas GROUP BY id_alumno, id_asignatura;"
+      },
+      {
+        "enunciado": "Muestra el número de matrículas por cada nota_timos y id_asignatura.",
+        "query_solucion": "SELECT nota_timos, id_asignatura, COUNT(*) FROM Matriculas GROUP BY nota_timos, id_asignatura;"
+      }
+    ]
+  },
+  {
+    "id": 684,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "Matemáticas en SELECT",
+    "titulo": "Puntos extra",
+    "enunciado": "Muestra el <code>id_alumno</code> y su <code>nota_timos</code> sumándole <b>1.5 puntos extra</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_alumno, nota_timos + 1.5 FROM Matriculas;",
+    "puntos": 20,
+    "pista": "Se pueden realizar operaciones aritméticas directas (+, -, *, /) en las columnas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra la nota multiplicada por 10 (porcentaje).",
+        "query_solucion": "SELECT id_alumno, nota_timos * 10 FROM Matriculas;"
+      },
+      {
+        "enunciado": "Muestra el curso del alumno restándole 1.",
+        "query_solucion": "SELECT nombre, curso - 1 FROM Alumnos;"
+      }
+    ]
+  },
+  {
+    "id": 685,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Triple JOIN",
+    "titulo": "Boletín de notas",
+    "enunciado": "Muestra el <code>nombre</code> del alumno, <code>nombre_asig</code> y <code>nota_timos</code>. Debes unir <b>tres tablas</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT Alumnos.nombre, Asignaturas.nombre_asig, Matriculas.nota_timos FROM Alumnos INNER JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno INNER JOIN Asignaturas ON Matriculas.id_asignatura = Asignaturas.id_asignatura;",
+    "puntos": 30,
+    "pista": "Encadena los INNER JOIN uno tras otro, especificando las condiciones ON.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra nombre de casa, nombre del alumno y nota de las matrículas (3 tablas).",
+        "query_solucion": "SELECT Casas.nombre_casa, Alumnos.nombre, Matriculas.nota_timos FROM Casas INNER JOIN Alumnos ON Casas.id_casa = Alumnos.id_casa INNER JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno;"
+      },
+      {
+        "enunciado": "Muestra nombre del profesor, nombre del alumno y nota de las matrículas (3 tablas).",
+        "query_solucion": "SELECT Asignaturas.profesor, Alumnos.nombre, Matriculas.nota_timos FROM Asignaturas INNER JOIN Matriculas ON Asignaturas.id_asignatura = Matriculas.id_asignatura INNER JOIN Alumnos ON Matriculas.id_alumno = Alumnos.id_alumno;"
+      }
+    ]
+  },
+  {
+    "id": 686,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN con GROUP BY",
+    "titulo": "Media por casa",
+    "enunciado": "Muestra el <code>nombre_casa</code> y la <b>nota media</b> de los alumnos de esa casa. Unirás 3 tablas y agruparás.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT Casas.nombre_casa, AVG(Matriculas.nota_timos) FROM Casas INNER JOIN Alumnos ON Casas.id_casa = Alumnos.id_casa INNER JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno GROUP BY Casas.nombre_casa;",
+    "puntos": 35,
+    "pista": "Primero haz los JOIN para conectar Casas con Matriculas pasando por Alumnos, luego agrupa.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de la asignatura y su nota media.",
+        "query_solucion": "SELECT Asignaturas.nombre_asig, AVG(Matriculas.nota_timos) FROM Asignaturas INNER JOIN Matriculas ON Asignaturas.id_asignatura = Matriculas.id_asignatura GROUP BY Asignaturas.nombre_asig;"
+      },
+      {
+        "enunciado": "Muestra el profesor y cuántos alumnos tiene matriculados.",
+        "query_solucion": "SELECT Asignaturas.profesor, COUNT(Matriculas.id_alumno) FROM Asignaturas INNER JOIN Matriculas ON Asignaturas.id_asignatura = Matriculas.id_asignatura GROUP BY Asignaturas.profesor;"
+      }
+    ]
+  },
+  {
+    "id": 687,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta WHERE",
+    "titulo": "Mejor nota global",
+    "enunciado": "Muestra el <code>id_alumno</code> que ha obtenido la <b>nota máxima absoluta</b> en toda la escuela (usa una subconsulta en el WHERE).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_alumno FROM Matriculas WHERE nota_timos = (SELECT MAX(nota_timos) FROM Matriculas);",
+    "puntos": 35,
+    "pista": "El WHERE compara con el resultado de un SELECT MAX()...",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del alumno con el curso máximo absoluto.",
+        "query_solucion": "SELECT nombre FROM Alumnos WHERE curso = (SELECT MAX(curso) FROM Alumnos);"
+      },
+      {
+        "enunciado": "Muestra el alumno con la nota mínima absoluta.",
+        "query_solucion": "SELECT id_alumno FROM Matriculas WHERE nota_timos = (SELECT MIN(nota_timos) FROM Matriculas);"
+      }
+    ]
+  },
+  {
+    "id": 688,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta IN",
+    "titulo": "Alumnos de pociones",
+    "enunciado": "Muestra los nombres de los <code>Alumnos</code> matriculados en la asignatura 'Pociones' usando <b>subconsultas e IN</b> (sin JOIN).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre FROM Alumnos WHERE id_alumno IN (SELECT id_alumno FROM Matriculas WHERE id_asignatura = (SELECT id_asignatura FROM Asignaturas WHERE nombre_asig = 'Pociones'));",
+    "puntos": 40,
+    "pista": "Una subconsulta dentro de otra: buscar id_asig de Pociones, buscar ids de alumno en Matriculas, y finalmente el nombre.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los nombres de los alumnos matriculados con 'Snape' usando subconsultas.",
+        "query_solucion": "SELECT nombre FROM Alumnos WHERE id_alumno IN (SELECT id_alumno FROM Matriculas WHERE id_asignatura = (SELECT id_asignatura FROM Asignaturas WHERE profesor = 'Snape'));"
+      },
+      {
+        "enunciado": "Muestra el nombre de las asignaturas en las que está 'Harry Potter' usando subconsultas.",
+        "query_solucion": "SELECT nombre_asig FROM Asignaturas WHERE id_asignatura IN (SELECT id_asignatura FROM Matriculas WHERE id_alumno = (SELECT id_alumno FROM Alumnos WHERE nombre = 'Harry Potter'));"
+      }
+    ]
+  },
+  {
+    "id": 689,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN IS NULL",
+    "titulo": "Alumnos sin matricular",
+    "enunciado": "Muestra el <code>nombre</code> de los alumnos que <b>no están matriculados</b> en ninguna asignatura (utilizando LEFT JOIN).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT Alumnos.nombre FROM Alumnos LEFT JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno WHERE Matriculas.id_asignatura IS NULL;",
+    "puntos": 35,
+    "pista": "El LEFT JOIN mantiene a todos los alumnos. Si no hay matrícula, la parte derecha es NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las casas sin alumnos matriculados (usando LEFT JOIN con Alumnos).",
+        "query_solucion": "SELECT Casas.nombre_casa FROM Casas LEFT JOIN Alumnos ON Casas.id_casa = Alumnos.id_casa WHERE Alumnos.id_alumno IS NULL;"
+      },
+      {
+        "enunciado": "Muestra las asignaturas sin alumnos matriculados (LEFT JOIN con Matriculas).",
+        "query_solucion": "SELECT Asignaturas.nombre_asig FROM Asignaturas LEFT JOIN Matriculas ON Asignaturas.id_asignatura = Matriculas.id_asignatura WHERE Matriculas.id_alumno IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 690,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN múltiple GROUP HAVING",
+    "titulo": "Asignaturas exigentes",
+    "enunciado": "Muestra el <code>nombre_asig</code> que tenga una <b>nota media inferior a 5</b> (suspensa) de todos los matriculados.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT Asignaturas.nombre_asig FROM Asignaturas INNER JOIN Matriculas ON Asignaturas.id_asignatura = Matriculas.id_asignatura GROUP BY Asignaturas.nombre_asig HAVING AVG(Matriculas.nota_timos) < 5;",
+    "puntos": 40,
+    "pista": "Une, agrupa por nombre, y filtra con HAVING y la condición de la media.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de la casa con nota media general superior a 8.",
+        "query_solucion": "SELECT Casas.nombre_casa FROM Casas INNER JOIN Alumnos ON Casas.id_casa = Alumnos.id_casa INNER JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno GROUP BY Casas.nombre_casa HAVING AVG(Matriculas.nota_timos) > 8;"
+      },
+      {
+        "enunciado": "Muestra el nombre del alumno con más de 2 asignaturas matriculadas.",
+        "query_solucion": "SELECT Alumnos.nombre FROM Alumnos INNER JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno GROUP BY Alumnos.nombre HAVING COUNT(Matriculas.id_asignatura) > 2;"
+      }
+    ]
+  },
+  {
+    "id": 691,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Correlacionada básica",
+    "titulo": "Por encima de la media",
+    "enunciado": "Muestra las matrículas (<code>id_alumno</code>, <code>id_asignatura</code>) donde la nota sea <b>mayor que la nota media global</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_alumno, id_asignatura FROM Matriculas WHERE nota_timos > (SELECT AVG(nota_timos) FROM Matriculas);",
+    "puntos": 35,
+    "pista": "Compara la columna con una subconsulta que devuelva la media.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los alumnos de un curso mayor al curso medio.",
+        "query_solucion": "SELECT nombre FROM Alumnos WHERE curso > (SELECT AVG(curso) FROM Alumnos);"
+      },
+      {
+        "enunciado": "Muestra las notas menores que la media de notas global.",
+        "query_solucion": "SELECT nota_timos FROM Matriculas WHERE nota_timos < (SELECT AVG(nota_timos) FROM Matriculas);"
+      }
+    ]
+  },
+  {
+    "id": 692,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Correlacionada compleja",
+    "titulo": "El mejor de su casa",
+    "enunciado": "Muestra el <code>nombre</code> del alumno que tiene <b>la nota más alta dentro de su propia casa</b>.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT A1.nombre FROM Alumnos A1 INNER JOIN Matriculas M1 ON A1.id_alumno = M1.id_alumno WHERE M1.nota_timos = (SELECT MAX(M2.nota_timos) FROM Alumnos A2 INNER JOIN Matriculas M2 ON A2.id_alumno = M2.id_alumno WHERE A1.id_casa = A2.id_casa);",
+    "puntos": 40,
+    "pista": "La subconsulta debe relacionarse con el id_casa de la consulta externa.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el alumno con el mayor curso de su propia casa.",
+        "query_solucion": "SELECT A1.nombre FROM Alumnos A1 WHERE A1.curso = (SELECT MAX(A2.curso) FROM Alumnos A2 WHERE A1.id_casa = A2.id_casa);"
+      },
+      {
+        "enunciado": "Muestra la asignatura con la mayor nota de su propio profesor.",
+        "query_solucion": "SELECT Asig1.nombre_asig FROM Asignaturas Asig1 INNER JOIN Matriculas M1 ON Asig1.id_asignatura = M1.id_asignatura WHERE M1.nota_timos = (SELECT MAX(M2.nota_timos) FROM Asignaturas Asig2 INNER JOIN Matriculas M2 ON Asig2.id_asignatura = M2.id_asignatura WHERE Asig1.profesor = Asig2.profesor);"
+      }
+    ]
+  },
+  {
+    "id": 693,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "CASE",
+    "titulo": "Calificación textual",
+    "enunciado": "Muestra el <code>id_alumno</code> y una nueva columna 'calificacion' que diga 'Aprobado' si <code>nota_timos >= 5</code> y 'Suspenso' en caso contrario.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_alumno, CASE WHEN nota_timos >= 5 THEN 'Aprobado' ELSE 'Suspenso' END AS calificacion FROM Matriculas;",
+    "puntos": 35,
+    "pista": "Utiliza la estructura CASE WHEN condicion THEN ... ELSE ... END.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del alumno y 'Senior' si curso >= 5, si no 'Junior'.",
+        "query_solucion": "SELECT nombre, CASE WHEN curso >= 5 THEN 'Senior' ELSE 'Junior' END FROM Alumnos;"
+      },
+      {
+        "enunciado": "Muestra nombre de casa y 'Especial' si es Gryffindor, si no 'Normal'.",
+        "query_solucion": "SELECT nombre_casa, CASE WHEN nombre_casa = 'Gryffindor' THEN 'Especial' ELSE 'Normal' END FROM Casas;"
+      }
+    ]
+  },
+  {
+    "id": 694,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN a la misma tabla",
+    "titulo": "Compañeros de casa",
+    "enunciado": "Muestra parejas de alumnos (sus nombres) que están en la <b>misma casa</b> (sin emparejar un alumno consigo mismo).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT A1.nombre, A2.nombre FROM Alumnos A1 INNER JOIN Alumnos A2 ON A1.id_casa = A2.id_casa WHERE A1.id_alumno < A2.id_alumno;",
+    "puntos": 35,
+    "pista": "Usa un JOIN de la tabla consigo misma con alias distintos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra parejas de alumnos en el mismo curso.",
+        "query_solucion": "SELECT A1.nombre, A2.nombre FROM Alumnos A1 INNER JOIN Alumnos A2 ON A1.curso = A2.curso WHERE A1.id_alumno < A2.id_alumno;"
+      },
+      {
+        "enunciado": "Muestra parejas de asignaturas del mismo profesor.",
+        "query_solucion": "SELECT AS1.nombre_asig, AS2.nombre_asig FROM Asignaturas AS1 INNER JOIN Asignaturas AS2 ON AS1.profesor = AS2.profesor WHERE AS1.id_asignatura < AS2.id_asignatura;"
+      }
+    ]
+  },
+  {
+    "id": 695,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "UNION",
+    "titulo": "Lista de nombres",
+    "enunciado": "Crea una única lista con los nombres de <b>todos los alumnos y todos los profesores</b> (usa UNION).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre AS persona FROM Alumnos UNION SELECT profesor FROM Asignaturas;",
+    "puntos": 30,
+    "pista": "Los SELECT unidos por UNION deben tener el mismo número y tipo de columnas.",
+    "variaciones": [
+      {
+        "enunciado": "Lista todos los fundadores de casas y profesores juntos.",
+        "query_solucion": "SELECT fundador FROM Casas UNION SELECT profesor FROM Asignaturas;"
+      },
+      {
+        "enunciado": "Lista los nombres de los alumnos y los nombres de las casas en una sola columna.",
+        "query_solucion": "SELECT nombre FROM Alumnos UNION SELECT nombre_casa FROM Casas;"
+      }
+    ]
+  },
+  {
+    "id": 696,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "EXISTS",
+    "titulo": "Asignaturas con alumnos",
+    "enunciado": "Muestra el nombre de las asignaturas para las que <b>EXISTA</b> al menos una matrícula (usando EXISTS).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre_asig FROM Asignaturas A WHERE EXISTS (SELECT 1 FROM Matriculas M WHERE M.id_asignatura = A.id_asignatura);",
+    "puntos": 35,
+    "pista": "EXISTS comprueba si la subconsulta devuelve filas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los alumnos para los que exista al menos una matrícula.",
+        "query_solucion": "SELECT nombre FROM Alumnos A WHERE EXISTS (SELECT 1 FROM Matriculas M WHERE M.id_alumno = A.id_alumno);"
+      },
+      {
+        "enunciado": "Muestra las casas para las que exista al menos un alumno.",
+        "query_solucion": "SELECT nombre_casa FROM Casas C WHERE EXISTS (SELECT 1 FROM Alumnos A WHERE A.id_casa = C.id_casa);"
+      }
+    ]
+  },
+  {
+    "id": 697,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT EXISTS",
+    "titulo": "Alumnos sin matrícula",
+    "enunciado": "Muestra el nombre de los alumnos para los que <b>NO EXISTA</b> ninguna matrícula (usando NOT EXISTS).",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT nombre FROM Alumnos A WHERE NOT EXISTS (SELECT 1 FROM Matriculas M WHERE M.id_alumno = A.id_alumno);",
+    "puntos": 35,
+    "pista": "Usa NOT EXISTS para buscar la ausencia de correspondencias.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las casas sin ningún alumno.",
+        "query_solucion": "SELECT nombre_casa FROM Casas C WHERE NOT EXISTS (SELECT 1 FROM Alumnos A WHERE A.id_casa = C.id_casa);"
+      },
+      {
+        "enunciado": "Muestra las asignaturas que no tienen alumnos matriculados.",
+        "query_solucion": "SELECT nombre_asig FROM Asignaturas A WHERE NOT EXISTS (SELECT 1 FROM Matriculas M WHERE M.id_asignatura = A.id_asignatura);"
+      }
+    ]
+  },
+  {
+    "id": 698,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Múltiples JOIN con OR",
+    "titulo": "Interacciones cruzadas",
+    "enunciado": "Muestra nombres de alumnos que son de 'Slytherin' <b>o</b> están matriculados con 'Snape'.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT DISTINCT Alumnos.nombre FROM Alumnos LEFT JOIN Casas ON Alumnos.id_casa = Casas.id_casa LEFT JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno LEFT JOIN Asignaturas ON Matriculas.id_asignatura = Asignaturas.id_asignatura WHERE Casas.nombre_casa = 'Slytherin' OR Asignaturas.profesor = 'Snape';",
+    "puntos": 40,
+    "pista": "Necesitas varios JOIN y un WHERE que contenga el OR, junto con DISTINCT para evitar duplicados.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra alumnos de 'Gryffindor' o matriculados en 'Pociones'.",
+        "query_solucion": "SELECT DISTINCT Alumnos.nombre FROM Alumnos LEFT JOIN Casas ON Alumnos.id_casa = Casas.id_casa LEFT JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno LEFT JOIN Asignaturas ON Matriculas.id_asignatura = Asignaturas.id_asignatura WHERE Casas.nombre_casa = 'Gryffindor' OR Asignaturas.nombre_asig = 'Pociones';"
+      },
+      {
+        "enunciado": "Muestra alumnos de 'Ravenclaw' o matriculados con 'Lupin'.",
+        "query_solucion": "SELECT DISTINCT Alumnos.nombre FROM Alumnos LEFT JOIN Casas ON Alumnos.id_casa = Casas.id_casa LEFT JOIN Matriculas ON Alumnos.id_alumno = Matriculas.id_alumno LEFT JOIN Asignaturas ON Matriculas.id_asignatura = Asignaturas.id_asignatura WHERE Casas.nombre_casa = 'Ravenclaw' OR Asignaturas.profesor = 'Lupin';"
+      }
+    ]
+  },
+  {
+    "id": 699,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "ALL",
+    "titulo": "Mayor nota de todas",
+    "enunciado": "Muestra el <code>id_alumno</code> de quien tenga una nota_timos <b>mayor o igual a TODAS</b> las demás notas usando >= ALL.",
+    "bd": "hogwarts",
+    "query_solucion": "SELECT id_alumno FROM Matriculas WHERE nota_timos >= ALL (SELECT nota_timos FROM Matriculas);",
+    "puntos": 40,
+    "pista": "El operador ALL compara un valor con todos los devueltos por la subconsulta.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del alumno cuyo curso es >= ALL de los demás cursos.",
+        "query_solucion": "SELECT nombre FROM Alumnos WHERE curso >= ALL (SELECT curso FROM Alumnos);"
+      },
+      {
+        "enunciado": "Muestra las casas cuyo id_casa es <= ALL de los demás.",
+        "query_solucion": "SELECT nombre_casa FROM Casas WHERE id_casa <= ALL (SELECT id_casa FROM Casas);"
+      }
+    ]
+  },
+  {
+    "id": 700,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Crear tabla Doctores",
+    "enunciado": "Crea una tabla llamada <code>Doctores</code> con las columnas <b>id_doctor</b> (entero, clave primaria) y <b>nombre</b> (cadena de 100).",
+    "bd": "arkham",
+    "query_solucion": "CREATE TABLE Doctores (id_doctor INT PRIMARY KEY, nombre VARCHAR(100));",
+    "puntos": 10,
+    "pista": "Usa CREATE TABLE y especifica el tipo y la restricción de clave primaria.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Visitantes</code> con <b>id_visitante</b> (entero, clave primaria) y <b>nombre</b> (cadena de 100).",
+        "query_solucion": "CREATE TABLE Visitantes (id_visitante INT PRIMARY KEY, nombre VARCHAR(100));"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Armas</code> con <b>id_arma</b> (entero, clave primaria) y <b>tipo</b> (cadena de 50).",
+        "query_solucion": "CREATE TABLE Armas (id_arma INT PRIMARY KEY, tipo VARCHAR(50));"
+      }
+    ]
+  },
+  {
+    "id": 701,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE FK",
+    "titulo": "Tabla de Tratamientos",
+    "enunciado": "Crea la tabla <code>Tratamientos</code> con <b>id_tratamiento</b> (entero, PK), <b>descripcion</b> (texto) e <b>id_villano</b> (entero, clave foránea).",
+    "bd": "arkham",
+    "query_solucion": "CREATE TABLE Tratamientos (id_tratamiento INT PRIMARY KEY, descripcion TEXT, id_villano INT, FOREIGN KEY (id_villano) REFERENCES Villanos(id_villano));",
+    "puntos": 15,
+    "pista": "No olvides usar FOREIGN KEY y REFERENCES.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Visitas</code> con <b>id_visita</b> (entero, PK), <b>fecha</b> (fecha) e <b>id_villano</b> (entero, FK).",
+        "query_solucion": "CREATE TABLE Visitas (id_visita INT PRIMARY KEY, fecha DATE, id_villano INT, FOREIGN KEY (id_villano) REFERENCES Villanos(id_villano));"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Patrullas</code> con <b>id_patrulla</b> (entero, PK), <b>zona</b> (cadena 50) e <b>id_guardia</b> (entero, FK).",
+        "query_solucion": "CREATE TABLE Patrullas (id_patrulla INT PRIMARY KEY, zona VARCHAR(50), id_guardia INT, FOREIGN KEY (id_guardia) REFERENCES Guardias(id_guardia));"
+      }
+    ]
+  },
+  {
+    "id": 702,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE ADD",
+    "titulo": "Añadir fecha de ingreso",
+    "enunciado": "Añade a la tabla <code>Villanos</code> una columna llamada <b>fecha_ingreso</b> de tipo DATE.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Villanos ADD fecha_ingreso DATE;",
+    "puntos": 10,
+    "pista": "Usa ALTER TABLE ... ADD ...",
+    "variaciones": [
+      {
+        "enunciado": "Añade a la tabla <code>Guardias</code> una columna <b>fecha_contratacion</b> de tipo DATE.",
+        "query_solucion": "ALTER TABLE Guardias ADD fecha_contratacion DATE;"
+      },
+      {
+        "enunciado": "Añade a la tabla <code>Celdas</code> una columna <b>capacidad</b> de tipo INT.",
+        "query_solucion": "ALTER TABLE Celdas ADD capacidad INT;"
+      }
+    ]
+  },
+  {
+    "id": 703,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE DROP",
+    "titulo": "Eliminar turno de guardia",
+    "enunciado": "Elimina la columna <b>turno</b> de la tabla <code>Guardias</code>.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Guardias DROP COLUMN turno;",
+    "puntos": 10,
+    "pista": "Usa ALTER TABLE ... DROP COLUMN ...",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <b>diagnostico</b> de la tabla <code>Villanos</code>.",
+        "query_solucion": "ALTER TABLE Villanos DROP COLUMN diagnostico;"
+      },
+      {
+        "enunciado": "Elimina la columna <b>nivel_seguridad</b> de la tabla <code>Celdas</code>.",
+        "query_solucion": "ALTER TABLE Celdas DROP COLUMN nivel_seguridad;"
+      }
+    ]
+  },
+  {
+    "id": 704,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE MODIFY",
+    "titulo": "Ampliar longitud del alias",
+    "enunciado": "Modifica la columna <b>alias</b> de la tabla <code>Villanos</code> para que sea VARCHAR(150).",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Villanos MODIFY alias VARCHAR(150);",
+    "puntos": 15,
+    "pista": "Usa ALTER TABLE ... MODIFY ...",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <b>bloque</b> de la tabla <code>Celdas</code> para que sea VARCHAR(20).",
+        "query_solucion": "ALTER TABLE Celdas MODIFY bloque VARCHAR(20);"
+      },
+      {
+        "enunciado": "Modifica la columna <b>nombre</b> de la tabla <code>Guardias</code> para que sea VARCHAR(150).",
+        "query_solucion": "ALTER TABLE Guardias MODIFY nombre VARCHAR(150);"
+      }
+    ]
+  },
+  {
+    "id": 705,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE RENAME COLUMN",
+    "titulo": "Renombrar horario",
+    "enunciado": "Renombra la columna <b>turno</b> de <code>Guardias</code> a <b>horario</b>.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Guardias RENAME COLUMN turno TO horario;",
+    "puntos": 15,
+    "pista": "Usa ALTER TABLE ... RENAME COLUMN ... TO ...",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la columna <b>alias</b> de <code>Villanos</code> a <b>apodo</b>.",
+        "query_solucion": "ALTER TABLE Villanos RENAME COLUMN alias TO apodo;"
+      },
+      {
+        "enunciado": "Renombra la columna <b>bloque</b> de <code>Celdas</code> a <b>seccion</b>.",
+        "query_solucion": "ALTER TABLE Celdas RENAME COLUMN bloque TO seccion;"
+      }
+    ]
+  },
+  {
+    "id": 706,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME TABLE",
+    "titulo": "Cambiar nombre a Reclusos",
+    "enunciado": "Renombra la tabla <code>Villanos</code> a <code>Reclusos</code>.",
+    "bd": "arkham",
+    "query_solucion": "RENAME TABLE Villanos TO Reclusos;",
+    "puntos": 10,
+    "pista": "Usa RENAME TABLE tabla_vieja TO tabla_nueva.",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la tabla <code>Guardias</code> a <code>Personal</code>.",
+        "query_solucion": "RENAME TABLE Guardias TO Personal;"
+      },
+      {
+        "enunciado": "Renombra la tabla <code>Celdas</code> a <code>Habitaciones</code>.",
+        "query_solucion": "RENAME TABLE Celdas TO Habitaciones;"
+      }
+    ]
+  },
+  {
+    "id": 707,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Eliminar historial de incidentes",
+    "enunciado": "Borra la tabla <code>Incidentes</code> de la base de datos.",
+    "bd": "arkham",
+    "query_solucion": "DROP TABLE Incidentes;",
+    "puntos": 10,
+    "pista": "Usa el comando DROP TABLE.",
+    "variaciones": [
+      {
+        "enunciado": "Borra la tabla <code>Villanos</code> de la base de datos.",
+        "query_solucion": "DROP TABLE Villanos;"
+      },
+      {
+        "enunciado": "Borra la tabla <code>Guardias</code> de la base de datos.",
+        "query_solucion": "DROP TABLE Guardias;"
+      }
+    ]
+  },
+  {
+    "id": 708,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ADD PRIMARY KEY",
+    "titulo": "Añadir PK a Incidentes",
+    "enunciado": "Supongamos que la tabla <code>Incidentes</code> no tiene clave primaria. Añade <b>id_incidente</b> como su PRIMARY KEY.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Incidentes ADD PRIMARY KEY (id_incidente);",
+    "puntos": 15,
+    "pista": "Usa ALTER TABLE ... ADD PRIMARY KEY ...",
+    "variaciones": [
+      {
+        "enunciado": "Añade la clave primaria a la columna <b>id_celda</b> en <code>Celdas</code>.",
+        "query_solucion": "ALTER TABLE Celdas ADD PRIMARY KEY (id_celda);"
+      },
+      {
+        "enunciado": "Asigna <b>id_guardia</b> como clave primaria en <code>Guardias</code>.",
+        "query_solucion": "ALTER TABLE Guardias ADD PRIMARY KEY (id_guardia);"
+      }
+    ]
+  },
+  {
+    "id": 709,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP PRIMARY KEY",
+    "titulo": "Quitar PK de Celdas",
+    "enunciado": "Elimina la clave primaria de la tabla <code>Celdas</code>.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Celdas DROP PRIMARY KEY;",
+    "puntos": 15,
+    "pista": "Usa DROP PRIMARY KEY.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la clave primaria de la tabla <code>Villanos</code>.",
+        "query_solucion": "ALTER TABLE Villanos DROP PRIMARY KEY;"
+      },
+      {
+        "enunciado": "Elimina la clave primaria de la tabla <code>Guardias</code>.",
+        "query_solucion": "ALTER TABLE Guardias DROP PRIMARY KEY;"
+      }
+    ]
+  },
+  {
+    "id": 710,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ADD FOREIGN KEY",
+    "titulo": "Vincular Villano en Incidentes",
+    "enunciado": "Añade a <code>Incidentes</code> una clave foránea en <b>id_villano</b> que referencie a <code>Villanos(id_villano)</code>.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Incidentes ADD FOREIGN KEY (id_villano) REFERENCES Villanos(id_villano);",
+    "puntos": 15,
+    "pista": "Usa ALTER TABLE ... ADD FOREIGN KEY ... REFERENCES ...",
+    "variaciones": [
+      {
+        "enunciado": "Añade a <code>Incidentes</code> una clave foránea en <b>id_guardia</b> referenciando a <code>Guardias(id_guardia)</code>.",
+        "query_solucion": "ALTER TABLE Incidentes ADD FOREIGN KEY (id_guardia) REFERENCES Guardias(id_guardia);"
+      },
+      {
+        "enunciado": "Añade a <code>Villanos</code> una clave foránea en <b>id_celda</b> hacia <code>Celdas(id_celda)</code>.",
+        "query_solucion": "ALTER TABLE Villanos ADD FOREIGN KEY (id_celda) REFERENCES Celdas(id_celda);"
+      }
+    ]
+  },
+  {
+    "id": 711,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "NOT NULL",
+    "titulo": "Bloque Obligatorio",
+    "enunciado": "Modifica la columna <b>bloque</b> de <code>Celdas</code> para que no acepte valores nulos.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Celdas MODIFY bloque VARCHAR(10) NOT NULL;",
+    "puntos": 15,
+    "pista": "Usa MODIFY e incluye la restricción NOT NULL además del tipo de dato.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <b>nombre</b> de <code>Guardias</code> para que sea obligatoria.",
+        "query_solucion": "ALTER TABLE Guardias MODIFY nombre VARCHAR(100) NOT NULL;"
+      },
+      {
+        "enunciado": "Modifica la columna <b>alias</b> de <code>Villanos</code> para que no acepte nulos.",
+        "query_solucion": "ALTER TABLE Villanos MODIFY alias VARCHAR(100) NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 712,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "UNIQUE",
+    "titulo": "Alias irrepetibles",
+    "enunciado": "Añade una restricción <b>UNIQUE</b> a la columna <b>alias</b> de la tabla <code>Villanos</code>.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Villanos ADD UNIQUE (alias);",
+    "puntos": 15,
+    "pista": "Usa ALTER TABLE ... ADD UNIQUE (columna).",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción UNIQUE a la columna <b>bloque</b> de la tabla <code>Celdas</code>.",
+        "query_solucion": "ALTER TABLE Celdas ADD UNIQUE (bloque);"
+      },
+      {
+        "enunciado": "Haz que la columna <b>nombre</b> de <code>Guardias</code> sea única.",
+        "query_solucion": "ALTER TABLE Guardias ADD UNIQUE (nombre);"
+      }
+    ]
+  },
+  {
+    "id": 713,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DEFAULT",
+    "titulo": "Seguridad Mínima",
+    "enunciado": "Modifica la columna <b>nivel_seguridad</b> de <code>Celdas</code> para que su valor por defecto sea <b>1</b>.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Celdas ALTER COLUMN nivel_seguridad SET DEFAULT 1;",
+    "puntos": 15,
+    "pista": "En MySQL se utiliza ALTER COLUMN ... SET DEFAULT.",
+    "variaciones": [
+      {
+        "enunciado": "Pon un valor por defecto de 'Tarde' a la columna <b>turno</b> de <code>Guardias</code>.",
+        "query_solucion": "ALTER TABLE Guardias ALTER COLUMN turno SET DEFAULT 'Tarde';"
+      },
+      {
+        "enunciado": "Pon un valor por defecto de 'Desconocido' al <b>diagnostico</b> de <code>Villanos</code>.",
+        "query_solucion": "ALTER TABLE Villanos ALTER COLUMN diagnostico SET DEFAULT 'Desconocido';"
+      }
+    ]
+  },
+  {
+    "id": 714,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CHECK",
+    "titulo": "Seguridad Positiva",
+    "enunciado": "Añade a la tabla <code>Celdas</code> una restricción CHECK para que el <b>nivel_seguridad</b> sea mayor que 0.",
+    "bd": "arkham",
+    "query_solucion": "ALTER TABLE Celdas ADD CHECK (nivel_seguridad > 0);",
+    "puntos": 15,
+    "pista": "Usa ALTER TABLE ... ADD CHECK (condición).",
+    "variaciones": [
+      {
+        "enunciado": "Añade un CHECK en <code>Villanos</code> para asegurar que <b>id_celda</b> sea mayor que 0.",
+        "query_solucion": "ALTER TABLE Villanos ADD CHECK (id_celda > 0);"
+      },
+      {
+        "enunciado": "Añade a <code>Guardias</code> un CHECK para asegurar que el <b>id_guardia</b> sea positivo (>0).",
+        "query_solucion": "ALTER TABLE Guardias ADD CHECK (id_guardia > 0);"
+      }
+    ]
+  },
+  {
+    "id": 715,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT *",
+    "titulo": "Catálogo de Villanos",
+    "enunciado": "Muestra <b>todos</b> los registros de la tabla <code>Villanos</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Villanos;",
+    "puntos": 10,
+    "pista": "Utiliza el asterisco (*) para seleccionar todas las columnas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los registros de <code>Guardias</code>.",
+        "query_solucion": "SELECT * FROM Guardias;"
+      },
+      {
+        "enunciado": "Obtén toda la información de la tabla <code>Celdas</code>.",
+        "query_solucion": "SELECT * FROM Celdas;"
+      }
+    ]
+  },
+  {
+    "id": 716,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT Columnas",
+    "titulo": "Listado de diagnósticos",
+    "enunciado": "Obtén solo el <b>alias</b> y el <b>diagnostico</b> de todos los <code>Villanos</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT alias, diagnostico FROM Villanos;",
+    "puntos": 10,
+    "pista": "Separa los nombres de las columnas por comas en tu SELECT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y <b>turno</b> de todos los <code>Guardias</code>.",
+        "query_solucion": "SELECT nombre, turno FROM Guardias;"
+      },
+      {
+        "enunciado": "Obtén el <b>bloque</b> y <b>nivel_seguridad</b> de las <code>Celdas</code>.",
+        "query_solucion": "SELECT bloque, nivel_seguridad FROM Celdas;"
+      }
+    ]
+  },
+  {
+    "id": 717,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE =",
+    "titulo": "Los vigilantes nocturnos",
+    "enunciado": "Lista los <code>Guardias</code> cuyo <b>turno</b> sea exactamente <b>'Noche'</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Guardias WHERE turno = 'Noche';",
+    "puntos": 10,
+    "pista": "Utiliza la cláusula WHERE y comillas simples para el texto.",
+    "variaciones": [
+      {
+        "enunciado": "Lista los <code>Guardias</code> que trabajan en el turno de <b>'Mañana'</b>.",
+        "query_solucion": "SELECT * FROM Guardias WHERE turno = 'Mañana';"
+      },
+      {
+        "enunciado": "Encuentra la celda cuyo <b>bloque</b> sea <b>'A'</b>.",
+        "query_solucion": "SELECT * FROM Celdas WHERE bloque = 'A';"
+      }
+    ]
+  },
+  {
+    "id": 718,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE >",
+    "titulo": "Extrema Seguridad",
+    "enunciado": "Muestra las <code>Celdas</code> cuyo <b>nivel_seguridad</b> sea mayor que <b>3</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Celdas WHERE nivel_seguridad > 3;",
+    "puntos": 10,
+    "pista": "Usa el operador de comparación mayor que (>).",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las <code>Celdas</code> con <b>nivel_seguridad</b> menor a <b>5</b>.",
+        "query_solucion": "SELECT * FROM Celdas WHERE nivel_seguridad < 5;"
+      },
+      {
+        "enunciado": "Encuentra las <code>Celdas</code> donde el <b>nivel_seguridad</b> sea menor o igual a <b>3</b>.",
+        "query_solucion": "SELECT * FROM Celdas WHERE nivel_seguridad <= 3;"
+      }
+    ]
+  },
+  {
+    "id": 719,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "AND",
+    "titulo": "Celda B3",
+    "enunciado": "Busca las <code>Celdas</code> que sean del <b>bloque</b> 'B' <b>Y</b> tengan <b>nivel_seguridad</b> de 3.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Celdas WHERE bloque = 'B' AND nivel_seguridad = 3;",
+    "puntos": 15,
+    "pista": "Une las dos condiciones usando la palabra reservada AND.",
+    "variaciones": [
+      {
+        "enunciado": "Busca las <code>Celdas</code> del <b>bloque</b> 'C' con <b>nivel_seguridad</b> mayor a 4.",
+        "query_solucion": "SELECT * FROM Celdas WHERE bloque = 'C' AND nivel_seguridad > 4;"
+      },
+      {
+        "enunciado": "Encuentra los incidentes de <b>id_villano</b> 1 y <b>id_guardia</b> 2.",
+        "query_solucion": "SELECT * FROM Incidentes WHERE id_villano = 1 AND id_guardia = 2;"
+      }
+    ]
+  },
+  {
+    "id": 720,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "OR",
+    "titulo": "Turnos Extremos",
+    "enunciado": "Muestra los <code>Guardias</code> cuyo <b>turno</b> sea 'Noche' <b>O</b> 'Madrugada'.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Guardias WHERE turno = 'Noche' OR turno = 'Madrugada';",
+    "puntos": 15,
+    "pista": "Usa el operador lógico OR entre ambas condiciones.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>Guardias</code> en turno de 'Mañana' o 'Tarde'.",
+        "query_solucion": "SELECT * FROM Guardias WHERE turno = 'Mañana' OR turno = 'Tarde';"
+      },
+      {
+        "enunciado": "Muestra las celdas de <b>nivel_seguridad</b> 1 o 5.",
+        "query_solucion": "SELECT * FROM Celdas WHERE nivel_seguridad = 1 OR nivel_seguridad = 5;"
+      }
+    ]
+  },
+  {
+    "id": 721,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IN",
+    "titulo": "Los más buscados",
+    "enunciado": "Obtén los <code>Villanos</code> cuyo <b>alias</b> sea 'Joker', 'Dos Caras' o 'El Pingüino'.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Villanos WHERE alias IN ('Joker', 'Dos Caras', 'El Pingüino');",
+    "puntos": 15,
+    "pista": "La sintaxis es: IN ('valor1', 'valor2', ...)",
+    "variaciones": [
+      {
+        "enunciado": "Busca las celdas en los bloques 'A', 'B' o 'C'.",
+        "query_solucion": "SELECT * FROM Celdas WHERE bloque IN ('A', 'B', 'C');"
+      },
+      {
+        "enunciado": "Encuentra a los guardias con nombre 'Aaron Cash' o 'Frank Boles'.",
+        "query_solucion": "SELECT * FROM Guardias WHERE nombre IN ('Aaron Cash', 'Frank Boles');"
+      }
+    ]
+  },
+  {
+    "id": 722,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "BETWEEN",
+    "titulo": "Incidentes del Año",
+    "enunciado": "Muestra los <code>Incidentes</code> cuya <b>fecha</b> esté entre el '2023-01-01' y el '2023-12-31'.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Incidentes WHERE fecha BETWEEN '2023-01-01' AND '2023-12-31';",
+    "puntos": 15,
+    "pista": "Usa BETWEEN valor1 AND valor2.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las celdas con nivel_seguridad entre 2 y 4.",
+        "query_solucion": "SELECT * FROM Celdas WHERE nivel_seguridad BETWEEN 2 AND 4;"
+      },
+      {
+        "enunciado": "Muestra los incidentes de enero de 2024 ('2024-01-01' a '2024-01-31').",
+        "query_solucion": "SELECT * FROM Incidentes WHERE fecha BETWEEN '2024-01-01' AND '2024-01-31';"
+      }
+    ]
+  },
+  {
+    "id": 723,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIKE %",
+    "titulo": "Búsqueda por inicial",
+    "enunciado": "Encuentra los <code>Villanos</code> cuyo <b>alias</b> empiece por la letra <b>J</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Villanos WHERE alias LIKE 'J%';",
+    "puntos": 15,
+    "pista": "El carácter % representa cualquier secuencia de caracteres.",
+    "variaciones": [
+      {
+        "enunciado": "Busca los guardias cuyo <b>nombre</b> termine en <b>h</b>.",
+        "query_solucion": "SELECT * FROM Guardias WHERE nombre LIKE '%h';"
+      },
+      {
+        "enunciado": "Busca villanos que tengan la palabra <b>Caras</b> en su alias.",
+        "query_solucion": "SELECT * FROM Villanos WHERE alias LIKE '%Caras%';"
+      }
+    ]
+  },
+  {
+    "id": 724,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NULL",
+    "titulo": "Sin celda asignada",
+    "enunciado": "Muestra los <code>Villanos</code> que <b>no tienen asignada una celda</b> (id_celda es nulo).",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Villanos WHERE id_celda IS NULL;",
+    "puntos": 15,
+    "pista": "Usa IS NULL para comprobar si un valor falta.",
+    "variaciones": [
+      {
+        "enunciado": "Busca villanos cuyo <b>diagnostico</b> sea nulo.",
+        "query_solucion": "SELECT * FROM Villanos WHERE diagnostico IS NULL;"
+      },
+      {
+        "enunciado": "Encuentra los incidentes que no tengan <b>descripcion</b> registrada.",
+        "query_solucion": "SELECT * FROM Incidentes WHERE descripcion IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 725,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IS NOT NULL",
+    "titulo": "Con celda asignada",
+    "enunciado": "Muestra los <code>Villanos</code> que <b>sí tienen</b> una celda asignada (id_celda no es nulo).",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Villanos WHERE id_celda IS NOT NULL;",
+    "puntos": 15,
+    "pista": "Acompaña la condición con IS NOT NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Busca villanos que tengan un <b>diagnostico</b> asignado.",
+        "query_solucion": "SELECT * FROM Villanos WHERE diagnostico IS NOT NULL;"
+      },
+      {
+        "enunciado": "Encuentra los incidentes con una <b>descripcion</b> completada.",
+        "query_solucion": "SELECT * FROM Incidentes WHERE descripcion IS NOT NULL;"
+      }
+    ]
+  },
+  {
+    "id": 726,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY",
+    "titulo": "Guardias en Orden",
+    "enunciado": "Lista todos los <code>Guardias</code> ordenados por su <b>nombre</b> en orden alfabético.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Guardias ORDER BY nombre ASC;",
+    "puntos": 10,
+    "pista": "Usa ORDER BY columna ASC.",
+    "variaciones": [
+      {
+        "enunciado": "Lista los <code>Villanos</code> ordenados por <b>alias</b> en orden alfabético inverso.",
+        "query_solucion": "SELECT * FROM Villanos ORDER BY alias DESC;"
+      },
+      {
+        "enunciado": "Lista las <code>Celdas</code> ordenadas por <b>nivel_seguridad</b> de menor a mayor.",
+        "query_solucion": "SELECT * FROM Celdas ORDER BY nivel_seguridad ASC;"
+      }
+    ]
+  },
+  {
+    "id": 727,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Las 2 Celdas Top",
+    "enunciado": "Muestra las <b>2</b> <code>Celdas</code> con mayor <b>nivel_seguridad</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT * FROM Celdas ORDER BY nivel_seguridad DESC LIMIT 2;",
+    "puntos": 15,
+    "pista": "Combina ORDER BY DESC con LIMIT 2.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el villano con el <b>alias</b> que va primero alfabéticamente (LIMIT 1).",
+        "query_solucion": "SELECT * FROM Villanos ORDER BY alias ASC LIMIT 1;"
+      },
+      {
+        "enunciado": "Muestra los 3 incidentes más recientes.",
+        "query_solucion": "SELECT * FROM Incidentes ORDER BY fecha DESC LIMIT 3;"
+      }
+    ]
+  },
+  {
+    "id": 728,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Turnos Únicos",
+    "enunciado": "Obtén una lista de los <b>turnos</b> únicos que existen en la tabla de <code>Guardias</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT DISTINCT turno FROM Guardias;",
+    "puntos": 10,
+    "pista": "Añade DISTINCT justo después del SELECT.",
+    "variaciones": [
+      {
+        "enunciado": "Obtén los niveles de seguridad únicos que tienen las <code>Celdas</code>.",
+        "query_solucion": "SELECT DISTINCT nivel_seguridad FROM Celdas;"
+      },
+      {
+        "enunciado": "Lista las fechas únicas en las que ha habido <code>Incidentes</code>.",
+        "query_solucion": "SELECT DISTINCT fecha FROM Incidentes;"
+      }
+    ]
+  },
+  {
+    "id": 729,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Funciones Texto",
+    "titulo": "Gritando los Alias",
+    "enunciado": "Selecciona el <b>alias</b> de todos los <code>Villanos</code> y muéstralos en <b>MAYÚSCULAS</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT UPPER(alias) FROM Villanos;",
+    "puntos": 10,
+    "pista": "Usa la función UPPER().",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los <code>Guardias</code> en minúsculas.",
+        "query_solucion": "SELECT LOWER(nombre) FROM Guardias;"
+      },
+      {
+        "enunciado": "Muestra la longitud en caracteres del <b>diagnostico</b> de cada villano.",
+        "query_solucion": "SELECT LENGTH(diagnostico) FROM Villanos;"
+      }
+    ]
+  },
+  {
+    "id": 730,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Población Reclusa",
+    "enunciado": "Cuenta el <b>número total</b> de <code>Villanos</code> en Arkham.",
+    "bd": "arkham",
+    "query_solucion": "SELECT COUNT(*) FROM Villanos;",
+    "puntos": 20,
+    "pista": "Usa la función de agregación COUNT(*).",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta cuántos <code>Guardias</code> trabajan en Arkham.",
+        "query_solucion": "SELECT COUNT(*) FROM Guardias;"
+      },
+      {
+        "enunciado": "Cuenta el total de <code>Incidentes</code> registrados en la base de datos.",
+        "query_solucion": "SELECT COUNT(*) FROM Incidentes;"
+      }
+    ]
+  },
+  {
+    "id": 731,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM",
+    "titulo": "Seguridad Total",
+    "enunciado": "Calcula la <b>suma total</b> del <b>nivel_seguridad</b> de todas las <code>Celdas</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT SUM(nivel_seguridad) FROM Celdas;",
+    "puntos": 20,
+    "pista": "Usa la función matemática SUM().",
+    "variaciones": [
+      {
+        "enunciado": "Calcula la suma de los <b>id_villano</b> de todos los <code>Villanos</code> (como ejercicio numérico).",
+        "query_solucion": "SELECT SUM(id_villano) FROM Villanos;"
+      },
+      {
+        "enunciado": "Calcula la suma de los niveles de seguridad de las celdas del bloque 'A'.",
+        "query_solucion": "SELECT SUM(nivel_seguridad) FROM Celdas WHERE bloque = 'A';"
+      }
+    ]
+  },
+  {
+    "id": 732,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG",
+    "titulo": "Promedio de Peligro",
+    "enunciado": "Calcula el <b>promedio</b> del <b>nivel_seguridad</b> de las <code>Celdas</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT AVG(nivel_seguridad) FROM Celdas;",
+    "puntos": 20,
+    "pista": "Utiliza la función de agregación AVG().",
+    "variaciones": [
+      {
+        "enunciado": "Calcula el promedio del <b>id_guardia</b> de los <code>Guardias</code>.",
+        "query_solucion": "SELECT AVG(id_guardia) FROM Guardias;"
+      },
+      {
+        "enunciado": "Calcula el promedio de seguridad de las celdas con nivel mayor a 2.",
+        "query_solucion": "SELECT AVG(nivel_seguridad) FROM Celdas WHERE nivel_seguridad > 2;"
+      }
+    ]
+  },
+  {
+    "id": 733,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX",
+    "titulo": "Nivel Máximo",
+    "enunciado": "Encuentra el <b>nivel_seguridad máximo</b> entre todas las <code>Celdas</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT MAX(nivel_seguridad) FROM Celdas;",
+    "puntos": 20,
+    "pista": "Aplica MAX() sobre la columna deseada.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra el <b>id_villano</b> más alto registrado.",
+        "query_solucion": "SELECT MAX(id_villano) FROM Villanos;"
+      },
+      {
+        "enunciado": "Encuentra la fecha del incidente más reciente.",
+        "query_solucion": "SELECT MAX(fecha) FROM Incidentes;"
+      }
+    ]
+  },
+  {
+    "id": 734,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MIN",
+    "titulo": "El más débil",
+    "enunciado": "Encuentra el <b>nivel_seguridad mínimo</b> que existe en las <code>Celdas</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT MIN(nivel_seguridad) FROM Celdas;",
+    "puntos": 20,
+    "pista": "Aplica MIN() sobre la columna.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra el <b>id_guardia</b> más bajo en la plantilla.",
+        "query_solucion": "SELECT MIN(id_guardia) FROM Guardias;"
+      },
+      {
+        "enunciado": "Encuentra la fecha del incidente más antiguo registrado.",
+        "query_solucion": "SELECT MIN(fecha) FROM Incidentes;"
+      }
+    ]
+  },
+  {
+    "id": 735,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Reclusos por Celda",
+    "enunciado": "Cuenta <b>cuántos villanos</b> hay agrupados por <b>id_celda</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT id_celda, COUNT(*) FROM Villanos GROUP BY id_celda;",
+    "puntos": 25,
+    "pista": "Pon la columna en el SELECT y luego usa GROUP BY con esa misma columna.",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta el número de guardias agrupados por <b>turno</b>.",
+        "query_solucion": "SELECT turno, COUNT(*) FROM Guardias GROUP BY turno;"
+      },
+      {
+        "enunciado": "Cuenta el número de incidentes agrupados por <b>fecha</b>.",
+        "query_solucion": "SELECT fecha, COUNT(*) FROM Incidentes GROUP BY fecha;"
+      }
+    ]
+  },
+  {
+    "id": 736,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY WHERE",
+    "titulo": "Incidentes del Villano 1",
+    "enunciado": "Cuenta cuántos <code>Incidentes</code> hay por <b>id_guardia</b>, pero <b>solo</b> los del villano con <b>id_villano = 1</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT id_guardia, COUNT(*) FROM Incidentes WHERE id_villano = 1 GROUP BY id_guardia;",
+    "puntos": 25,
+    "pista": "Aplica la cláusula WHERE antes de GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta las celdas por bloque que tienen nivel de seguridad mayor a 2.",
+        "query_solucion": "SELECT bloque, COUNT(*) FROM Celdas WHERE nivel_seguridad > 2 GROUP BY bloque;"
+      },
+      {
+        "enunciado": "Cuenta incidentes por id_villano ocurridos después del 2023-01-01.",
+        "query_solucion": "SELECT id_villano, COUNT(*) FROM Incidentes WHERE fecha > '2023-01-01' GROUP BY id_villano;"
+      }
+    ]
+  },
+  {
+    "id": 737,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY HAVING",
+    "titulo": "Turnos concurridos",
+    "enunciado": "Muestra los <b>turnos</b> que tienen <b>más de 1 guardia</b> usando la tabla <code>Guardias</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT turno, COUNT(*) FROM Guardias GROUP BY turno HAVING COUNT(*) > 1;",
+    "puntos": 25,
+    "pista": "HAVING se usa para filtrar el resultado de una función de agregación después de agrupar.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las celdas (id_celda) que albergan a más de 1 villano.",
+        "query_solucion": "SELECT id_celda, COUNT(*) FROM Villanos GROUP BY id_celda HAVING COUNT(*) > 1;"
+      },
+      {
+        "enunciado": "Muestra los id_villano con 3 o más incidentes reportados.",
+        "query_solucion": "SELECT id_villano, COUNT(*) FROM Incidentes GROUP BY id_villano HAVING COUNT(*) >= 3;"
+      }
+    ]
+  },
+  {
+    "id": 738,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "Relación Villano y Celda",
+    "enunciado": "Muestra el <b>alias</b> de los villanos y el <b>bloque</b> de sus respectivas celdas.",
+    "bd": "arkham",
+    "query_solucion": "SELECT Villanos.alias, Celdas.bloque FROM Villanos INNER JOIN Celdas ON Villanos.id_celda = Celdas.id_celda;",
+    "puntos": 25,
+    "pista": "Une ambas tablas igualando el campo id_celda.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> de los guardias y la <b>fecha</b> de sus incidentes.",
+        "query_solucion": "SELECT Guardias.nombre, Incidentes.fecha FROM Incidentes INNER JOIN Guardias ON Incidentes.id_guardia = Guardias.id_guardia;"
+      },
+      {
+        "enunciado": "Obtén el <b>alias</b> de los villanos y la <b>fecha</b> de sus incidentes.",
+        "query_solucion": "SELECT Villanos.alias, Incidentes.fecha FROM Incidentes INNER JOIN Villanos ON Incidentes.id_villano = Villanos.id_villano;"
+      }
+    ]
+  },
+  {
+    "id": 739,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN WHERE",
+    "titulo": "Villanos en la Sección A",
+    "enunciado": "Obtén el <b>alias</b> de los villanos que están alojados en el bloque <b>'A'</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT Villanos.alias FROM Villanos INNER JOIN Celdas ON Villanos.id_celda = Celdas.id_celda WHERE Celdas.bloque = 'A';",
+    "puntos": 25,
+    "pista": "Añade un WHERE al final de tu INNER JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Obtén el <b>nombre</b> de los guardias con incidentes reportados en la fecha '2023-10-31'.",
+        "query_solucion": "SELECT Guardias.nombre FROM Guardias INNER JOIN Incidentes ON Guardias.id_guardia = Incidentes.id_guardia WHERE Incidentes.fecha = '2023-10-31';"
+      },
+      {
+        "enunciado": "Muestra las <b>fechas</b> de incidentes provocados por el villano con alias 'Joker'.",
+        "query_solucion": "SELECT Incidentes.fecha FROM Incidentes INNER JOIN Villanos ON Incidentes.id_villano = Villanos.id_villano WHERE Villanos.alias = 'Joker';"
+      }
+    ]
+  },
+  {
+    "id": 740,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN",
+    "titulo": "Todos los Villanos",
+    "enunciado": "Muestra el <b>alias</b> de <b>todos</b> los villanos y el <b>bloque</b> de su celda (si tienen).",
+    "bd": "arkham",
+    "query_solucion": "SELECT Villanos.alias, Celdas.bloque FROM Villanos LEFT JOIN Celdas ON Villanos.id_celda = Celdas.id_celda;",
+    "puntos": 25,
+    "pista": "Usa LEFT JOIN desde Villanos para que aparezcan todos, incluso si su celda es NULL.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra todos los guardias y las fechas de incidentes que tengan asignados (aunque no tengan ninguno).",
+        "query_solucion": "SELECT Guardias.nombre, Incidentes.fecha FROM Guardias LEFT JOIN Incidentes ON Guardias.id_guardia = Incidentes.id_guardia;"
+      },
+      {
+        "enunciado": "Muestra todos los bloques de celdas y los alias de los villanos alojados en ellas (aunque estén vacías).",
+        "query_solucion": "SELECT Celdas.bloque, Villanos.alias FROM Celdas LEFT JOIN Villanos ON Celdas.id_celda = Villanos.id_celda;"
+      }
+    ]
+  },
+  {
+    "id": 741,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "RIGHT JOIN",
+    "titulo": "Todos los Guardias",
+    "enunciado": "Muestra las <b>fechas</b> de incidentes y los <b>nombres</b> de los guardias implicados, asegurando que salgan todos los <code>Guardias</code> usando un RIGHT JOIN (desde Incidentes hacia Guardias).",
+    "bd": "arkham",
+    "query_solucion": "SELECT Incidentes.fecha, Guardias.nombre FROM Incidentes RIGHT JOIN Guardias ON Incidentes.id_guardia = Guardias.id_guardia;",
+    "puntos": 25,
+    "pista": "La tabla Guardias va a la derecha de la cláusula RIGHT JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los alias y los bloques, asegurando que todas las Celdas aparezcan (RIGHT JOIN desde Villanos).",
+        "query_solucion": "SELECT Villanos.alias, Celdas.bloque FROM Villanos RIGHT JOIN Celdas ON Villanos.id_celda = Celdas.id_celda;"
+      },
+      {
+        "enunciado": "Muestra las descripciones de incidentes y los alias, asegurando que todos los Villanos aparezcan (RIGHT JOIN).",
+        "query_solucion": "SELECT Incidentes.descripcion, Villanos.alias FROM Incidentes RIGHT JOIN Villanos ON Incidentes.id_villano = Villanos.id_villano;"
+      }
+    ]
+  },
+  {
+    "id": 742,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "Funciones Matemáticas",
+    "titulo": "Redondeando el Nivel",
+    "enunciado": "Calcula el promedio del <b>nivel_seguridad</b> de las celdas y <b>redondéalo</b> a 1 decimal.",
+    "bd": "arkham",
+    "query_solucion": "SELECT ROUND(AVG(nivel_seguridad), 1) FROM Celdas;",
+    "puntos": 20,
+    "pista": "La función ROUND() recibe dos parámetros: el número y la cantidad de decimales.",
+    "variaciones": [
+      {
+        "enunciado": "Divide el nivel de seguridad entre 2 y redondea al entero más cercano (0 decimales).",
+        "query_solucion": "SELECT ROUND(nivel_seguridad / 2, 0) FROM Celdas;"
+      },
+      {
+        "enunciado": "Encuentra el nivel de seguridad máximo y multiplícalo por 10.",
+        "query_solucion": "SELECT MAX(nivel_seguridad) * 10 FROM Celdas;"
+      }
+    ]
+  },
+  {
+    "id": 743,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "Fechas",
+    "titulo": "Años de Incidentes",
+    "enunciado": "Extrae solamente el <b>año</b> de la <b>fecha</b> de cada uno de los <code>Incidentes</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT YEAR(fecha) FROM Incidentes;",
+    "puntos": 20,
+    "pista": "En MySQL puedes usar la función YEAR().",
+    "variaciones": [
+      {
+        "enunciado": "Extrae solamente el mes de cada incidente.",
+        "query_solucion": "SELECT MONTH(fecha) FROM Incidentes;"
+      },
+      {
+        "enunciado": "Extrae el día de la fecha de cada incidente.",
+        "query_solucion": "SELECT DAY(fecha) FROM Incidentes;"
+      }
+    ]
+  },
+  {
+    "id": 744,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "CONCAT",
+    "titulo": "Expedientes Combinados",
+    "enunciado": "Crea una columna llamada <b>Ficha</b> uniendo el <b>alias</b> y el <b>diagnostico</b> de <code>Villanos</code> separados por un guion (-).",
+    "bd": "arkham",
+    "query_solucion": "SELECT CONCAT(alias, '-', diagnostico) AS Ficha FROM Villanos;",
+    "puntos": 20,
+    "pista": "Usa la función CONCAT(col1, 'texto', col2) y el alias AS.",
+    "variaciones": [
+      {
+        "enunciado": "Une bloque y nivel_seguridad de celdas separados por un espacio, nombrándolo como <b>FichaCelda</b>.",
+        "query_solucion": "SELECT CONCAT(bloque, ' ', nivel_seguridad) AS FichaCelda FROM Celdas;"
+      },
+      {
+        "enunciado": "Une nombre y turno de guardias separado por una coma, nombrándolo como <b>PerfilGuardia</b>.",
+        "query_solucion": "SELECT CONCAT(nombre, ',', turno) AS PerfilGuardia FROM Guardias;"
+      }
+    ]
+  },
+  {
+    "id": 745,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "LEFT JOIN IS NULL",
+    "titulo": "Celdas Vacías",
+    "enunciado": "Encuentra los <b>bloques</b> de las <code>Celdas</code> que <b>no tienen ningún villano</b> asignado.",
+    "bd": "arkham",
+    "query_solucion": "SELECT Celdas.bloque FROM Celdas LEFT JOIN Villanos ON Celdas.id_celda = Villanos.id_celda WHERE Villanos.id_villano IS NULL;",
+    "puntos": 35,
+    "pista": "Realiza un LEFT JOIN de Celdas hacia Villanos y filtra las filas donde falte el id_villano.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra el nombre de los guardias que nunca han reportado incidentes.",
+        "query_solucion": "SELECT Guardias.nombre FROM Guardias LEFT JOIN Incidentes ON Guardias.id_guardia = Incidentes.id_guardia WHERE Incidentes.id_incidente IS NULL;"
+      },
+      {
+        "enunciado": "Encuentra los alias de los villanos que no han protagonizado ningún incidente.",
+        "query_solucion": "SELECT Villanos.alias FROM Villanos LEFT JOIN Incidentes ON Villanos.id_villano = Incidentes.id_villano WHERE Incidentes.id_incidente IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 746,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN Múltiple",
+    "titulo": "El Triángulo del Incidente",
+    "enunciado": "Obtén la <b>descripcion</b> del incidente, el <b>alias</b> del villano involucrado y el <b>nombre</b> del guardia. Requiere unir las 3 tablas.",
+    "bd": "arkham",
+    "query_solucion": "SELECT Incidentes.descripcion, Villanos.alias, Guardias.nombre FROM Incidentes INNER JOIN Villanos ON Incidentes.id_villano = Villanos.id_villano INNER JOIN Guardias ON Incidentes.id_guardia = Guardias.id_guardia;",
+    "puntos": 35,
+    "pista": "Encadena dos cláusulas INNER JOIN a la tabla Incidentes.",
+    "variaciones": [
+      {
+        "enunciado": "Obtén la fecha del incidente y el bloque de celda del villano uniendo Incidentes, Villanos y Celdas.",
+        "query_solucion": "SELECT Incidentes.fecha, Celdas.bloque FROM Incidentes INNER JOIN Villanos ON Incidentes.id_villano = Villanos.id_villano INNER JOIN Celdas ON Villanos.id_celda = Celdas.id_celda;"
+      },
+      {
+        "enunciado": "Obtén el alias del villano, su diagnostico y el nivel de seguridad de su celda.",
+        "query_solucion": "SELECT Villanos.alias, Villanos.diagnostico, Celdas.nivel_seguridad FROM Villanos INNER JOIN Celdas ON Villanos.id_celda = Celdas.id_celda;"
+      }
+    ]
+  },
+  {
+    "id": 747,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN de 4 Tablas",
+    "titulo": "Reporte Global de Arkham",
+    "enunciado": "Obtén la <b>fecha</b>, el <b>alias</b> del villano, su <b>bloque</b> de celda y el <b>nombre</b> del guardia del incidente, pero <b>solo</b> para el <b>turno 'Mañana'</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT Incidentes.fecha, Villanos.alias, Celdas.bloque, Guardias.nombre FROM Incidentes INNER JOIN Villanos ON Incidentes.id_villano = Villanos.id_villano INNER JOIN Celdas ON Villanos.id_celda = Celdas.id_celda INNER JOIN Guardias ON Incidentes.id_guardia = Guardias.id_guardia WHERE Guardias.turno = 'Mañana';",
+    "puntos": 40,
+    "pista": "Encadena 3 JOINs desde Incidentes y filtra por Guardias.turno.",
+    "variaciones": [
+      {
+        "enunciado": "Obtén la misma información (fecha, alias, bloque, nombre) pero para incidentes ocurridos en el bloque 'C'.",
+        "query_solucion": "SELECT Incidentes.fecha, Villanos.alias, Celdas.bloque, Guardias.nombre FROM Incidentes INNER JOIN Villanos ON Incidentes.id_villano = Villanos.id_villano INNER JOIN Celdas ON Villanos.id_celda = Celdas.id_celda INNER JOIN Guardias ON Incidentes.id_guardia = Guardias.id_guardia WHERE Celdas.bloque = 'C';"
+      },
+      {
+        "enunciado": "Obtén descripcion, alias, nivel_seguridad y turno para los incidentes causados por el 'Joker'.",
+        "query_solucion": "SELECT Incidentes.descripcion, Villanos.alias, Celdas.nivel_seguridad, Guardias.turno FROM Incidentes INNER JOIN Villanos ON Incidentes.id_villano = Villanos.id_villano INNER JOIN Celdas ON Villanos.id_celda = Celdas.id_celda INNER JOIN Guardias ON Incidentes.id_guardia = Guardias.id_guardia WHERE Villanos.alias = 'Joker';"
+      }
+    ]
+  },
+  {
+    "id": 748,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP BY + HAVING + JOIN",
+    "titulo": "Guardias Estresados",
+    "enunciado": "Muestra el <b>nombre</b> de los <code>Guardias</code> y la <b>cantidad de incidentes</b> en los que están involucrados, <b>solo</b> aquellos con más de 2 incidentes.",
+    "bd": "arkham",
+    "query_solucion": "SELECT Guardias.nombre, COUNT(Incidentes.id_incidente) FROM Guardias INNER JOIN Incidentes ON Guardias.id_guardia = Incidentes.id_guardia GROUP BY Guardias.nombre HAVING COUNT(Incidentes.id_incidente) > 2;",
+    "puntos": 35,
+    "pista": "Une Guardias e Incidentes, agrupa por nombre y aplica HAVING sobre el COUNT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el bloque de la celda y la cantidad de villanos en ella, solo si alberga a más de 1.",
+        "query_solucion": "SELECT Celdas.bloque, COUNT(Villanos.id_villano) FROM Celdas INNER JOIN Villanos ON Celdas.id_celda = Villanos.id_celda GROUP BY Celdas.bloque HAVING COUNT(Villanos.id_villano) > 1;"
+      },
+      {
+        "enunciado": "Muestra el alias de villanos con más de 1 incidente registrado.",
+        "query_solucion": "SELECT Villanos.alias, COUNT(Incidentes.id_incidente) FROM Villanos INNER JOIN Incidentes ON Villanos.id_villano = Incidentes.id_villano GROUP BY Villanos.alias HAVING COUNT(Incidentes.id_incidente) > 1;"
+      }
+    ]
+  },
+  {
+    "id": 749,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en WHERE",
+    "titulo": "Villano de Máxima Seguridad",
+    "enunciado": "Encuentra el <b>alias</b> del villano alojado en la celda con el <b>nivel de seguridad más alto</b>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT alias FROM Villanos WHERE id_celda = (SELECT id_celda FROM Celdas ORDER BY nivel_seguridad DESC LIMIT 1);",
+    "puntos": 40,
+    "pista": "Haz una subconsulta en Celdas ordenada descendentemente con LIMIT 1 y úsala en el WHERE.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del guardia involucrado en el incidente más reciente.",
+        "query_solucion": "SELECT nombre FROM Guardias WHERE id_guardia = (SELECT id_guardia FROM Incidentes ORDER BY fecha DESC LIMIT 1);"
+      },
+      {
+        "enunciado": "Obtén los detalles de la celda cuyo nivel de seguridad es exactamente igual al máximo nivel de seguridad en toda la prisión.",
+        "query_solucion": "SELECT * FROM Celdas WHERE nivel_seguridad = (SELECT MAX(nivel_seguridad) FROM Celdas);"
+      }
+    ]
+  },
+  {
+    "id": 750,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta con IN",
+    "titulo": "Aislamiento Total",
+    "enunciado": "Obtén la <b>descripcion</b> de los <code>Incidentes</code> protagonizados por villanos que estén en celdas con un <b>nivel_seguridad</b> de 5.",
+    "bd": "arkham",
+    "query_solucion": "SELECT descripcion FROM Incidentes WHERE id_villano IN (SELECT id_villano FROM Villanos WHERE id_celda IN (SELECT id_celda FROM Celdas WHERE nivel_seguridad = 5));",
+    "puntos": 40,
+    "pista": "Anida dos subconsultas usando el operador IN.",
+    "variaciones": [
+      {
+        "enunciado": "Busca los nombres de los guardias que han tenido incidentes con el 'Joker'.",
+        "query_solucion": "SELECT nombre FROM Guardias WHERE id_guardia IN (SELECT id_guardia FROM Incidentes WHERE id_villano = (SELECT id_villano FROM Villanos WHERE alias = 'Joker'));"
+      },
+      {
+        "enunciado": "Obtén el alias de villanos que han tenido incidentes con un guardia del turno de 'Noche'.",
+        "query_solucion": "SELECT alias FROM Villanos WHERE id_villano IN (SELECT id_villano FROM Incidentes WHERE id_guardia IN (SELECT id_guardia FROM Guardias WHERE turno = 'Noche'));"
+      }
+    ]
+  },
+  {
+    "id": 751,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "CASE WHEN",
+    "titulo": "Clasificador de Peligrosidad",
+    "enunciado": "Lista los <b>bloques</b> y añade una columna <b>Gravedad</b>: Si el nivel_seguridad > 3 pon 'Peligro Alto', si no, pon 'Normal'.",
+    "bd": "arkham",
+    "query_solucion": "SELECT bloque, CASE WHEN nivel_seguridad > 3 THEN 'Peligro Alto' ELSE 'Normal' END AS Gravedad FROM Celdas;",
+    "puntos": 35,
+    "pista": "Usa la sintaxis CASE WHEN condición THEN valor_si_cumple ELSE valor_si_no END.",
+    "variaciones": [
+      {
+        "enunciado": "Lista los nombres de guardias y si su turno es 'Noche' pon 'Vampiro', sino 'Diurno'.",
+        "query_solucion": "SELECT nombre, CASE WHEN turno = 'Noche' THEN 'Vampiro' ELSE 'Diurno' END AS Tipo FROM Guardias;"
+      },
+      {
+        "enunciado": "Lista a los villanos, y si diagnostico es NULL pon 'Sano', sino 'Enfermo'.",
+        "query_solucion": "SELECT alias, CASE WHEN diagnostico IS NULL THEN 'Sano' ELSE 'Enfermo' END AS Estado FROM Villanos;"
+      }
+    ]
+  },
+  {
+    "id": 752,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "UNION",
+    "titulo": "Censo del Asilo",
+    "enunciado": "Obtén una lista combinada que contenga los <b>alias</b> de todos los <code>Villanos</code> y los <b>nombres</b> de los <code>Guardias</code> en una sola columna llamada 'Personajes'.",
+    "bd": "arkham",
+    "query_solucion": "SELECT alias AS Personajes FROM Villanos UNION SELECT nombre FROM Guardias;",
+    "puntos": 35,
+    "pista": "Asegúrate de que ambas sentencias SELECT devuelvan solo una columna antes de unirlas con UNION.",
+    "variaciones": [
+      {
+        "enunciado": "Obtén el turno de los Guardias y el diagnostico de Villanos combinados en una columna llamada 'Texto'.",
+        "query_solucion": "SELECT turno AS Texto FROM Guardias UNION SELECT diagnostico FROM Villanos;"
+      },
+      {
+        "enunciado": "Combina el bloque de celdas con el alias de villanos en una sola columna llamada 'Identificador'.",
+        "query_solucion": "SELECT bloque AS Identificador FROM Celdas UNION SELECT alias FROM Villanos;"
+      }
+    ]
+  },
+  {
+    "id": 753,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta en SELECT",
+    "titulo": "Proporción de Crisis",
+    "enunciado": "Muestra el <b>nombre</b> de los guardias y una columna calculada que diga el número <b>total de incidentes</b> en toda la prisión (usando un SELECT interno).",
+    "bd": "arkham",
+    "query_solucion": "SELECT nombre, (SELECT COUNT(*) FROM Incidentes) AS total_incidentes FROM Guardias;",
+    "puntos": 35,
+    "pista": "Inserta un (SELECT COUNT(*) FROM ...) dentro de la lista de columnas seleccionadas.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los alias de los villanos y en otra columna el nivel de seguridad máximo registrado en la prisión.",
+        "query_solucion": "SELECT alias, (SELECT MAX(nivel_seguridad) FROM Celdas) FROM Villanos;"
+      },
+      {
+        "enunciado": "Muestra el bloque de cada celda y al lado el total de villanos recluidos globalmente en el asilo.",
+        "query_solucion": "SELECT bloque, (SELECT COUNT(*) FROM Villanos) FROM Celdas;"
+      }
+    ]
+  },
+  {
+    "id": 754,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT IN Subconsulta",
+    "titulo": "Prisioneros Ejemplares",
+    "enunciado": "Usa una subconsulta con <b>NOT IN</b> para encontrar los <b>alias</b> de <code>Villanos</code> que no aparecen en la tabla de <code>Incidentes</code>.",
+    "bd": "arkham",
+    "query_solucion": "SELECT alias FROM Villanos WHERE id_villano NOT IN (SELECT id_villano FROM Incidentes);",
+    "puntos": 35,
+    "pista": "Escribe WHERE campo NOT IN (SELECT campo FROM...).",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra los guardias que nunca han registrado incidentes utilizando NOT IN.",
+        "query_solucion": "SELECT nombre FROM Guardias WHERE id_guardia NOT IN (SELECT id_guardia FROM Incidentes);"
+      },
+      {
+        "enunciado": "Encuentra bloques de celdas que no alojan a ningún villano usando NOT IN.",
+        "query_solucion": "SELECT bloque FROM Celdas WHERE id_celda NOT IN (SELECT id_celda FROM Villanos WHERE id_celda IS NOT NULL);"
+      }
+    ]
+  },
+  {
+    "id": 755,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "EXISTS",
+    "titulo": "Guardias en Acción",
+    "enunciado": "Encuentra los <b>nombres</b> de guardias para los cuales <b>existe</b> al menos un incidente registrado usando la cláusula EXISTS.",
+    "bd": "arkham",
+    "query_solucion": "SELECT nombre FROM Guardias g WHERE EXISTS (SELECT 1 FROM Incidentes i WHERE i.id_guardia = g.id_guardia);",
+    "puntos": 35,
+    "pista": "La subconsulta en EXISTS debe relacionarse con la tabla externa (g.id_guardia = i.id_guardia).",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra a los villanos que tienen alguna celda asignada usando EXISTS.",
+        "query_solucion": "SELECT alias FROM Villanos v WHERE EXISTS (SELECT 1 FROM Celdas c WHERE c.id_celda = v.id_celda);"
+      },
+      {
+        "enunciado": "Encuentra bloques de celdas que albergan villanos usando EXISTS.",
+        "query_solucion": "SELECT bloque FROM Celdas c WHERE EXISTS (SELECT 1 FROM Villanos v WHERE v.id_celda = c.id_celda);"
+      }
+    ]
+  },
+  {
+    "id": 756,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Consulta Correlacionada",
+    "titulo": "El Último Desastre",
+    "enunciado": "Encuentra los villanos y la fecha de su incidente más reciente (comparando la fecha con el MAX(fecha) para ese mismo villano).",
+    "bd": "arkham",
+    "query_solucion": "SELECT v.alias, i.fecha FROM Villanos v INNER JOIN Incidentes i ON v.id_villano = i.id_villano WHERE i.fecha = (SELECT MAX(fecha) FROM Incidentes i2 WHERE i2.id_villano = v.id_villano);",
+    "puntos": 40,
+    "pista": "La subconsulta en el WHERE debe filtrar por i2.id_villano = v.id_villano.",
+    "variaciones": [
+      {
+        "enunciado": "Encuentra a cada guardia junto con la fecha de su primer incidente atendido.",
+        "query_solucion": "SELECT g.nombre, i.fecha FROM Guardias g INNER JOIN Incidentes i ON g.id_guardia = i.id_guardia WHERE i.fecha = (SELECT MIN(fecha) FROM Incidentes i2 WHERE i2.id_guardia = g.id_guardia);"
+      },
+      {
+        "enunciado": "Muestra los villanos alojados en la celda con el mayor nivel de seguridad de la prisión.",
+        "query_solucion": "SELECT v.alias FROM Villanos v INNER JOIN Celdas c ON v.id_celda = c.id_celda WHERE c.nivel_seguridad = (SELECT MAX(nivel_seguridad) FROM Celdas c2);"
+      }
+    ]
+  },
+  {
+    "id": 757,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "GROUP_CONCAT",
+    "titulo": "Lista de Peligrosos",
+    "enunciado": "Para cada <b>bloque</b> de celda, muestra todos los <b>alias</b> de los villanos ahí alojados, separados por coma.",
+    "bd": "arkham",
+    "query_solucion": "SELECT Celdas.bloque, GROUP_CONCAT(Villanos.alias) FROM Celdas INNER JOIN Villanos ON Celdas.id_celda = Villanos.id_celda GROUP BY Celdas.bloque;",
+    "puntos": 40,
+    "pista": "GROUP_CONCAT es una función de agregación que combina valores en un texto.",
+    "variaciones": [
+      {
+        "enunciado": "Para cada guardia, muestra todas las fechas de sus incidentes concatenadas.",
+        "query_solucion": "SELECT Guardias.nombre, GROUP_CONCAT(Incidentes.fecha) FROM Guardias INNER JOIN Incidentes ON Guardias.id_guardia = Incidentes.id_guardia GROUP BY Guardias.nombre;"
+      },
+      {
+        "enunciado": "Para cada villano, concatena las descripciones de sus incidentes separados por comas.",
+        "query_solucion": "SELECT Villanos.alias, GROUP_CONCAT(Incidentes.descripcion) FROM Villanos INNER JOIN Incidentes ON Villanos.id_villano = Incidentes.id_villano GROUP BY Villanos.alias;"
+      }
+    ]
+  },
+  {
+    "id": 758,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Self JOIN",
+    "titulo": "Compañeros de Turno",
+    "enunciado": "Busca parejas de <code>Guardias</code> (nombre1, nombre2) que trabajan en el <b>mismo turno</b>. Usa un Self JOIN para evitar cruzar al guardia consigo mismo.",
+    "bd": "arkham",
+    "query_solucion": "SELECT g1.nombre, g2.nombre FROM Guardias g1 INNER JOIN Guardias g2 ON g1.turno = g2.turno AND g1.id_guardia < g2.id_guardia;",
+    "puntos": 40,
+    "pista": "Haz un JOIN de Guardias con Guardias, iguala el turno y usa '<' con los IDs.",
+    "variaciones": [
+      {
+        "enunciado": "Busca parejas de villanos que estén en la misma celda.",
+        "query_solucion": "SELECT v1.alias, v2.alias FROM Villanos v1 INNER JOIN Villanos v2 ON v1.id_celda = v2.id_celda AND v1.id_villano < v2.id_villano;"
+      },
+      {
+        "enunciado": "Busca parejas de celdas que tengan el mismo nivel de seguridad.",
+        "query_solucion": "SELECT c1.bloque, c2.bloque FROM Celdas c1 INNER JOIN Celdas c2 ON c1.nivel_seguridad = c2.nivel_seguridad AND c1.id_celda < c2.id_celda;"
+      }
+    ]
+  },
+  {
+    "id": 759,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN Múltiple con COUNT DISTINCT",
+    "titulo": "Red de Confrontaciones",
+    "enunciado": "Para cada <b>alias</b> de villano, cuenta con cuántos guardias <b>distintos</b> ha tenido incidentes.",
+    "bd": "arkham",
+    "query_solucion": "SELECT Villanos.alias, COUNT(DISTINCT Incidentes.id_guardia) FROM Villanos INNER JOIN Incidentes ON Villanos.id_villano = Incidentes.id_villano GROUP BY Villanos.alias;",
+    "puntos": 40,
+    "pista": "Usa COUNT(DISTINCT columna) para no contar duplicados al agrupar.",
+    "variaciones": [
+      {
+        "enunciado": "Para cada guardia, cuenta a cuántos villanos distintos ha detenido en un incidente.",
+        "query_solucion": "SELECT Guardias.nombre, COUNT(DISTINCT Incidentes.id_villano) FROM Guardias INNER JOIN Incidentes ON Guardias.id_guardia = Incidentes.id_guardia GROUP BY Guardias.nombre;"
+      },
+      {
+        "enunciado": "Cuenta cuántas celdas distintas albergan a villanos involucrados en algún incidente.",
+        "query_solucion": "SELECT COUNT(DISTINCT Villanos.id_celda) FROM Villanos INNER JOIN Incidentes ON Villanos.id_villano = Incidentes.id_villano;"
+      }
+    ]
+  },
+  {
+    "id": 760,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Crear tabla Monstruos",
+    "enunciado": "Crea una tabla llamada <code>Monstruos</code> con <code>id_monstruo</code> como entero y clave primaria, y <code>nombre</code> como VARCHAR de 100.",
+    "bd": "dnd",
+    "query_solucion": "CREATE TABLE Monstruos (id_monstruo INT PRIMARY KEY, nombre VARCHAR(100));",
+    "puntos": 10,
+    "pista": "No olvides PRIMARY KEY.",
+    "variaciones": [
+      {
+        "enunciado": "Crea una tabla llamada <code>Ubicaciones</code> con <code>id_ubicacion</code> INT como clave primaria y <code>nombre</code> VARCHAR(150).",
+        "query_solucion": "CREATE TABLE Ubicaciones (id_ubicacion INT PRIMARY KEY, nombre VARCHAR(150));"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Facciones</code> con <code>id_faccion</code> INT como clave primaria y <code>descripcion</code> VARCHAR(200).",
+        "query_solucion": "CREATE TABLE Facciones (id_faccion INT PRIMARY KEY, descripcion VARCHAR(200));"
+      }
+    ]
+  },
+  {
+    "id": 761,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Tabla Razas (NOT NULL y UNIQUE)",
+    "enunciado": "Crea la tabla <code>Razas</code> con <code>id_raza</code> (INT, PK) y <code>nombre</code> (VARCHAR 50) que no permita nulos y deba ser único.",
+    "bd": "dnd",
+    "query_solucion": "CREATE TABLE Razas (id_raza INT PRIMARY KEY, nombre VARCHAR(50) NOT NULL UNIQUE);",
+    "puntos": 15,
+    "pista": "Combina NOT NULL y UNIQUE.",
+    "variaciones": [
+      {
+        "enunciado": "Crea la tabla <code>Deidades</code> con <code>id_deidad</code> (INT, PK) y <code>nombre</code> (VARCHAR 50) que no sea nulo y sea único.",
+        "query_solucion": "CREATE TABLE Deidades (id_deidad INT PRIMARY KEY, nombre VARCHAR(50) NOT NULL UNIQUE);"
+      },
+      {
+        "enunciado": "Crea la tabla <code>Trasfondos</code> con <code>id_trasfondo</code> (INT, PK) y <code>nombre</code> (VARCHAR 50) NOT NULL y UNIQUE.",
+        "query_solucion": "CREATE TABLE Trasfondos (id_trasfondo INT PRIMARY KEY, nombre VARCHAR(50) NOT NULL UNIQUE);"
+      }
+    ]
+  },
+  {
+    "id": 762,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Tabla Armas (DEFAULT)",
+    "enunciado": "Crea <code>Armas</code> con <code>id_arma</code> (INT, PK), <code>nombre</code> (VARCHAR 50) y <code>dano</code> (VARCHAR 10) por defecto '1d4'.",
+    "bd": "dnd",
+    "query_solucion": "CREATE TABLE Armas (id_arma INT PRIMARY KEY, nombre VARCHAR(50), dano VARCHAR(10) DEFAULT '1d4');",
+    "puntos": 15,
+    "pista": "Usa la palabra reservada DEFAULT.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Armaduras</code> con <code>id_armadura</code> (INT, PK), <code>nombre</code> (VARCHAR 50) y <code>ca</code> (INT) por defecto 10.",
+        "query_solucion": "CREATE TABLE Armaduras (id_armadura INT PRIMARY KEY, nombre VARCHAR(50), ca INT DEFAULT 10);"
+      },
+      {
+        "enunciado": "Crea <code>Pociones</code> con <code>id_pocion</code> (INT, PK), <code>nombre</code> (VARCHAR 50) y <code>curacion</code> (VARCHAR 10) por defecto '2d4'.",
+        "query_solucion": "CREATE TABLE Pociones (id_pocion INT PRIMARY KEY, nombre VARCHAR(50), curacion VARCHAR(10) DEFAULT '2d4');"
+      }
+    ]
+  },
+  {
+    "id": 763,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Tabla Monstruo_Ubicacion (FK)",
+    "enunciado": "Crea <code>Monstruo_Ubicacion</code> con <code>id_monstruo</code> INT e <code>id_ubicacion</code> INT. Define <code>id_monstruo</code> como FK hacia <code>Monstruos(id_monstruo)</code>.",
+    "bd": "dnd",
+    "query_solucion": "CREATE TABLE Monstruo_Ubicacion (id_monstruo INT, id_ubicacion INT, FOREIGN KEY (id_monstruo) REFERENCES Monstruos(id_monstruo));",
+    "puntos": 15,
+    "pista": "FOREIGN KEY (...) REFERENCES ...",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Personaje_Faccion</code> con <code>id_personaje</code> INT e <code>id_faccion</code> INT. Haz que <code>id_personaje</code> referencie a <code>Personajes(id_personaje)</code>.",
+        "query_solucion": "CREATE TABLE Personaje_Faccion (id_personaje INT, id_faccion INT, FOREIGN KEY (id_personaje) REFERENCES Personajes(id_personaje));"
+      },
+      {
+        "enunciado": "Crea <code>Hechizo_Clase</code> con <code>id_hechizo</code> INT e <code>id_clase</code> INT. Haz que <code>id_clase</code> referencie a <code>Clases(id_clase)</code>.",
+        "query_solucion": "CREATE TABLE Hechizo_Clase (id_hechizo INT, id_clase INT, FOREIGN KEY (id_clase) REFERENCES Clases(id_clase));"
+      }
+    ]
+  },
+  {
+    "id": 764,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE",
+    "titulo": "Añadir alineamiento",
+    "enunciado": "Modifica la tabla <code>Personajes</code> para añadir una nueva columna <code>alineamiento</code> de tipo VARCHAR(20).",
+    "bd": "dnd",
+    "query_solucion": "ALTER TABLE Personajes ADD COLUMN alineamiento VARCHAR(20);",
+    "puntos": 10,
+    "pista": "Usa ALTER TABLE y ADD COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la tabla <code>Clases</code> añadiendo la columna <code>descripcion</code> de tipo VARCHAR(200).",
+        "query_solucion": "ALTER TABLE Clases ADD COLUMN descripcion VARCHAR(200);"
+      },
+      {
+        "enunciado": "Modifica la tabla <code>Hechizos</code> añadiendo la columna <code>tiempo_lanzamiento</code> de tipo VARCHAR(50).",
+        "query_solucion": "ALTER TABLE Hechizos ADD COLUMN tiempo_lanzamiento VARCHAR(50);"
+      }
+    ]
+  },
+  {
+    "id": 765,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE",
+    "titulo": "Modificar tipo de dato",
+    "enunciado": "Modifica la columna <code>nombre</code> en la tabla <code>Personajes</code> para que ahora sea VARCHAR(150).",
+    "bd": "dnd",
+    "query_solucion": "ALTER TABLE Personajes MODIFY COLUMN nombre VARCHAR(150);",
+    "puntos": 15,
+    "pista": "Usa MODIFY COLUMN o ALTER COLUMN según el dialecto, pero usaremos MODIFY COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Modifica la columna <code>nombre</code> en <code>Clases</code> para que sea VARCHAR(100).",
+        "query_solucion": "ALTER TABLE Clases MODIFY COLUMN nombre VARCHAR(100);"
+      },
+      {
+        "enunciado": "Modifica la columna <code>escuela</code> en <code>Hechizos</code> a VARCHAR(100).",
+        "query_solucion": "ALTER TABLE Hechizos MODIFY COLUMN escuela VARCHAR(100);"
+      }
+    ]
+  },
+  {
+    "id": 766,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE",
+    "titulo": "Eliminar columna",
+    "enunciado": "Elimina la columna <code>dado_golpe</code> de la tabla <code>Clases</code>.",
+    "bd": "dnd",
+    "query_solucion": "ALTER TABLE Clases DROP COLUMN dado_golpe;",
+    "puntos": 10,
+    "pista": "Usa DROP COLUMN.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la columna <code>escuela</code> de la tabla <code>Hechizos</code>.",
+        "query_solucion": "ALTER TABLE Hechizos DROP COLUMN escuela;"
+      },
+      {
+        "enunciado": "Elimina la columna <code>nivel</code> de la tabla <code>Personajes</code>.",
+        "query_solucion": "ALTER TABLE Personajes DROP COLUMN nivel;"
+      }
+    ]
+  },
+  {
+    "id": 767,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "RENAME",
+    "titulo": "Renombrar tabla",
+    "enunciado": "Renombra la tabla <code>Hechizos</code> para que se llame <code>Conjuros</code>.",
+    "bd": "dnd",
+    "query_solucion": "RENAME TABLE Hechizos TO Conjuros;",
+    "puntos": 10,
+    "pista": "RENAME TABLE antigua TO nueva",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la tabla <code>Clases</code> a <code>Profesiones</code>.",
+        "query_solucion": "RENAME TABLE Clases TO Profesiones;"
+      },
+      {
+        "enunciado": "Renombra la tabla <code>Personajes</code> a <code>Heroes</code>.",
+        "query_solucion": "RENAME TABLE Personajes TO Heroes;"
+      }
+    ]
+  },
+  {
+    "id": 768,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "DROP TABLE",
+    "titulo": "Borrar tabla",
+    "enunciado": "Elimina por completo la tabla <code>Libro_Hechizos</code> de la base de datos.",
+    "bd": "dnd",
+    "query_solucion": "DROP TABLE Libro_Hechizos;",
+    "puntos": 10,
+    "pista": "Cuidado con DROP TABLE.",
+    "variaciones": [
+      {
+        "enunciado": "Elimina la tabla <code>Monstruos</code> (asumiendo que existe).",
+        "query_solucion": "DROP TABLE Monstruos;"
+      },
+      {
+        "enunciado": "Elimina la tabla <code>Facciones</code>.",
+        "query_solucion": "DROP TABLE Facciones;"
+      }
+    ]
+  },
+  {
+    "id": 769,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Campañas y tipos",
+    "enunciado": "Crea la tabla <code>Campanas</code> con <code>id</code> INT PK, <code>nombre</code> VARCHAR(50), <code>activa</code> BOOLEAN y <code>fecha_inicio</code> DATE.",
+    "bd": "dnd",
+    "query_solucion": "CREATE TABLE Campanas (id INT PRIMARY KEY, nombre VARCHAR(50), activa BOOLEAN, fecha_inicio DATE);",
+    "puntos": 15,
+    "pista": "Usa BOOLEAN y DATE.",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Misiones</code> con <code>id</code> INT PK, <code>titulo</code> VARCHAR(50), <code>completada</code> BOOLEAN y <code>fecha_entrega</code> DATE.",
+        "query_solucion": "CREATE TABLE Misiones (id INT PRIMARY KEY, titulo VARCHAR(50), completada BOOLEAN, fecha_entrega DATE);"
+      },
+      {
+        "enunciado": "Crea <code>Diario</code> con <code>id</code> INT PK, <code>entrada</code> VARCHAR(100), <code>es_publico</code> BOOLEAN y <code>fecha_registro</code> DATE.",
+        "query_solucion": "CREATE TABLE Diario (id INT PRIMARY KEY, entrada VARCHAR(100), es_publico BOOLEAN, fecha_registro DATE);"
+      }
+    ]
+  },
+  {
+    "id": 770,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE",
+    "titulo": "Añadir restricción UNIQUE",
+    "enunciado": "Añade una restricción UNIQUE a la columna <code>nombre</code> de la tabla <code>Personajes</code>.",
+    "bd": "dnd",
+    "query_solucion": "ALTER TABLE Personajes ADD CONSTRAINT UNIQUE (nombre);",
+    "puntos": 15,
+    "pista": "ADD CONSTRAINT UNIQUE.",
+    "variaciones": [
+      {
+        "enunciado": "Añade una restricción UNIQUE a la columna <code>nombre</code> de la tabla <code>Clases</code>.",
+        "query_solucion": "ALTER TABLE Clases ADD CONSTRAINT UNIQUE (nombre);"
+      },
+      {
+        "enunciado": "Añade una restricción UNIQUE a la columna <code>nombre</code> de la tabla <code>Hechizos</code>.",
+        "query_solucion": "ALTER TABLE Hechizos ADD CONSTRAINT UNIQUE (nombre);"
+      }
+    ]
+  },
+  {
+    "id": 771,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Tabla Inventario (PK Compuesta)",
+    "enunciado": "Crea <code>Inventario</code> con <code>id_personaje</code> INT, <code>id_objeto</code> INT, y haz que la clave primaria sean ambas columnas juntas.",
+    "bd": "dnd",
+    "query_solucion": "CREATE TABLE Inventario (id_personaje INT, id_objeto INT, PRIMARY KEY (id_personaje, id_objeto));",
+    "puntos": 15,
+    "pista": "PRIMARY KEY (col1, col2)",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Hechizos_Preparados</code> con <code>id_personaje</code> INT e <code>id_hechizo</code> INT, siendo ambas la clave primaria.",
+        "query_solucion": "CREATE TABLE Hechizos_Preparados (id_personaje INT, id_hechizo INT, PRIMARY KEY (id_personaje, id_hechizo));"
+      },
+      {
+        "enunciado": "Crea <code>Grupo_Aventureros</code> con <code>id_grupo</code> INT e <code>id_personaje</code> INT, formando ambas la clave primaria.",
+        "query_solucion": "CREATE TABLE Grupo_Aventureros (id_grupo INT, id_personaje INT, PRIMARY KEY (id_grupo, id_personaje));"
+      }
+    ]
+  },
+  {
+    "id": 772,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE",
+    "titulo": "Renombrar columna",
+    "enunciado": "Renombra la columna <code>nombre</code> en <code>Personajes</code> a <code>nombre_personaje</code> usando ALTER TABLE RENAME COLUMN.",
+    "bd": "dnd",
+    "query_solucion": "ALTER TABLE Personajes RENAME COLUMN nombre TO nombre_personaje;",
+    "puntos": 10,
+    "pista": "RENAME COLUMN antigua TO nueva",
+    "variaciones": [
+      {
+        "enunciado": "Renombra la columna <code>nivel</code> en <code>Personajes</code> a <code>nivel_actual</code>.",
+        "query_solucion": "ALTER TABLE Personajes RENAME COLUMN nivel TO nivel_actual;"
+      },
+      {
+        "enunciado": "Renombra la columna <code>escuela</code> en <code>Hechizos</code> a <code>escuela_magia</code>.",
+        "query_solucion": "ALTER TABLE Hechizos RENAME COLUMN escuela TO escuela_magia;"
+      }
+    ]
+  },
+  {
+    "id": 773,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "CREATE TABLE",
+    "titulo": "Tabla con CHECK",
+    "enunciado": "Crea la tabla <code>Objetos</code> con <code>id_objeto</code> INT PK, <code>nombre</code> VARCHAR(50) y <code>peso</code> INT con un <b>CHECK</b> para que sea mayor que 0.",
+    "bd": "dnd",
+    "query_solucion": "CREATE TABLE Objetos (id_objeto INT PRIMARY KEY, nombre VARCHAR(50), peso INT CHECK (peso > 0));",
+    "puntos": 15,
+    "pista": "Usa CHECK (condicion)",
+    "variaciones": [
+      {
+        "enunciado": "Crea <code>Mercenarios</code> con <code>id_mercenario</code> INT PK, <code>nombre</code> VARCHAR(50) y <code>coste</code> INT CHECK mayor a 5.",
+        "query_solucion": "CREATE TABLE Mercenarios (id_mercenario INT PRIMARY KEY, nombre VARCHAR(50), coste INT CHECK (coste > 5));"
+      },
+      {
+        "enunciado": "Crea <code>Monturas</code> con <code>id_montura</code> INT PK, <code>nombre</code> VARCHAR(50) y <code>velocidad</code> INT CHECK mayor a 20.",
+        "query_solucion": "CREATE TABLE Monturas (id_montura INT PRIMARY KEY, nombre VARCHAR(50), velocidad INT CHECK (velocidad > 20));"
+      }
+    ]
+  },
+  {
+    "id": 774,
+    "bloque_id": 1,
+    "grupo": "DDL",
+    "tema": "ALTER TABLE",
+    "titulo": "Añadir Clave Foránea",
+    "enunciado": "Modifica <code>Personajes</code> para añadir una clave foránea en <code>id_clase</code> que referencie a <code>Clases(id_clase)</code>.",
+    "bd": "dnd",
+    "query_solucion": "ALTER TABLE Personajes ADD FOREIGN KEY (id_clase) REFERENCES Clases(id_clase);",
+    "puntos": 15,
+    "pista": "ADD FOREIGN KEY",
+    "variaciones": [
+      {
+        "enunciado": "Supón que <code>Inventario</code> tiene <code>id_personaje</code>. Modifícala para que sea FK hacia <code>Personajes(id_personaje)</code>.",
+        "query_solucion": "ALTER TABLE Inventario ADD FOREIGN KEY (id_personaje) REFERENCES Personajes(id_personaje);"
+      },
+      {
+        "enunciado": "Supón que <code>Monstruo_Ubicacion</code> tiene <code>id_monstruo</code>. Modifícala para añadir FK hacia <code>Monstruos(id_monstruo)</code>.",
+        "query_solucion": "ALTER TABLE Monstruo_Ubicacion ADD FOREIGN KEY (id_monstruo) REFERENCES Monstruos(id_monstruo);"
+      }
+    ]
+  },
+  {
+    "id": 775,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT",
+    "titulo": "Todos los hechizos",
+    "enunciado": "Muestra toda la información de la tabla <code>Hechizos</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Hechizos;",
+    "puntos": 10,
+    "pista": "Usa el asterisco *",
+    "variaciones": [
+      {
+        "enunciado": "Muestra toda la información de la tabla <code>Clases</code>.",
+        "query_solucion": "SELECT * FROM Clases;"
+      },
+      {
+        "enunciado": "Muestra todos los datos de la tabla <code>Personajes</code>.",
+        "query_solucion": "SELECT * FROM Personajes;"
+      }
+    ]
+  },
+  {
+    "id": 776,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "SELECT",
+    "titulo": "Columnas específicas",
+    "enunciado": "Muestra únicamente el <b>nombre</b> y el <b>nivel</b> de todos los <code>Personajes</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre, nivel FROM Personajes;",
+    "puntos": 10,
+    "pista": "Separa las columnas por coma.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <b>nombre</b> y el <b>dado_golpe</b> de todas las <code>Clases</code>.",
+        "query_solucion": "SELECT nombre, dado_golpe FROM Clases;"
+      },
+      {
+        "enunciado": "Muestra el <b>nombre</b> y la <b>escuela</b> de todos los <code>Hechizos</code>.",
+        "query_solucion": "SELECT nombre, escuela FROM Hechizos;"
+      }
+    ]
+  },
+  {
+    "id": 777,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE",
+    "titulo": "Hechizos nivel 2",
+    "enunciado": "Muestra todos los datos de los <code>Hechizos</code> que sean exactamente de nivel_hechizo 2.",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Hechizos WHERE nivel_hechizo = 2;",
+    "puntos": 10,
+    "pista": "Usa WHERE",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>Hechizos</code> que sean de nivel_hechizo 0.",
+        "query_solucion": "SELECT * FROM Hechizos WHERE nivel_hechizo = 0;"
+      },
+      {
+        "enunciado": "Muestra los <code>Hechizos</code> de nivel_hechizo 3.",
+        "query_solucion": "SELECT * FROM Hechizos WHERE nivel_hechizo = 3;"
+      }
+    ]
+  },
+  {
+    "id": 778,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "WHERE",
+    "titulo": "Personajes nivel alto",
+    "enunciado": "Muestra el nombre de los <code>Personajes</code> que tengan un nivel estrictamente mayor que 4.",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre FROM Personajes WHERE nivel > 4;",
+    "puntos": 10,
+    "pista": "Usa el operador >",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de los <code>Personajes</code> con un nivel menor a 5.",
+        "query_solucion": "SELECT nombre FROM Personajes WHERE nivel < 5;"
+      },
+      {
+        "enunciado": "Muestra el nombre de los <code>Hechizos</code> con un nivel_hechizo mayor que 1.",
+        "query_solucion": "SELECT nombre FROM Hechizos WHERE nivel_hechizo > 1;"
+      }
+    ]
+  },
+  {
+    "id": 779,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "AND",
+    "titulo": "Magia evocadora potente",
+    "enunciado": "Muestra los <code>Hechizos</code> que sean de la escuela 'Evocación' <b>Y</b> de nivel_hechizo 3.",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Hechizos WHERE escuela = 'Evocación' AND nivel_hechizo = 3;",
+    "puntos": 10,
+    "pista": "Usa AND para unir condiciones.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>Hechizos</code> de 'Ilusión' <b>Y</b> nivel_hechizo 2.",
+        "query_solucion": "SELECT * FROM Hechizos WHERE escuela = 'Ilusión' AND nivel_hechizo = 2;"
+      },
+      {
+        "enunciado": "Muestra los <code>Personajes</code> de nivel 5 <b>Y</b> id_clase 1.",
+        "query_solucion": "SELECT * FROM Personajes WHERE nivel = 5 AND id_clase = 1;"
+      }
+    ]
+  },
+  {
+    "id": 780,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "OR",
+    "titulo": "Dados de golpe grandes",
+    "enunciado": "Muestra las <code>Clases</code> cuyo dado_golpe sea 'd12' <b>O</b> 'd8'.",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Clases WHERE dado_golpe = 'd12' OR dado_golpe = 'd8';",
+    "puntos": 15,
+    "pista": "Usa OR.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las <code>Clases</code> con dado_golpe 'd6' <b>O</b> 'd12'.",
+        "query_solucion": "SELECT * FROM Clases WHERE dado_golpe = 'd6' OR dado_golpe = 'd12';"
+      },
+      {
+        "enunciado": "Muestra los <code>Hechizos</code> de nivel_hechizo 0 <b>O</b> nivel_hechizo 2.",
+        "query_solucion": "SELECT * FROM Hechizos WHERE nivel_hechizo = 0 OR nivel_hechizo = 2;"
+      }
+    ]
+  },
+  {
+    "id": 781,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "IN",
+    "titulo": "Escuelas específicas",
+    "enunciado": "Muestra los <code>Hechizos</code> cuya escuela esté en la lista ('Evocación', 'Ilusión').",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Hechizos WHERE escuela IN ('Evocación', 'Ilusión');",
+    "puntos": 15,
+    "pista": "Usa IN ()",
+    "variaciones": [
+      {
+        "enunciado": "Muestra las <code>Clases</code> cuyo dado_golpe esté en ('d6', 'd8').",
+        "query_solucion": "SELECT * FROM Clases WHERE dado_golpe IN ('d6', 'd8');"
+      },
+      {
+        "enunciado": "Muestra los <code>Personajes</code> cuyo id_clase esté en (1, 2).",
+        "query_solucion": "SELECT * FROM Personajes WHERE id_clase IN (1, 2);"
+      }
+    ]
+  },
+  {
+    "id": 782,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "BETWEEN",
+    "titulo": "Niveles intermedios",
+    "enunciado": "Muestra los <code>Personajes</code> cuyo nivel esté entre 4 y 5 (ambos inclusive).",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Personajes WHERE nivel BETWEEN 4 AND 5;",
+    "puntos": 15,
+    "pista": "BETWEEN x AND y",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>Hechizos</code> con nivel_hechizo entre 1 y 3.",
+        "query_solucion": "SELECT * FROM Hechizos WHERE nivel_hechizo BETWEEN 1 AND 3;"
+      },
+      {
+        "enunciado": "Muestra los <code>Hechizos</code> con nivel_hechizo entre 0 y 2.",
+        "query_solucion": "SELECT * FROM Hechizos WHERE nivel_hechizo BETWEEN 0 AND 2;"
+      }
+    ]
+  },
+  {
+    "id": 783,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIKE",
+    "titulo": "Nombres con letra",
+    "enunciado": "Muestra los <code>Hechizos</code> cuyo nombre empiece por la letra 'B'.",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Hechizos WHERE nombre LIKE 'B%';",
+    "puntos": 15,
+    "pista": "Usa LIKE 'B%'",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>Hechizos</code> cuyo nombre contenga la palabra 'Fuego'.",
+        "query_solucion": "SELECT * FROM Hechizos WHERE nombre LIKE '%Fuego%';"
+      },
+      {
+        "enunciado": "Muestra los <code>Personajes</code> cuyo nombre termine en 'n'.",
+        "query_solucion": "SELECT * FROM Personajes WHERE nombre LIKE '%n';"
+      }
+    ]
+  },
+  {
+    "id": 784,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "ORDER BY",
+    "titulo": "Ordenando por nivel",
+    "enunciado": "Muestra todos los <code>Personajes</code> ordenados por su nivel de forma <b>descendente</b>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Personajes ORDER BY nivel DESC;",
+    "puntos": 10,
+    "pista": "ORDER BY columna DESC",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>Hechizos</code> ordenados por nivel_hechizo de forma <b>ascendente</b>.",
+        "query_solucion": "SELECT * FROM Hechizos ORDER BY nivel_hechizo ASC;"
+      },
+      {
+        "enunciado": "Muestra las <code>Clases</code> ordenadas alfabéticamente por su nombre de forma <b>descendente</b>.",
+        "query_solucion": "SELECT * FROM Clases ORDER BY nombre DESC;"
+      }
+    ]
+  },
+  {
+    "id": 785,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LIMIT",
+    "titulo": "Top 2",
+    "enunciado": "Obtén los 2 <code>Personajes</code> con mayor nivel (ordénalos desc y limita a 2).",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Personajes ORDER BY nivel DESC LIMIT 2;",
+    "puntos": 10,
+    "pista": "Combina ORDER BY DESC y LIMIT 2",
+    "variaciones": [
+      {
+        "enunciado": "Obtén el <code>Hechizo</code> con mayor nivel_hechizo.",
+        "query_solucion": "SELECT * FROM Hechizos ORDER BY nivel_hechizo DESC LIMIT 1;"
+      },
+      {
+        "enunciado": "Obtén las 2 <code>Clases</code> ordenadas por nombre ASC.",
+        "query_solucion": "SELECT * FROM Clases ORDER BY nombre ASC LIMIT 2;"
+      }
+    ]
+  },
+  {
+    "id": 786,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "DISTINCT",
+    "titulo": "Escuelas distintas",
+    "enunciado": "Muestra los valores únicos de la columna <code>escuela</code> en la tabla <code>Hechizos</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT DISTINCT escuela FROM Hechizos;",
+    "puntos": 15,
+    "pista": "Usa DISTINCT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los valores únicos de la columna <code>nivel</code> en la tabla <code>Personajes</code>.",
+        "query_solucion": "SELECT DISTINCT nivel FROM Personajes;"
+      },
+      {
+        "enunciado": "Muestra los valores únicos de la columna <code>dado_golpe</code> en <code>Clases</code>.",
+        "query_solucion": "SELECT DISTINCT dado_golpe FROM Clases;"
+      }
+    ]
+  },
+  {
+    "id": 787,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "Alias AS",
+    "titulo": "Renombrar en resultado",
+    "enunciado": "Muestra el <code>nombre</code> de la tabla <code>Hechizos</code> bajo el alias <code>nombre_hechizo</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre AS nombre_hechizo FROM Hechizos;",
+    "puntos": 10,
+    "pista": "Usa AS.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre</code> de la tabla <code>Personajes</code> bajo el alias <code>aventurero</code>.",
+        "query_solucion": "SELECT nombre AS aventurero FROM Personajes;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> de <code>Clases</code> bajo el alias <code>profesion</code>.",
+        "query_solucion": "SELECT nombre AS profesion FROM Clases;"
+      }
+    ]
+  },
+  {
+    "id": 788,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "LENGTH",
+    "titulo": "Nombres largos",
+    "enunciado": "Muestra los <code>Hechizos</code> cuya longitud de <code>nombre</code> sea mayor a 12 caracteres.",
+    "bd": "dnd",
+    "query_solucion": "SELECT * FROM Hechizos WHERE LENGTH(nombre) > 12;",
+    "puntos": 20,
+    "pista": "Usa la función LENGTH()",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>Personajes</code> cuya longitud de <code>nombre</code> sea menor a 5 caracteres.",
+        "query_solucion": "SELECT * FROM Personajes WHERE LENGTH(nombre) < 5;"
+      },
+      {
+        "enunciado": "Muestra las <code>Clases</code> cuya longitud de <code>nombre</code> sea exactamente 6 caracteres.",
+        "query_solucion": "SELECT * FROM Clases WHERE LENGTH(nombre) = 6;"
+      }
+    ]
+  },
+  {
+    "id": 789,
+    "bloque_id": 2,
+    "grupo": "Consultas Básicas",
+    "tema": "UPPER",
+    "titulo": "Mayúsculas",
+    "enunciado": "Muestra el <code>nombre</code> de todas las <code>Clases</code> convertido a <b>MAYÚSCULAS</b>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT UPPER(nombre) FROM Clases;",
+    "puntos": 15,
+    "pista": "Usa UPPER()",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>nombre</code> de todos los <code>Personajes</code> en mayúsculas.",
+        "query_solucion": "SELECT UPPER(nombre) FROM Personajes;"
+      },
+      {
+        "enunciado": "Muestra el <code>nombre</code> de todos los <code>Hechizos</code> en minúsculas usando LOWER().",
+        "query_solucion": "SELECT LOWER(nombre) FROM Hechizos;"
+      }
+    ]
+  },
+  {
+    "id": 790,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT",
+    "titulo": "Total de hechizos",
+    "enunciado": "Cuenta el número total de registros en la tabla <code>Hechizos</code> usando <code>COUNT</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT COUNT(*) FROM Hechizos;",
+    "puntos": 20,
+    "pista": "Usa COUNT(*).",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta cuántos registros hay en la tabla <code>Personajes</code>.",
+        "query_solucion": "SELECT COUNT(*) FROM Personajes;"
+      },
+      {
+        "enunciado": "Cuenta cuántos registros hay en la tabla <code>Clases</code>.",
+        "query_solucion": "SELECT COUNT(*) FROM Clases;"
+      }
+    ]
+  },
+  {
+    "id": 791,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "SUM",
+    "titulo": "Suma de niveles",
+    "enunciado": "Suma todos los valores de la columna <code>nivel</code> de la tabla <code>Personajes</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT SUM(nivel) FROM Personajes;",
+    "puntos": 20,
+    "pista": "Usa SUM(columna).",
+    "variaciones": [
+      {
+        "enunciado": "Suma todos los valores de <code>nivel_hechizo</code> de la tabla <code>Hechizos</code>.",
+        "query_solucion": "SELECT SUM(nivel_hechizo) FROM Hechizos;"
+      },
+      {
+        "enunciado": "Calcula la suma de <code>id_clase</code> en la tabla <code>Clases</code> (solo por probar SUM).",
+        "query_solucion": "SELECT SUM(id_clase) FROM Clases;"
+      }
+    ]
+  },
+  {
+    "id": 792,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "AVG",
+    "titulo": "Media de nivel",
+    "enunciado": "Calcula el promedio (media) de <code>nivel_hechizo</code> de todos los <code>Hechizos</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT AVG(nivel_hechizo) FROM Hechizos;",
+    "puntos": 20,
+    "pista": "Usa AVG(columna).",
+    "variaciones": [
+      {
+        "enunciado": "Calcula el nivel promedio de los <code>Personajes</code>.",
+        "query_solucion": "SELECT AVG(nivel) FROM Personajes;"
+      },
+      {
+        "enunciado": "Calcula el promedio de <code>id_clase</code> en <code>Clases</code>.",
+        "query_solucion": "SELECT AVG(id_clase) FROM Clases;"
+      }
+    ]
+  },
+  {
+    "id": 793,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "MAX / MIN",
+    "titulo": "Personaje más alto",
+    "enunciado": "Obtén el valor máximo de la columna <code>nivel</code> en la tabla <code>Personajes</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT MAX(nivel) FROM Personajes;",
+    "puntos": 20,
+    "pista": "Usa MAX().",
+    "variaciones": [
+      {
+        "enunciado": "Obtén el valor mínimo de <code>nivel_hechizo</code> en <code>Hechizos</code>.",
+        "query_solucion": "SELECT MIN(nivel_hechizo) FROM Hechizos;"
+      },
+      {
+        "enunciado": "Obtén el valor máximo de <code>nivel_hechizo</code> en <code>Hechizos</code>.",
+        "query_solucion": "SELECT MAX(nivel_hechizo) FROM Hechizos;"
+      }
+    ]
+  },
+  {
+    "id": 794,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Personajes por id_clase",
+    "enunciado": "Cuenta cuántos <code>Personajes</code> hay por cada <code>id_clase</code>. Muestra <code>id_clase</code> y el conteo.",
+    "bd": "dnd",
+    "query_solucion": "SELECT id_clase, COUNT(*) FROM Personajes GROUP BY id_clase;",
+    "puntos": 25,
+    "pista": "Agrupa por id_clase.",
+    "variaciones": [
+      {
+        "enunciado": "Cuenta cuántos <code>Personajes</code> hay por cada <code>nivel</code>.",
+        "query_solucion": "SELECT nivel, COUNT(*) FROM Personajes GROUP BY nivel;"
+      },
+      {
+        "enunciado": "Suma el <code>nivel</code> de los personajes agrupando por <code>id_clase</code>.",
+        "query_solucion": "SELECT id_clase, SUM(nivel) FROM Personajes GROUP BY id_clase;"
+      }
+    ]
+  },
+  {
+    "id": 795,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "GROUP BY",
+    "titulo": "Hechizos por escuela",
+    "enunciado": "Muestra cada <code>escuela</code> de la tabla <code>Hechizos</code> y cuántos hechizos pertenecen a ella.",
+    "bd": "dnd",
+    "query_solucion": "SELECT escuela, COUNT(*) FROM Hechizos GROUP BY escuela;",
+    "puntos": 25,
+    "pista": "Usa GROUP BY escuela.",
+    "variaciones": [
+      {
+        "enunciado": "Calcula la suma de niveles de hechizo (<code>nivel_hechizo</code>) agrupando por <code>escuela</code>.",
+        "query_solucion": "SELECT escuela, SUM(nivel_hechizo) FROM Hechizos GROUP BY escuela;"
+      },
+      {
+        "enunciado": "Calcula el nivel medio de hechizo agrupando por <code>escuela</code>.",
+        "query_solucion": "SELECT escuela, AVG(nivel_hechizo) FROM Hechizos GROUP BY escuela;"
+      }
+    ]
+  },
+  {
+    "id": 796,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "HAVING",
+    "titulo": "Escuelas prolíficas",
+    "enunciado": "Muestra las escuelas de <code>Hechizos</code> que tengan <b>más de 1</b> hechizo en la base de datos.",
+    "bd": "dnd",
+    "query_solucion": "SELECT escuela FROM Hechizos GROUP BY escuela HAVING COUNT(*) > 1;",
+    "puntos": 25,
+    "pista": "Usa HAVING después del GROUP BY.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los <code>id_clase</code> que tengan a más de 1 personaje asignado en <code>Personajes</code>.",
+        "query_solucion": "SELECT id_clase FROM Personajes GROUP BY id_clase HAVING COUNT(*) > 1;"
+      },
+      {
+        "enunciado": "Muestra las escuelas de <code>Hechizos</code> cuya suma de niveles de hechizo sea mayor a 2.",
+        "query_solucion": "SELECT escuela FROM Hechizos GROUP BY escuela HAVING SUM(nivel_hechizo) > 2;"
+      }
+    ]
+  },
+  {
+    "id": 797,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "Personaje y Clase",
+    "enunciado": "Usa un <b>INNER JOIN</b> para mostrar el nombre del personaje y el nombre de su clase.",
+    "bd": "dnd",
+    "query_solucion": "SELECT Personajes.nombre, Clases.nombre FROM Personajes INNER JOIN Clases ON Personajes.id_clase = Clases.id_clase;",
+    "puntos": 25,
+    "pista": "Une Personajes y Clases por id_clase.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del personaje y el dado de golpe de su clase mediante un INNER JOIN.",
+        "query_solucion": "SELECT Personajes.nombre, Clases.dado_golpe FROM Personajes INNER JOIN Clases ON Personajes.id_clase = Clases.id_clase;"
+      },
+      {
+        "enunciado": "Muestra el nombre de la clase y el nivel del personaje para cada personaje.",
+        "query_solucion": "SELECT Clases.nombre, Personajes.nivel FROM Personajes INNER JOIN Clases ON Personajes.id_clase = Clases.id_clase;"
+      }
+    ]
+  },
+  {
+    "id": 798,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "INNER JOIN",
+    "titulo": "El libro de hechizos",
+    "enunciado": "Muestra el nombre del personaje y el id del hechizo que conoce haciendo JOIN entre <code>Personajes</code> y <code>Libro_Hechizos</code>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT Personajes.nombre, Libro_Hechizos.id_hechizo FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje;",
+    "puntos": 30,
+    "pista": "Join sobre id_personaje.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el id del personaje y el nombre del hechizo haciendo JOIN entre <code>Libro_Hechizos</code> y <code>Hechizos</code>.",
+        "query_solucion": "SELECT Libro_Hechizos.id_personaje, Hechizos.nombre FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo;"
+      },
+      {
+        "enunciado": "Muestra el id_personaje y el nivel_hechizo haciendo JOIN entre <code>Libro_Hechizos</code> y <code>Hechizos</code>.",
+        "query_solucion": "SELECT Libro_Hechizos.id_personaje, Hechizos.nivel_hechizo FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo;"
+      }
+    ]
+  },
+  {
+    "id": 799,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "LEFT JOIN",
+    "titulo": "Todas las clases",
+    "enunciado": "Muestra <b>todas</b> las <code>Clases</code> y el nombre de sus personajes asignados (si los hay), usando <b>LEFT JOIN</b>.",
+    "bd": "dnd",
+    "query_solucion": "SELECT Clases.nombre, Personajes.nombre FROM Clases LEFT JOIN Personajes ON Clases.id_clase = Personajes.id_clase;",
+    "puntos": 30,
+    "pista": "Clases LEFT JOIN Personajes",
+    "variaciones": [
+      {
+        "enunciado": "Muestra <b>todos</b> los <code>Personajes</code> y los id_hechizo que conocen (usando LEFT JOIN con Libro_Hechizos).",
+        "query_solucion": "SELECT Personajes.nombre, Libro_Hechizos.id_hechizo FROM Personajes LEFT JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje;"
+      },
+      {
+        "enunciado": "Muestra <b>todos</b> los <code>Hechizos</code> y los id_personaje que los conocen (LEFT JOIN con Libro_Hechizos).",
+        "query_solucion": "SELECT Hechizos.nombre, Libro_Hechizos.id_personaje FROM Hechizos LEFT JOIN Libro_Hechizos ON Hechizos.id_hechizo = Libro_Hechizos.id_hechizo;"
+      }
+    ]
+  },
+  {
+    "id": 800,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN + GROUP BY",
+    "titulo": "Suma niveles hechizo por Pj",
+    "enunciado": "Muestra el <code>id_personaje</code> y la <b>suma de niveles de los hechizos</b> que conoce, agrupando por personaje. (Une Libro_Hechizos y Hechizos).",
+    "bd": "dnd",
+    "query_solucion": "SELECT Libro_Hechizos.id_personaje, SUM(Hechizos.nivel_hechizo) FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo GROUP BY Libro_Hechizos.id_personaje;",
+    "puntos": 30,
+    "pista": "Join y luego GROUP BY id_personaje.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>id_personaje</code> y la <b>media</b> de nivel de los hechizos que conoce.",
+        "query_solucion": "SELECT Libro_Hechizos.id_personaje, AVG(Hechizos.nivel_hechizo) FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo GROUP BY Libro_Hechizos.id_personaje;"
+      },
+      {
+        "enunciado": "Muestra el <code>id_personaje</code> y el nivel_hechizo <b>máximo</b> que conoce.",
+        "query_solucion": "SELECT Libro_Hechizos.id_personaje, MAX(Hechizos.nivel_hechizo) FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo GROUP BY Libro_Hechizos.id_personaje;"
+      }
+    ]
+  },
+  {
+    "id": 801,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN + AVG",
+    "titulo": "Media nivel por clase",
+    "enunciado": "Muestra el nombre de la <code>Clase</code> y la media de nivel de sus personajes. Agrupa por el nombre de la clase.",
+    "bd": "dnd",
+    "query_solucion": "SELECT Clases.nombre, AVG(Personajes.nivel) FROM Clases INNER JOIN Personajes ON Clases.id_clase = Personajes.id_clase GROUP BY Clases.nombre;",
+    "puntos": 30,
+    "pista": "Une Clases y Personajes y agrupa por nombre de clase.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de la <code>Clase</code> y la suma de niveles de sus personajes.",
+        "query_solucion": "SELECT Clases.nombre, SUM(Personajes.nivel) FROM Clases INNER JOIN Personajes ON Clases.id_clase = Personajes.id_clase GROUP BY Clases.nombre;"
+      },
+      {
+        "enunciado": "Muestra el nombre de la <code>Clase</code> y cuántos personajes tiene.",
+        "query_solucion": "SELECT Clases.nombre, COUNT(Personajes.id_personaje) FROM Clases INNER JOIN Personajes ON Clases.id_clase = Personajes.id_clase GROUP BY Clases.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 802,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "COUNT DISTINCT",
+    "titulo": "Escuelas distintas conocidas",
+    "enunciado": "Muestra el <code>id_personaje</code> y cuántas escuelas de magia <b>distintas</b> conoce (Cuenta escuelas distintas de sus hechizos conocidos).",
+    "bd": "dnd",
+    "query_solucion": "SELECT Libro_Hechizos.id_personaje, COUNT(DISTINCT Hechizos.escuela) FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo GROUP BY Libro_Hechizos.id_personaje;",
+    "puntos": 30,
+    "pista": "Usa COUNT(DISTINCT columna)",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>id_personaje</code> y cuántos niveles de hechizo distintos conoce.",
+        "query_solucion": "SELECT Libro_Hechizos.id_personaje, COUNT(DISTINCT Hechizos.nivel_hechizo) FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo GROUP BY Libro_Hechizos.id_personaje;"
+      },
+      {
+        "enunciado": "Muestra la <code>escuela</code> y cuántos personajes distintos conocen algún hechizo de esa escuela.",
+        "query_solucion": "SELECT Hechizos.escuela, COUNT(DISTINCT Libro_Hechizos.id_personaje) FROM Hechizos INNER JOIN Libro_Hechizos ON Hechizos.id_hechizo = Libro_Hechizos.id_hechizo GROUP BY Hechizos.escuela;"
+      }
+    ]
+  },
+  {
+    "id": 803,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "JOIN + WHERE",
+    "titulo": "Filtro tras el JOIN",
+    "enunciado": "Muestra el <code>id_personaje</code> y el nombre del hechizo, pero <b>solo</b> para los hechizos de la escuela 'Evocación'.",
+    "bd": "dnd",
+    "query_solucion": "SELECT Libro_Hechizos.id_personaje, Hechizos.nombre FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo WHERE Hechizos.escuela = 'Evocación';",
+    "puntos": 30,
+    "pista": "Filtra en el WHERE después del JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>id_personaje</code> y el nombre del hechizo, pero <b>solo</b> para hechizos de nivel > 1.",
+        "query_solucion": "SELECT Libro_Hechizos.id_personaje, Hechizos.nombre FROM Libro_Hechizos INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo WHERE Hechizos.nivel_hechizo > 1;"
+      },
+      {
+        "enunciado": "Muestra el nombre del <code>Personaje</code> y el id_hechizo, pero solo para personajes de nivel 5.",
+        "query_solucion": "SELECT Personajes.nombre, Libro_Hechizos.id_hechizo FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje WHERE Personajes.nivel = 5;"
+      }
+    ]
+  },
+  {
+    "id": 804,
+    "bloque_id": 3,
+    "grupo": "Consultas Avanzadas",
+    "tema": "ORDER BY agregado",
+    "titulo": "El más estudioso",
+    "enunciado": "Muestra el <code>id_personaje</code> y la cantidad de hechizos que conoce, ordenado por cantidad de hechizos de forma descendente.",
+    "bd": "dnd",
+    "query_solucion": "SELECT id_personaje, COUNT(*) FROM Libro_Hechizos GROUP BY id_personaje ORDER BY COUNT(*) DESC;",
+    "puntos": 30,
+    "pista": "ORDER BY COUNT(*) DESC",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el <code>id_clase</code> y la cantidad de personajes que tiene, ordenado por esta cantidad DESC.",
+        "query_solucion": "SELECT id_clase, COUNT(*) FROM Personajes GROUP BY id_clase ORDER BY COUNT(*) DESC;"
+      },
+      {
+        "enunciado": "Muestra la <code>escuela</code> y el nivel medio de sus hechizos, ordenado por la media DESC.",
+        "query_solucion": "SELECT escuela, AVG(nivel_hechizo) FROM Hechizos GROUP BY escuela ORDER BY AVG(nivel_hechizo) DESC;"
+      }
+    ]
+  },
+  {
+    "id": 805,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "IS NULL",
+    "titulo": "Clases vacías",
+    "enunciado": "Usa un <b>LEFT JOIN</b> para encontrar el nombre de las <code>Clases</code> que <b>no tienen</b> ningún personaje asociado (IS NULL en el lado derecho).",
+    "bd": "dnd",
+    "query_solucion": "SELECT Clases.nombre FROM Clases LEFT JOIN Personajes ON Clases.id_clase = Personajes.id_clase WHERE Personajes.id_personaje IS NULL;",
+    "puntos": 35,
+    "pista": "Filtra con WHERE columna_secundaria IS NULL",
+    "variaciones": [
+      {
+        "enunciado": "Usa un LEFT JOIN para encontrar los nombres de los <code>Personajes</code> que no conocen ningún hechizo (no están en Libro_Hechizos).",
+        "query_solucion": "SELECT Personajes.nombre FROM Personajes LEFT JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje WHERE Libro_Hechizos.id_hechizo IS NULL;"
+      },
+      {
+        "enunciado": "Usa LEFT JOIN para encontrar los nombres de los <code>Hechizos</code> que no han sido aprendidos por nadie.",
+        "query_solucion": "SELECT Hechizos.nombre FROM Hechizos LEFT JOIN Libro_Hechizos ON Hechizos.id_hechizo = Libro_Hechizos.id_hechizo WHERE Libro_Hechizos.id_personaje IS NULL;"
+      }
+    ]
+  },
+  {
+    "id": 806,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta WHERE =",
+    "titulo": "El mejor aventurero",
+    "enunciado": "Muestra los nombres de los <code>Personajes</code> que tengan el nivel <b>máximo</b> usando una subconsulta.",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre FROM Personajes WHERE nivel = (SELECT MAX(nivel) FROM Personajes);",
+    "puntos": 35,
+    "pista": "WHERE nivel = (SELECT MAX(nivel) ...)",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los nombres de los <code>Hechizos</code> que tengan el nivel_hechizo <b>máximo</b>.",
+        "query_solucion": "SELECT nombre FROM Hechizos WHERE nivel_hechizo = (SELECT MAX(nivel_hechizo) FROM Hechizos);"
+      },
+      {
+        "enunciado": "Muestra los nombres de los <code>Personajes</code> que tengan el nivel <b>mínimo</b>.",
+        "query_solucion": "SELECT nombre FROM Personajes WHERE nivel = (SELECT MIN(nivel) FROM Personajes);"
+      }
+    ]
+  },
+  {
+    "id": 807,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta IN",
+    "titulo": "Clases de veteranos",
+    "enunciado": "Muestra el nombre de las <code>Clases</code> cuyo <code>id_clase</code> pertenezca a personajes con nivel > 4, usando una subconsulta con IN.",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre FROM Clases WHERE id_clase IN (SELECT id_clase FROM Personajes WHERE nivel > 4);",
+    "puntos": 35,
+    "pista": "WHERE id_clase IN (SELECT ...)",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de las <code>Clases</code> cuyo <code>id_clase</code> pertenezca a personajes de nivel 4.",
+        "query_solucion": "SELECT nombre FROM Clases WHERE id_clase IN (SELECT id_clase FROM Personajes WHERE nivel = 4);"
+      },
+      {
+        "enunciado": "Muestra los nombres de <code>Hechizos</code> aprendidos por el personaje con id=1 (usando subconsulta IN en Libro_Hechizos).",
+        "query_solucion": "SELECT nombre FROM Hechizos WHERE id_hechizo IN (SELECT id_hechizo FROM Libro_Hechizos WHERE id_personaje = 1);"
+      }
+    ]
+  },
+  {
+    "id": 808,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta NOT IN",
+    "titulo": "Hechizos olvidados",
+    "enunciado": "Muestra el nombre de los <code>Hechizos</code> cuyo id_hechizo <b>no esté</b> en la tabla <code>Libro_Hechizos</code> (usando NOT IN).",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre FROM Hechizos WHERE id_hechizo NOT IN (SELECT id_hechizo FROM Libro_Hechizos);",
+    "puntos": 35,
+    "pista": "Usa NOT IN (SELECT ...)",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de las <code>Clases</code> cuyo id_clase <b>no esté</b> en la tabla <code>Personajes</code> (usando NOT IN).",
+        "query_solucion": "SELECT nombre FROM Clases WHERE id_clase NOT IN (SELECT id_clase FROM Personajes);"
+      },
+      {
+        "enunciado": "Muestra el nombre de los <code>Personajes</code> cuyo id_personaje <b>no esté</b> en el <code>Libro_Hechizos</code>.",
+        "query_solucion": "SELECT nombre FROM Personajes WHERE id_personaje NOT IN (SELECT id_personaje FROM Libro_Hechizos);"
+      }
+    ]
+  },
+  {
+    "id": 809,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN 3 Tablas",
+    "titulo": "Hechizos de Gales",
+    "enunciado": "Muestra el <b>nombre del personaje</b> y el <b>nombre del hechizo</b> uniendo las 3 tablas implicadas (Personajes, Libro_Hechizos, Hechizos).",
+    "bd": "dnd",
+    "query_solucion": "SELECT Personajes.nombre, Hechizos.nombre FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo;",
+    "puntos": 40,
+    "pista": "Necesitas dos INNER JOIN seguidos.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del personaje y la escuela del hechizo usando 3 JOINs.",
+        "query_solucion": "SELECT Personajes.nombre, Hechizos.escuela FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo;"
+      },
+      {
+        "enunciado": "Muestra el nivel del personaje y el nivel del hechizo (requiere Personajes, Libro_Hechizos, Hechizos).",
+        "query_solucion": "SELECT Personajes.nivel, Hechizos.nivel_hechizo FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo;"
+      }
+    ]
+  },
+  {
+    "id": 810,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "EXISTS",
+    "titulo": "Clases en uso",
+    "enunciado": "Muestra el nombre de las <code>Clases</code> para las cuales <b>existe</b> al menos un personaje asignado a ella (usa EXISTS).",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre FROM Clases WHERE EXISTS (SELECT 1 FROM Personajes WHERE Personajes.id_clase = Clases.id_clase);",
+    "puntos": 35,
+    "pista": "WHERE EXISTS (SELECT ...)",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de los <code>Hechizos</code> para los que <b>existe</b> un registro en Libro_Hechizos.",
+        "query_solucion": "SELECT nombre FROM Hechizos WHERE EXISTS (SELECT 1 FROM Libro_Hechizos WHERE Libro_Hechizos.id_hechizo = Hechizos.id_hechizo);"
+      },
+      {
+        "enunciado": "Muestra el nombre de los <code>Personajes</code> para los que <b>existe</b> al menos un hechizo aprendido.",
+        "query_solucion": "SELECT nombre FROM Personajes WHERE EXISTS (SELECT 1 FROM Libro_Hechizos WHERE Libro_Hechizos.id_personaje = Personajes.id_personaje);"
+      }
+    ]
+  },
+  {
+    "id": 811,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "NOT EXISTS",
+    "titulo": "Hechizos sin dueño",
+    "enunciado": "Muestra el nombre de los <code>Hechizos</code> para los que <b>NO existe</b> un registro en Libro_Hechizos (usa NOT EXISTS).",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre FROM Hechizos WHERE NOT EXISTS (SELECT 1 FROM Libro_Hechizos WHERE Libro_Hechizos.id_hechizo = Hechizos.id_hechizo);",
+    "puntos": 35,
+    "pista": "WHERE NOT EXISTS (SELECT ...)",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de las <code>Clases</code> para las cuales <b>NO existe</b> ningún personaje asignado.",
+        "query_solucion": "SELECT nombre FROM Clases WHERE NOT EXISTS (SELECT 1 FROM Personajes WHERE Personajes.id_clase = Clases.id_clase);"
+      },
+      {
+        "enunciado": "Muestra el nombre de los <code>Personajes</code> para los cuales <b>NO existe</b> registro de hechizos aprendidos.",
+        "query_solucion": "SELECT nombre FROM Personajes WHERE NOT EXISTS (SELECT 1 FROM Libro_Hechizos WHERE Libro_Hechizos.id_personaje = Personajes.id_personaje);"
+      }
+    ]
+  },
+  {
+    "id": 812,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "HAVING y JOIN",
+    "titulo": "Maestros del fuego",
+    "enunciado": "Muestra el nombre del personaje y cuántos hechizos de 'Evocación' conoce, pero <b>solo</b> si conoce más de 1. (Usa JOIN, WHERE, GROUP BY, HAVING).",
+    "bd": "dnd",
+    "query_solucion": "SELECT Personajes.nombre, COUNT(*) FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo WHERE Hechizos.escuela = 'Evocación' GROUP BY Personajes.nombre HAVING COUNT(*) > 1;",
+    "puntos": 40,
+    "pista": "Requiere toda la artillería: JOIN, WHERE, GROUP BY, HAVING",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del personaje y la cantidad de hechizos de nivel > 1 que conoce, solo si es al menos 1.",
+        "query_solucion": "SELECT Personajes.nombre, COUNT(*) FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo WHERE Hechizos.nivel_hechizo > 1 GROUP BY Personajes.nombre HAVING COUNT(*) >= 1;"
+      },
+      {
+        "enunciado": "Muestra la escuela de magia y cuántos personajes la han estudiado (tienen algún hechizo de ella), solo si son >1 personajes.",
+        "query_solucion": "SELECT Hechizos.escuela, COUNT(DISTINCT Libro_Hechizos.id_personaje) FROM Hechizos INNER JOIN Libro_Hechizos ON Hechizos.id_hechizo = Libro_Hechizos.id_hechizo GROUP BY Hechizos.escuela HAVING COUNT(DISTINCT Libro_Hechizos.id_personaje) > 1;"
+      }
+    ]
+  },
+  {
+    "id": 813,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "JOIN Múltiple",
+    "titulo": "Info completa",
+    "enunciado": "Muestra el nombre del personaje, su clase (Clases.nombre), y el nombre de los hechizos que conoce (4 tablas lógicas, 3 joins).",
+    "bd": "dnd",
+    "query_solucion": "SELECT Personajes.nombre, Clases.nombre, Hechizos.nombre FROM Personajes INNER JOIN Clases ON Personajes.id_clase = Clases.id_clase INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo;",
+    "puntos": 40,
+    "pista": "Une Personajes, Clases, Libro_Hechizos y Hechizos",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre del personaje, dado de golpe y nivel del hechizo que conoce.",
+        "query_solucion": "SELECT Personajes.nombre, Clases.dado_golpe, Hechizos.nivel_hechizo FROM Personajes INNER JOIN Clases ON Personajes.id_clase = Clases.id_clase INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo;"
+      },
+      {
+        "enunciado": "Muestra el nombre de la clase y la escuela del hechizo de todos los hechizos aprendidos.",
+        "query_solucion": "SELECT Clases.nombre, Hechizos.escuela FROM Personajes INNER JOIN Clases ON Personajes.id_clase = Clases.id_clase INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo;"
+      }
+    ]
+  },
+  {
+    "id": 814,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "MAX + JOIN",
+    "titulo": "Mejor hechizo de c/u",
+    "enunciado": "Muestra el nombre de cada <code>Personaje</code> y el nivel_hechizo máximo de los hechizos que conoce. Agrupa por el nombre del personaje.",
+    "bd": "dnd",
+    "query_solucion": "SELECT Personajes.nombre, MAX(Hechizos.nivel_hechizo) FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo GROUP BY Personajes.nombre;",
+    "puntos": 40,
+    "pista": "MAX(nivel_hechizo) agrupando por personaje",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de la <code>Clase</code> y el nivel_hechizo máximo que conoce alguno de sus miembros.",
+        "query_solucion": "SELECT Clases.nombre, MAX(Hechizos.nivel_hechizo) FROM Clases INNER JOIN Personajes ON Clases.id_clase = Personajes.id_clase INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo GROUP BY Clases.nombre;"
+      },
+      {
+        "enunciado": "Muestra el nombre del personaje y el nivel_hechizo mínimo de los hechizos que conoce.",
+        "query_solucion": "SELECT Personajes.nombre, MIN(Hechizos.nivel_hechizo) FROM Personajes INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo GROUP BY Personajes.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 815,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "COUNT con LEFT JOIN",
+    "titulo": "Censo absoluto",
+    "enunciado": "Muestra el nombre de <b>todas</b> las <code>Clases</code> y cuántos personajes pertenecen a cada una (incluso 0).",
+    "bd": "dnd",
+    "query_solucion": "SELECT Clases.nombre, COUNT(Personajes.id_personaje) FROM Clases LEFT JOIN Personajes ON Clases.id_clase = Personajes.id_clase GROUP BY Clases.nombre;",
+    "puntos": 40,
+    "pista": "Usa COUNT de la columna del lado derecho tras un LEFT JOIN.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de <b>todos</b> los <code>Personajes</code> y cuántos hechizos conocen (incluso 0).",
+        "query_solucion": "SELECT Personajes.nombre, COUNT(Libro_Hechizos.id_hechizo) FROM Personajes LEFT JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje GROUP BY Personajes.nombre;"
+      },
+      {
+        "enunciado": "Muestra el nombre de <b>todos</b> los <code>Hechizos</code> y por cuántas personas están aprendidos (incluso 0).",
+        "query_solucion": "SELECT Hechizos.nombre, COUNT(Libro_Hechizos.id_personaje) FROM Hechizos LEFT JOIN Libro_Hechizos ON Hechizos.id_hechizo = Libro_Hechizos.id_hechizo GROUP BY Hechizos.nombre;"
+      }
+    ]
+  },
+  {
+    "id": 816,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "WHERE Multiple JOIN",
+    "titulo": "Magos poderosos",
+    "enunciado": "Muestra el nombre del hechizo conocido por los personajes que sean de la clase 'Mago' (buscando por el nombre 'Mago' en Clases).",
+    "bd": "dnd",
+    "query_solucion": "SELECT Hechizos.nombre FROM Clases INNER JOIN Personajes ON Clases.id_clase = Personajes.id_clase INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo WHERE Clases.nombre = 'Mago';",
+    "puntos": 40,
+    "pista": "Filtra en el WHERE con el nombre de la clase.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra los nombres de los personajes que pertenecen a la clase 'Bárbaro'.",
+        "query_solucion": "SELECT Personajes.nombre FROM Clases INNER JOIN Personajes ON Clases.id_clase = Personajes.id_clase WHERE Clases.nombre = 'Bárbaro';"
+      },
+      {
+        "enunciado": "Muestra el nombre de los hechizos aprendidos por personajes de la clase 'Pícaro'.",
+        "query_solucion": "SELECT Hechizos.nombre FROM Clases INNER JOIN Personajes ON Clases.id_clase = Personajes.id_clase INNER JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje INNER JOIN Hechizos ON Libro_Hechizos.id_hechizo = Hechizos.id_hechizo WHERE Clases.nombre = 'Pícaro';"
+      }
+    ]
+  },
+  {
+    "id": 817,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta FROM",
+    "titulo": "Tabla derivada",
+    "enunciado": "Obtén la media del número de hechizos por personaje. Primero, en el FROM, cuenta cuántos hechizos tiene cada uno (usa alias 'Conteo'). Luego haz el AVG.",
+    "bd": "dnd",
+    "query_solucion": "SELECT AVG(total) FROM (SELECT id_personaje, COUNT(*) AS total FROM Libro_Hechizos GROUP BY id_personaje) AS Conteo;",
+    "puntos": 40,
+    "pista": "SELECT AVG(total) FROM (SELECT ... AS total ...) AS alias",
+    "variaciones": [
+      {
+        "enunciado": "Obtén el máximo del número de hechizos por personaje usando una tabla derivada.",
+        "query_solucion": "SELECT MAX(total) FROM (SELECT id_personaje, COUNT(*) AS total FROM Libro_Hechizos GROUP BY id_personaje) AS Conteo;"
+      },
+      {
+        "enunciado": "Obtén el mínimo número de personajes por clase mediante una tabla derivada.",
+        "query_solucion": "SELECT MIN(total) FROM (SELECT id_clase, COUNT(*) AS total FROM Personajes GROUP BY id_clase) AS Conteo;"
+      }
+    ]
+  },
+  {
+    "id": 818,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Subconsulta SELECT",
+    "titulo": "Porcentaje/Total",
+    "enunciado": "Muestra el nombre del personaje y, como segunda columna, el nivel máximo de CUALQUIER personaje en la BD (subconsulta en el SELECT).",
+    "bd": "dnd",
+    "query_solucion": "SELECT nombre, (SELECT MAX(nivel) FROM Personajes) AS nivel_max_global FROM Personajes;",
+    "puntos": 40,
+    "pista": "La subconsulta va en el bloque SELECT.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de la clase y el total de clases en la BD como segunda columna.",
+        "query_solucion": "SELECT nombre, (SELECT COUNT(*) FROM Clases) AS total_clases FROM Clases;"
+      },
+      {
+        "enunciado": "Muestra el nombre del hechizo y el nivel medio global de los hechizos como segunda columna.",
+        "query_solucion": "SELECT nombre, (SELECT AVG(nivel_hechizo) FROM Hechizos) AS media_global FROM Hechizos;"
+      }
+    ]
+  },
+  {
+    "id": 819,
+    "bloque_id": 4,
+    "grupo": "Consultas Difíciles",
+    "tema": "Combinación Total",
+    "titulo": "Boss Final",
+    "enunciado": "Muestra el nombre de <b>todas</b> las <code>Clases</code> y la media de nivel de sus personajes, pero solo para aquellas clases cuya media sea mayor a 2, ordenado descendentemente.",
+    "bd": "dnd",
+    "query_solucion": "SELECT Clases.nombre, AVG(Personajes.nivel) FROM Clases LEFT JOIN Personajes ON Clases.id_clase = Personajes.id_clase GROUP BY Clases.nombre HAVING AVG(Personajes.nivel) > 2 ORDER BY AVG(Personajes.nivel) DESC;",
+    "puntos": 40,
+    "pista": "Usa LEFT JOIN, GROUP BY, HAVING y ORDER BY DESC.",
+    "variaciones": [
+      {
+        "enunciado": "Muestra el nombre de todas las Clases y la media de nivel, solo si es menor o igual a 5, ordenado ascendente.",
+        "query_solucion": "SELECT Clases.nombre, AVG(Personajes.nivel) FROM Clases LEFT JOIN Personajes ON Clases.id_clase = Personajes.id_clase GROUP BY Clases.nombre HAVING AVG(Personajes.nivel) <= 5 ORDER BY AVG(Personajes.nivel) ASC;"
+      },
+      {
+        "enunciado": "Muestra el nombre de todos los Personajes y la cantidad de hechizos, solo si es mayor a 0, ordenado descendentemente.",
+        "query_solucion": "SELECT Personajes.nombre, COUNT(Libro_Hechizos.id_hechizo) FROM Personajes LEFT JOIN Libro_Hechizos ON Personajes.id_personaje = Libro_Hechizos.id_personaje GROUP BY Personajes.nombre HAVING COUNT(Libro_Hechizos.id_hechizo) > 0 ORDER BY COUNT(Libro_Hechizos.id_hechizo) DESC;"
+      }
+    ]
+  }
+];
+
+window.loadGlobalExercisesDB = async function() {
+  if (!window._fb) return;
+  const { collection, getDocs, doc, setDoc } = window._fb;
+  const { db } = window._fb;
+  try {
+    const exsRef = collection(db, 'banco_ejercicios');
+    let snap = await getDocs(exsRef);
+    if (snap.empty) {
+      console.log("Banco vacio, migrando...");
+      for (const ex of window.EJERCICIOS) {
+        await setDoc(doc(db, 'banco_ejercicios', String(ex.id)), ex);
+      }
+      snap = await getDocs(exsRef);
+    }
+    const ejerciciosDb = [];
+    snap.forEach(d => ejerciciosDb.push(d.data()));
+    ejerciciosDb.sort((a, b) => Number(a.id) - Number(b.id));
+    window.EJERCICIOS = ejerciciosDb;
+  } catch (e) {
+    console.error(e);
+  }
+};
+window.BLOQUES = BLOQUES; window.EJERCICIOS = EJERCICIOS; window.EJERCICIOS_DB = EJERCICIOS_DB;
+ THEN RETURN 9.99;
+    ELSE RETURN NULL;
+    END IF;
+END$
+
+CREATE PROCEDURE actualizar_envios()
+BEGIN
+    UPDATE pedidos SET gastos_envio = calcular_envio(CP);
+END$
+DELIMITER ;
+`
+  }
+  ,{
+    id: 217, tipo: "tarea", nombre: "Tema 4: Repaso 2 - Función Fantasy (NBA)", modulo: "0377", curso: "2º ASIR", ra: "4", implementado: true, temaRef: 204,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-basketball-ball me-2"></i>Repaso: Fantasy NBA (Funciones Escalares)</h4>
+<p class="mb-3">Calcula el rendimiento global de un jugador aplicando fórmulas matemáticas directamente desde el motor de base de datos.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-calculator me-2"></i>Algoritmo Fantasy</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2">Añade un campo <code>fantasy</code> a la tabla de la NBA que guarda las estadísticas por partido.</li>
+  <li class="mb-2">Crea una función <code>calcular_fantasy(id_jugador, id_partido)</code>.</li>
+  <li class="mb-2">Dentro de la función, extrae las estadísticas de ese jugador en ese partido y aplica la fórmula multiplicadora de valoración oficial de la NBA <i>(el profesor facilitará en clase la imagen con la tabla de puntuaciones, ej. Robos x3, Pérdidas -1, Rebotes x1.2)</i>.</li>
+  <li class="mb-2">Lanza una instrucción <code>UPDATE</code> global sobre la tabla que llame a tu función para rellenar la columna de todos los partidos.</li>
+</ul>
+<div class="alert alert-info bg-dark border-info text-light"><i class="fas fa-upload me-2 text-info"></i>Sube el archivo <code>.sql</code> con la creación de la columna, la función desarrollada y el UPDATE final.</div>`,
+    rubricaDocente: [
+      "Estructura (2 pts): Alter table correcto y sintaxis de función impecable con los dos parámetros (id_jugador, id_partido).",
+      "Extracción de datos (4 pts): Usa correctamente el SELECT INTO dentro de la función para recuperar los puntos, rebotes, asistencias, robos, tapones y pérdidas de la tabla estadística.",
+      "Algoritmo matemático (2 pts): Aplica los multiplicadores del Fantasy correctamente según la tabla (ej. *1.2 para rebotes, *3 para robos, etc.).",
+      "Actualización (2 pts): Ejecuta un UPDATE masivo que llama a la función pasándole las propias columnas de la tabla como parámetros."
+    ],
+    solucionDocente: `CHULETA PARA EL DOCENTE (NBA Fantasy):
+
+-- 1. Añadir el campo (asumiendo que la tabla se llama 'estadisticas')
+ALTER TABLE estadisticas ADD COLUMN fantasy DECIMAL(6,2);
+
+-- 2. Crear la función
+DELIMITER $
+CREATE FUNCTION calcular_fantasy(p_id_jugador INT, p_id_partido INT) RETURNS DECIMAL(6,2)
+BEGIN
+    DECLARE v_pts, v_reb, v_ast, v_stl, v_blk, v_tov INT;
+    DECLARE total DECIMAL(6,2);
+    
+    -- Extraer los datos del jugador en ese partido específico
+    SELECT puntos, rebotes, asistencias, robos, tapones, perdidas 
+    INTO v_pts, v_reb, v_ast, v_stl, v_blk, v_tov
+    FROM estadisticas 
+    WHERE id_jugador = p_id_jugador AND id_partido = p_id_partido;
+    
+    -- Aplicar fórmula Fantasy NBA (Ajustar multiplicadores según tu imagen oficial)
+    -- Típicamente: PTS(1), REB(1.2), AST(1.5), STL(3), BLK(3), TOV(-1)
+    SET total = v_pts + (v_reb * 1.2) + (v_ast * 1.5) + (v_stl * 3) + (v_blk * 3) - (v_tov * 1);
+    
+    RETURN total;
+END$
+DELIMITER ;
+
+-- 3. Volcar los datos masivamente (El Update mágico)
+UPDATE estadisticas 
+SET fantasy = calcular_fantasy(id_jugador, id_partido);
+`
+  }
+  ,{
+    id: 218, tipo: "tarea", nombre: "Tema 4: Tarea - Triggers de Auditoría y Seguridad ASIR", modulo: "0377", curso: "2º ASIR", ra: "4", implementado: true, temaRef: 204,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-bolt me-2"></i>Auditoría y Seguridad (Triggers ASIR)</h4>
+<p class="mb-3">Implementa lógicas reactivas en la base de datos para proteger la integridad de los datos frente a fallos humanos de programadores o usuarios.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-history me-2"></i>1. Histórico de Puntuaciones (FIFA)</h5>
+<p class="mb-3 ms-3">Crea una tabla de histórico. Añade un <i>Trigger</i> que salte al actualizar los <code>jugadores</code>. Si los puntos cambian, guarda un registro con: ID, puntos viejos, puntos nuevos, fecha/hora y qué usuario de BD ejecutó el cambio (función <code>USER()</code>).</p>
+<h5 class="mt-4 text-info"><i class="fas fa-box me-2"></i>2. Recálculo Automático (El Arepazo)</h5>
+<p class="mb-3 ms-3">Crea un <i>Trigger</i> que detecte modificaciones en la tabla de <code>pedidos</code>. Si el Código Postal (CP) cambia, debe recalcular y actualizar los <code>gastos_envio</code> usando la función tarificadora de tareas anteriores. <i>(Cuidado: Piensa bien si esto requiere un BEFORE o un AFTER update para evitar un error de tabla bloqueada).</i></p>
+<h5 class="mt-4 text-info"><i class="fas fa-lock me-2"></i>3. Anti-Desastres (Seguridad ASIR)</h5>
+<p class="mb-3 ms-3">Crea un <i>Trigger</i> <code>BEFORE DELETE</code> en <code>pedidos</code>. Si un despistado intenta borrar un pedido que ya está marcado como 'Entregado' o 'Pagado', el trigger debe abortar violentamente la instrucción lanzando un <code>SIGNAL SQLSTATE</code> con un mensaje de error personalizado.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-user-secret me-2"></i>4. Trazabilidad de Correos</h5>
+<p class="mb-4 ms-3">Crea la tabla <code>auditoria_emails</code>. Crea un <i>Trigger</i> en <code>clientes</code> que, si se modifica la columna <code>email</code> (y solo si el valor nuevo es distinto al viejo), guarde un log de seguridad evidenciando el cambio, el usuario y la fecha.</p>
+<div class="alert alert-info bg-dark border-info text-light"><i class="fas fa-upload me-2 text-info"></i>Sube tu archivo <code>.sql</code> con la declaración completa de las tablas de logs y los 4 triggers.</div>`,
+    rubricaDocente: [
+      "Ejercicio 1 - FIFA (2.5 pts): Tabla histórica bien definida y Trigger AFTER UPDATE que compara OLD.puntos != NEW.puntos y usa NOW() y USER().",
+      "Ejercicio 2 - Envíos (2.5 pts): Entiende que DEBE SER un BEFORE UPDATE (para modificar NEW.gastos_envio directamente) ya que un AFTER lanzaría error de tabla mutante.",
+      "Ejercicio 3 - Bloqueo ASIR (2.5 pts): Trigger BEFORE DELETE usando condicional IF y SIGNAL SQLSTATE '45000' para abortar la transacción con un mensaje personalizado.",
+      "Ejercicio 4 - Auditoría ASIR (2.5 pts): Trigger AFTER UPDATE que rastrea modificaciones (OLD.email != NEW.email) e inserta correctamente en la tabla de logs."
+    ],
+    solucionDocente: `CHULETA PARA EL DOCENTE (Triggers ASIR):
+
+-- EJERCICIO 1 (Histórico FIFA)
+CREATE TABLE historico_puntos (
+    id INT AUTO_INCREMENT PRIMARY KEY, id_jugador INT, 
+    puntos_viejos INT, puntos_nuevos INT, fecha DATETIME DEFAULT NOW(), usuario VARCHAR(50)
+);
+DELIMITER $
+CREATE TRIGGER trg_historico_fifa AFTER UPDATE ON jugadores FOR EACH ROW
+BEGIN
+    IF OLD.puntos != NEW.puntos THEN
+        INSERT INTO historico_puntos (id_jugador, puntos_viejos, puntos_nuevos, usuario)
+        VALUES (NEW.id_jugador, OLD.puntos, NEW.puntos, USER());
+    END IF;
+END$
+DELIMITER ;
+
+-- EJERCICIO 2 (Recálculo Arepazo)
+-- TRAMPA: Si hacen AFTER UPDATE e intentan "UPDATE pedidos SET gastos = ... WHERE id = NEW.id", MariaDB da error (Can't update table in stored function/trigger because it is already used).
+-- LA SOLUCIÓN ASIR CORRECTA ES "BEFORE UPDATE" e interceptar el valor NEW:
+DELIMITER $
+CREATE TRIGGER trg_recalcular_envio BEFORE UPDATE ON pedidos FOR EACH ROW
+BEGIN
+    IF OLD.cp != NEW.cp THEN
+        SET NEW.gastos_envio = calcular_envio(NEW.cp); -- Función creada en la tarea anterior
+    END IF;
+END$
+DELIMITER ;
+
+-- EJERCICIO 3 (Seguridad ASIR - Evitar desastres)
+DELIMITER $
+CREATE TRIGGER trg_proteger_facturacion BEFORE DELETE ON pedidos FOR EACH ROW
+BEGIN
+    IF OLD.estado IN ('Entregado', 'Pagado') THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR ASIR: Prohibido borrar pedidos ya facturados o entregados.';
+    END IF;
+END$
+DELIMITER ;
+
+-- EJERCICIO 4 (Auditoría Correos)
+CREATE TABLE auditoria_emails (
+    id INT AUTO_INCREMENT PRIMARY KEY, id_cliente INT, 
+    email_antiguo VARCHAR(100), email_nuevo VARCHAR(100), fecha DATETIME DEFAULT NOW(), db_user VARCHAR(50)
+);
+DELIMITER $
+CREATE TRIGGER trg_auditar_email AFTER UPDATE ON clientes FOR EACH ROW
+BEGIN
+    IF OLD.email != NEW.email THEN
+        INSERT INTO auditoria_emails (id_cliente, email_antiguo, email_nuevo, db_user)
+        VALUES (NEW.id, OLD.email, NEW.email, USER());
+    END IF;
+END$
+DELIMITER ;`
+  }
+  ,{
+    id: 219, tipo: "tarea", nombre: "Tema 2: Tarea - Configuración Avanzada del SGBD (my.cnf)", modulo: "0377", curso: "2º ASIR", ra: "2", implementado: true, temaRef: 202,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-file-code me-2"></i>Configuración Avanzada del SGBD</h4>
+<p class="mb-3">Un técnico ASIR debe saber no solo instalar un SGBD, sino <b>configurarlo</b> para el entorno en el que va a trabajar. En esta práctica vas a tocar de verdad el archivo de configuración de MariaDB y vas a verificar que tus cambios funcionan.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-tasks me-2"></i>Pasos a seguir</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2"><b>1. Localiza el archivo de configuración</b> de tu instancia de MariaDB (en Docker, monta un volumen para el <code>my.cnf</code>). Documenta la ruta exacta donde lo encuentras.</li>
+  <li class="mb-2"><b>2. Modifica los siguientes parámetros</b> añadiéndolos o cambiándolos bajo el grupo <code>[mysqld]</code>:
+    <ul class="mt-1">
+      <li>Ajusta <code>max_connections</code> a <b>50</b>.</li>
+      <li>Habilita el <code>slow_query_log</code> con un umbral de <b>1 segundo</b>.</li>
+      <li>Configura <code>innodb_buffer_pool_size</code> al 50% de la RAM de tu máquina.</li>
+    </ul>
+  </li>
+  <li class="mb-2"><b>3. Reinicia el servicio</b> y verifica que arrancó sin errores.</li>
+  <li class="mb-2"><b>4. Comprueba con <code>SHOW VARIABLES</code></b> que cada uno de los tres parámetros tiene el valor que has configurado.</li>
+  <li class="mb-2"><b>5. Cambia <code>max_connections</code> a 100 en caliente</b> usando <code>SET GLOBAL</code> <i>sin reiniciar</i>. Documenta la diferencia entre cambiar en caliente y cambiar en el <code>my.cnf</code>.</li>
+  <li class="mb-2"><b>6. Genera una consulta lenta artificialmente</b> ejecutando un <code>SELECT SLEEP(2)</code> y comprueba que aparece registrada en el fichero de slow queries.</li>
+</ul>
+<div class="alert alert-info mt-4 bg-dark text-light border-info">
+  <i class="fas fa-file-pdf me-2 text-info"></i><b>Entregable:</b> Documento Google (con tu nombre en el título y en el interior) que incluya: el contenido del bloque <code>[mysqld]</code> de tu <code>my.cnf</code>, capturas del <code>SHOW VARIABLES</code> antes y después de cada cambio, y la captura del log de slow queries con tu consulta de prueba registrada.
+</div>`,
+    rubricaDocente: [
+      "Localización y edición del my.cnf (2 pts): El alumno demuestra saber dónde está el archivo y muestra su contenido modificado.",
+      "SHOW VARIABLES antes/después (4 pts): Hay capturas que demuestran que los 3 parámetros cambiaron correctamente tras reiniciar.",
+      "SET GLOBAL y explicación (2 pts): Comprende la diferencia entre cambio persistente (my.cnf) y temporal (SET GLOBAL). Explica por qué no son equivalentes.",
+      "Slow Query Log (2 pts): El fichero de log contiene el registro de la consulta SLEEP(2) con su tiempo de ejecución."
+    ],
+    solucionDocente: `CHULETA RA2 (my.cnf):
+
+# Ejemplo de bloque [mysqld] correcto:
+[mysqld]
+max_connections          = 50
+slow_query_log           = 1
+slow_query_log_file      = /var/log/mysql/mariadb-slow.log
+long_query_time          = 1
+innodb_buffer_pool_size  = 512M  # (adaptar a la RAM del alumno)
+
+# Verificación:
+SHOW VARIABLES LIKE 'max_connections';       -- debe mostrar 50
+SHOW VARIABLES LIKE 'slow_query_log';        -- debe mostrar ON
+SHOW VARIABLES LIKE 'innodb_buffer_pool%';   -- debe mostrar el valor en bytes
+
+# Cambio en caliente:
+SET GLOBAL max_connections = 100;
+-- Verificar:
+SHOW VARIABLES LIKE 'max_connections';  -- ahora 100
+
+# Generar consulta lenta:
+SELECT SLEEP(2);
+-- Comprobar el fichero de log:
+sudo tail -n 20 /var/log/mysql/mariadb-slow.log`
+  }
+  ,{
+    id: 220, tipo: "tarea", nombre: "Tema 6: Tarea - BBDD Distribuida con Motor FEDERATED", modulo: "0377", curso: "2º ASIR", ra: "6", implementado: true, temaRef: 206,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-network-wired me-2"></i>Bases de Datos Distribuidas con Motor FEDERATED</h4>
+<p class="mb-3">El motor <b>FEDERATED</b> de MariaDB permite acceder desde un servidor local a una tabla que reside físicamente en un servidor <b>remoto</b>. Para el usuario, la tabla parece local: puede consultarla con un SELECT normal, pero los datos viajan por la red desde otro servidor.</p>
+<div class="alert alert-warning mb-4 bg-dark text-light border-warning">
+  <i class="fas fa-info-circle me-2 text-warning"></i>Para esta práctica necesitarás <b>dos instancias de MariaDB</b> (pueden ser dos contenedores Docker del RA1 en la misma máquina, o los servidores de dos compañeros de clase en la misma red).
+</div>
+<h5 class="mt-4 text-info"><i class="fas fa-server me-2"></i>Pasos</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2"><b>1. Habilita el motor FEDERATED en Nodo B</b> (el que accederá remotamente): añade <code>federated</code> bajo <code>[mysqld]</code> en el <code>my.cnf</code> y reinicia. Comprueba con <code>SHOW ENGINES</code> que aparece habilitado.</li>
+  <li class="mb-2"><b>2. En Nodo A (el servidor remoto)</b>: crea una base de datos y una tabla de prueba (puedes usar la tabla <code>clientes</code> del Arepazo). Crea un usuario específico con permiso de SELECT sobre esa tabla accesible desde la IP del Nodo B.</li>
+  <li class="mb-2"><b>3. En Nodo B</b>: crea una tabla con estructura idéntica a la del Nodo A usando <code>ENGINE=FEDERATED CONNECTION='mysql://usuario:password@IP_NODO_A:3306/bd/tabla'</code>.</li>
+  <li class="mb-2"><b>4. Prueba la distribución</b>: desde Nodo B, haz un <code>SELECT</code> sobre tu tabla FEDERATED. Los datos deben venir en tiempo real del Nodo A. Compruébalo insertando un registro nuevo directamente en el Nodo A y verificando que aparece en el SELECT del Nodo B.</li>
+</ul>
+<div class="alert alert-info mt-4 bg-dark text-light border-info">
+  <i class="fas fa-file-pdf me-2 text-info"></i><b>Entregable:</b> Capturas que demuestren: (1) <code>SHOW ENGINES</code> con FEDERATED habilitado, (2) el <code>CREATE TABLE ... ENGINE=FEDERATED</code> ejecutado sin error, (3) el <code>SELECT</code> desde Nodo B devolviendo datos del Nodo A, y (4) la inserción en A reflejada en B.
+</div>`,
+    rubricaDocente: [
+      "Habilitación del motor (2 pts): SHOW ENGINES demuestra que FEDERATED está activo en Nodo B.",
+      "Usuario y permisos en Nodo A (2 pts): El usuario de conexión tiene permisos correctos y solo los necesarios (no GRANT ALL).",
+      "Tabla FEDERATED creada (3 pts): El CREATE TABLE con ENGINE=FEDERATED y CONNECTION bien formada no produce errores.",
+      "Datos sincronizados en tiempo real (3 pts): Inserción en Nodo A visible inmediatamente en el SELECT de Nodo B."
+    ],
+    solucionDocente: `CHULETA RA6 (Motor FEDERATED):
+
+-- ══ EN NODO B: Habilitar el motor ══
+-- Añadir al my.cnf bajo [mysqld]:
+-- federated
+-- Reiniciar y comprobar:
+SHOW ENGINES;  -- Buscar FEDERATED con Support = YES
+
+-- ══ EN NODO A (servidor remoto): Crear tabla y usuario ══
+CREATE DATABASE federated_source;
+USE federated_source;
+CREATE TABLE clientes_remote (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    email VARCHAR(100)
+) ENGINE=InnoDB;
+INSERT INTO clientes_remote (nombre, email) VALUES ('Ana Test', 'ana@test.com');
+
+-- Usuario con acceso solo desde la IP del Nodo B
+CREATE USER 'fed_user'@'IP_NODO_B' IDENTIFIED BY 'FedPass123!';
+GRANT SELECT ON federated_source.clientes_remote TO 'fed_user'@'IP_NODO_B';
+FLUSH PRIVILEGES;
+
+-- ══ EN NODO B: Crear la tabla FEDERATED ══
+CREATE TABLE clientes_federated (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    email VARCHAR(100)
+) ENGINE=FEDERATED
+  CONNECTION='mysql://fed_user:FedPass123!@IP_NODO_A:3306/federated_source/clientes_remote';
+
+-- Probar:
+SELECT * FROM clientes_federated;   -- Debe devolver 'Ana Test'`
+  }
+  ,{
+    id: 221, tipo: "tarea", nombre: "Tema 6: Tarea - Replicación Master-Slave en MariaDB (Docker)", modulo: "0377", curso: "2º ASIR", ra: "6", implementado: true, temaRef: 206,
+    desc: `<h4 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="fas fa-clone me-2"></i>Replicación Master-Slave en MariaDB</h4>
+<p class="mb-3">Vamos a montar una topología de <b>Alta Disponibilidad</b> con dos instancias de MariaDB usando Docker Compose. El <b>Master</b> recibirá todas las escrituras y el <b>Slave</b> las replicará automáticamente. Cualquier INSERT en el Master aparecerá en el Slave sin que hagas nada.</p>
+<h5 class="mt-4 text-info"><i class="fas fa-tasks me-2"></i>Pasos</h5>
+<ul class="mb-4 text-start">
+  <li class="mb-2"><b>1. Crea el archivo <code>docker-compose.yml</code></b> con dos servicios de MariaDB: uno con <code>server-id=1</code> y <code>log-bin</code> activado (Master), otro con <code>server-id=2</code> (Slave). Levántalos con <code>docker-compose up -d</code>.</li>
+  <li class="mb-2"><b>2. Configura el Master:</b> crea un usuario <code>replica_user</code> con el permiso <code>GRANT REPLICATION SLAVE</code>. Ejecuta <code>SHOW MASTER STATUS</code> y <b>anota el File y el Position</b>.</li>
+  <li class="mb-2"><b>3. Configura el Slave:</b> ejecuta <code>CHANGE MASTER TO</code> con los datos del paso anterior y lanza <code>START SLAVE</code>.</li>
+  <li class="mb-2"><b>4. Verifica la replicación:</b> en el Slave, ejecuta <code>SHOW SLAVE STATUS\G</code> y confirma que tanto <code>Slave_IO_Running</code> como <code>Slave_SQL_Running</code> dicen <code>Yes</code>.</li>
+  <li class="mb-2"><b>5. Prueba que funciona:</b> desde el Master, crea una tabla e inserta un registro. Conéctate al Slave y comprueba con un SELECT que el dato ha aparecido automáticamente.</li>
+  <li class="mb-2"><b>6. Simula una caída:</b> para el contenedor del Master (<code>docker stop mariadb-master</code>). ¿Qué pasa con el Slave? Documenta qué muestra <code>SHOW SLAVE STATUS</code> cuando el Master está caído.</li>
+</ul>
+<div class="alert alert-info mt-4 bg-dark text-light border-info">
+  <i class="fas fa-file-pdf me-2 text-info"></i><b>Entregable:</b> Capturas de: el <code>docker-compose.yml</code>, el <code>SHOW MASTER STATUS</code>, el <code>SHOW SLAVE STATUS\G</code> con ambos <i>Running: Yes</i>, la prueba de inserción en Master visible en Slave, y el estado del Slave cuando el Master está caído.
+</div>`,
+    rubricaDocente: [
+      "docker-compose.yml (2 pts): El archivo levanta correctamente los dos servicios con server-id distintos y log-bin activo en el Master.",
+      "Configuración del Master (2 pts): usuario replica_user creado con REPLICATION SLAVE. SHOW MASTER STATUS documentado.",
+      "Configuración del Slave (2 pts): CHANGE MASTER TO correcto. SHOW SLAVE STATUS muestra ambos hilos en Yes.",
+      "Prueba de inserción (2 pts): dato insertado en Master visible en Slave sin intervención manual.",
+      "Simulación de caída (2 pts): el alumno documenta el comportamiento del sistema ante la caída del Master y comprende el concepto de failover."
+    ],
+    solucionDocente: `CHULETA RA6 (Replicación Master-Slave con Docker):
+
+# docker-compose.yml
+version: '3.8'
+services:
+  mariadb-master:
+    image: mariadb:10.11
+    container_name: mariadb-master
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+      MYSQL_DATABASE: agenda
+    command: ["mysqld","--server-id=1","--log-bin=mysql-bin","--bind-address=0.0.0.0"]
+    ports: ["3306:3306"]
+
+  mariadb-slave:
+    image: mariadb:10.11
+    container_name: mariadb-slave
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+    command: ["mysqld","--server-id=2","--bind-address=0.0.0.0"]
+    ports: ["3307:3306"]
+    depends_on: [mariadb-master]
+
+# --- EN EL MASTER ---
+docker exec -it mariadb-master mysql -u root -prootpwd
+CREATE USER 'replica_user'@'%' IDENTIFIED BY 'replica_pass';
+GRANT REPLICATION SLAVE ON *.* TO 'replica_user'@'%';
+FLUSH PRIVILEGES;
+SHOW MASTER STATUS;   -- anotar File y Position
+
+# --- EN EL SLAVE ---
+docker exec -it mariadb-slave mysql -u root -prootpwd
+CHANGE MASTER TO
+    MASTER_HOST='mariadb-master',
+    MASTER_USER='replica_user',
+    MASTER_PASSWORD='replica_pass',
+    MASTER_LOG_FILE='mysql-bin.000001',
+    MASTER_LOG_POS=328;  -- usar los valores reales del SHOW MASTER STATUS
+START SLAVE;
+SHOW SLAVE STATUS\G   -- Slave_IO_Running: Yes, Slave_SQL_Running: Yes
+
+# --- PRUEBA ---
+# En Master:
+USE agenda;
+CREATE TABLE test (id INT PRIMARY KEY, msg VARCHAR(50));
+INSERT INTO test VALUES (1, 'Hola desde el Master');
+
+# En Slave:
+USE agenda;
+SELECT * FROM test;   -- debe aparecer el registro
+
+# --- CAÍDA DEL MASTER ---
+docker stop mariadb-master
+# En Slave: SHOW SLAVE STATUS muestra Last_IO_Error: "connection refused"`
+  }
 ];
 
 const EJERCICIOS = [

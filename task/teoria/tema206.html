@@ -1,191 +1,310 @@
-<div class="tema-content p-4 bg-dark text-white">
-    <h1 class="mb-4 text-primary"><i class="fas fa-database me-2"></i>Tema 6: Distribución y Alta Disponibilidad (RA6)</h1>
+<div class="tema-content p-4">
+  <div class="text-center mb-5">
+    <h1 class="display-5 text-primary"><i class="fas fa-database me-3"></i>Tema 6: Distribución y Alta Disponibilidad</h1>
+    <p class="lead">Módulo: Administración de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA6</span></p>
+    <p class="text-secondary">Bases de Datos Distribuidas · Fragmentación · Motor FEDERATED · Replicación · Alta Disponibilidad</p>
+  </div>
 
-    <div class="card bg-secondary text-white mb-5">
-        <div class="card-body">
-            <h4 class="card-title"><i class="fas fa-list-ul me-2"></i>Índice</h4>
-            <ul class="fs-5 mb-0">
-                <li><a href="#distribucion-vs-replicacion" class="text-info text-decoration-none">1. Bases de Datos Distribuidas vs Replicadas</a></li>
-                <li><a href="#fragmentacion" class="text-info text-decoration-none">2. Fragmentación de Datos</a></li>
-                <li><a href="#practica1" class="text-warning text-decoration-none fw-bold">3. Práctica 1: Distribución con MariaDB (Motor FEDERATED)</a></li>
-                <li><a href="#practica2" class="text-warning text-decoration-none fw-bold">4. Práctica 2: Alta Disponibilidad (Master-Slave en MariaDB)</a></li>
-            </ul>
-        </div>
+  <div class="card border-info mb-5">
+    <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
+      <i class="fas fa-list me-2"></i>Índice del Tema
     </div>
+    <div class="card-body">
+      <ul class="list-unstyled mb-0" style="line-height: 2.2;">
+        <li><a href="#distribucion-vs-replicacion" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. Bases de Datos Distribuidas vs Replicadas</a></li>
+        <li><a href="#fragmentacion" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Fragmentación y Técnicas de Distribución</a></li>
+        <li><a href="#federated" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. El Motor FEDERATED: Distribución Transparente</a></li>
+        <li><a href="#replicacion" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Replicación: Tipos y Topologías</a></li>
+        <li><a href="#disponibilidad" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>5. Alta Disponibilidad y Tolerancia a Fallos</a></li>
+      </ul>
+    </div>
+  </div>
 
-    <h2 id="distribucion-vs-replicacion" class="mt-5 border-bottom pb-2 border-secondary"><i class="fas fa-network-wired me-2"></i>1. Bases de Datos Distribuidas vs Replicadas</h2>
-    <p class="fs-5 mt-3">Al escalar nuestras aplicaciones o buscar una mayor tolerancia a fallos, necesitamos soluciones que vayan más allá de un único servidor. Aquí surgen dos conceptos clave:</p>
-    
+  <section id="distribucion-vs-replicacion" class="mb-5">
+    <h2><i class="fas fa-network-wired section-icon"></i>1. Bases de Datos Distribuidas vs Replicadas</h2>
+    <p class="fs-5 mt-3">Al escalar aplicaciones o buscar mayor tolerancia a fallos, necesitamos ir más allá de un único servidor. Hay dos estrategias fundamentales con objetivos distintos:</p>
     <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card bg-dark border-info h-100">
-                <div class="card-header bg-info text-dark fw-bold">
-                    <i class="fas fa-project-diagram me-2"></i>Bases de Datos Distribuidas
-                </div>
-                <div class="card-body">
-                    <p>Los datos se dividen y almacenan en distintos nodos, pero conforman <strong>una única base de datos lógica</strong>. Los usuarios o aplicaciones acceden a ella sin necesidad de saber dónde están físicamente los datos (principio de transparencia).</p>
-                    <ul>
-                        <li>Los datos no se duplican (por defecto), se reparten.</li>
-                        <li>Ideal para segmentar información por territorios o delegaciones.</li>
-                        <li>Requiere un diseño cuidadoso para evitar latencias en consultas cruzadas.</li>
-                    </ul>
-                </div>
-            </div>
+      <div class="col-md-6">
+        <div class="card border-info h-100">
+          <div class="card-header bg-info bg-opacity-10 text-info fw-bold"><i class="fas fa-project-diagram me-2"></i>Bases de Datos Distribuidas</div>
+          <div class="card-body">
+            <p>Los datos se <strong>dividen</strong> y almacenan en distintos nodos, pero conforman <strong>una única base de datos lógica</strong>. Los usuarios acceden sin saber dónde están físicamente los datos (<em>principio de transparencia</em>).</p>
+            <ul class="mb-0">
+              <li>Los datos <strong>no se duplican</strong>: se reparten.</li>
+              <li>Ideal para segmentar información por territorios o delegaciones.</li>
+              <li>Requiere diseño cuidadoso para evitar latencias en consultas cruzadas.</li>
+            </ul>
+          </div>
         </div>
-        <div class="col-md-6 mt-3 mt-md-0">
-            <div class="card bg-dark border-success h-100">
-                <div class="card-header bg-success text-white fw-bold">
-                    <i class="fas fa-copy me-2"></i>Bases de Datos Replicadas
-                </div>
-                <div class="card-body">
-                    <p>Existen <strong>copias parciales o totales</strong> de la misma base de datos en distintos servidores. Todos los nodos (o parte de ellos) contienen la misma información.</p>
-                    <ul>
-                        <li><strong>Distribución Direccional (Maestro-Esclavo):</strong> Las modificaciones se hacen en el Maestro y éste las replica a los Esclavos.</li>
-                        <li><strong>Descentralizada (Multi-Maestro):</strong> Todos los nodos pueden recibir escrituras y se sincronizan entre sí.</li>
-                        <li>Aumenta la disponibilidad y permite balancear cargas de lectura.</li>
-                    </ul>
-                </div>
-            </div>
+      </div>
+      <div class="col-md-6 mt-3 mt-md-0">
+        <div class="card border-success h-100">
+          <div class="card-header bg-success bg-opacity-10 text-success fw-bold"><i class="fas fa-copy me-2"></i>Bases de Datos Replicadas</div>
+          <div class="card-body">
+            <p>Existen <strong>copias parciales o totales</strong> de la misma base de datos en distintos servidores. Los datos se duplican para conseguir disponibilidad y rendimiento.</p>
+            <ul class="mb-0">
+              <li><strong>Maestro-Esclavo:</strong> escrituras en el Maestro, replicadas a los Esclavos.</li>
+              <li><strong>Multi-Maestro:</strong> todos los nodos admiten escrituras y se sincronizan.</li>
+              <li>Aumenta disponibilidad y permite balancear las lecturas.</li>
+            </ul>
+          </div>
         </div>
+      </div>
     </div>
+    <div class="alert alert-info mt-4">
+      <i class="fas fa-lightbulb me-2"></i><strong>¿Cuándo usar cada una?</strong> La distribución reduce el volumen de datos por nodo (mejor para datos masivos). La replicación aumenta la disponibilidad y reparte la carga de lectura (mejor para aplicaciones con muchas consultas simultáneas). En producción, muchos sistemas combinan ambas estrategias.
+    </div>
+  </section>
 
-    <h2 id="fragmentacion" class="mt-5 border-bottom pb-2 border-secondary"><i class="fas fa-puzzle-piece me-2"></i>2. Fragmentación de Datos</h2>
-    <p class="fs-5 mt-3">Para distribuir una base de datos, solemos emplear la fragmentación, que consiste en dividir las tablas en fragmentos lógicos más pequeños que se reparten entre los nodos.</p>
-    
-    <ul class="list-group list-group-flush bg-transparent mt-3">
-        <li class="list-group-item bg-dark text-white border-secondary">
-            <h5 class="text-info"><i class="fas fa-arrows-alt-h me-2"></i>Fragmentación Horizontal</h5>
-            <p class="mb-0">Se divide la tabla por filas (registros). Por ejemplo, en una tabla <code>Clientes</code>, los clientes de España se almacenan en un servidor en Madrid, y los clientes de México en un servidor en CDMX.</p>
-        </li>
-        <li class="list-group-item bg-dark text-white border-secondary">
-            <h5 class="text-info"><i class="fas fa-arrows-alt-v me-2"></i>Fragmentación Vertical</h5>
-            <p class="mb-0">Se divide la tabla por columnas. Requiere que la clave primaria esté en todos los fragmentos para poder reconstruir el registro. Ejemplo: en un servidor guardamos el nombre y email, y en otro los datos bancarios por mayor seguridad.</p>
-        </li>
-        <li class="list-group-item bg-dark text-white border-secondary">
-            <h5 class="text-info"><i class="fas fa-compress-arrows-alt me-2"></i>Fragmentación Mixta o Híbrida</h5>
-            <p class="mb-0">Una combinación de ambas estrategias. Primero se fragmenta horizontalmente y luego verticalmente (o viceversa).</p>
-        </li>
-    </ul>
+  <section id="fragmentacion" class="mb-5">
+    <h2><i class="fas fa-puzzle-piece section-icon"></i>2. Fragmentación y Técnicas de Distribución</h2>
+    <p class="fs-5 mt-3">Para distribuir una base de datos, las tablas se dividen en <strong>fragmentos lógicos</strong> que se asignan a distintos nodos. Hay tres tipos principales:</p>
+    <div class="accordion mt-4" id="accordionFrag">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#fragHoriz">
+            <i class="fas fa-arrows-alt-h me-2 text-info"></i>Fragmentación Horizontal (Sharding)
+          </button>
+        </h2>
+        <div id="fragHoriz" class="accordion-collapse collapse" data-bs-parent="#accordionFrag">
+          <div class="accordion-body">
+            <p>Se divide la tabla <strong>por filas</strong>. Cada nodo tiene un subconjunto de registros con el mismo esquema completo.</p>
+            <ul>
+              <li><strong>Por rango:</strong> <code>id_cliente BETWEEN 1 AND 10000</code> → Nodo A. <code>id_cliente &gt; 10000</code> → Nodo B.</li>
+              <li><strong>Por hash:</strong> <code>id_cliente % 2 = 0</code> → Nodo A. Reparte uniformemente pero dificulta consultas por rango.</li>
+              <li><strong>Por lista:</strong> clientes de Madrid → Nodo A. Clientes de Barcelona → Nodo B.</li>
+            </ul>
+            <div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle me-2"></i>El principal problema del sharding es que los <code>JOIN</code> entre fragmentos de distintos nodos son extremadamente costosos.</div>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#fragVert">
+            <i class="fas fa-arrows-alt-v me-2 text-info"></i>Fragmentación Vertical
+          </button>
+        </h2>
+        <div id="fragVert" class="accordion-collapse collapse" data-bs-parent="#accordionFrag">
+          <div class="accordion-body">
+            <p>Se divide la tabla <strong>por columnas</strong>. Requiere que la clave primaria esté presente en todos los fragmentos para reconstruir el registro.</p>
+            <p class="mb-0">Ejemplo: en un servidor guardamos <code>id, nombre, email</code>. En otro, por razones de seguridad, guardamos <code>id, numero_tarjeta, cvv</code>. Permite asegurar columnas sensibles en nodos con más restricciones de acceso.</p>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#fragMixta">
+            <i class="fas fa-compress-arrows-alt me-2 text-info"></i>Fragmentación Mixta o Híbrida
+          </button>
+        </h2>
+        <div id="fragMixta" class="accordion-collapse collapse" data-bs-parent="#accordionFrag">
+          <div class="accordion-body">
+            <p>Combina ambas estrategias. Por ejemplo: primero fragmentación horizontal por país (España → Nodo A, México → Nodo B) y luego cada fragmento se fragmenta verticalmente por tipo de dato (datos públicos / datos sensibles).</p>
+            <p class="mb-0">Es la más flexible pero también la más compleja de mantener y consultar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h3 class="mt-4">Asignación de Fragmentos</h3>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped table-bordered">
+        <thead class="table-primary">
+          <tr><th>Estrategia</th><th>¿Cómo funciona?</th><th>Ventaja</th><th>Inconveniente</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>No replicada</strong></td><td>Cada fragmento existe en un único nodo.</td><td>Sin redundancia de almacenamiento.</td><td>Si ese nodo falla, esa parte de los datos no está disponible.</td></tr>
+          <tr><td><strong>Replicada parcialmente</strong></td><td>Fragmentos críticos copiados en varios nodos.</td><td>Mayor disponibilidad para datos más consultados.</td><td>Hay que mantener la consistencia entre las copias.</td></tr>
+          <tr><td><strong>Totalmente replicada</strong></td><td>Todos los fragmentos copiados en todos los nodos.</td><td>Máxima disponibilidad y velocidad de lectura.</td><td>Las escrituras se propagan a todos: muy costoso.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-    <!-- PRÁCTICA 1 -->
-    <div class="p-4 mt-5 rounded bg-dark border border-warning">
-        <h2 id="practica1" class="text-warning mb-4"><i class="fas fa-laptop-code me-2"></i>Práctica 1: Distribución con MariaDB (Motor FEDERATED)</h2>
-        <p class="fs-5">El motor <strong>FEDERATED</strong> de MariaDB permite acceder a tablas que residen en bases de datos remotas como si fueran locales. No replica los datos, sino que las consultas se envían al servidor remoto. Esto es ideal para implementar una base de datos distribuida.</p>
-        
-        <h4 class="mt-4 text-info">Paso 1: Habilitar el motor FEDERATED</h4>
-        <p>En ambos contenedores o servidores MariaDB, asegúrate de tener activado el motor FEDERATED. Edita el archivo de configuración (ej. <code>/etc/mysql/mariadb.conf.d/50-server.cnf</code>) y añade:</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>[mysqld]
-federated</code></pre>
-        <p>Reinicia el servicio de MariaDB y comprueba que esté activo entrando a MariaDB y ejecutando: <code>SHOW ENGINES;</code></p>
-
-        <h4 class="mt-4 text-info">Paso 2: Crear la tabla real en el Servidor Remoto (Nodo A)</h4>
-        <p>En el servidor donde <strong>realmente</strong> se guardarán los datos (asumamos que su IP es <code>192.168.1.100</code>):</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>CREATE DATABASE empresa;
-USE empresa;
-
-CREATE TABLE empleados (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100),
-    departamento VARCHAR(50)
-);
-
-INSERT INTO empleados (nombre, departamento) VALUES ('Ana García', 'Ventas');</code></pre>
-
-        <h4 class="mt-4 text-info">Paso 3: Crear el usuario para conexión</h4>
-        <p>En el Nodo A, crea un usuario con permisos sobre esa tabla para que el Nodo B pueda conectarse:</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>CREATE USER 'federado_user'@'%' IDENTIFIED BY 'password123';
-GRANT SELECT, INSERT, UPDATE, DELETE ON empresa.empleados TO 'federado_user'@'%';
-FLUSH PRIVILEGES;</code></pre>
-
-        <h4 class="mt-4 text-info">Paso 4: Crear la tabla FEDERATED en el Servidor Local (Nodo B)</h4>
-        <p>En el servidor local (Nodo B), creamos una tabla con <strong>la misma estructura exacta</strong>, pero indicando que su motor es FEDERATED y pasándole la cadena de conexión:</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>CREATE DATABASE empresa_local;
-USE empresa_local;
-
-CREATE TABLE empleados_remotos (
+  <section id="federated" class="mb-5">
+    <h2><i class="fas fa-plug section-icon"></i>3. El Motor FEDERATED: Distribución Transparente</h2>
+    <p>El motor <strong>FEDERATED</strong> de MariaDB permite crear en un servidor una tabla que <strong>parece local pero cuyos datos residen en un servidor remoto</strong>. Las consultas SQL se redirigen de forma transparente al nodo que tiene los datos reales.</p>
+    <div class="row mt-3 mb-4">
+      <div class="col-md-4">
+        <div class="card border-secondary text-center p-3 h-100">
+          <i class="fas fa-desktop fa-2x text-info mb-2"></i>
+          <strong>Nodo B (local)</strong><br>
+          <small class="text-muted">Tiene una tabla FEDERATED. Para el programador, es una tabla normal.</small>
+        </div>
+      </div>
+      <div class="col-md-4 d-flex align-items-center justify-content-center">
+        <div class="text-center">
+          <i class="fas fa-arrows-alt-h fa-2x text-warning mb-2 d-block"></i>
+          <code class="text-warning small">SELECT / INSERT<br>viajan por la red</code>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-secondary text-center p-3 h-100">
+          <i class="fas fa-server fa-2x text-success mb-2"></i>
+          <strong>Nodo A (remoto)</strong><br>
+          <small class="text-muted">Tiene la tabla real con los datos. Los almacena en su disco.</small>
+        </div>
+      </div>
+    </div>
+    <h3>La cadena de conexión</h3>
+    <p>Al crear una tabla FEDERATED se le pasa una cadena que define dónde está la tabla real:</p>
+    <pre><code class="language-sql bg-black p-3 rounded d-block text-success">CREATE TABLE empleados_remotos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100),
     departamento VARCHAR(50)
 )
-ENGINE=FEDERATED
-CONNECTION='mysql://federado_user:password123@192.168.1.100:3306/empresa/empleados';</code></pre>
-        <div class="alert alert-success mt-3">
-            <i class="fas fa-check-circle me-2"></i><strong>¡Listo!</strong> Ahora, si haces <code>SELECT * FROM empleados_remotos;</code> en el Nodo B, verás los datos del Nodo A. Cualquier <code>INSERT</code> se guardará remotamente.
-        </div>
+ENGINE = FEDERATED
+CONNECTION = 'mysql://usuario:password@192.168.1.100:3306/empresa/empleados';
+--                    ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^  ^^^^^^^^
+--                    Credenciales     IP:Puerto         BD       Tabla</code></pre>
+    <h3 class="mt-4">Limitaciones importantes</h3>
+    <div class="alert alert-warning">
+      <i class="fas fa-exclamation-triangle me-2"></i>El motor FEDERATED tiene restricciones que un administrador debe conocer:
+      <ul class="mt-2 mb-0">
+        <li><strong>No soporta transacciones</strong> distribuidas entre los dos nodos.</li>
+        <li><strong>No soporta claves foráneas</strong> que apunten a la tabla remota.</li>
+        <li><strong>Sin caché local:</strong> cada consulta viaja por la red. La latencia de red afecta directamente al rendimiento.</li>
+        <li><strong>Desactivado por defecto</strong> en la mayoría de distribuciones. Hay que habilitarlo en el <code>my.cnf</code> añadiendo la línea <code>federated</code> bajo <code>[mysqld]</code>.</li>
+      </ul>
     </div>
+    <h3 class="mt-4">Casos de uso reales</h3>
+    <ul>
+      <li>Acceder a datos de <strong>otra sede sin moverlos</strong> (consultar datos de la sede de Madrid desde la central en Barcelona).</li>
+      <li><strong>Migraciones graduales:</strong> mientras migras datos, mantienes acceso al servidor antiguo vía FEDERATED.</li>
+      <li><strong>Consolidar informes:</strong> lanzar SELECT a varias BDs remotas desde un servidor central de análisis.</li>
+    </ul>
+  </section>
 
-    <!-- PRÁCTICA 2 -->
-    <div class="p-4 mt-5 rounded bg-dark border border-warning">
-        <h2 id="practica2" class="text-warning mb-4"><i class="fas fa-server me-2"></i>Práctica 2: Alta Disponibilidad (Replicación Master-Slave en MariaDB)</h2>
-        <p class="fs-5">Vamos a configurar una topología de <strong>Alta Disponibilidad</strong> usando Docker Compose. Tendremos un nodo <strong>Master</strong> (donde se hacen las escrituras) y un nodo <strong>Slave</strong> (que replica los datos del Master y sirve para lecturas).</p>
+  <section id="replicacion" class="mb-5">
+    <h2><i class="fas fa-clone section-icon"></i>4. Replicación: Tipos y Topologías</h2>
+    <p>La replicación mantiene copias sincronizadas de una base de datos en múltiples servidores. A diferencia del motor FEDERATED (acceso en tiempo real al remoto), la replicación <strong>mantiene una copia local de los datos</strong> que se actualiza de forma asíncrona.</p>
+    <h3 class="mt-4">¿Cómo funciona internamente?</h3>
+    <p>MariaDB usa el <strong>Binary Log (binlog)</strong> como mecanismo. Cada cambio en el Maestro se registra en el binlog. El Esclavo lee ese log y aplica los mismos cambios en su copia local.</p>
+    <pre><code class="language-text bg-black p-3 rounded d-block text-success">Master:
+  [App] ──► [MariaDB] ──► [mysql-bin.000001]  (Binary Log)
+                                    │
+                          I/O Thread del Esclavo lee el log por red
+Slave:                              │
+  [App lectura] ──► [MariaDB copia] ◄── [Relay Log] ◄── Red
+                          │
+               SQL Thread aplica los cambios del Relay Log</code></pre>
+    <h3 class="mt-4">Topologías de Replicación</h3>
+    <div class="accordion" id="accordionTopologias">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#topoMasterSlave">
+            <i class="fas fa-arrow-right me-2 text-success"></i>Maestro → Esclavo (la más común)
+          </button>
+        </h2>
+        <div id="topoMasterSlave" class="accordion-collapse collapse" data-bs-parent="#accordionTopologias">
+          <div class="accordion-body">
+            <p>Un solo Maestro recibe todas las escrituras. Uno o varios Esclavos sirven las lecturas. La replicación fluye en un solo sentido.</p>
+            <p><strong>Ideal para:</strong> aplicaciones con alta carga de lectura (blogs, catálogos, reportes).</p>
+            <p class="mb-0"><strong>Riesgo:</strong> si el Maestro cae, no hay nodo que asuma escrituras automáticamente (se necesita failover manual).</p>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#topoChain">
+            <i class="fas fa-link me-2 text-warning"></i>Replicación en Cadena (A → B → C)
+          </button>
+        </h2>
+        <div id="topoChain" class="accordion-collapse collapse" data-bs-parent="#accordionTopologias">
+          <div class="accordion-body">
+            <p>El Nodo A es Maestro del Nodo B, y el Nodo B es a su vez Maestro del Nodo C. Los cambios se propagan en cascada. Para ello, B debe tener <code>log_slave_updates = ON</code> en su <code>my.cnf</code>.</p>
+            <pre><code class="language-text bg-black p-2 rounded d-block text-success">A (Master) ──▶ B (Slave de A + Master de C) ──▶ C (Slave de B)</code></pre>
+            <p><strong>Ventaja:</strong> el Maestro original solo sirve a un Esclavo, reduciendo su carga. Ideal para replicar datos entre sedes geográficamente distantes.</p>
+            <p class="mb-0"><strong>Inconveniente:</strong> si B cae, C deja de recibir actualizaciones aunque A siga funcionando.</p>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#topoMultiMaster">
+            <i class="fas fa-exchange-alt me-2 text-danger"></i>Multi-Maestro (todos escriben)
+          </button>
+        </h2>
+        <div id="topoMultiMaster" class="accordion-collapse collapse" data-bs-parent="#accordionTopologias">
+          <div class="accordion-body">
+            <p>Todos los nodos pueden recibir escrituras y se replican entre sí en ambas direcciones. Ofrece la máxima disponibilidad pero introduce <strong>conflictos de escritura</strong>: si dos nodos modifican el mismo registro a la vez, hay que resolver cuál prevalece.</p>
+            <p class="mb-0"><strong>Soluciones comunes:</strong> Galera Cluster (MariaDB), Group Replication (MySQL). Son más complejos que la replicación estándar pero se usan en producción crítica.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        <h4 class="mt-4 text-info">Paso 1: Archivo docker-compose.yml</h4>
-        <p>Crea un directorio para tu proyecto y dentro genera el archivo <code>docker-compose.yml</code>:</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>version: '3.8'
-services:
-  mariadb-master:
-    image: mariadb:10.11
-    container_name: mariadb-master
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpwd
-      MYSQL_DATABASE: agenda
-    command: [
-      "mysqld",
-      "--server-id=1",
-      "--log-bin=mysql-bin",
-      "--bind-address=0.0.0.0"
-    ]
-    ports:
-      - "3306:3306"
+  <section id="disponibilidad" class="mb-5">
+    <h2><i class="fas fa-heartbeat section-icon"></i>5. Alta Disponibilidad y Tolerancia a Fallos</h2>
+    <p>Tener una réplica no sirve de nada si cuando el Maestro cae nadie sabe qué hacer. La <strong>Alta Disponibilidad (HA)</strong> es la capacidad del sistema de seguir funcionando cuando un nodo falla.</p>
+    <h3 class="mt-4">¿Qué pasa cuando cae un nodo?</h3>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped table-bordered">
+        <thead class="table-danger">
+          <tr><th>Escenario</th><th>Impacto</th><th>Solución</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cae el <strong>Maestro</strong></td><td>Las escrituras dejan de funcionar. Las lecturas en los Esclavos siguen (con datos hasta el momento de la caída).</td><td><strong>Failover manual:</strong> promover uno de los Esclavos a Maestro. Las aplicaciones deben apuntar al nuevo Maestro.</td></tr>
+          <tr><td>Cae un <strong>Esclavo</strong></td><td>Se pierden capacidades de lectura, pero el sistema sigue operativo.</td><td>Redistribuir la carga entre los Esclavos restantes. Reconstruir el Esclavo caído cuando vuelva.</td></tr>
+          <tr><td>Cae un nodo en <strong>cadena</strong> (B de A→B→C)</td><td>C deja de actualizarse aunque A siga funcionando.</td><td>Reconectar C directamente a A, o reconstruir B.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 class="mt-4">Comandos de diagnóstico esenciales</h3>
+    <div class="accordion" id="accordionDiag">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diagMaster">Verificar el estado del Maestro</button>
+        </h2>
+        <div id="diagMaster" class="accordion-collapse collapse" data-bs-parent="#accordionDiag">
+          <div class="accordion-body">
+            <pre><code class="language-sql bg-black p-3 rounded d-block text-success">SHOW MASTER STATUS;
+-- Anotar: File y Position (el Esclavo los necesita al configurarse)
 
-  mariadb-slave:
-    image: mariadb:10.11
-    container_name: mariadb-slave
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpwd
-    command: [
-      "mysqld",
-      "--server-id=2",
-      "--bind-address=0.0.0.0"
-    ]
-    ports:
-      - "3307:3306"
-    depends_on:
-      - mariadb-master</code></pre>
-        <p>Levanta los contenedores con: <code>docker-compose up -d</code></p>
+SHOW BINARY LOGS;   -- Ver todos los binlogs disponibles</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diagSlave">Verificar el estado del Esclavo</button>
+        </h2>
+        <div id="diagSlave" class="accordion-collapse collapse" data-bs-parent="#accordionDiag">
+          <div class="accordion-body">
+            <pre><code class="language-sql bg-black p-3 rounded d-block text-success">SHOW SLAVE STATUS\G
 
-        <h4 class="mt-4 text-info">Paso 2: Configurar el Master</h4>
-        <p>Entra al contenedor del Master: <code>docker exec -it mariadb-master mysql -u root -p</code> (contraseña: rootpwd)</p>
-        <p>Crea un usuario específico para que el Slave pueda conectarse a replicar:</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>CREATE USER 'replica_user'@'%' IDENTIFIED BY 'replica_pass';
-GRANT REPLICATION SLAVE ON *.* TO 'replica_user'@'%';
-FLUSH PRIVILEGES;</code></pre>
-        <p>Revisa el estado del Master y <strong>anota el File y Position</strong>:</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>SHOW MASTER STATUS;</code></pre>
-        <p><em>(Supongamos que devuelve File: <code>mysql-bin.000001</code> y Position: <code>328</code>)</em></p>
+-- Las líneas más importantes:
+-- Slave_IO_Running: Yes      el hilo de red está conectado al Maestro
+-- Slave_SQL_Running: Yes     el hilo SQL está aplicando los cambios
+-- Seconds_Behind_Master: 0   retraso en segundos (0 = al día)
+-- Last_IO_Error:             si hay error de red, aparece aquí
+-- Last_SQL_Error:            si hay error al aplicar un cambio, aparece aquí</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diagFailover">Promover un Esclavo a Maestro (Failover manual)</button>
+        </h2>
+        <div id="diagFailover" class="accordion-collapse collapse" data-bs-parent="#accordionDiag">
+          <div class="accordion-body">
+            <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- En el Esclavo que vas a promover:
+STOP SLAVE;
+RESET SLAVE ALL;   -- Desvincularlo del antiguo Maestro
 
-        <h4 class="mt-4 text-info">Paso 3: Configurar el Slave e iniciar la replicación</h4>
-        <p>Entra al contenedor del Slave: <code>docker exec -it mariadb-slave mysql -u root -p</code></p>
-        <p>Configura la conexión hacia el Master usando los datos anotados (el host es el nombre del servicio en docker-compose):</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>CHANGE MASTER TO 
-    MASTER_HOST='mariadb-master',
-    MASTER_USER='replica_user',
-    MASTER_PASSWORD='replica_pass',
-    MASTER_LOG_FILE='mysql-bin.000001',
-    MASTER_LOG_POS=328;
+-- Ya actúa como Maestro independiente.
+-- Actualizar las aplicaciones para que apunten a esta nueva IP.
 
+-- Si el antiguo Maestro vuelve, lo reconectamos como Esclavo:
+CHANGE MASTER TO MASTER_HOST='IP_NUEVO_MASTER', ...;
 START SLAVE;</code></pre>
-
-        <h4 class="mt-4 text-info">Paso 4: Verificar la Replicación</h4>
-        <p>En el Slave, comprueba que la replicación funciona:</p>
-        <pre class="bg-secondary text-white p-3 rounded"><code>SHOW SLAVE STATUS\G</code></pre>
-        <p>Debes buscar que estas dos variables digan <strong>Yes</strong>:</p>
-        <ul>
-            <li><code>Slave_IO_Running: Yes</code></li>
-            <li><code>Slave_SQL_Running: Yes</code></li>
-        </ul>
-        <div class="alert alert-success mt-3">
-            <i class="fas fa-check-circle me-2"></i><strong>¡Comprobación final!</strong> Entra al Master, crea una tabla e inserta un dato en la BBDD <code>agenda</code>. Luego entra al Slave y haz un <code>SELECT</code>. ¡El dato estará ahí automáticamente!
+          </div>
         </div>
+      </div>
     </div>
+    <div class="alert alert-info mt-4">
+      <i class="fas fa-info-circle me-2"></i><strong>Más allá de la replicación manual:</strong> En entornos de producción reales se usan herramientas como <strong>MHA</strong>, <strong>Orchestrator</strong> o <strong>Galera Cluster</strong> que automatizan el failover. La replicación manual que estudias aquí es la base conceptual de todas esas soluciones avanzadas.
+    </div>
+  </section>
+
 </div>

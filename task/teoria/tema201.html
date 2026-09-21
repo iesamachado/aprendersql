@@ -1,67 +1,53 @@
-<!DOCTYPE html>
-<html lang="es" class="bg-dark text-white">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tema 1: Instalación de SGBD (RA1)</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #212529; color: #fff; }
-        .toc a { color: #0d6efd; text-decoration: none; }
-        .toc a:hover { text-decoration: underline; }
-        .section-icon { margin-right: 10px; color: #0d6efd; }
-    </style>
-<script src="../../js/theme-switcher.js"></script>
-</head>
-<body class="bg-dark text-white">
-
 <div class="tema-content p-4">
-    <h1 class="mb-4"><i class="fas fa-database section-icon"></i> Tema 1: Instalación de SGBD (RA1)</h1>
+  <div class="text-center mb-5">
+    <h1 class="display-5 text-primary"><i class="fas fa-database me-3"></i>Tema 1: Instalación de SGBD</h1>
+    <p class="lead">Módulo: Administración de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA1</span></p>
+    <p class="text-secondary">Tipos de SGBD · Arquitectura ANSI/SPARC · Docker, MariaDB, Oracle y SQL Server</p>
+  </div>
 
-    <div class="card bg-secondary text-white mb-4 toc">
-        <div class="card-body">
-            <h5 class="card-title"><i class="fas fa-list"></i> Índice de Contenidos</h5>
-            <ul>
-                <li><a href="#tipos-sgbd" class="text-info">1. Tipos de SGBD</a></li>
-                <li><a href="#arquitectura-ansi" class="text-info">2. Arquitectura ANSI/SPARC</a></li>
-                <li><a href="#instalacion-docker" class="text-info">3. Instalación usando Docker</a>
-                    <ul>
-                        <li><a href="#mariadb-docker" class="text-info">3.1. MariaDB en Linux/Docker</a></li>
-                    </ul>
-                </li>
-                <li><a href="#instalacion-oracle" class="text-info">4. Oracle en Oracle Cloud / Linux</a></li>
-                <li><a href="#instalacion-sqlserver" class="text-info">5. SQL Server en VirtualBox con Windows</a></li>
-            </ul>
-        </div>
+
+  <!-- Índice -->
+  <div class="card border-info mb-5">
+    <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
+      <i class="fas fa-list me-2"></i>Índice del Tema
     </div>
+    <div class="card-body">
+      <ul class="list-unstyled mb-0" style="line-height: 2.2;">
+        <li><a href="#tipos-sgbd" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. Tipos de SGBD (Sistemas Gestores de Bases de Datos)</a></li>
+        <li><a href="#arquitectura-ansi" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Arquitectura ANSI/SPARC</a></li>
+        <li><a href="#diccionario-datos" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. El Diccionario de Datos (information_schema)</a></li>
+        <li><a href="#instalacion-docker" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Instalación usando Docker</a></li>
+        <li><a href="#instalacion-oracle" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>5. Oracle en Oracle Cloud / Linux</a></li>
+        <li><a href="#instalacion-sqlserver" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>6. SQL Server en VirtualBox con Windows</a></li>
+      </ul>
+    </div>
+  </div>
+  
 
-    <section id="tipos-sgbd" class="mb-5">
+<section id="tipos-sgbd" class="mb-5">
         <h2><i class="fas fa-server section-icon"></i>1. Tipos de SGBD (Sistemas Gestores de Bases de Datos)</h2>
         <p>Los SGBD se pueden clasificar principalmente en dos grandes categorías, dependiendo de su modelo de datos y características relacionales:</p>
-        <div class="accordion text-dark" id="accordionSGBD">
-            <div class="accordion-item bg-dark text-white border-secondary">
+        <div class="accordion" id="accordionSGBD">
+            <div class="accordion-item">
                 <h2 class="accordion-header" id="headingRelacional">
-                    <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#collapseRelacional" aria-expanded="false" aria-controls="collapseRelacional">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#collapseRelacional" aria-expanded="false" aria-controls="collapseRelacional">
                         SGBD Relacionales (SQL)
                     </button>
                 </h2>
                 <div id="collapseRelacional" class="accordion-collapse collapse" aria-labelledby="headingRelacional" data-bs-parent="#accordionSGBD">
-                    <div class="accordion-body border-top border-secondary">
+                    <div class="accordion-body border-top">
                         Utilizan el modelo relacional donde los datos se almacenan en tablas (filas y columnas) vinculadas mediante claves. Ejemplos: MySQL, MariaDB, PostgreSQL, Oracle, SQL Server.
                     </div>
                 </div>
             </div>
-            <div class="accordion-item bg-dark text-white border-secondary">
+            <div class="accordion-item">
                 <h2 class="accordion-header" id="headingNoRelacional">
-                    <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNoRelacional" aria-expanded="false" aria-controls="collapseNoRelacional">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNoRelacional" aria-expanded="false" aria-controls="collapseNoRelacional">
                         SGBD No Relacionales (NoSQL)
                     </button>
                 </h2>
                 <div id="collapseNoRelacional" class="accordion-collapse collapse" aria-labelledby="headingNoRelacional" data-bs-parent="#accordionSGBD">
-                    <div class="accordion-body border-top border-secondary">
+                    <div class="accordion-body border-top">
                         No utilizan el modelo tabular clásico, diseñados para grandes volúmenes de datos distribuidos. Tipos: Documentales (MongoDB), Clave-Valor (Redis), Grafos (Neo4j), Columnas (Cassandra).
                     </div>
                 </div>
@@ -73,11 +59,121 @@
         <h2><i class="fas fa-layer-group section-icon"></i>2. Arquitectura ANSI/SPARC</h2>
         <p>La arquitectura ANSI/SPARC de tres niveles es un estándar para el diseño de SGBD, que separa la visión del usuario de la estructura física de la base de datos:</p>
         <ul class="list-group list-group-flush mb-3">
-            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-eye text-primary"></i> <strong>Nivel Externo (Vistas):</strong> Es la forma en que los usuarios o aplicaciones ven los datos. Permite múltiples vistas personalizadas.</li>
-            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-sitemap text-warning"></i> <strong>Nivel Conceptual (Lógico):</strong> Describe qué datos se almacenan en la base de datos y las relaciones entre ellos (tablas, restricciones), ocultando los detalles físicos.</li>
-            <li class="list-group-item bg-dark text-white border-secondary"><i class="fas fa-hdd text-danger"></i> <strong>Nivel Interno (Físico):</strong> Describe cómo se almacenan físicamente los datos en los dispositivos de almacenamiento (índices, archivos, asignación de espacio).</li>
+            <li class="list-group-item"><i class="fas fa-eye text-primary"></i> <strong>Nivel Externo (Vistas):</strong> Es la forma en que los usuarios o aplicaciones ven los datos. Permite múltiples vistas personalizadas.</li>
+            <li class="list-group-item"><i class="fas fa-sitemap text-warning"></i> <strong>Nivel Conceptual (Lógico):</strong> Describe qué datos se almacenan en la base de datos y las relaciones entre ellos (tablas, restricciones), ocultando los detalles físicos.</li>
+            <li class="list-group-item"><i class="fas fa-hdd text-danger"></i> <strong>Nivel Interno (Físico):</strong> Describe cómo se almacenan físicamente los datos en los dispositivos de almacenamiento (índices, archivos, asignación de espacio).</li>
         </ul>
         <p><strong>Ventaja principal:</strong> Independencia de datos (lógica y física).</p>
+    </section>
+
+    <section id="diccionario-datos" class="mb-5">
+      <h2><i class="fas fa-book section-icon"></i>3. El Diccionario de Datos (<code>information_schema</code>)</h2>
+      <p>El <strong>Diccionario de Datos</strong> (o Catálogo del Sistema) es una base de datos especial que el propio SGBD mantiene de forma automática. Contiene <em>metadatos</em>: datos sobre los propios datos. Saber leerlo es una habilidad esencial de cualquier administrador.</p>
+
+      <div class="alert alert-info">
+        <i class="fas fa-lightbulb me-2"></i><strong>Analogía:</strong> Si tu base de datos es una biblioteca, el diccionario de datos es el catálogo del bibliotecario: sabe exactamente qué libros hay, en qué estantería están, cuánto pesan y quién tiene permiso para leerlos.
+      </div>
+
+      <p>En MariaDB, el diccionario de datos se accede a través de la base de datos virtual <code>information_schema</code>. No ocupa espacio en disco: se genera en memoria en el momento de la consulta.</p>
+
+      <h3 class="mt-4">Vistas más importantes de <code>information_schema</code></h3>
+      <div class="table-responsive">
+        <table class="table table-dark table-striped table-bordered">
+          <thead class="table-primary">
+            <tr><th>Vista</th><th>¿Qué contiene?</th><th>Ejemplo de uso</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>TABLES</code></td><td>Todas las tablas de todas las BDs: nombre, motor, número de filas, tamaño...</td><td>Ver qué tablas tiene una BD</td></tr>
+            <tr><td><code>COLUMNS</code></td><td>Todas las columnas de todas las tablas: nombre, tipo de dato, nulabilidad, valor por defecto...</td><td>Auditar si una columna existe en producción</td></tr>
+            <tr><td><code>ROUTINES</code></td><td>Funciones y procedimientos almacenados: nombre, parámetros, cuerpo del código...</td><td>Listar todos los procedimientos de una BD</td></tr>
+            <tr><td><code>TRIGGERS</code></td><td>Todos los triggers: evento (INSERT/UPDATE), tabla asociada, cuerpo...</td><td>Ver qué triggers pueden estar disparándose</td></tr>
+            <tr><td><code>VIEWS</code></td><td>Todas las vistas: definición de la consulta SQL que las genera</td><td>Revisar si una vista está bien definida</td></tr>
+            <tr><td><code>USER_PRIVILEGES</code></td><td>Privilegios globales de los usuarios</td><td>Auditoría de seguridad</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="mt-4">Consultas útiles de administración</h3>
+      <div class="accordion" id="accordionInfoSchema">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#infoTables">
+              <i class="fas fa-table me-2"></i>Ver todas las tablas de una base de datos con su tamaño
+            </button>
+          </h2>
+          <div id="infoTables" class="accordion-collapse collapse" data-bs-parent="#accordionInfoSchema">
+            <div class="accordion-body">
+              <pre><code class="language-sql bg-black p-3 rounded d-block text-success">SELECT
+  TABLE_NAME          AS 'Tabla',
+  ENGINE              AS 'Motor',
+  TABLE_ROWS          AS 'Filas (aprox)',
+  ROUND(DATA_LENGTH / 1024 / 1024, 2) AS 'Tamaño (MB)'
+FROM information_schema.TABLES
+WHERE TABLE_SCHEMA = 'arepazo'
+ORDER BY DATA_LENGTH DESC;</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#infoColumns">
+              <i class="fas fa-columns me-2"></i>Ver todas las columnas de una tabla con su tipo
+            </button>
+          </h2>
+          <div id="infoColumns" class="accordion-collapse collapse" data-bs-parent="#accordionInfoSchema">
+            <div class="accordion-body">
+              <pre><code class="language-sql bg-black p-3 rounded d-block text-success">SELECT
+  COLUMN_NAME    AS 'Columna',
+  DATA_TYPE      AS 'Tipo',
+  IS_NULLABLE    AS 'Nulable',
+  COLUMN_DEFAULT AS 'Valor por defecto'
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'arepazo'
+  AND TABLE_NAME   = 'pedidos'
+ORDER BY ORDINAL_POSITION;</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#infoRoutines">
+              <i class="fas fa-code me-2"></i>Listar todos los procedimientos y funciones
+            </button>
+          </h2>
+          <div id="infoRoutines" class="accordion-collapse collapse" data-bs-parent="#accordionInfoSchema">
+            <div class="accordion-body">
+              <pre><code class="language-sql bg-black p-3 rounded d-block text-success">SELECT
+  ROUTINE_NAME AS 'Nombre',
+  ROUTINE_TYPE AS 'Tipo',    -- PROCEDURE o FUNCTION
+  DATA_TYPE    AS 'Devuelve'
+FROM information_schema.ROUTINES
+WHERE ROUTINE_SCHEMA = 'arepazo';</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#infoTriggers">
+              <i class="fas fa-bolt me-2"></i>Ver todos los triggers activos
+            </button>
+          </h2>
+          <div id="infoTriggers" class="accordion-collapse collapse" data-bs-parent="#accordionInfoSchema">
+            <div class="accordion-body">
+              <pre><code class="language-sql bg-black p-3 rounded d-block text-success">SELECT
+  TRIGGER_NAME   AS 'Trigger',
+  EVENT_MANIPULATION AS 'Evento',   -- INSERT, UPDATE, DELETE
+  EVENT_OBJECT_TABLE AS 'Sobre tabla',
+  ACTION_TIMING  AS 'BEFORE/AFTER'
+FROM information_schema.TRIGGERS
+WHERE TRIGGER_SCHEMA = 'arepazo';</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warning mt-4">
+        <i class="fas fa-user-shield me-2"></i><strong>Seguridad:</strong> Los usuarios solo ven en <code>information_schema</code> los objetos sobre los que tienen permisos. Un usuario con acceso solo a una tabla no podrá ver la definición de las demás. Esto lo convierte también en una herramienta de auditoría de permisos.
+      </div>
     </section>
 
     <section id="instalacion-docker" class="mb-5">
@@ -150,7 +246,4 @@ docker run -d --name mariadb_server \
 </div>
 
 <!-- Bootstrap 5 JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../../js/load-footer.js"></script>
-</body>
-</html>
+</div>
