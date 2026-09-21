@@ -1,8 +1,15 @@
 import { initAdminPage, showAdminToast } from './shared.js';
 import { initGradebook } from './gradebook.js';
 
-const { db, fb } = await initAdminPage();
+// Exponer funciones globales para onclick inmediatamente (evita errores si el usuario hace click muy rápido)
+window._syncPendingStudents = syncPendingStudents;
+window._addAlumnoToClass = addAlumnoToClass;
+window._removeFromClass = removeFromClass;
+window._saveBloques = saveBloques;
+window._saveTandas = saveTandas;
+window._verResultados = verResultados;
 
+let db, fb;
 const claseId = new URLSearchParams(window.location.search).get('id');
 if (!claseId) window.location.href = 'clases.html';
 
@@ -12,16 +19,6 @@ let currentExamenesActivos = [];
 let currentTandasModo = {};
 let currentTandasIds = [];
 let claseCurriculum = null;
-
-await loadClase();
-
-// Exponer funciones globales para onclick
-window._syncPendingStudents = syncPendingStudents;
-window._addAlumnoToClass = addAlumnoToClass;
-window._removeFromClass = removeFromClass;
-window._saveBloques = saveBloques;
-window._saveTandas = saveTandas;
-window._verResultados = verResultados;
 
 window._openClassroomSyncModal = async () => {
   const token = localStorage.getItem('gclassroom_token');
@@ -1299,3 +1296,16 @@ window._saveExamenes = async function() {
     btn.disabled = false;
   }
 };
+
+// === INICIALIZACIÓN (Ejecutada al final para asegurar que window.* estén definidos) ===
+(async () => {
+  try {
+    const adminCtx = await initAdminPage();
+    db = adminCtx.db;
+    fb = adminCtx.fb;
+    await loadClase();
+  } catch(e) {
+    console.error("Error al inicializar clase:", e);
+    if(typeof showAdminToast === 'function') showAdminToast('❌', 'Error al cargar los datos', 'error');
+  }
+})();
