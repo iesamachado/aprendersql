@@ -21,6 +21,7 @@ initTaskPage().then(async (ctx) => {
 
   // Escuchar el estado del examen (para saber si el profe lo cierra en vivo)
   onSnapshot(doc(db, "examenes_test", exId), async (snap) => {
+    try {
     if (!snap.exists()) {
       showFinished("El examen no existe.");
       return;
@@ -32,7 +33,13 @@ initTaskPage().then(async (ctx) => {
     // Load existing participation first
     if (!respuestaDoc) {
       respuestaRef = doc(db, "respuestas_test", `${exId}_${user.uid}`);
-      const rSnap = await getDoc(respuestaRef);
+      let rSnap;
+      try {
+        rSnap = await getDoc(respuestaRef);
+      } catch (e) {
+        console.error("ERROR EN getDoc de onSnapshot:", e);
+        throw e;
+      }
       if (rSnap.exists()) {
         respuestaDoc = rSnap.data();
       }
@@ -70,12 +77,22 @@ initTaskPage().then(async (ctx) => {
     if (examen.resultadosPublicados && respuestaDoc?.entregadoEn) {
       showFinished();
     }
+    } catch (firebaseError) {
+      console.error("ERROR GLOBAL EN ONSNAPSHOT:", firebaseError);
+      alert("Error: " + firebaseError.message);
+    }
   });
 });
 
 async function initStudentState(exId) {
   respuestaRef = doc(db, "respuestas_test", `${exId}_${user.uid}`);
-  const snap = await getDoc(respuestaRef);
+  let snap;
+  try {
+    snap = await getDoc(respuestaRef);
+  } catch(e) {
+    console.error("ERROR EN getDoc de initStudentState:", e);
+    throw e;
+  }
   
   if (snap.exists()) {
     respuestaDoc = snap.data();
@@ -105,7 +122,12 @@ async function initStudentState(exId) {
       respuestas: {},
       empezadoEn: serverTimestamp()
     };
-    await setDoc(respuestaRef, respuestaDoc);
+    try {
+      await setDoc(respuestaRef, respuestaDoc);
+    } catch(e) {
+      console.error("ERROR EN setDoc de initStudentState:", e);
+      throw e;
+    }
   }
 }
 
@@ -295,6 +317,9 @@ async function showFinished(msgOverride) {
       reviewContainer.classList.remove('d-none');
       
       let reviewHtml = '';
+      let cRight = 0;
+      let cWrong = 0;
+      let cBlank = 0;
       
       examen.preguntas.forEach((q, idx) => {
         const studentAnsIdx = data.respuestas[q.id];
@@ -302,12 +327,17 @@ async function showFinished(msgOverride) {
         const isCorrect = studentAnsIdx === correctOrigIdx;
         const noAnswer = studentAnsIdx === undefined;
         
+        if (noAnswer) cBlank++;
+        else if (isCorrect) cRight++;
+        else cWrong++;
+        
         let headerColor = isCorrect ? 'text-success' : (noAnswer ? 'text-warning' : 'text-danger');
         let headerIcon = isCorrect ? 'fa-check' : (noAnswer ? 'fa-minus' : 'fa-times');
+        let blankBadge = noAnswer ? '<span class="badge bg-warning text-dark ms-2"><i class="fas fa-ban me-1"></i>En blanco</span>' : '';
         
         reviewHtml += `<div class="card bg-dark border-secondary mb-4">
           <div class="card-header border-secondary ${headerColor}">
-            <i class="fas ${headerIcon} me-2"></i><strong>Pregunta ${idx + 1}:</strong> ${q.enunciado}
+            <i class="fas ${headerIcon} me-2"></i><strong>Pregunta ${idx + 1}</strong>${blankBadge}: ${q.enunciado}
           </div>
           <div class="card-body py-2">`;
           
@@ -328,6 +358,12 @@ async function showFinished(msgOverride) {
       });
       
       reviewList.innerHTML = reviewHtml;
+      
+      document.getElementById('stats-summary').style.setProperty('display', 'flex', 'important');
+      document.getElementById('stat-correct').innerText = cRight;
+      document.getElementById('stat-incorrect').innerText = cWrong;
+      document.getElementById('stat-blank').innerText = cBlank;
+      document.getElementById('final-aciertos').innerHTML = `Calificación oficial<br><small class="text-secondary">(3 errores restan 1 acierto)</small>`;
     }
   }
 }

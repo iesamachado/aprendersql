@@ -1,6 +1,9 @@
 import { initTaskPage, showToast } from './auth.js';
 
 const { user, userDoc, db, fb } = await initTaskPage();
+window.currentBloquesFull = [];
+window.currentTestExams = [];
+window.currentClase = null;
 const urlParams = new URLSearchParams(window.location.search);
 const claseId = urlParams.get('claseId');
 const claseNombre = urlParams.get('cName') || 'Clase';
@@ -75,144 +78,12 @@ async function loadTandas() {
       });
     }
 
-    if (bloquesActivosFull.length > 0) {
-      const groups = {};
-      
-      const getFriendlyTopicName = (temaStr) => {
-        const numMatch = temaStr.match(/Tema\s+(\d+)/i);
-        if (!numMatch) return temaStr;
-        const numStr = numMatch[1];
-        const isSegundo = clase.modulo === '0377';
-        if (!isSegundo) {
-          if (numStr === '1') return 'U1: Introducción a los SGBD';
-          if (numStr === '2') return 'U2: Diseño Lógico y Conceptual';
-          if (numStr === '3') return 'U3: Modelo Físico de Datos (DDL)';
-          if (numStr === '4') return 'U4: Consultas en SQL (DML)';
-          if (numStr === '5') return 'U5: Programación y Modificación de Datos';
-          return `U${numStr}: Bases de Datos`;
-        } else {
-          if (numStr === '1') return 'U1: Instalación de SGBD';
-          if (numStr === '2') return 'U2: Configuración y Arquitectura';
-          if (numStr === '3') return 'U3: Seguridad y Control de Acceso';
-          if (numStr === '4') return 'U4: Automatización Avanzada';
-          if (numStr === '5') return 'U5: Optimización de Rendimiento';
-          if (numStr === '6') return 'U6: Alta Disponibilidad';
-          return `U${numStr}: Administración SGBD`;
-        }
-      };
-
-      bloquesActivosFull.forEach(bloque => {
-        let groupName = 'Otros';
-        const match = bloque.nombre.match(/^(Tema\s+\d+)/i);
-        if (match) {
-          groupName = match[1];
-        } else if (bloque.temaRef) {
-          const temaBloque = window.BLOQUES ? window.BLOQUES.find(b => b.id === bloque.temaRef) : null;
-          if (temaBloque) {
-             const m2 = temaBloque.nombre.match(/^(Tema\s+\d+)/i);
-             if (m2) groupName = m2[1];
-          }
-        } else if (bloque.tipo === 'tarea' && bloque.nombre.toLowerCase().includes('tarea')) {
-          groupName = 'Tareas Prácticas';
-        }
-        
-        const friendlyName = getFriendlyTopicName(groupName);
-        if (!groups[friendlyName]) groups[friendlyName] = [];
-        groups[friendlyName].push(bloque);
-      });
-
-      const groupKeys = Object.keys(groups).sort((a, b) => {
-        if (a === 'Otros') return 1;
-        if (b === 'Otros') return -1;
-        if (a === 'Tareas Prácticas') return 1;
-        if (b === 'Tareas Prácticas') return -1;
-        const numA = parseInt(a.replace(/[^\d]/g, '')) || 0;
-        const numB = parseInt(b.replace(/[^\d]/g, '')) || 0;
-        return numA - numB;
-      });
-
-      groupKeys.forEach(groupName => {
-        html += `<div class="col-12 mt-4 mb-3">
-                   <h5 class="text-white border-bottom border-secondary pb-2">
-                     <i class="fas fa-layer-group text-primary me-2"></i>${groupName}
-                   </h5>
-                   <div class="list-group list-group-flush w-100">`;
-                   
-        groups[groupName].forEach(bloque => {
-          const isTheory = bloque.tipo === 'teoria';
-          const isTask = bloque.tipo === 'tarea';
-          
-          let btnClass, btnText, iconClass, badgeClass, badgeText, borderColor;
-          let linkHref = `teoria.html?bloqueId=${bloque.id}&claseId=${claseId}`;
-          let namePrefixHtml = '';
-          
-          if (bloque.isLegacyTanda) {
-            const isExamen = bloque.modo === 'examen';
-            btnClass = isExamen ? 'btn-danger' : 'btn-success';
-            btnText = 'Iniciar';
-            iconClass = isExamen ? 'fa-stopwatch text-danger' : 'fa-dumbbell text-success';
-            badgeClass = isExamen ? 'bg-danger' : 'bg-success';
-            badgeText = bloque.modo.toUpperCase();
-            borderColor = isExamen ? 'border-danger' : 'border-success';
-            linkHref = `ejercicio.html?tandaId=${bloque.tId}&claseId=${claseId}&modo=${bloque.modo}`;
-            namePrefixHtml = `<span style="font-size:1.1rem" class="d-none d-md-inline me-2">${bdIcons[bloque.bd] || '🗄️'}</span>`;
-          } else if (isTheory) {
-            btnClass = 'btn-outline-info';
-            btnText = 'Ver Teoría';
-            iconClass = 'fa-book-open text-info';
-            badgeClass = 'bg-info';
-            badgeText = 'Teoría';
-            borderColor = 'border-info';
-          } else if (isTask) {
-            btnClass = 'btn-outline-warning';
-            btnText = 'Ver Instrucciones';
-            iconClass = 'fa-clipboard-list text-warning';
-            badgeClass = 'bg-warning text-dark';
-            badgeText = 'Tarea Offline';
-            borderColor = 'border-warning';
-          } else { // ejercicios
-            btnClass = 'btn-primary text-dark fw-bold';
-            btnText = 'Practicar';
-            iconClass = 'fa-laptop-code text-primary';
-            badgeClass = 'bg-primary';
-            badgeText = 'Ejercicios';
-            borderColor = 'border-primary';
-            linkHref = `ejercicio.html?bloqueId=${bloque.id}&claseId=${claseId}&modo=practica`;
-          }
-
-          html += `
-            <div class="list-group-item bg-dark border-secondary border-start border-4 ${borderColor} mb-2 rounded d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3" style="transition: all 0.2s;">
-              <div class="flex-grow-1 pe-3 mb-3 mb-md-0">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  ${namePrefixHtml}
-                  <i class="fas ${iconClass} me-1 d-none d-md-inline"></i>
-                  <span class="badge ${badgeClass}" style="font-size:0.7rem">${badgeText}</span>
-                  <h6 class="mb-0 text-white">${bloque.nombre}</h6>
-                </div>
-                <div class="text-muted small ms-md-4">${bloque.desc || ''}</div>
-              </div>
-              <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm ${btnClass} text-nowrap" onclick="window.location.href='${linkHref}'">
-                  <i class="fas fa-eye"></i> ${btnText}
-                </button>
-              </div>
-            </div>
-          `;
-        });
-        
-        html += `</div></div>`;
-      });
-    }
-
-    
-    
-    if (!html) {
-      html = '<div class="col-12"><div class="empty-state"><div class="icon">📭</div><h5>No hay tareas</h5><p>Tu profesor no ha asignado ninguna tarea ni temario para esta clase todavía.</p></div></div>';
-    }
-
-    container.innerHTML = html;
+    window.currentBloquesFull = bloquesActivosFull;
+    window.currentClase = clase;
+    renderAllTandasUI();
 
   } catch (e) {
+
     container.innerHTML = `<div class="col-12"><div class="alert alert-danger">Error: ${e.message}</div></div>`;
   }
 }
@@ -444,45 +315,212 @@ function loadActiveTestExams() {
   );
 
   onSnapshot(exQuery, (snap) => {
-    const container = document.getElementById('examenes-test-container');
-    const list = document.getElementById('examenes-test-list');
-    if (!container || !list) return;
 
     if (snap.empty) {
       container.classList.add('d-none');
       return;
     }
 
-    container.classList.remove('d-none');
-    let html = '';
+    let exams = [];
     snap.forEach(docSnap => {
       const d = docSnap.data();
-      
-      // Mostrar activos y cerrados, ignorar ocultos
       if (d.estado === "oculto") return;
+      exams.push({ id: docSnap.id, ...d });
+    });
+    window.currentTestExams = exams;
+    renderAllTandasUI();
+  });
+}
+loadActiveTestExams();
+
+function renderAllTandasUI() {
+  const container = document.getElementById('tandas-container');
+  if (!container || !window.currentClase) return;
+  const clase = window.currentClase;
+  
+  let html = '';
+  const groups = {};
+  
+  const getFriendlyTopicName = (temaStr) => {
+    const numMatch = temaStr.match(/Tema\s+(\d+)/i);
+    const raMatch = temaStr.match(/RA\s+(\d+)/i);
+    const isSegundo = clase.modulo === '0377';
+    
+    let numStr = null;
+    if (numMatch) numStr = numMatch[1];
+    else if (raMatch) numStr = raMatch[1];
+    else return temaStr;
+    
+    if (!isSegundo) {
+      if (numStr === '1') return 'U1: Introducción a los SGBD';
+      if (numStr === '2') return 'U2: Diseño Lógico y Conceptual';
+      if (numStr === '3') return 'U3: Modelo Físico de Datos (DDL)';
+      if (numStr === '4') return 'U4: Consultas en SQL (DML)';
+      if (numStr === '5') return 'U5: Programación y Modificación de Datos';
+      return `U${numStr}: Bases de Datos`;
+    } else {
+      if (numStr === '1') return 'U1: Instalación de SGBD';
+      if (numStr === '2') return 'U2: Configuración y Arquitectura';
+      if (numStr === '3') return 'U3: Seguridad y Control de Acceso';
+      if (numStr === '4') return 'U4: Automatización Avanzada';
+      if (numStr === '5') return 'U5: Optimización de Rendimiento';
+      if (numStr === '6') return 'U6: Alta Disponibilidad';
+      return `U${numStr}: Administración SGBD`;
+    }
+  };
+
+  if (window.currentBloquesFull) {
+    window.currentBloquesFull.forEach(bloque => {
+      let groupName = 'Otros';
+      const match = bloque.nombre.match(/^(Tema\s+\d+|RA\s*\d+)/i);
+      if (match) {
+        groupName = match[1];
+      } else if (bloque.temaRef) {
+        const temaBloque = window.BLOQUES ? window.BLOQUES.find(b => b.id === bloque.temaRef) : null;
+        if (temaBloque) {
+           const m2 = temaBloque.nombre.match(/^(Tema\s+\d+|RA\s*\d+)/i);
+           if (m2) groupName = m2[1];
+        }
+      } else if (bloque.tipo === 'tarea' && bloque.nombre.toLowerCase().includes('tarea')) {
+        groupName = 'Tareas Prácticas';
+      }
       
-      const isClosed = d.estado === 'cerrado';
-      const cardClass = isClosed ? 'bg-dark text-light border-secondary' : 'bg-warning text-dark border-warning';
-      const icon = isClosed ? 'fa-lock' : 'fa-exclamation-triangle';
-      const btnText = isClosed ? 'Ver Resultados' : 'Comenzar Examen';
-      const btnClass = isClosed ? 'btn-outline-info' : 'btn-dark';
-      const badge = isClosed ? '<span class="badge bg-secondary float-end mt-1">Cerrado</span>' : '<span class="badge bg-danger float-end mt-1 blink">Activo</span>';
-      
-      html += `
-        <div class="col-md-6 col-lg-4 mb-3">
-          <div class="card ${cardClass} h-100 shadow-sm" style="border-width: 2px;">
-            <div class="card-body">
-              ${badge}
-              <h5 class="card-title fw-bold"><i class="fas ${icon} me-2"></i>${d.titulo}</h5>
-              <p class="card-text mb-1 mt-3"><strong>Preguntas:</strong> ${d.preguntas ? d.preguntas.length : 0}</p>
-              <p class="card-text mb-3"><strong>Tiempo límite:</strong> ${d.tiempoMinutos} min</p>
-              <a href="examen.html?id=${docSnap.id}" class="btn ${btnClass} w-100 fw-bold">${btnText} <i class="fas fa-arrow-right ms-2"></i></a>
+      const friendlyName = getFriendlyTopicName(groupName);
+      if (!groups[friendlyName]) groups[friendlyName] = [];
+      groups[friendlyName].push(bloque);
+    });
+  }
+
+  if (window.currentTestExams) {
+    window.currentTestExams.forEach(ex => {
+      // Determine the RA/Tema of the exam based on its first question, or its title
+      let groupName = 'Exámenes';
+      if (ex.preguntas && ex.preguntas.length > 0 && ex.preguntas[0].ra) {
+        groupName = `RA ${ex.preguntas[0].ra}`;
+      } else {
+        const titleMatch = ex.titulo.match(/(RA\s*\d+|Tema\s*\d+)/i);
+        if (titleMatch) groupName = titleMatch[1];
+      }
+      const friendlyName = getFriendlyTopicName(groupName);
+      if (!groups[friendlyName]) groups[friendlyName] = [];
+      groups[friendlyName].push({ isNewTestExam: true, ...ex });
+    });
+  }
+
+  const groupKeys = Object.keys(groups).sort((a, b) => {
+    if (a === 'Otros') return 1;
+    if (b === 'Otros') return -1;
+    if (a === 'Tareas Prácticas') return 1;
+    if (b === 'Tareas Prácticas') return -1;
+    if (a === 'Exámenes') return 1;
+    if (b === 'Exámenes') return -1;
+    const numA = parseInt(a.replace(/[^\d]/g, '')) || 0;
+    const numB = parseInt(b.replace(/[^\d]/g, '')) || 0;
+    return numA - numB;
+  });
+
+  groupKeys.forEach(groupName => {
+    html += `<div class="col-12 mt-4 mb-3">
+               <h5 class="text-white border-bottom border-secondary pb-2">
+                 <i class="fas fa-layer-group text-primary me-2"></i>${groupName}
+               </h5>
+               <div class="list-group list-group-flush w-100">`;
+               
+    groups[groupName].forEach(bloque => {
+      if (bloque.isNewTestExam) {
+        const isClosed = bloque.estado === 'cerrado';
+        const cardClass = isClosed ? 'bg-dark text-light border-secondary' : 'bg-warning text-dark border-warning';
+        const iconClass = isClosed ? 'fa-lock text-secondary' : 'fa-exclamation-triangle text-dark';
+        const btnText = isClosed ? 'Ver Resultados' : 'Comenzar Examen';
+        const btnClass = isClosed ? 'btn-outline-info' : 'btn-dark';
+        const badge = isClosed ? '<span class="badge bg-secondary" style="font-size:0.7rem">Cerrado</span>' : '<span class="badge bg-danger blink" style="font-size:0.7rem">Activo</span>';
+        
+        html += `
+          <div class="list-group-item bg-dark border-secondary border-start border-4 ${isClosed ? 'border-secondary' : 'border-warning'} mb-2 rounded d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3" style="transition: all 0.2s;">
+            <div class="flex-grow-1 pe-3 mb-3 mb-md-0">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="fas ${iconClass} me-1 d-none d-md-inline"></i>
+                ${badge}
+                <h6 class="mb-0 ${isClosed ? 'text-light' : 'text-warning'}">${bloque.titulo}</h6>
+              </div>
+              <div class="text-muted small ms-md-4">Preguntas: <strong>${bloque.preguntas ? bloque.preguntas.length : 0}</strong> &nbsp;|&nbsp; Tiempo: <strong>${bloque.tiempoMinutos} min</strong></div>
             </div>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-sm ${btnClass} text-nowrap" onclick="window.location.href='examen.html?id=${bloque.id}'">
+                <i class="fas fa-eye"></i> ${btnText}
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const isTheory = bloque.tipo === 'teoria';
+      const isTask = bloque.tipo === 'tarea';
+      
+      let btnClass, btnText, iconClass, badgeClass, badgeText, borderColor;
+      let linkHref = `teoria.html?bloqueId=${bloque.id}&claseId=${claseId}`;
+      let namePrefixHtml = '';
+      
+      if (bloque.isLegacyTanda) {
+        const isExamen = bloque.modo === 'examen';
+        btnClass = isExamen ? 'btn-danger' : 'btn-success';
+        btnText = 'Iniciar';
+        iconClass = isExamen ? 'fa-stopwatch text-danger' : 'fa-dumbbell text-success';
+        badgeClass = isExamen ? 'bg-danger' : 'bg-success';
+        badgeText = bloque.modo.toUpperCase();
+        borderColor = isExamen ? 'border-danger' : 'border-success';
+        linkHref = `ejercicio.html?tandaId=${bloque.tId}&claseId=${claseId}&modo=${bloque.modo}`;
+        namePrefixHtml = `<span style="font-size:1.1rem" class="d-none d-md-inline me-2">${{ arepazo: '🍽️', nba: '🏀', alquiler: '🚗', pokemon: '⚡', futbol: '⚽', refugio: '☢️', heroes: '🦸', hogwarts: '🧙', arkham: '🦇', dnd: '🎲', mmorpg: '⚔️', dungeon: '🐉', baloncesto: '🏀', cosmere: '🌌' }[bloque.bd] || '🗄️'}</span>`;
+      } else if (isTheory) {
+        btnClass = 'btn-outline-info';
+        btnText = 'Ver Teoría';
+        iconClass = 'fa-book-open text-info';
+        badgeClass = 'bg-info';
+        badgeText = 'Teoría';
+        borderColor = 'border-info';
+      } else if (isTask) {
+        btnClass = 'btn-outline-warning';
+        btnText = 'Ver Instrucciones';
+        iconClass = 'fa-clipboard-list text-warning';
+        badgeClass = 'bg-warning text-dark';
+        badgeText = 'Tarea Offline';
+        borderColor = 'border-warning';
+      } else { // ejercicios
+        btnClass = 'btn-primary text-dark fw-bold';
+        btnText = 'Practicar';
+        iconClass = 'fa-laptop-code text-primary';
+        badgeClass = 'bg-primary';
+        badgeText = 'Ejercicios';
+        borderColor = 'border-primary';
+        linkHref = `ejercicio.html?bloqueId=${bloque.id}&claseId=${claseId}&modo=practica`;
+      }
+
+      html += `
+        <div class="list-group-item bg-dark border-secondary border-start border-4 ${borderColor} mb-2 rounded d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3" style="transition: all 0.2s;">
+          <div class="flex-grow-1 pe-3 mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              ${namePrefixHtml}
+              <i class="fas ${iconClass} me-1 d-none d-md-inline"></i>
+              <span class="badge ${badgeClass}" style="font-size:0.7rem">${badgeText}</span>
+              <h6 class="mb-0 text-white">${bloque.nombre}</h6>
+            </div>
+            <div class="text-muted small ms-md-4">${bloque.desc || ''}</div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm ${btnClass} text-nowrap" onclick="window.location.href='${linkHref}'">
+              <i class="fas fa-eye"></i> ${btnText}
+            </button>
           </div>
         </div>
       `;
     });
-    list.innerHTML = html;
+    
+    html += `</div></div>`;
   });
+
+  if (!html) {
+    html = '<div class="col-12"><div class="empty-state"><div class="icon">📭</div><h5>No hay tareas</h5><p>Tu profesor no ha asignado ninguna tarea ni temario para esta clase todavía.</p></div></div>';
+  }
+  container.innerHTML = html;
 }
-loadActiveTestExams();

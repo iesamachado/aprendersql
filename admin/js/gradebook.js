@@ -7,6 +7,7 @@ let activeTasks = []; // list of { id, label, type, ra, maxScore }
 let students = []; // list of { uid, name, email }
 let manualGrades = {}; // uid -> { taskId: score }
 let tandaGrades = {}; // uid -> { taskId: score }
+let testCriterioGrades = {}; // uid -> { criterio: [nota1, nota2, ...] } (de exámenes test online)
 let visibilityConfig = {};
 let examenesActivos = []; // "RA1": true, "tanda:1:arepazo": true
 
@@ -122,6 +123,7 @@ export async function initGradebook(claseActual, curriculum, currentTandasIds, c
 async function fetchGrades() {
   manualGrades = {};
   tandaGrades = {};
+  testCriterioGrades = {};
   visibilityConfig = {};
 
   try {
@@ -149,6 +151,30 @@ async function fetchGrades() {
           }
         }
       });
+
+      // Fetch Test Exam grades by criterion for this student
+      testCriterioGrades[st.uid] = {};
+      try {
+        const testQ = fb.query(
+          fb.collection(db, 'respuestas_test'),
+          fb.where('uid', '==', st.uid),
+          fb.where('claseId', '==', currentClase.id)
+        );
+        const testSnap = await fb.getDocs(testQ);
+        testSnap.forEach(docSnap => {
+          const data = docSnap.data();
+          // Solo exámenes entregados con desglose por criterio calculado
+          if (!data.entregadoEn || !data.notasCriterios) return;
+          for (const crit in data.notasCriterios) {
+            const nota = data.notasCriterios[crit];
+            if (nota === null) continue;
+            if (!testCriterioGrades[st.uid][crit]) testCriterioGrades[st.uid][crit] = [];
+            testCriterioGrades[st.uid][crit].push(nota);
+          }
+        });
+      } catch (e) {
+        console.warn("No se pudieron cargar notas de exámenes test:", e);
+      }
     }
 
     // Fetch visibility config
@@ -487,6 +513,10 @@ function renderGradebookRAs() {
             }
           }
         });
+        
+        // Añadir notas de exámenes test online para este criterio (promedio aritmético)
+        const testNotas = testCriterioGrades[st.uid]?.[crit] || [];
+        testNotas.forEach(n => gradesForCrit.push(n));
         
         if (gradesForCrit.length > 0) {
           // Average the grades for this criterion

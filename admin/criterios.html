@@ -50,6 +50,14 @@
             <option value="0377">0377 - Administración de SGBD</option>
           </select>
         </div>
+        <div>
+          <label class="form-label text-secondary small mb-1 d-none d-md-block">&nbsp;</label>
+          <div>
+            <button class="btn btn-outline-warning text-nowrap" id="btn-open-clone-modal" type="button" title="Clonar entre plantilla global y clases">
+              <i class="fas fa-clone me-1"></i> Clonar / Copiar...
+            </button>
+          </div>
+        </div>
         <div class="ms-auto" id="context-info">
           <!-- Info de carga -->
         </div>
@@ -104,6 +112,63 @@
 
     </div>
 
+    <!-- Modal para Clonar / Copiar Currículum -->
+    <div class="modal fade" id="modal-clone-curriculum" tabindex="-1" aria-labelledby="modalCloneTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border-secondary">
+          <div class="modal-header border-secondary bg-black">
+            <h5 class="modal-title" id="modalCloneTitle">
+              <i class="fas fa-clone text-warning me-2"></i>Clonar Configuración Curricular
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted small mb-3">
+              Copia los pesos de RAs, ponderaciones de criterios y asignaciones de tareas entre tu plantilla global y tus clases.
+            </p>
+
+            <div class="mb-3 p-3 bg-black bg-opacity-25 rounded border border-secondary border-opacity-50">
+              <label class="form-label small text-info fw-bold mb-2">Selecciona la operación:</label>
+              
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="cloneDirection" id="cloneDirTemplateToClass" value="templateToClass" checked>
+                <label class="form-check-label" for="cloneDirTemplateToClass">
+                  <strong class="text-white"><i class="fas fa-arrow-right text-warning me-1"></i> Plantilla Global ➔ a una Clase</strong>
+                  <div class="text-muted small">Copia la configuración de tu plantilla global en la clase seleccionada.</div>
+                </label>
+              </div>
+              
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="cloneDirection" id="cloneDirClassToTemplate" value="classToTemplate">
+                <label class="form-check-label" for="cloneDirClassToTemplate">
+                  <strong class="text-white"><i class="fas fa-arrow-left text-success me-1"></i> De una Clase ➔ a Plantilla Global</strong>
+                  <div class="text-muted small">Guarda la configuración de una clase existente como tu plantilla global.</div>
+                </label>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small text-secondary fw-bold" id="clone-class-label">Seleccionar Clase Destino:</label>
+              <select id="clone-class-selector" class="form-select bg-black text-light border-secondary">
+                <!-- Se rellena dinámicamente -->
+              </select>
+            </div>
+
+            <div class="alert alert-warning py-2 small mb-0 d-flex align-items-center">
+              <i class="fas fa-exclamation-triangle me-2 fs-5 text-warning flex-shrink-0"></i>
+              <div>Esta acción sobrescribirá las ponderaciones y el mapeo de la entidad destino.</div>
+            </div>
+          </div>
+          <div class="modal-footer border-secondary bg-black bg-opacity-25">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-sm btn-warning fw-bold" id="btn-execute-clone">
+              <i class="fas fa-copy me-1"></i> Clonar Ahora
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -113,7 +178,7 @@
 <script src="../js/ejercicios-data.js"></script>
 <script src="js/boja-data.js"></script>
 <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
-<script type="module" src="js/criterios.js"></script>
+<script type="module" src="js/criterios.js?v=3"></script>
 <script src="../js/load-footer.js"></script>
 </body>
 </html>

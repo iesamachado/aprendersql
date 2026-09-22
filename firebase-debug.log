@@ -1,0 +1,53 @@
+[debug] [2026-09-21T19:43:09.687Z] ----------------------------------------------------------------------
+[debug] [2026-09-21T19:43:09.693Z] Command:       /usr/bin/node /usr/local/bin/firebase emulators:exec firebase deploy --only firestore:rules
+[debug] [2026-09-21T19:43:09.694Z] CLI Version:   15.1.0
+[debug] [2026-09-21T19:43:09.694Z] Platform:      linux
+[debug] [2026-09-21T19:43:09.694Z] Node Version:  v22.22.1
+[debug] [2026-09-21T19:43:09.694Z] Time:          Mon Sep 21 2026 21:43:09 GMT+0200 (Hora d’estiu d’Europa central)
+[debug] [2026-09-21T19:43:09.695Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-09-21T19:43:09.698Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-09-21T19:43:11.011Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-09-21T19:43:11.011Z] > authorizing via signed-in user (bernat13@gmail.com)
+[debug] [2026-09-21T19:43:11.030Z] Error: EROFS: read-only file system, open '/home/bernat/.config/configstore/firebase-tools.json.268812286'
+    at Object.openSync (node:fs:560:18)
+    at Function.writeFileSync [as sync] (/usr/local/lib/node_modules/firebase-tools/node_modules/write-file-atomic/index.js:205:13)
+    at set all (/usr/local/lib/node_modules/firebase-tools/node_modules/configstore/index.js:61:20)
+    at Configstore.set (/usr/local/lib/node_modules/firebase-tools/node_modules/configstore/index.js:91:12)
+    at session (/usr/local/lib/node_modules/firebase-tools/lib/track.js:187:39)
+    at emulatorSession (/usr/local/lib/node_modules/firebase-tools/lib/track.js:163:12)
+    at trackEmulator (/usr/local/lib/node_modules/firebase-tools/lib/track.js:82:21)
+    at Command.<anonymous> (/usr/local/lib/node_modules/firebase-tools/lib/command.js:97:48)
+    at Command.listener [as _actionHandler] (/usr/local/lib/node_modules/firebase-tools/node_modules/commander/index.js:413:31)
+    at Command._parseCommand (/usr/local/lib/node_modules/firebase-tools/node_modules/commander/index.js:914:14)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-09-21T19:43:11.032Z] Error: EROFS: read-only file system, open '/home/bernat/.config/configstore/firebase-tools.json.1688551229'
+    at Object.openSync (node:fs:560:18)
+    at Function.writeFileSync [as sync] (/usr/local/lib/node_modules/firebase-tools/node_modules/write-file-atomic/index.js:205:13)
+    at set all (/usr/local/lib/node_modules/firebase-tools/node_modules/configstore/index.js:61:20)
+    at Configstore.set (/usr/local/lib/node_modules/firebase-tools/node_modules/configstore/index.js:91:12)
+    at session (/usr/local/lib/node_modules/firebase-tools/lib/track.js:187:39)
+    at emulatorSession (/usr/local/lib/node_modules/firebase-tools/lib/track.js:163:12)
+    at trackEmulator (/usr/local/lib/node_modules/firebase-tools/lib/track.js:82:21)
+    at /usr/local/lib/node_modules/firebase-tools/lib/command.js:146:53
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-09-21T19:43:11.063Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 403
+[debug] [2026-09-21T19:43:11.063Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json "Request to GET /cli.json on firebase-public.firebaseio.com not allowed by policy\n"
+[warn] ⚠  Unable to fetch the CLI MOTD and remote config. This is not a fatal error, but may indicate an issue with your network connection. 
+[debug] [2026-09-21T19:43:11.064Z] Failed to fetch MOTD FirebaseError: Unable to parse JSON: SyntaxError: Unexpected token 'R', "Request to"... is not valid JSON
+[debug] [2026-09-21T19:43:11.304Z] Error: EROFS: read-only file system, open '/home/bernat/.config/configstore/firebase-tools.json.699790733'
+    at Object.openSync (node:fs:560:18)
+    at Function.writeFileSync [as sync] (/usr/local/lib/node_modules/firebase-tools/node_modules/write-file-atomic/index.js:205:13)
+    at set all (/usr/local/lib/node_modules/firebase-tools/node_modules/configstore/index.js:61:20)
+    at Configstore.set (/usr/local/lib/node_modules/firebase-tools/node_modules/configstore/index.js:91:12)
+    at process.<anonymous> (/usr/local/lib/node_modules/firebase-tools/lib/bin/cli.js:62:39)
+    at process.emit (node:events:531:35)
+    at process.exit (node:internal/process/per_thread:240:15)
+    at Timeout._onTimeout (/usr/local/lib/node_modules/firebase-tools/lib/errorOut.js:20:17)
+    at listOnTimeout (node:internal/timers:585:17)
+    at process.processTimers (node:internal/timers:521:7)
+[error] 
+[error] Error: An unexpected error has occurred.

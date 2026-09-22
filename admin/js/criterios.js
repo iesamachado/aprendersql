@@ -23,6 +23,22 @@ async function init() {
   document.getElementById('btn-save-curriculum').addEventListener('click', saveCurriculum);
   document.getElementById('btn-add-custom-task').addEventListener('click', addCustomTask);
 
+  document.getElementById('btn-open-clone-modal').addEventListener('click', () => {
+    populateCloneModal();
+    new bootstrap.Modal(document.getElementById('modal-clone-curriculum')).show();
+  });
+
+  document.getElementById('btn-execute-clone').addEventListener('click', executeClone);
+
+  document.querySelectorAll('input[name="cloneDirection"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const isToClass = e.target.value === 'templateToClass';
+      document.getElementById('clone-class-label').textContent = isToClass 
+        ? 'Seleccionar Clase Destino:' 
+        : 'Seleccionar Clase Origen:';
+    });
+  });
+
   await loadClases();
   await loadCurriculum();
   renderAll();
@@ -125,11 +141,7 @@ async function loadCurriculum() {
   }
 }
 
-async function saveCurriculum() {
-  const btn = document.getElementById('btn-save-curriculum');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-
+function syncCurrentDomToCurriculumData() {
   const cData = getModData();
   const moduleBoja = window.BOJA_DATA[currentModule];
   
@@ -160,6 +172,134 @@ async function saveCurriculum() {
       });
     });
   }
+}
+
+function populateCloneModal() {
+  const sel = document.getElementById('clone-class-selector');
+  sel.innerHTML = '';
+  
+  if (!clases || clases.length === 0) {
+    sel.innerHTML = '<option value="">No tienes clases creadas</option>';
+    document.getElementById('btn-execute-clone').disabled = true;
+    return;
+  }
+  
+  document.getElementById('btn-execute-clone').disabled = false;
+  clases.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = `🏫 ${c.nombre} (${c.curso || 'Sin curso'})`;
+    sel.appendChild(opt);
+  });
+
+  // Si estamos en una clase concreta, la preseleccionamos
+  if (currentContext !== 'template') {
+    sel.value = currentContext;
+  }
+}
+
+async function executeClone() {
+  const direction = document.querySelector('input[name="cloneDirection"]:checked')?.value;
+  const targetClassSelect = document.getElementById('clone-class-selector');
+  const selectedClassId = targetClassSelect?.value;
+  
+  if (!selectedClassId) {
+    showAdminToast('⚠️', 'Debes seleccionar una clase', 'warning');
+    return;
+  }
+  
+  const selectedClass = clases.find(c => c.id === selectedClassId);
+  const className = selectedClass ? selectedClass.nombre : 'la clase seleccionada';
+
+  const confirmMsg = direction === 'templateToClass'
+    ? `¿Estás seguro de copiar la Plantilla Global a la clase "${className}"? Esta acción sobrescribirá su currículum actual.`
+    : `¿Estás seguro de copiar el currículum de la clase "${className}" a tu Plantilla Global? Esta acción sobrescribirá tu plantilla maestra.`;
+
+  if (!confirm(confirmMsg)) return;
+
+  // Sincronizar inputs actuales por si hay cambios en pantalla
+  syncCurrentDomToCurriculumData();
+
+  const btn = document.getElementById('btn-execute-clone');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Clonando...';
+
+  try {
+    if (direction === 'templateToClass') {
+      // 1. Plantilla Global ➔ Clase
+      let sourceData = null;
+      if (currentContext === 'template') {
+        sourceData = curriculumData;
+      } else {
+        const tSnap = await fb.getDoc(fb.doc(db, 'usuarios', user.uid, 'curriculum', 'plantilla'));
+        if (tSnap.exists()) {
+          sourceData = tSnap.data();
+        }
+      }
+      
+      if (!sourceData || (!sourceData['0372'] && !sourceData['0377'] && (!sourceData.customTasks || sourceData.customTasks.length === 0))) {
+        showAdminToast('⚠️', 'Tu Plantilla Global está vacía. Configúrala y guárdala antes de clonar.', 'warning');
+        return;
+      }
+
+      const cloned = JSON.parse(JSON.stringify(sourceData));
+      await fb.updateDoc(fb.doc(db, 'clases', selectedClassId), { curriculum: cloned });
+      
+      // Si tenemos abierta en pantalla la clase receptora, actualizamos la vista de inmediato
+      if (currentContext === selectedClassId) {
+        curriculumData = cloned;
+        renderAll();
+      }
+      
+      const modalEl = document.getElementById('modal-clone-curriculum');
+      bootstrap.Modal.getInstance(modalEl)?.hide();
+      showAdminToast('✅', `Plantilla global clonada con éxito en ${className}`, 'success');
+
+    } else if (direction === 'classToTemplate') {
+      // 2. Clase ➔ Plantilla Global
+      let sourceData = null;
+      if (currentContext === selectedClassId) {
+        sourceData = curriculumData;
+      } else {
+        const cSnap = await fb.getDoc(fb.doc(db, 'clases', selectedClassId));
+        if (cSnap.exists()) {
+          sourceData = cSnap.data()?.curriculum;
+        }
+      }
+      
+      if (!sourceData || (!sourceData['0372'] && !sourceData['0377'] && (!sourceData.customTasks || sourceData.customTasks.length === 0))) {
+        showAdminToast('⚠️', `La clase "${className}" no tiene un currículum configurado para clonar.`, 'warning');
+        return;
+      }
+
+      const cloned = JSON.parse(JSON.stringify(sourceData));
+      await fb.setDoc(fb.doc(db, 'usuarios', user.uid, 'curriculum', 'plantilla'), cloned);
+      
+      // Si tenemos abierta la plantilla en pantalla, actualizamos la vista de inmediato
+      if (currentContext === 'template') {
+        curriculumData = cloned;
+        renderAll();
+      }
+      
+      const modalEl = document.getElementById('modal-clone-curriculum');
+      bootstrap.Modal.getInstance(modalEl)?.hide();
+      showAdminToast('✅', `Currículum de "${className}" guardado como Plantilla Global`, 'success');
+    }
+  } catch (err) {
+    console.error('Error al clonar:', err);
+    showAdminToast('❌', 'Error al clonar: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-copy me-1"></i> Clonar Ahora';
+  }
+}
+
+async function saveCurriculum() {
+  const btn = document.getElementById('btn-save-curriculum');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  syncCurrentDomToCurriculumData();
 
   try {
     if (currentContext === 'template') {
@@ -203,7 +343,7 @@ function renderWeights() {
       <div class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center">
         <div><strong class="text-accent">RA ${ra.id}:</strong> <span class="text-light small ms-2">${ra.descripcion}</span></div>
         <div class="input-group input-group-sm ms-3" style="width: 140px; flex-shrink: 0;">
-          <input type="number" id="peso-ra-${ra.id}" class="form-control text-center bg-black text-light border-secondary peso-ra-input" min="0" max="100" value="${val}">
+          <input type="number" id="peso-ra-${ra.id}" class="form-control text-center bg-black text-light border-secondary peso-ra-input" min="0" max="100" step="any" value="${val}">
           <span class="input-group-text bg-secondary text-light border-secondary">%</span>
         </div>
       </div>
@@ -224,15 +364,28 @@ function renderWeights() {
   `;
 
   mData.ras.forEach(ra => {
+    const mediaPercent = ra.criterios && ra.criterios.length > 0 
+      ? parseFloat((100 / ra.criterios.length).toFixed(2)) 
+      : 0;
+
     html += `
       <div class="accordion-item bg-dark border-secondary mb-2 rounded">
-        <h2 class="accordion-header" id="flush-heading${ra.id}">
-          <button class="accordion-button collapsed bg-black text-light border-secondary rounded" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse${ra.id}">
-            <strong>RA ${ra.id}</strong> &nbsp; - <span class="ms-2 small text-muted text-truncate" style="max-width:400px;">${ra.descripcion}</span>
+        <h2 class="accordion-header d-flex align-items-center bg-black border-secondary rounded pe-2" id="flush-heading${ra.id}">
+          <button class="accordion-button collapsed bg-black text-light border-0 rounded flex-grow-1 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse${ra.id}">
+            <strong>RA ${ra.id}</strong> &nbsp; - <span class="ms-2 small text-muted text-truncate" style="max-width:380px;">${ra.descripcion}</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-info text-nowrap ms-2 btn-calc-media-crit" data-ra="${ra.id}" title="Repartir media aritmética (100% equitativo entre ${ra.criterios.length} criterios)">
+            <i class="fas fa-calculator me-1"></i> Media RA ${ra.id} (${mediaPercent}%)
           </button>
         </h2>
         <div id="flush-collapse${ra.id}" class="accordion-collapse collapse" data-bs-parent="#accordionCriteria">
-          <div class="accordion-body p-2">
+          <div class="accordion-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-black bg-opacity-25 rounded border border-secondary border-opacity-25">
+              <span class="small text-muted"><i class="fas fa-layer-group me-1 text-info"></i> <strong>${ra.criterios.length}</strong> criterios en este RA</span>
+              <button type="button" class="btn btn-sm btn-outline-info btn-calc-media-crit" data-ra="${ra.id}">
+                <i class="fas fa-calculator me-1"></i> Asignar media equitativa (${mediaPercent}%)
+              </button>
+            </div>
     `;
     
     ra.criterios.forEach(c => {
@@ -241,7 +394,7 @@ function renderWeights() {
         <div class="d-flex justify-content-between align-items-center p-2 border-bottom border-secondary border-opacity-25">
           <div class="small text-secondary me-3"><strong class="text-info">${c.id})</strong> ${c.descripcion}</div>
           <div class="input-group input-group-sm" style="width: 120px; flex-shrink: 0;">
-            <input type="number" id="peso-crit-${ra.id}-${c.id}" class="form-control text-center bg-black text-light border-secondary peso-crit-input" data-ra="${ra.id}" min="0" max="100" value="${cVal}">
+            <input type="number" id="peso-crit-${ra.id}-${c.id}" class="form-control text-center bg-black text-light border-secondary peso-crit-input" data-ra="${ra.id}" min="0" max="100" step="any" value="${cVal}">
             <span class="input-group-text bg-secondary text-light border-secondary">%</span>
           </div>
         </div>
@@ -249,7 +402,12 @@ function renderWeights() {
     });
     
     html += `
-            <div class="text-end mt-2 me-2 small fw-bold" id="total-crit-${ra.id}">Suma criterios: 0%</div>
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 px-1 border-top border-secondary border-opacity-25">
+              <button type="button" class="btn btn-sm btn-outline-secondary btn-calc-media-crit" data-ra="${ra.id}">
+                <i class="fas fa-balance-scale me-1"></i> Recalcular media equitativa
+              </button>
+              <div class="small fw-bold" id="total-crit-${ra.id}">Suma Criterios: 0%</div>
+            </div>
           </div>
         </div>
       </div>
@@ -261,7 +419,40 @@ function renderWeights() {
 
   document.querySelectorAll('.peso-ra-input').forEach(el => el.addEventListener('input', updateWeightsTotal));
   document.querySelectorAll('.peso-crit-input').forEach(el => el.addEventListener('input', updateWeightsTotal));
+  document.querySelectorAll('.btn-calc-media-crit').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const raId = btn.getAttribute('data-ra');
+      distributeEqualCriteriaWeights(raId);
+    });
+  });
   updateWeightsTotal();
+}
+
+function distributeEqualCriteriaWeights(raId) {
+  const mData = window.BOJA_DATA[currentModule];
+  if (!mData) return;
+  const ra = mData.ras.find(r => String(r.id) === String(raId));
+  if (!ra || !ra.criterios || ra.criterios.length === 0) return;
+
+  const count = ra.criterios.length;
+  const base = Math.floor((100 / count) * 100) / 100;
+  let remainderCents = Math.round((100 - (base * count)) * 100);
+
+  ra.criterios.forEach((c, idx) => {
+    let val = base;
+    if (idx < remainderCents) {
+      val = parseFloat((val + 0.01).toFixed(2));
+    }
+    const input = document.getElementById(`peso-crit-${ra.id}-${c.id}`);
+    if (input) {
+      input.value = val;
+    }
+  });
+
+  updateWeightsTotal();
+  showAdminToast('⚖️', `Pesos del RA ${ra.id} repartidos equitativamente (${parseFloat((100 / count).toFixed(2))}% de media)`);
 }
 
 function updateWeightsTotal() {
@@ -270,8 +461,9 @@ function updateWeightsTotal() {
     totalRa += parseFloat(el.value) || 0;
   });
   const totEl = document.getElementById('weights-total');
-  totEl.textContent = `Total Módulo: ${totalRa}%`;
-  totEl.className = `mt-3 text-end fw-bold ${totalRa === 100 ? 'text-success' : 'text-warning'}`;
+  const isRaOk = Math.abs(totalRa - 100) < 0.05;
+  totEl.textContent = `Total Módulo: ${parseFloat(totalRa.toFixed(2))}%`;
+  totEl.className = `mt-3 text-end fw-bold ${isRaOk ? 'text-success' : 'text-warning'}`;
   
   const mData = window.BOJA_DATA[currentModule];
   if (mData) {
@@ -282,8 +474,9 @@ function updateWeightsTotal() {
       });
       const cEl = document.getElementById(`total-crit-${ra.id}`);
       if (cEl) {
-        cEl.textContent = `Suma Criterios: ${totCrit}%`;
-        cEl.className = `text-end mt-2 me-1 small fw-bold ${totCrit === 100 ? 'text-success' : 'text-warning'}`;
+        const isCritOk = Math.abs(totCrit - 100) < 0.05;
+        cEl.textContent = `Suma Criterios: ${parseFloat(totCrit.toFixed(2))}%`;
+        cEl.className = `small fw-bold ${isCritOk ? 'text-success' : 'text-warning'}`;
       }
     });
   }

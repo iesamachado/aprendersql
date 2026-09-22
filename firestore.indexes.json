@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "respuestas_test",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "claseId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "respuestas_test",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "examenId", "order": "ASCENDING" },
+        { "fieldPath": "entregadoEn", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

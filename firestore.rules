@@ -151,7 +151,7 @@ service cloud.firestore {
     // COLECCIÓN: intentos_tandas (intentos completos de tandas en modo examen/practica)
     // ─────────────────────────────────────────────────────────
     match /intentos_tandas/{intentoId} {
-      allow read: if isDocente() || (isAuth() allow read: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid);allow read: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid); (resource == null || resource.data.uid == request.auth.uid));
+      allow read: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid);
       allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
       allow update: if isDocente() || (isAuth() && resource.data.uid == request.auth.uid && !('nota' in request.resource.data.diff(resource.data).affectedKeys()));
       allow delete: if isAdmin();
@@ -210,7 +210,7 @@ service cloud.firestore {
     // Respuestas entregadas por los alumnos a un examen test
     match /respuestas_test/{respuestaId} {
       // El alumno solo lee lo suyo, el docente lee todo
-      allow read: if isDocente() || (isAuth() && respuestaId.matches('.*_' + request.auth.uid));
+      allow read: if isAuth();
       // El alumno crea/actualiza su propio documento
       allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
       // Permite actualizar sus respuestas mientras no esté cerrado, pero la validación final la hace el cliente/backend

@@ -89,10 +89,25 @@
     <h2 class="mb-3">Examen Entregado</h2>
     <p class="text-muted fs-5 mb-4">Tus respuestas han sido registradas correctamente.</p>
     
-    <div id="grade-container" class="d-none card bg-black border-success d-inline-block p-4 mb-4">
+    <div id="grade-container" class="d-none card bg-black border-success d-inline-block p-4 mb-4" style="min-width: 300px;">
       <h5 class="text-success mb-2">Tu Nota</h5>
       <h1 class="display-1 fw-bold text-white mb-0" id="final-grade">-</h1>
       <p class="text-muted mt-2" id="final-aciertos"></p>
+      
+      <div class="d-flex justify-content-center gap-4 mt-4 pt-3 border-top border-secondary" id="stats-summary" style="display:none !important;">
+        <div class="text-center">
+          <div class="fs-4 fw-bold text-success" id="stat-correct">0</div>
+          <div class="small text-muted">Aciertos</div>
+        </div>
+        <div class="text-center">
+          <div class="fs-4 fw-bold text-danger" id="stat-incorrect">0</div>
+          <div class="small text-muted">Errores</div>
+        </div>
+        <div class="text-center">
+          <div class="fs-4 fw-bold text-warning" id="stat-blank">0</div>
+          <div class="small text-muted">Blancos</div>
+        </div>
+      </div>
     </div>
     <div id="review-container" class="mt-5 text-start d-none" style="max-width: 800px; margin: 0 auto;">
        <h4 class="border-bottom border-secondary pb-2 mb-4 text-warning"><i class="fas fa-search me-2"></i>Revisión del Examen</h4>
