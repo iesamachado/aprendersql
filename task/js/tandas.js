@@ -341,7 +341,7 @@ function renderAllTandasUI() {
   let html = '';
   const groups = {};
   
-  const getFriendlyTopicName = (temaStr) => {
+  const getFriendlyTopicName = (temaStr, isRepasoGroup = false) => {
     const numMatch = temaStr.match(/Tema\s+(\d+)/i);
     const raMatch = temaStr.match(/RA\s+(\d+)/i);
     const isSegundo = clase.modulo === '0377';
@@ -351,63 +351,87 @@ function renderAllTandasUI() {
     else if (raMatch) numStr = raMatch[1];
     else return temaStr;
     
-    if (!isSegundo) {
-      if (numStr === '1') return 'U1: Introducción a los SGBD';
-      if (numStr === '2') return 'U2: Diseño Lógico y Conceptual';
-      if (numStr === '3') return 'U3: Modelo Físico de Datos (DDL)';
-      if (numStr === '4') return 'U4: Consultas en SQL (DML)';
-      if (numStr === '5') return 'U5: Programación y Modificación de Datos';
-      return `U${numStr}: Bases de Datos`;
+    const effectiveIsSegundo = isRepasoGroup ? false : isSegundo;
+    let result = '';
+    
+    if (!effectiveIsSegundo) {
+      if (numStr === '1') result = 'U1: Introducción a los SGBD';
+      else if (numStr === '2') result = 'U2: Diseño Lógico y Conceptual';
+      else if (numStr === '3') result = 'U3: Modelo Físico de Datos (DDL)';
+      else if (numStr === '4') result = 'U4: Consultas en SQL (DML)';
+      else if (numStr === '5') result = 'U5: Programación y Modificación de Datos';
+      else result = `U${numStr}: Bases de Datos`;
     } else {
-      if (numStr === '1') return 'U1: Instalación de SGBD';
-      if (numStr === '2') return 'U2: Configuración y Arquitectura';
-      if (numStr === '3') return 'U3: Seguridad y Control de Acceso';
-      if (numStr === '4') return 'U4: Automatización Avanzada';
-      if (numStr === '5') return 'U5: Optimización de Rendimiento';
-      if (numStr === '6') return 'U6: Alta Disponibilidad';
-      return `U${numStr}: Administración SGBD`;
+      if (numStr === '1') result = 'U1: Instalación de SGBD';
+      else if (numStr === '2') result = 'U2: Configuración y Arquitectura';
+      else if (numStr === '3') result = 'U3: Seguridad y Control de Acceso';
+      else if (numStr === '4') result = 'U4: Automatización Avanzada';
+      else if (numStr === '5') result = 'U5: Optimización de Rendimiento';
+      else if (numStr === '6') result = 'U6: Alta Disponibilidad';
+      else result = `U${numStr}: Administración SGBD`;
     }
+    return isRepasoGroup ? `REPASO - ${result}` : result;
   };
 
   if (window.currentBloquesFull) {
     window.currentBloquesFull.forEach(bloque => {
       let groupName = 'Otros';
-      const match = bloque.nombre.match(/^(Tema\s+\d+|RA\s*\d+)/i);
+      let isRepasoGroup = false;
+      if (clase.modulo && bloque.modulo && clase.modulo !== bloque.modulo) {
+        isRepasoGroup = true;
+      }
+      
+      let baseNombre = bloque.nombre || '';
+
+      const match = baseNombre.match(/^(Tema\s+\d+|RA\s*\d+)/i);
       if (match) {
         groupName = match[1];
       } else if (bloque.temaRef) {
         const temaBloque = window.BLOQUES ? window.BLOQUES.find(b => b.id === bloque.temaRef) : null;
         if (temaBloque) {
-           const m2 = temaBloque.nombre.match(/^(Tema\s+\d+|RA\s*\d+)/i);
+           let refNombre = temaBloque.nombre || '';
+           const m2 = refNombre.match(/^(Tema\s+\d+|RA\s*\d+)/i);
            if (m2) groupName = m2[1];
         }
-      } else if (bloque.tipo === 'tarea' && bloque.nombre.toLowerCase().includes('tarea')) {
+      } else if (bloque.tipo === 'tarea' && baseNombre.toLowerCase().includes('tarea')) {
         groupName = 'Tareas Prácticas';
       }
       
-      const friendlyName = getFriendlyTopicName(groupName);
+      const friendlyName = getFriendlyTopicName(groupName, isRepasoGroup);
       if (!groups[friendlyName]) groups[friendlyName] = [];
+      bloque.isRepasoBlock = isRepasoGroup;
       groups[friendlyName].push(bloque);
     });
   }
 
   if (window.currentTestExams) {
     window.currentTestExams.forEach(ex => {
-      // Determine the RA/Tema of the exam based on its first question, or its title
       let groupName = 'Exámenes';
+      let isRepasoGroup = false;
+      
+      let titulo = ex.titulo || '';
+      if (titulo.toUpperCase().startsWith('REPASO_')) {
+        isRepasoGroup = true;
+      }
+
       if (ex.preguntas && ex.preguntas.length > 0 && ex.preguntas[0].ra) {
         groupName = `RA ${ex.preguntas[0].ra}`;
       } else {
-        const titleMatch = ex.titulo.match(/(RA\s*\d+|Tema\s*\d+)/i);
+        const titleMatch = titulo.match(/(RA\s*\d+|Tema\s*\d+)/i);
         if (titleMatch) groupName = titleMatch[1];
       }
-      const friendlyName = getFriendlyTopicName(groupName);
+      const friendlyName = getFriendlyTopicName(groupName, isRepasoGroup);
       if (!groups[friendlyName]) groups[friendlyName] = [];
-      groups[friendlyName].push({ isNewTestExam: true, ...ex });
+      groups[friendlyName].push({ isNewTestExam: true, isRepasoBlock: isRepasoGroup, ...ex });
     });
   }
 
   const groupKeys = Object.keys(groups).sort((a, b) => {
+    const isRepasoA = a.startsWith('REPASO');
+    const isRepasoB = b.startsWith('REPASO');
+    if (isRepasoA && !isRepasoB) return 1;
+    if (!isRepasoA && isRepasoB) return -1;
+
     if (a === 'Otros') return 1;
     if (b === 'Otros') return -1;
     if (a === 'Tareas Prácticas') return 1;
@@ -420,8 +444,11 @@ function renderAllTandasUI() {
   });
 
   groupKeys.forEach(groupName => {
+    const groupIsRepaso = groupName.startsWith('REPASO');
+    const headerTitleClass = groupIsRepaso ? 'text-warning' : 'text-white';
+    
     html += `<div class="col-12 mt-4 mb-3">
-               <h5 class="text-white border-bottom border-secondary pb-2">
+               <h5 class="${headerTitleClass} border-bottom border-secondary pb-2">
                  <i class="fas fa-layer-group text-primary me-2"></i>${groupName}
                </h5>
                <div class="list-group list-group-flush w-100">`;
@@ -457,6 +484,7 @@ function renderAllTandasUI() {
 
       const isTheory = bloque.tipo === 'teoria';
       const isTask = bloque.tipo === 'tarea';
+      const isRepasoBlock = bloque.isRepasoBlock;
       
       let btnClass, btnText, iconClass, badgeClass, badgeText, borderColor;
       let linkHref = `teoria.html?bloqueId=${bloque.id}&claseId=${claseId}`;
@@ -496,14 +524,24 @@ function renderAllTandasUI() {
         linkHref = `ejercicio.html?bloqueId=${bloque.id}&claseId=${claseId}&modo=practica`;
       }
 
+      if (isRepasoBlock) {
+        badgeClass = 'bg-warning text-dark';
+        borderColor = 'border-warning';
+      }
+
+      const bgClass = isRepasoBlock ? 'bg-black' : 'bg-dark';
+      const textClass = isRepasoBlock ? 'text-warning' : 'text-white';
+      const opacityStyle = isRepasoBlock ? 'opacity: 0.85; font-size: 0.95rem;' : '';
+
       html += `
-        <div class="list-group-item bg-dark border-secondary border-start border-4 ${borderColor} mb-2 rounded d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3" style="transition: all 0.2s;">
+        <div class="list-group-item ${bgClass} border-secondary border-start border-4 ${borderColor} mb-2 rounded d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3" style="transition: all 0.2s; ${opacityStyle}">
           <div class="flex-grow-1 pe-3 mb-3 mb-md-0">
             <div class="d-flex align-items-center gap-2 mb-1">
               ${namePrefixHtml}
               <i class="fas ${iconClass} me-1 d-none d-md-inline"></i>
+              ${isRepasoBlock ? '<span class="badge bg-secondary text-light" style="font-size:0.6rem">REPASO</span>' : ''}
               <span class="badge ${badgeClass}" style="font-size:0.7rem">${badgeText}</span>
-              <h6 class="mb-0 text-white">${bloque.nombre}</h6>
+              <h6 class="mb-0 ${textClass}">${bloque.nombre}</h6>
             </div>
             <div class="text-muted small ms-md-4">${bloque.desc || ''}</div>
           </div>

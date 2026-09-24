@@ -692,7 +692,9 @@ async function saveBloques() {
   try {
     await fb.updateDoc(fb.doc(db, 'clases', claseId), { bloquesActivos: nuevosActivos });
     currentBloquesActivos = nuevosActivos;
+    claseActual.bloquesActivos = nuevosActivos;
     showAdminToast('✅', 'Bloques actualizados correctamente');
+    renderBloques(claseActual);
   } catch (e) {
     showAdminToast('❌', 'Error al guardar bloques: ' + e.message, 'error');
   }
@@ -921,7 +923,10 @@ async function saveTandas() {
     });
     currentTandasIds = nuevosIds;
     currentTandasModo = nuevosModos;
+    claseActual.tandasIds = nuevosIds; // Update the local state
+    claseActual.tandasModo = nuevosModos;
     showAdminToast('✅', 'Tandas guardadas correctamente');
+    renderGrid(claseActual);
   } catch(e) {
     showAdminToast('❌', 'Error al guardar tandas: ' + e.message, 'error');
   }
