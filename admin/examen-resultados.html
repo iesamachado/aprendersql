@@ -19,6 +19,7 @@
       .print-opt { margin-left: 20px; }
     }
   </style>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
 <body class="bg-dark text-light">
 
@@ -375,6 +376,48 @@
            }
         });
         updateData.correcciones = correcciones;
+      if (nuevoVal) {
+        let repartidos = 0;
+        for (const entrega of globalEntregas) {
+          if (entrega.puntosOtorgados) continue;
+          
+          let puntosParaDar = 5; // Por entregar
+          if (entrega.nota >= 5) puntosParaDar += 5; // Por aprobar
+          if (entrega.nota >= 9) puntosParaDar += 5; // Por sobresaliente
+
+          const uSnap = await getDoc(doc(db, 'usuarios', entrega.uid));
+          if (uSnap.exists()) {
+            const uData = uSnap.data();
+            const userLogros = uData.logros || [];
+            let modifiedLogros = false;
+            
+            const checkAddLogro = (id) => {
+              if (!userLogros.some(l => l.id === id)) {
+                const cat = window.MEDALLAS_CATALOGO.find(m => m.id === id);
+                if (cat) {
+                  userLogros.push({ id: cat.id, name: cat.name, desc: cat.desc, icon: cat.icon, ts: new Date().toISOString() });
+                  modifiedLogros = true;
+                }
+              }
+            };
+            
+            checkAddLogro('examen_test');
+            if (entrega.nota >= 9) checkAddLogro('examen_perfecto');
+            
+            const updates = { 
+              puntosTotal: (uData.puntosTotal || 0) + puntosParaDar
+            };
+            if (modifiedLogros) updates.logros = userLogros;
+            
+            await updateDoc(doc(db, 'usuarios', entrega.uid), updates);
+            await updateDoc(doc(db, "respuestas_test", entrega.id), { puntosOtorgados: true });
+            repartidos++;
+          }
+        }
+        updateData.puntosRepartidos = true;
+        examen.puntosRepartidos = true;
+        if (repartidos > 0) showAdminToast(`Se han otorgado puntos extra y medallas a ${repartidos} alumnos.`, 'info');
+      }
       }
       
       await updateDoc(doc(db, "examenes_test", examen.id), updateData);
@@ -441,6 +484,7 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/firebase-config.js"></script>
+<script src="../js/ejercicios-data.js"></script>
   <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
 </body>
 </html>

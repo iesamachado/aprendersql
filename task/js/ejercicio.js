@@ -1,4 +1,5 @@
 import { initTaskPage, showToast } from './auth.js';
+import { evaluarLogros } from './medal-logic.js';
 
 let user, userDoc, db, fb;
 let currentClase = null;
@@ -325,6 +326,8 @@ function renderLogrosUI() {
   }).join('');
 }
 
+
+
 window.showGolfLeaderboard = async function() {
   if (!currentExId) return;
   const tbody = document.getElementById('golf-tbody');
@@ -332,122 +335,55 @@ window.showGolfLeaderboard = async function() {
   new bootstrap.Modal(document.getElementById('golf-modal')).show();
   
   try {
+    const claseIds = currentClase?.alumnosIds || [user.uid];
+    
+    // Optimizamos consultando el top global y filtrando en memoria por los alumnos de la clase.
+    // Hacerlo directamente con 'in' requeriría índices compuestos complejos en Firebase.
     const q = fb.query(
       fb.collection(db, 'intentos'),
       fb.where('ejercicioId', '==', currentExId),
       fb.where('success', '==', true),
       fb.orderBy('queryLength', 'asc'),
-      fb.limit(10) // fetch more in case of duplicates
+      fb.limit(100) // Límite razonable para no saturar lecturas
     );
     const snap = await fb.getDocs(q);
     
-    // Deduplicate by email/uid
     const usersSeen = new Set();
     const top3 = [];
+    
     snap.forEach(d => {
       const data = d.data();
-      if (!usersSeen.has(data.email) && top3.length < 3) {
-        usersSeen.add(data.email);
-        top3.push(data);
+      if (!usersSeen.has(data.uid) && claseIds.includes(data.uid)) {
+        usersSeen.add(data.uid);
+        if (top3.length < 3) {
+          top3.push(data);
+        }
       }
     });
-
+    
     if (top3.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" class="text-muted py-4">Nadie ha resuelto este ejercicio aún. ¡Sé el primero!</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" class="text-muted py-4">Ningún alumno de esta clase ha superado el ejercicio aún.</td></tr>';
       return;
     }
-
-    const medals = ['🥇', '🥈', '🥉'];
-    tbody.innerHTML = top3.map((t, i) => `
-      <tr>
-        <td class="fs-4">${medals[i]}</td>
-        <td>${t.email ? t.email.split('@')[0] : 'Anónimo'}</td>
-        <td class="fw-bold text-info">${t.queryLength}</td>
-      </tr>
-    `).join('');
-
+    
+    tbody.innerHTML = top3.map((d, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+      const name = d.email ? d.email.split('@')[0] : 'Alumno';
+      return `
+        <tr>
+          <td>${medal}</td>
+          <td class="fw-bold">${name}</td>
+          <td><span class="badge bg-secondary">${d.queryLength} carácteres</span></td>
+        </tr>
+      `;
+    }).join('');
+    
   } catch(e) {
     console.error('Error fetching golf leaderboard:', e);
-    tbody.innerHTML = '<tr><td colspan="3" class="text-danger py-4">Falta índice en Firestore para esta consulta.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" class="text-danger py-4">Error al cargar el ranking.</td></tr>';
   }
 }
 
-window.showGremioModal = async function() {
-  const modal = new bootstrap.Modal(document.getElementById('gremio-modal'));
-  modal.show();
-  
-  if (!userDoc.gremio) {
-    document.getElementById('gremio-selector').style.display = 'block';
-    document.getElementById('gremio-leaderboard').style.display = 'none';
-  } else {
-    document.getElementById('gremio-selector').style.display = 'none';
-    document.getElementById('gremio-leaderboard').style.display = 'block';
-    await loadGremioLeaderboard();
-  }
-}
-
-window.joinGremio = async function(nombre, icono) {
-  try {
-    await fb.updateDoc(fb.doc(db, 'usuarios', user.uid), { gremio: nombre, gremioIcono: icono });
-    userDoc.gremio = nombre;
-    userDoc.gremioIcono = icono;
-    document.getElementById('user-gremio-icon').textContent = icono;
-    document.getElementById('user-gremio-text').textContent = nombre;
-    showToast(icono, `¡Te has unido a ${nombre}!`, 'success');
-    
-    document.getElementById('gremio-selector').style.display = 'none';
-    document.getElementById('gremio-leaderboard').style.display = 'block';
-    await loadGremioLeaderboard();
-  } catch(e) { console.error('Error al unirse al gremio:', e); }
-}
-
-async function loadGremioLeaderboard() {
-  const container = document.getElementById('gremio-bars');
-  container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Calculando puntos globales...</div>';
-  
-  try {
-    const q = fb.query(fb.collection(db, 'usuarios')); // Consultamos todos los usuarios (en clases reales no son muchos)
-    const snap = await fb.getDocs(q);
-    
-    const scores = {
-      'La Orden del JOIN': { icon: '🛡️', pts: 0, color: 'bg-primary' },
-      'El Cártel del SELECT': { icon: '🗡️', pts: 0, color: 'bg-success' },
-      'La Hermandad del DROP': { icon: '🧙‍♂️', pts: 0, color: 'bg-danger' },
-      'Los Ninjas del WHERE': { icon: '🦂', pts: 0, color: 'bg-warning' }
-    };
-    
-    let totalGlobalPts = 0;
-    
-    snap.forEach(d => {
-      const u = d.data();
-      if (u.gremio && scores[u.gremio]) {
-        scores[u.gremio].pts += (u.puntosTotal || 0);
-        totalGlobalPts += (u.puntosTotal || 0);
-      }
-    });
-    
-    const sorted = Object.entries(scores).sort((a,b) => b[1].pts - a[1].pts);
-    
-    // Si nadie tiene puntos
-    if (totalGlobalPts === 0) totalGlobalPts = 1; 
-    
-    container.innerHTML = sorted.map(([name, data], idx) => `
-      <div>
-        <div class="d-flex justify-content-between small fw-bold mb-1 align-items-end">
-          <span class="fs-6">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon} <span class="text-light">${name}</span></span>
-          <span class="text-info fs-6">${data.pts} <span class="text-secondary" style="font-size:0.75rem">pts</span></span>
-        </div>
-        <div class="progress border border-secondary" style="height: 12px; background:#1e293b">
-          <div class="progress-bar ${data.color} progress-bar-striped ${idx === 0 ? 'progress-bar-animated' : ''}" style="width: ${(data.pts / totalGlobalPts) * 100}%"></div>
-        </div>
-      </div>
-    `).join('');
-    
-  } catch(e) {
-    console.error('Error cargando leaderboard gremios:', e);
-    container.innerHTML = '<div class="text-danger text-center">Error al cargar ranking de Gremios.</div>';
-  }
-}
 
 async function loadExercise(id) {
   const ex = currentEjercicios.find(e => e.id === id);
@@ -613,11 +549,17 @@ async function runQuery() {
           resAlumno = [{ columns: ['Resultado', 'Aviso'], values: [['Comando aceptado', 'El comando es válido en MariaDB/MySQL, pero no se modificará la tabla por limitación del motor de SQLite en el navegador.']] }];
           showToast('⚠️', 'Comando correcto. No se modifica la BD por limitación del motor.', 'warning');
         } else {
+          window._lastSqlError = true;
           throw err;
         }
       }
     } else {
-      resAlumno = sqlDb.exec(query);
+      try {
+        resAlumno = sqlDb.exec(query);
+      } catch (err) {
+        window._lastSqlError = true;
+        throw err;
+      }
     }
     
     renderResults(resAlumno);
@@ -748,33 +690,11 @@ async function registerAttempt(isSuccess) {
       window._consecutiveFails++;
     }
     
-    // Evaluar logros
-    let nuevosLogros = [];
-    const userLogros = userDoc.logros || [];
-    const hasLogro = (id) => userLogros.some(l => l.id === id);
-    const checkAddLogro = (id) => {
-      if (!hasLogro(id)) {
-        const cat = window.MEDALLAS_CATALOGO.find(m => m.id === id);
-        if (cat) {
-          const l = { id: cat.id, name: cat.name, desc: cat.desc, icon: cat.icon, ts: new Date().toISOString() };
-          userLogros.push(l);
-          nuevosLogros.push(l);
-        }
-      }
-    };
-
-    // Lógica medallas
-    if (isSuccess && userDoc.ejerciciosOK === 0) checkAddLogro('first_blood');
-    if (isSuccess && window._consecutiveSuccess === 3) checkAddLogro('racha_3');
-    
-    const h = new Date().getHours();
-    if (isSuccess && h >= 6 && h <= 8) checkAddLogro('madrugador');
-    if (isSuccess && (h >= 0 && h <= 4)) checkAddLogro('nocturno');
-
-    if (isSuccess && queryTxt === queryTxt.toUpperCase() && queryTxt.match(/[A-Z]/)) checkAddLogro('grita_sql');
-    if (isSuccess && ex && ex.query_solucion && queryTxt.length < ex.query_solucion.length * 0.7) checkAddLogro('minimalista');
-    if (!isSuccess && /DROP\s+TABLE/i.test(queryTxt) && !/DROP\s+TABLE/i.test(ex?.query_solucion || '')) checkAddLogro('bobby_tables');
-    if (!isSuccess && window._consecutiveFails === 6) checkAddLogro('persistente');
+    // Lógica medallas delegada a script externo
+    window._lastSqlError = false; // asumiendo sin errores
+    const resultLogros = evaluarLogros(isSuccess, queryTxt, ex, userDoc, window);
+    let nuevosLogros = resultLogros.nuevosLogros;
+    let userLogros = resultLogros.userLogros;
 
     // Registrar intento
     await fb.addDoc(fb.collection(db, 'intentos'), {
@@ -786,8 +706,19 @@ async function registerAttempt(isSuccess) {
     if (nuevosLogros.length > 0) {
       userDoc.logros = userLogros;
       await fb.updateDoc(fb.doc(db, 'usuarios', user.uid), { logros: userLogros });
-      nuevosLogros.forEach(l => showToast(l.icon, `¡Logro Desbloqueado! ${l.name}`, 'success'));
       if(typeof renderLogrosUI === 'function') renderLogrosUI();
+      
+      // Mostrar modal súper chulo para la primera medalla ganada en este intento
+      const med = nuevosLogros[0]; 
+      document.getElementById('medalla-ganada-icon').textContent = med.icon;
+      document.getElementById('medalla-ganada-name').textContent = med.name;
+      document.getElementById('medalla-ganada-desc').textContent = med.desc;
+      new bootstrap.Modal(document.getElementById('modal-medalla-ganada')).show();
+      
+      // Si hay más de una, las otras salen por toast normal para no saturar modals
+      for (let i = 1; i < nuevosLogros.length; i++) {
+        showToast(nuevosLogros[i].icon, `¡Logro Desbloqueado! ${nuevosLogros[i].name}`, 'success');
+      }
     }
 
     if (isSuccess) {
@@ -883,4 +814,129 @@ async function submitExam() {
   `;
   overlay.style.background = 'rgba(15, 23, 42, 0.95)';
   overlay.style.setProperty('display', 'flex', 'important');
+}
+async function loadGremioLeaderboard() {
+  const container = document.getElementById('gremio-bars');
+  container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Calculando puntos globales...</div>';
+  
+  try {
+    const claseIds = currentClase?.alumnosIds || [user.uid];
+    const allUsers = [];
+    
+    // Batch queries of 10 for users in the class
+    for (let i = 0; i < claseIds.length; i += 10) {
+      const chunk = claseIds.slice(i, i + 10);
+      const snap = await fb.getDocs(fb.query(fb.collection(db, 'usuarios'), fb.where('__name__', 'in', chunk)));
+      snap.forEach(d => allUsers.push({ id: d.id, ...d.data() }));
+    }
+    
+    const scores = {
+      'La Orden del JOIN': { icon: '🛡️', pts: 0, color: 'bg-primary' },
+      'El Cártel del SELECT': { icon: '🗡️', pts: 0, color: 'bg-success' },
+      'La Hermandad del DROP': { icon: '🧙‍♂️', pts: 0, color: 'bg-danger' },
+      'Los Ninjas del WHERE': { icon: '🦂', pts: 0, color: 'bg-warning' }
+    };
+    
+    let totalGlobalPts = 0;
+    
+    allUsers.forEach(u => {
+      if (u.gremio && scores[u.gremio]) {
+        scores[u.gremio].pts += (u.puntosTotal || 0);
+        totalGlobalPts += (u.puntosTotal || 0);
+      }
+    });
+    
+    const sorted = Object.entries(scores).sort((a,b) => b[1].pts - a[1].pts);
+    
+    if (totalGlobalPts === 0) totalGlobalPts = 1; 
+    
+    container.innerHTML = sorted.map(([name, data], idx) => `
+      <div>
+        <div class="d-flex justify-content-between small fw-bold mb-1 align-items-end">
+          <span class="fs-6">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon} <span class="text-light">${name}</span></span>
+          <span class="text-info fs-6">${data.pts} <span class="text-secondary" style="font-size:0.75rem">pts</span></span>
+        </div>
+        <div class="progress" style="height: 10px; background: #1e293b">
+          <div class="progress-bar ${data.color}" style="width: ${(data.pts / totalGlobalPts) * 100}%"></div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) { console.error('Error leaderboard gremios:', e); }
+}
+window.showGremioModal = async function() {
+  const modal = new bootstrap.Modal(document.getElementById('gremio-modal'));
+  modal.show();
+  
+  if (!userDoc.gremio) {
+    document.getElementById('gremio-selector').style.display = 'block';
+    document.getElementById('gremio-leaderboard').style.display = 'none';
+    
+    const selectorDiv = document.getElementById('gremio-selector');
+    const btns = selectorDiv.querySelectorAll('button');
+    btns.forEach(b => { b.disabled = true; b.innerHTML += ' <i class="fas fa-spinner fa-spin ms-2"></i>'; });
+
+    try {
+      const claseIds = currentClase?.alumnosIds || [user.uid];
+      const maxPerGuild = Math.ceil(claseIds.length / 4);
+      
+      const allUsers = [];
+      for (let i = 0; i < claseIds.length; i += 10) {
+        const chunk = claseIds.slice(i, i + 10);
+        const uSnap = await fb.getDocs(fb.query(fb.collection(db, 'usuarios'), fb.where('__name__', 'in', chunk)));
+        uSnap.forEach(d => allUsers.push({ id: d.id, ...d.data() }));
+      }
+      
+      const guildCounts = {
+        'La Orden del JOIN': 0,
+        'El Cártel del SELECT': 0,
+        'La Hermandad del DROP': 0,
+        'Los Ninjas del WHERE': 0
+      };
+
+      allUsers.forEach(u => {
+        if (claseIds.includes(u.id) && u.gremio && guildCounts[u.gremio] !== undefined) {
+          guildCounts[u.gremio]++;
+        }
+      });
+
+      btns.forEach(b => {
+        const guildName = b.getAttribute('onclick').match(/'([^']+)'/)[1];
+        const count = guildCounts[guildName] || 0;
+        
+        b.innerHTML = b.innerHTML.replace(/ <span class="badge.*/, '');
+        b.innerHTML = b.innerHTML.replace(/ <i class="fas fa-spinner fa-spin ms-2"><\/i>/, '');
+        
+        const plazasBadge = `<span class="badge bg-dark border border-secondary text-light float-end" style="font-size:0.7rem">${count}/${maxPerGuild} <i class="fas fa-users"></i></span>`;
+        
+        if (count >= maxPerGuild) {
+          b.disabled = true;
+          if(!b.innerHTML.includes('(LLENO)')) b.innerHTML += ` <span class="badge bg-secondary ms-2">(LLENO)</span> ${plazasBadge}`;
+        } else {
+          b.disabled = false;
+          b.innerHTML += ` ${plazasBadge}`;
+        }
+      });
+    } catch(e) {
+      console.error('Error calculando límites de gremio:', e);
+      btns.forEach(b => { b.disabled = false; b.innerHTML = b.innerHTML.replace(/ <i class="fas fa-spinner fa-spin ms-2"><\/i>/, ''); });
+    }
+  } else {
+    document.getElementById('gremio-selector').style.display = 'none';
+    document.getElementById('gremio-leaderboard').style.display = 'block';
+    await loadGremioLeaderboard();
+  }
+}
+window.joinGremio = async function(nombre, icono) {
+  try {
+    await fb.updateDoc(fb.doc(db, 'usuarios', user.uid), { gremio: nombre, gremioIcono: icono });
+    userDoc.gremio = nombre;
+    userDoc.gremioIcono = icono;
+    document.getElementById('user-gremio-icon').textContent = icono;
+    document.getElementById('user-gremio-text').textContent = nombre;
+    showToast(icono, `¡Te has unido a ${nombre}!`, 'success');
+    
+    document.getElementById('gremio-selector').style.display = 'none';
+    document.getElementById('gremio-leaderboard').style.display = 'block';
+    await loadGremioLeaderboard();
+  } catch(e) { console.error('Error al unirse al gremio:', e); }
 }

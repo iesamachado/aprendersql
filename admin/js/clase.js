@@ -453,11 +453,20 @@ async function renderAlumnos(clase) {
   }
 
   const registradosEmails = [];
+  const alumnosDataMap = {};
   
+  // Optimizacion: Consultar usuarios de la clase en lotes de 10 (límite de 'in' de Firestore)
+  for (let i = 0; i < registradosIds.length; i += 10) {
+    const chunk = registradosIds.slice(i, i + 10);
+    const snap = await fb.getDocs(fb.query(fb.collection(db, 'usuarios'), fb.where('__name__', 'in', chunk)));
+    snap.forEach(d => {
+      alumnosDataMap[d.id] = d.data();
+    });
+  }
+
   for (const uid of registradosIds) {
-    const alumnoSnap = await fb.getDoc(fb.doc(db, 'usuarios', uid));
-    if (alumnoSnap.exists()) {
-      const alumno = alumnoSnap.data();
+    const alumno = alumnosDataMap[uid];
+    if (alumno) {
       registradosEmails.push(alumno.email);
       
       const tr = document.createElement('tr');
@@ -471,9 +480,13 @@ async function renderAlumnos(clase) {
             </div>
           </div>
         </td>
-        <td><span class="badge bg-warning text-dark">⭐ ${alumno.puntosTotal || 0}</span></td>
+        <td>
+          <span class="badge bg-warning text-dark me-1" title="Puntos Totales">⭐ ${alumno.puntosTotal || 0}</span>
+          <span class="badge bg-danger text-white" title="Medallas conseguidas">🏅 ${alumno.logros?.length || 0}</span>
+        </td>
         <td class="small"><span class="badge bg-success">${alumno.ejerciciosOK || 0} ej. superados</span></td>
         <td>
+          <a class="btn btn-sm btn-outline-info me-1" href="alumno.html?uid=${uid}&claseId=${clase.id}" title="Ver perfil y ejercicios completados"><i class="fas fa-eye"></i></a>
           <button class="btn btn-sm btn-outline-warning me-1" onclick="window._showMedallas('${uid}')" title="Ver Medallas"><i class="fas fa-medal"></i></button>
           <button class="btn btn-sm btn-outline-danger" onclick="window._removeFromClass('${uid}')" title="Quitar de clase"><i class="fas fa-times"></i></button>
         </td>
@@ -503,11 +516,7 @@ async function renderAlumnos(clase) {
   }
 
   // ----- RENDER PODIO Y GREMIOS -----
-  const alumnosData = [];
-  for (const uid of registradosIds) {
-    const snap = await fb.getDoc(fb.doc(db, 'usuarios', uid));
-    if(snap.exists()) alumnosData.push(snap.data());
-  }
+  const alumnosData = Object.values(alumnosDataMap);
   
   // Render Podio (Top 5)
   const podioContainer = document.getElementById('admin-podio-container');

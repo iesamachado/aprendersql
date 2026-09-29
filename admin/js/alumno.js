@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const { initializeApp }   = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
   const { getAuth, onAuthStateChanged, signOut } =
     await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-  const { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, setDoc } =
+  const { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } =
     await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
   const firebaseApp = initializeApp(window.FIREBASE_CONFIG);
@@ -118,7 +118,11 @@ async function loadAlumno() {
     // Calcular notas por bloque
     const ptsPorBloque = {};
     window.BLOQUES?.forEach(b => {
-      ptsPorBloque[b.id] = { conseguidos: 0, max: b.max_pts, nombre: b.nombre };
+      let maxPts = 0;
+      window.EJERCICIOS?.forEach(e => {
+        if (e.bloque_id == b.id) maxPts += (e.puntos || 10);
+      });
+      ptsPorBloque[b.id] = { conseguidos: 0, max: maxPts, nombre: b.nombre };
     });
 
     Object.keys(exDataMap).forEach(exId => {
@@ -218,12 +222,18 @@ async function loadAlumno() {
       return;
     }
 
-    const sortedExIds = Object.keys(exDataMap).map(Number).sort((a,b) => a - b);
+    // Sort by exercise ID string (or numeric if possible)
+    const sortedExIds = Object.keys(exDataMap).sort((a,b) => {
+      const numA = parseInt(a);
+      const numB = parseInt(b);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return a.localeCompare(b);
+    });
 
     sortedExIds.forEach((exId) => {
       const exMeta = exDataMap[exId];
       const intentos = intentosPorEx[exId] || [];
-      const isSuperado = exMeta.superado;
+      const isSuperado = exMeta?.superado || false;
       
       const headerClass = isSuperado ? 'text-success' : 'text-warning';
       const headerIcon = isSuperado ? '✅' : '⏳';

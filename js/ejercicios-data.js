@@ -32620,4 +32620,6 @@ window.MEDALLAS_CATALOGO = [
   { id: 'error_sintaxis', name: 'Ups...', desc: 'Provoca tu primer error de sintaxis SQLite.', icon: '💥', public: false },
   { id: 'comentario', name: 'El Documentador', desc: 'Añade un comentario en tu consulta usando -- o /* */', icon: '📝', public: false },
   { id: 'spanglish', name: 'El Traductor', desc: 'Usa AS para renombrar una columna.', icon: '🏷️', public: false }
+  ,{ id: 'examen_test', name: 'Superviviente de Test', desc: 'Completa tu primer examen tipo test.', icon: '📝', public: true },
+  { id: 'examen_perfecto', name: 'El Sabio', desc: 'Saca más de un 9 en un examen tipo test.', icon: '🎓', public: true }
 ];
