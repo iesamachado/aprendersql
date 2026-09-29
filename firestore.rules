@@ -37,9 +37,9 @@ service cloud.firestore {
     // ─────────────────────────────────────────────────────────
     match /usuarios/{uid} {
 
-      // Cualquier usuario autenticado puede leer su propio documento.
-      // Los docentes y admin pueden leer todos los usuarios.
-      allow read: if isSelf(uid) || isDocente();
+      // Todos los usuarios autenticados pueden leer para poder ver los 
+      // puntos de los Gremios de sus compañeros.
+      allow read: if isAuth();
 
       // Solo el propio usuario puede crear su perfil (al hacer login por primera vez).
       // El admin puede crearlo directamente.
@@ -124,10 +124,9 @@ service cloud.firestore {
     // ─────────────────────────────────────────────────────────
     match /intentos/{intentoId} {
 
-      // El alumno solo puede leer sus propios intentos.
-      // Los docentes y admin leen todos.
-      allow read: if isDocente()
-                  || (isAuth() && resource.data.uid == request.auth.uid);
+      // Para permitir el Podio SQL Golf, todos los usuarios autenticados deben
+      // poder leer los intentos para calcular la tabla de clasificación.
+      allow read: if isAuth();
 
       // Solo el propio alumno puede crear intentos (el servidor JS los escribe).
       // El uid del intento debe coincidir con el del usuario autenticado.

@@ -86,6 +86,10 @@ async function loadAlumno() {
     document.getElementById('alumno-detalle-email').textContent  = userData.email;
     document.getElementById('alumno-detalle-puntos').textContent = `⭐ ${userData.puntosTotal || 0}`;
     document.getElementById('alumno-detalle-ejercicios').textContent = userData.ejerciciosOK || 0;
+    
+    if (typeof renderMedalleroAlumno === 'function') {
+      renderMedalleroAlumno(userData);
+    }
 
     const exsSnap = await getDocs(collection(db, 'usuarios', uid, 'ejercicios'));
     const exDataMap = {};
@@ -357,3 +361,37 @@ window.resetearEjercicio = async function(alumnoUid, exId, puntosARestar) {
     showAdminToast('❌', 'Error al resetear: ' + e.message, 'error');
   }
 };
+
+// --- LÓGICA DEL MEDALLERO EN ALUMNO ---
+function renderMedalleroAlumno(alumno) {
+  const container = document.getElementById('alumno-detalle-medals-list');
+  const countBadge = document.getElementById('alumno-detalle-medals-count');
+  if (!container) return;
+  
+  const userLogros = alumno.logros || [];
+  const catalogo = window.MEDALLAS_CATALOGO || [];
+  
+  if (catalogo.length === 0) {
+    container.innerHTML = '<div class="text-muted">No hay medallas en el sistema.</div>';
+    return;
+  }
+
+  const unlockedIds = new Set(userLogros.map(l => l.id));
+  if(countBadge) countBadge.textContent = `${unlockedIds.size} / ${catalogo.length}`;
+
+  container.innerHTML = catalogo.map(m => {
+    const isUnlocked = unlockedIds.has(m.id);
+    const lockedClass = isUnlocked ? '' : 'opacity-50 grayscale';
+    const borderClass = isUnlocked ? 'border-warning shadow-sm' : 'border-secondary';
+    const bgClass = isUnlocked ? 'bg-dark text-warning' : 'bg-transparent text-secondary';
+    const typeBadge = m.public ? '' : '<i class="fas fa-eye-slash text-danger" title="Oculta" style="font-size:0.6rem; position:absolute; top:4px; right:4px;"></i>';
+    
+    return `
+      <div class="border rounded p-2 text-center position-relative ${borderClass} ${bgClass} ${lockedClass}" style="width:110px; transition:all 0.2s" title="${m.desc}">
+        ${typeBadge}
+        <div class="fs-2 mb-1" style="${isUnlocked ? '' : 'filter: grayscale(1);'}">${m.icon}</div>
+        <div class="small fw-bold lh-sm" style="font-size:0.7rem">${m.name}</div>
+      </div>
+    `;
+  }).join('');
+}

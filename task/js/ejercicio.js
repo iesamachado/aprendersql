@@ -205,7 +205,248 @@ async function updateProgressUI() {
   const total = currentEjercicios.length;
   document.getElementById('tanda-counter').textContent = `${completados}/${total}`;
   document.getElementById('tanda-progress-bar').style.width = `${(completados/total)*100}%`;
-  document.getElementById('puntos-actuales').textContent = userDoc.puntosTotal || 0;
+  
+  const totalPts = userDoc.puntosTotal || 0;
+  document.getElementById('puntos-actuales').textContent = totalPts;
+  
+  const rank = getUserRank(totalPts);
+  const rankIcon = document.getElementById('user-rank-icon');
+  const rankText = document.getElementById('user-rank-text');
+  if(rankIcon && rankText) {
+    rankIcon.textContent = rank.icon;
+    rankText.textContent = rank.name;
+    rankText.style.color = rank.color;
+  }
+  
+  if (userDoc.gremio) {
+    document.getElementById('user-gremio-icon').textContent = userDoc.gremioIcono || '🛡️';
+    document.getElementById('user-gremio-text').textContent = userDoc.gremio;
+  }
+  
+  renderLigasUI(totalPts);
+  renderLogrosUI();
+}
+
+function getUserRank(points) {
+  if (points >= 1500) return { name: 'Diamante', icon: '💎', color: '#0dcaf0', min: 1500, max: 99999 };
+  if (points >= 1000) return { name: 'Platino', icon: '🌟', color: '#20c997', min: 1000, max: 1500 };
+  if (points >= 600)  return { name: 'Oro', icon: '🥇', color: '#ffc107', min: 600, max: 1000 };
+  if (points >= 300)  return { name: 'Plata', icon: '🥈', color: '#adb5bd', min: 300, max: 600 };
+  if (points >= 100)  return { name: 'Bronce', icon: '🥉', color: '#fd7e14', min: 100, max: 300 };
+  return { name: 'Hierro', icon: '⚪', color: '#6c757d', min: 0, max: 100 };
+}
+
+function renderLigasUI(puntos) {
+  const container = document.getElementById('ligas-list');
+  if (!container) return;
+  
+  const ligas = [
+    { name: 'Diamante', icon: '💎', color: '#0dcaf0', pts: 1500 },
+    { name: 'Platino', icon: '🌟', color: '#20c997', pts: 1000 },
+    { name: 'Oro', icon: '🥇', color: '#ffc107', pts: 600 },
+    { name: 'Plata', icon: '🥈', color: '#adb5bd', pts: 300 },
+    { name: 'Bronce', icon: '🥉', color: '#fd7e14', pts: 100 },
+    { name: 'Hierro', icon: '⚪', color: '#6c757d', pts: 0 }
+  ];
+  
+  container.innerHTML = ligas.map((liga, i) => {
+    const isCurrent = puntos >= liga.pts && (i === 0 || puntos < ligas[i-1].pts);
+    const isUnlocked = puntos >= liga.pts;
+    const nextPts = i > 0 ? ligas[i-1].pts : liga.pts;
+    let progressHtml = '';
+    
+    if (isCurrent && i > 0) {
+      const needed = nextPts - puntos;
+      const pct = ((puntos - liga.pts) / (nextPts - liga.pts)) * 100;
+      progressHtml = `
+        <div class="mt-2">
+          <div class="d-flex justify-content-between small text-muted mb-1" style="font-size:0.7rem">
+            <span>Progreso hacia ${ligas[i-1].name}</span>
+            <span>Te faltan ${needed} pts</span>
+          </div>
+          <div class="progress" style="height: 6px; background:#1e293b">
+            <div class="progress-bar" style="width: ${pct}%; background-color: ${ligas[i-1].color}"></div>
+          </div>
+        </div>
+      `;
+    }
+    
+    return `
+      <div class="d-flex flex-column p-2 border rounded ${isCurrent ? 'border-info bg-dark' : 'border-secondary'} ${!isUnlocked ? 'opacity-50' : ''}" style="${isCurrent ? 'box-shadow: 0 0 10px rgba(13,202,240,0.2)' : ''}">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="fs-5 me-2">${liga.icon}</span>
+            <span class="fw-bold" style="color: ${isUnlocked ? liga.color : '#6c757d'}">${liga.name}</span>
+            ${isCurrent ? '<span class="badge bg-info ms-2">Actual</span>' : ''}
+          </div>
+          <div class="small fw-bold text-secondary">${liga.pts} pts</div>
+        </div>
+        ${progressHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderLogrosUI() {
+  const container = document.getElementById('logros-list');
+  if (!container) return;
+  
+  const userLogros = userDoc.logros || [];
+  const catalogo = window.MEDALLAS_CATALOGO || [];
+  
+  const hasLogro = (id) => userLogros.some(l => l.id === id);
+  
+  // Filtramos: 
+  // - Queremos mostrar todas las medallas públicas.
+  // - De las medallas ocultas, SOLO mostramos las que el alumno ya haya desbloqueado.
+  const aMostrar = catalogo.filter(m => m.public || hasLogro(m.id));
+  
+  if (aMostrar.length === 0) {
+    container.innerHTML = '<div class="text-center text-muted">Aún no hay medallas disponibles.</div>';
+    return;
+  }
+  
+  container.innerHTML = aMostrar.map(m => {
+    const unlocked = hasLogro(m.id);
+    const dateStr = unlocked ? new Date(userLogros.find(l => l.id === m.id).ts).toLocaleDateString() : '';
+    
+    return `
+      <div class="d-flex align-items-center p-3 border rounded ${unlocked ? 'border-warning bg-black' : 'border-secondary opacity-50'}">
+        <div class="fs-1 me-3" style="${unlocked ? '' : 'filter: grayscale(1); opacity: 0.5;'}">${m.icon}</div>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-1 fw-bold ${unlocked ? 'text-warning' : 'text-secondary'}">${m.name} ${m.public && !unlocked ? '<span class="badge bg-secondary ms-2" style="font-size:0.6rem">Pública</span>' : ''} ${!m.public && unlocked ? '<span class="badge bg-danger ms-2" style="font-size:0.6rem">Oculta</span>' : ''}</h6>
+            ${unlocked ? `<span class="badge bg-dark text-muted" style="font-size:0.7rem">${dateStr}</span>` : ''}
+          </div>
+          <div class="small ${unlocked ? 'text-light' : 'text-muted'}">${m.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.showGolfLeaderboard = async function() {
+  if (!currentExId) return;
+  const tbody = document.getElementById('golf-tbody');
+  tbody.innerHTML = '<tr><td colspan="3" class="text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Cargando podio...</td></tr>';
+  new bootstrap.Modal(document.getElementById('golf-modal')).show();
+  
+  try {
+    const q = fb.query(
+      fb.collection(db, 'intentos'),
+      fb.where('ejercicioId', '==', currentExId),
+      fb.where('success', '==', true),
+      fb.orderBy('queryLength', 'asc'),
+      fb.limit(10) // fetch more in case of duplicates
+    );
+    const snap = await fb.getDocs(q);
+    
+    // Deduplicate by email/uid
+    const usersSeen = new Set();
+    const top3 = [];
+    snap.forEach(d => {
+      const data = d.data();
+      if (!usersSeen.has(data.email) && top3.length < 3) {
+        usersSeen.add(data.email);
+        top3.push(data);
+      }
+    });
+
+    if (top3.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="text-muted py-4">Nadie ha resuelto este ejercicio aún. ¡Sé el primero!</td></tr>';
+      return;
+    }
+
+    const medals = ['🥇', '🥈', '🥉'];
+    tbody.innerHTML = top3.map((t, i) => `
+      <tr>
+        <td class="fs-4">${medals[i]}</td>
+        <td>${t.email ? t.email.split('@')[0] : 'Anónimo'}</td>
+        <td class="fw-bold text-info">${t.queryLength}</td>
+      </tr>
+    `).join('');
+
+  } catch(e) {
+    console.error('Error fetching golf leaderboard:', e);
+    tbody.innerHTML = '<tr><td colspan="3" class="text-danger py-4">Falta índice en Firestore para esta consulta.</td></tr>';
+  }
+}
+
+window.showGremioModal = async function() {
+  const modal = new bootstrap.Modal(document.getElementById('gremio-modal'));
+  modal.show();
+  
+  if (!userDoc.gremio) {
+    document.getElementById('gremio-selector').style.display = 'block';
+    document.getElementById('gremio-leaderboard').style.display = 'none';
+  } else {
+    document.getElementById('gremio-selector').style.display = 'none';
+    document.getElementById('gremio-leaderboard').style.display = 'block';
+    await loadGremioLeaderboard();
+  }
+}
+
+window.joinGremio = async function(nombre, icono) {
+  try {
+    await fb.updateDoc(fb.doc(db, 'usuarios', user.uid), { gremio: nombre, gremioIcono: icono });
+    userDoc.gremio = nombre;
+    userDoc.gremioIcono = icono;
+    document.getElementById('user-gremio-icon').textContent = icono;
+    document.getElementById('user-gremio-text').textContent = nombre;
+    showToast(icono, `¡Te has unido a ${nombre}!`, 'success');
+    
+    document.getElementById('gremio-selector').style.display = 'none';
+    document.getElementById('gremio-leaderboard').style.display = 'block';
+    await loadGremioLeaderboard();
+  } catch(e) { console.error('Error al unirse al gremio:', e); }
+}
+
+async function loadGremioLeaderboard() {
+  const container = document.getElementById('gremio-bars');
+  container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Calculando puntos globales...</div>';
+  
+  try {
+    const q = fb.query(fb.collection(db, 'usuarios')); // Consultamos todos los usuarios (en clases reales no son muchos)
+    const snap = await fb.getDocs(q);
+    
+    const scores = {
+      'La Orden del JOIN': { icon: '🛡️', pts: 0, color: 'bg-primary' },
+      'El Cártel del SELECT': { icon: '🗡️', pts: 0, color: 'bg-success' },
+      'La Hermandad del DROP': { icon: '🧙‍♂️', pts: 0, color: 'bg-danger' },
+      'Los Ninjas del WHERE': { icon: '🦂', pts: 0, color: 'bg-warning' }
+    };
+    
+    let totalGlobalPts = 0;
+    
+    snap.forEach(d => {
+      const u = d.data();
+      if (u.gremio && scores[u.gremio]) {
+        scores[u.gremio].pts += (u.puntosTotal || 0);
+        totalGlobalPts += (u.puntosTotal || 0);
+      }
+    });
+    
+    const sorted = Object.entries(scores).sort((a,b) => b[1].pts - a[1].pts);
+    
+    // Si nadie tiene puntos
+    if (totalGlobalPts === 0) totalGlobalPts = 1; 
+    
+    container.innerHTML = sorted.map(([name, data], idx) => `
+      <div>
+        <div class="d-flex justify-content-between small fw-bold mb-1 align-items-end">
+          <span class="fs-6">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon} <span class="text-light">${name}</span></span>
+          <span class="text-info fs-6">${data.pts} <span class="text-secondary" style="font-size:0.75rem">pts</span></span>
+        </div>
+        <div class="progress border border-secondary" style="height: 12px; background:#1e293b">
+          <div class="progress-bar ${data.color} progress-bar-striped ${idx === 0 ? 'progress-bar-animated' : ''}" style="width: ${(data.pts / totalGlobalPts) * 100}%"></div>
+        </div>
+      </div>
+    `).join('');
+    
+  } catch(e) {
+    console.error('Error cargando leaderboard gremios:', e);
+    container.innerHTML = '<div class="text-danger text-center">Error al cargar ranking de Gremios.</div>';
+  }
 }
 
 async function loadExercise(id) {
@@ -364,8 +605,17 @@ async function runQuery() {
     // 1. Ejecutar query del alumno
     let resAlumno = [];
     if (isDML) {
-      sqlDb.run(query);
-      resAlumno = [{ columns: ['Resultado'], values: [['Comando ejecutado correctamente']] }];
+      try {
+        sqlDb.run(query);
+        resAlumno = [{ columns: ['Resultado'], values: [['Comando ejecutado correctamente']] }];
+      } catch (err) {
+        if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX))/i.test(query)) {
+          resAlumno = [{ columns: ['Resultado', 'Aviso'], values: [['Comando aceptado', 'El comando es válido en MariaDB/MySQL, pero no se modificará la tabla por limitación del motor de SQLite en el navegador.']] }];
+          showToast('⚠️', 'Comando correcto. No se modifica la BD por limitación del motor.', 'warning');
+        } else {
+          throw err;
+        }
+      }
     } else {
       resAlumno = sqlDb.exec(query);
     }
@@ -473,17 +723,72 @@ function compareResults(resA, resS, isDML, dbCopy) {
   return true;
 }
 
+window._consecutiveSuccess = window._consecutiveSuccess || 0;
+window._consecutiveFails = window._consecutiveFails || 0;
+window._lastExId = window._lastExId || null;
+
 async function registerAttempt(isSuccess) {
   try {
     const pts = isSuccess ? 10 : 0; // simplificado
     const ts = fb.serverTimestamp();
+    const queryTxt = sqlEditor.value.trim();
+    const ex = currentEjercicios.find(e => e.id === currentExId);
     
+    // Seguimiento para rachas
+    if (window._lastExId !== currentExId) {
+      window._consecutiveFails = 0;
+      window._lastExId = currentExId;
+    }
+
+    if (isSuccess) {
+      window._consecutiveSuccess++;
+      window._consecutiveFails = 0;
+    } else {
+      window._consecutiveSuccess = 0;
+      window._consecutiveFails++;
+    }
+    
+    // Evaluar logros
+    let nuevosLogros = [];
+    const userLogros = userDoc.logros || [];
+    const hasLogro = (id) => userLogros.some(l => l.id === id);
+    const checkAddLogro = (id) => {
+      if (!hasLogro(id)) {
+        const cat = window.MEDALLAS_CATALOGO.find(m => m.id === id);
+        if (cat) {
+          const l = { id: cat.id, name: cat.name, desc: cat.desc, icon: cat.icon, ts: new Date().toISOString() };
+          userLogros.push(l);
+          nuevosLogros.push(l);
+        }
+      }
+    };
+
+    // Lógica medallas
+    if (isSuccess && userDoc.ejerciciosOK === 0) checkAddLogro('first_blood');
+    if (isSuccess && window._consecutiveSuccess === 3) checkAddLogro('racha_3');
+    
+    const h = new Date().getHours();
+    if (isSuccess && h >= 6 && h <= 8) checkAddLogro('madrugador');
+    if (isSuccess && (h >= 0 && h <= 4)) checkAddLogro('nocturno');
+
+    if (isSuccess && queryTxt === queryTxt.toUpperCase() && queryTxt.match(/[A-Z]/)) checkAddLogro('grita_sql');
+    if (isSuccess && ex && ex.query_solucion && queryTxt.length < ex.query_solucion.length * 0.7) checkAddLogro('minimalista');
+    if (!isSuccess && /DROP\s+TABLE/i.test(queryTxt) && !/DROP\s+TABLE/i.test(ex?.query_solucion || '')) checkAddLogro('bobby_tables');
+    if (!isSuccess && window._consecutiveFails === 6) checkAddLogro('persistente');
+
     // Registrar intento
     await fb.addDoc(fb.collection(db, 'intentos'), {
       ejercicioId: currentExId, uid: user.uid, email: user.email,
-      success: isSuccess, query: sqlEditor.value.trim(),
+      success: isSuccess, query: queryTxt, queryLength: queryTxt.length,
       puntosGanados: pts, timestamp: ts
     });
+
+    if (nuevosLogros.length > 0) {
+      userDoc.logros = userLogros;
+      await fb.updateDoc(fb.doc(db, 'usuarios', user.uid), { logros: userLogros });
+      nuevosLogros.forEach(l => showToast(l.icon, `¡Logro Desbloqueado! ${l.name}`, 'success'));
+      if(typeof renderLogrosUI === 'function') renderLogrosUI();
+    }
 
     if (isSuccess) {
       // Actualizar estado usuario

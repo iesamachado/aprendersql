@@ -474,7 +474,8 @@ async function renderAlumnos(clase) {
         <td><span class="badge bg-warning text-dark">⭐ ${alumno.puntosTotal || 0}</span></td>
         <td class="small"><span class="badge bg-success">${alumno.ejerciciosOK || 0} ej. superados</span></td>
         <td>
-          <button class="btn btn-sm btn-outline-danger" onclick="window._removeFromClass('${uid}')"><i class="fas fa-times"></i></button>
+          <button class="btn btn-sm btn-outline-warning me-1" onclick="window._showMedallas('${uid}')" title="Ver Medallas"><i class="fas fa-medal"></i></button>
+          <button class="btn btn-sm btn-outline-danger" onclick="window._removeFromClass('${uid}')" title="Quitar de clase"><i class="fas fa-times"></i></button>
         </td>
       `;
       container.appendChild(tr);
@@ -499,6 +500,75 @@ async function renderAlumnos(clase) {
       `;
       container.appendChild(tr);
     });
+  }
+
+  // ----- RENDER PODIO Y GREMIOS -----
+  const alumnosData = [];
+  for (const uid of registradosIds) {
+    const snap = await fb.getDoc(fb.doc(db, 'usuarios', uid));
+    if(snap.exists()) alumnosData.push(snap.data());
+  }
+  
+  // Render Podio (Top 5)
+  const podioContainer = document.getElementById('admin-podio-container');
+  if (podioContainer) {
+    const topAlumnos = [...alumnosData].sort((a,b) => (b.puntosTotal||0) - (a.puntosTotal||0)).slice(0,5);
+    if(topAlumnos.length === 0) {
+      podioContainer.innerHTML = '<div class="text-muted text-center">No hay datos suficientes.</div>';
+    } else {
+      const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+      podioContainer.innerHTML = topAlumnos.map((a, i) => `
+        <div class="d-flex align-items-center justify-content-between p-3 mb-2 bg-black border border-secondary rounded">
+          <div class="d-flex align-items-center gap-3">
+            <span class="fs-4">${medals[i]}</span>
+            <div>
+              <div class="fw-bold text-light">${a.nombre || a.email.split('@')[0]}</div>
+              <div class="small text-muted">${a.gremio || 'Sin gremio'}</div>
+            </div>
+          </div>
+          <span class="badge bg-warning text-dark fs-6">${a.puntosTotal || 0} pts</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Render Gremios
+  const gremiosContainer = document.getElementById('admin-gremios-container');
+  if (gremiosContainer) {
+    const scores = {
+      'La Orden del JOIN': { icon: '🛡️', pts: 0, count: 0, color: 'bg-primary' },
+      'El Cártel del SELECT': { icon: '🗡️', pts: 0, count: 0, color: 'bg-success' },
+      'La Hermandad del DROP': { icon: '🧙‍♂️', pts: 0, count: 0, color: 'bg-danger' },
+      'Los Ninjas del WHERE': { icon: '🦂', pts: 0, count: 0, color: 'bg-warning' }
+    };
+    let totalPts = 0;
+    
+    alumnosData.forEach(a => {
+      if (a.gremio && scores[a.gremio]) {
+        scores[a.gremio].pts += (a.puntosTotal || 0);
+        scores[a.gremio].count += 1;
+        totalPts += (a.puntosTotal || 0);
+      }
+    });
+
+    const sortedGremios = Object.entries(scores).sort((a,b) => b[1].pts - a[1].pts);
+    if(totalPts === 0) totalPts = 1;
+
+    gremiosContainer.innerHTML = sortedGremios.map(([name, data], idx) => `
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-end mb-1">
+          <div>
+            <span class="fs-5">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon}</span>
+            <span class="fw-bold text-light ms-2">${name}</span>
+            <span class="badge bg-secondary ms-2">${data.count} miembros</span>
+          </div>
+          <span class="fw-bold text-info">${data.pts} pts</span>
+        </div>
+        <div class="progress border border-secondary" style="height: 14px; background:#1e293b">
+          <div class="progress-bar ${data.color} progress-bar-striped" style="width: ${(data.pts / totalPts) * 100}%"></div>
+        </div>
+      </div>
+    `).join('');
   }
 }
 
@@ -1347,3 +1417,46 @@ window._saveExamenes = async function() {
     if(typeof showAdminToast === 'function') showAdminToast('❌', 'Error al cargar los datos', 'error');
   }
 })();
+
+window._showMedallas = async function(uid) {
+  try {
+    const snap = await fb.getDoc(fb.doc(db, 'usuarios', uid));
+    if (!snap.exists()) return;
+    const alumno = snap.data();
+    
+    document.getElementById('medallas-alumno-nombre').textContent = alumno.nombre || alumno.email.split('@')[0];
+    
+    const container = document.getElementById('medallas-alumno-list');
+    const userLogros = alumno.logros || [];
+    const catalogo = window.MEDALLAS_CATALOGO || [];
+    
+    const hasLogro = (id) => userLogros.some(l => l.id === id);
+    
+    // Para el docente, mostramos TODO el catálogo. Lo desbloqueado a color y con fecha. Lo bloqueado atenuado.
+    if (catalogo.length === 0) {
+      container.innerHTML = '<div class="text-center text-muted">No hay medallas configuradas en el sistema.</div>';
+    } else {
+      container.innerHTML = catalogo.map(m => {
+        const unlocked = hasLogro(m.id);
+        const dateStr = unlocked ? new Date(userLogros.find(l => l.id === m.id).ts).toLocaleDateString() : 'Bloqueado';
+        
+        return `
+          <div class="d-flex align-items-center p-3 border rounded ${unlocked ? 'border-warning bg-black' : 'border-secondary opacity-50'}">
+            <div class="fs-1 me-3" style="${unlocked ? '' : 'filter: grayscale(1); opacity: 0.5;'}">${m.icon}</div>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-1 fw-bold ${unlocked ? 'text-warning' : 'text-secondary'}">${m.name} ${m.public ? '<span class="badge bg-secondary ms-2" style="font-size:0.6rem">Pública</span>' : '<span class="badge bg-danger ms-2" style="font-size:0.6rem">Oculta</span>'}</h6>
+                <span class="badge bg-dark text-muted" style="font-size:0.7rem">${dateStr}</span>
+              </div>
+              <div class="small ${unlocked ? 'text-light' : 'text-muted'}">${m.desc}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    new bootstrap.Modal(document.getElementById('modal-medallas')).show();
+  } catch (e) {
+    showAdminToast('❌', 'Error al cargar medallas del alumno.', 'error');
+  }
+};

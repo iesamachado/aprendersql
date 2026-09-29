@@ -1,0 +1,61 @@
+$(head -n -13 /home/bernat/src/aprenderSQL/js/ejercicios-data.js)
+
+// ─────────────────────────────────────────────────────────
+// CATÁLOGO DE MEDALLAS / LOGROS
+// ─────────────────────────────────────────────────────────
+window.MEDALLAS_CATALOGO = [
+  // Hitos de ejercicios resueltos
+  { id: 'first_blood', name: 'Primera Sangre', desc: 'Resuelve tu primer ejercicio.', icon: '🩸', public: true },
+  { id: 'novato_sql', name: 'Novato SQL', desc: 'Resuelve 10 ejercicios.', icon: '🔰', public: true },
+  { id: 'aprendiz_sql', name: 'Aprendiz SQL', desc: 'Resuelve 25 ejercicios.', icon: '🎓', public: true },
+  { id: 'experto_sql', name: 'Experto SQL', desc: 'Resuelve 50 ejercicios.', icon: '🛠️', public: true },
+  { id: 'maestro_sql', name: 'Maestro SQL', desc: 'Resuelve 100 ejercicios.', icon: '👑', public: true },
+  
+  // Rachas
+  { id: 'racha_3', name: 'En Racha (x3)', desc: 'Resuelve 3 ejercicios seguidos sin fallar.', icon: '🔥', public: true },
+  { id: 'racha_5', name: 'Imparable (x5)', desc: 'Resuelve 5 ejercicios seguidos sin fallar.', icon: '🚀', public: true },
+  { id: 'racha_10', name: 'Racha Épica (x10)', desc: 'Resuelve 10 ejercicios seguidos sin fallar.', icon: '⚡', public: true },
+  { id: 'racha_20', name: 'Dios del SQL (x20)', desc: 'Resuelve 20 ejercicios seguidos sin fallar.', icon: '🎇', public: true },
+  
+  // Tiempo
+  { id: 'madrugador', name: 'El Madrugador', desc: 'Resuelve un ejercicio entre las 6:00 y las 8:00 AM.', icon: '🌅', public: true },
+  { id: 'nocturno', name: 'Ave Nocturna', desc: 'Resuelve un ejercicio entre las 00:00 y las 4:00 AM.', icon: '🦉', public: true },
+  { id: 'fin_de_semana', name: 'Fin de Semana', desc: 'Resuelve un ejercicio en Sábado o Domingo.', icon: '🏖️', public: true },
+  
+  // Cláusulas DQL
+  { id: 'order_by', name: 'Orden y Progreso', desc: 'Usa la cláusula ORDER BY correctamente.', icon: '📋', public: true },
+  { id: 'group_by', name: 'El Agrupador', desc: 'Usa la cláusula GROUP BY.', icon: '📦', public: true },
+  { id: 'having', name: 'El Exigente', desc: 'Usa la cláusula HAVING.', icon: '🔍', public: true },
+  { id: 'join', name: 'Matchmaker', desc: 'Une dos tablas usando JOIN.', icon: '🔗', public: true },
+  { id: 'left_join', name: 'El Zurdo', desc: 'Une dos tablas usando LEFT JOIN.', icon: '👈', public: true },
+  { id: 'subconsulta', name: 'Inception', desc: 'Usa una subconsulta (un SELECT dentro de otro).', icon: '🌀', public: true },
+  { id: 'like', name: 'El Detective', desc: 'Usa LIKE para buscar un patrón de texto.', icon: '🕵️', public: true },
+  { id: 'in', name: 'En la Lista', desc: 'Filtra resultados usando IN.', icon: '📜', public: true },
+  { id: 'between', name: 'En Medio', desc: 'Filtra resultados usando BETWEEN.', icon: '↔️', public: true },
+  
+  // Funciones de Agregación
+  { id: 'count', name: 'El Contable', desc: 'Usa la función COUNT().', icon: '🧮', public: true },
+  { id: 'sum', name: 'La Suma de Todos', desc: 'Usa la función SUM().', icon: '➕', public: true },
+  { id: 'avg', name: 'El Promedio', desc: 'Usa la función AVG().', icon: '⚖️', public: true },
+  { id: 'max_min', name: 'Extremos', desc: 'Usa la función MAX() o MIN().', icon: '🏔️', public: true },
+  
+  // Modificadores
+  { id: 'limit', name: 'El Límite', desc: 'Usa LIMIT para acotar los resultados.', icon: '🚧', public: true },
+  { id: 'distinct', name: 'Único y Diferente', desc: 'Usa DISTINCT para eliminar duplicados.', icon: '🦄', public: true },
+  { id: 'union', name: 'Fusión', desc: 'Usa UNION para combinar consultas.', icon: '🤝', public: true },
+  
+  // DML / DDL
+  { id: 'insert', name: 'Creador de Datos', desc: 'Ejecuta un INSERT válido.', icon: '📥', public: true },
+  { id: 'update', name: 'El Modificador', desc: 'Ejecuta un UPDATE válido.', icon: '🖍️', public: true },
+  { id: 'delete', name: 'El Destructor', desc: 'Ejecuta un DELETE válido.', icon: '🗑️', public: true },
+
+  // Ocultas
+  { id: 'grita_sql', name: 'El Grita-SQL', desc: 'Resuelve un ejercicio con toda la consulta en MAYÚSCULAS.', icon: '🗣️', public: false },
+  { id: 'minimalista', name: 'El Minimalista', desc: 'Resuelve un ejercicio usando un 30% menos de caracteres que la solución.', icon: '✂️', public: false },
+  { id: 'bobby_tables', name: 'Little Bobby Tables', desc: 'Intenta ejecutar un DROP TABLE donde no tocaba.', icon: '🏴‍☠️', public: false },
+  { id: 'persistente', name: 'El Persistente', desc: 'Falla más de 5 veces seguidas en un mismo ejercicio antes de conseguirlo.', icon: '🧗', public: false },
+  { id: 'cabezota', name: 'El Cabezota', desc: 'Falla 10 veces seguidas en el mismo ejercicio.', icon: '🧱', public: false },
+  { id: 'error_sintaxis', name: 'Ups...', desc: 'Provoca tu primer error de sintaxis SQLite.', icon: '💥', public: false },
+  { id: 'comentario', name: 'El Documentador', desc: 'Añade un comentario en tu consulta usando -- o /* */', icon: '📝', public: false },
+  { id: 'spanglish', name: 'El Traductor', desc: 'Usa AS para renombrar una columna.', icon: '🏷️', public: false }
+];

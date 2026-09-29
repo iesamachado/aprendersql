@@ -93,6 +93,9 @@
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="notas-tab" data-bs-toggle="tab" data-bs-target="#notas-pane" type="button" role="tab" aria-controls="notas-pane" aria-selected="false"><i class="fas fa-graduation-cap me-2 text-danger"></i>Cuaderno de Notas</button>
       </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="gamificacion-tab" data-bs-toggle="tab" data-bs-target="#gamificacion-pane" type="button" role="tab" aria-controls="gamificacion-pane" aria-selected="false"><i class="fas fa-gamepad me-2 text-info"></i>Gamificación</button>
+      </li>
     </ul>
 
     <div class="tab-content" id="claseTabsContent">
@@ -261,10 +264,56 @@
           </div>
         </div>
       </div>
+
+      <!-- Pestaña: Gamificación -->
+      <div class="tab-pane fade" id="gamificacion-pane" role="tabpanel" aria-labelledby="gamificacion-tab" tabindex="0">
+        <div class="row g-4 h-100 p-3">
+          <!-- Podio -->
+          <div class="col-md-6">
+            <div class="admin-table-wrapper h-100 border-warning" style="border-color: rgba(255, 193, 7, 0.5) !important;">
+              <div class="admin-table-header d-flex align-items-center" style="background: rgba(255, 193, 7, 0.1);">
+                <h5 class="mb-0 text-warning"><i class="fas fa-trophy me-2"></i>Top Alumnos (Podio)</h5>
+              </div>
+              <div class="p-4" id="admin-podio-container">
+                <div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+              </div>
+            </div>
+          </div>
+          <!-- Gremios -->
+          <div class="col-md-6">
+            <div class="admin-table-wrapper h-100 border-info" style="border-color: rgba(13, 202, 240, 0.5) !important;">
+              <div class="admin-table-header d-flex align-items-center" style="background: rgba(13, 202, 240, 0.1);">
+                <h5 class="mb-0 text-info"><i class="fas fa-shield-alt me-2"></i>Guerra de Gremios</h5>
+              </div>
+              <div class="p-4" id="admin-gremios-container">
+                <div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 </div>
 
+
+<!-- Modal Medallas del Alumno -->
+<div class="modal fade" id="modal-medallas" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border-warning">
+      <div class="modal-header border-bottom border-warning">
+        <h5 class="modal-title text-warning"><i class="fas fa-medal me-2"></i>Medallero: <span id="medallas-alumno-nombre"></span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div id="medallas-alumno-list" class="d-flex flex-column gap-3">
+          <!-- JS rellenará esto -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modal Resultados Tanda -->
 <div class="modal fade" id="modal-resultados" tabindex="-1">
