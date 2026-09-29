@@ -343,7 +343,7 @@ function renderAllTandasUI() {
   
   const getFriendlyTopicName = (temaStr, isRepasoGroup = false) => {
     const numMatch = temaStr.match(/Tema\s+(\d+)/i);
-    const raMatch = temaStr.match(/RA\s+(\d+)/i);
+    const raMatch = temaStr.match(/RA\s*(\d+)/i);
     const isSegundo = clase.modulo === '0377';
     
     let numStr = null;
@@ -443,15 +443,31 @@ function renderAllTandasUI() {
     return numA - numB;
   });
 
-  groupKeys.forEach(groupName => {
+  if (groupKeys.length > 0) {
+    html = `
+      <div class="col-12 d-flex justify-content-end mb-3 gap-2">
+        <button class="btn btn-sm btn-outline-secondary" onclick="document.querySelectorAll('.group-collapse').forEach(el => bootstrap.Collapse.getOrCreateInstance(el, {toggle: false}).show())">
+          <i class="fas fa-expand-alt me-1"></i>Expandir todos
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="document.querySelectorAll('.group-collapse').forEach(el => bootstrap.Collapse.getOrCreateInstance(el, {toggle: false}).hide())">
+          <i class="fas fa-compress-alt me-1"></i>Comprimir todos
+        </button>
+      </div>
+    ` + html;
+  }
+
+  groupKeys.forEach((groupName, idx) => {
     const groupIsRepaso = groupName.startsWith('REPASO');
     const headerTitleClass = groupIsRepaso ? 'text-warning' : 'text-white';
+    const collapseId = `collapse-group-${idx}`;
     
     html += `<div class="col-12 mt-4 mb-3">
-               <h5 class="${headerTitleClass} border-bottom border-secondary pb-2">
+               <h5 class="${headerTitleClass} border-bottom border-secondary pb-2 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#${collapseId}" style="cursor: pointer; user-select: none;">
                  <i class="fas fa-layer-group text-primary me-2"></i>${groupName}
+                 <i class="fas fa-chevron-down float-end text-muted small mt-1"></i>
                </h5>
-               <div class="list-group list-group-flush w-100">`;
+               <div id="${collapseId}" class="collapse show group-collapse">
+                 <div class="list-group list-group-flush w-100">`;
                
     groups[groupName].forEach(bloque => {
       if (bloque.isNewTestExam) {
@@ -554,7 +570,7 @@ function renderAllTandasUI() {
       `;
     });
     
-    html += `</div></div>`;
+    html += `</div></div></div>`;
   });
 
   if (!html) {

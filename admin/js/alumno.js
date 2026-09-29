@@ -136,9 +136,10 @@ async function loadAlumno() {
     // Renderizar notas por bloque
     const gradesContainer = document.getElementById('notas-bloques-container');
     if (gradesContainer && window.BLOQUES) {
-      let gradesHtml = '<h5 class="text-warning mb-3"><i class="fas fa-chart-pie me-2"></i>Notas por Bloque</h5><div class="row g-2">';
+      let gradesHtml = '<h5 class="text-warning mb-3"><i class="fas fa-chart-pie me-2"></i>Notas por Bloque (SQL)</h5><div class="row g-2">';
       window.BLOQUES.forEach(b => {
         const stats = ptsPorBloque[b.id];
+        if (!stats || stats.max === 0) return;
         const nota = stats.max > 0 ? ((stats.conseguidos / stats.max) * 10).toFixed(1) : '0.0';
         gradesHtml += `
           <div class="col-md-6 col-lg-3">
@@ -217,13 +218,16 @@ async function loadAlumno() {
     const accordion = document.getElementById('accordion-intentos');
     accordion.innerHTML = '';
 
-    if (Object.keys(exDataMap).length === 0) {
+    // Reunir todos los IDs de ejercicios (tanto superados como solo intentados)
+    const allExIds = new Set([...Object.keys(exDataMap), ...Object.keys(intentosPorEx)]);
+    
+    if (allExIds.size === 0) {
       accordion.innerHTML = '<div class="alert bg-dark text-muted border-secondary text-center">Este alumno aún no ha intentado ningún ejercicio.</div>';
       return;
     }
 
     // Sort by exercise ID string (or numeric if possible)
-    const sortedExIds = Object.keys(exDataMap).sort((a,b) => {
+    const sortedExIds = Array.from(allExIds).sort((a,b) => {
       const numA = parseInt(a);
       const numB = parseInt(b);
       if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
@@ -231,6 +235,8 @@ async function loadAlumno() {
     });
 
     sortedExIds.forEach((exId) => {
+      if (exId === "undefined" || exId === "null" || !exId) return;
+      
       const exMeta = exDataMap[exId];
       const intentos = intentosPorEx[exId] || [];
       const isSuperado = exMeta?.superado || false;
@@ -238,9 +244,9 @@ async function loadAlumno() {
       const headerClass = isSuperado ? 'text-success' : 'text-warning';
       const headerIcon = isSuperado ? '✅' : '⏳';
       
-      let baseEx = window.EJERCICIOS.find(e => e.id == exId);
+      let baseEx = window.EJERCICIOS?.find(e => e.id == exId);
       let expectedSolution = 'Solución no disponible';
-      let expectedTitle = exMeta.titulo || 'Ejercicio ' + exId;
+      let expectedTitle = exMeta?.titulo || baseEx?.enunciado || 'Ejercicio ' + exId;
       if (baseEx && window.getVariationForStudent) {
         baseEx = window.getVariationForStudent(baseEx, uid);
         expectedSolution = baseEx.query_solucion;
@@ -256,8 +262,8 @@ async function loadAlumno() {
               <span class="badge bg-secondary me-2">#${exId}</span>
               <span class="${headerClass} fw-bold me-auto">${headerIcon} ${expectedTitle}</span>
               <span class="text-muted small me-3">${intentos.length} intentos</span>
-              <span class="badge ${isSuperado ? 'bg-success' : 'bg-secondary'} me-3">Pts: ${exMeta.puntoObtenido || 0}</span>
-              <button class="btn btn-sm btn-outline-danger ms-2 reset-btn" onclick="resetearEjercicio('${uid}', ${exId}, ${exMeta.puntoObtenido || 0}); event.stopPropagation();" title="Borrar intentos y resetear estado">
+              <span class="badge ${isSuperado ? 'bg-success' : 'bg-secondary'} me-3">Pts: ${exMeta?.puntoObtenido || 0}</span>
+              <button class="btn btn-sm btn-outline-danger ms-2 reset-btn" onclick="resetearEjercicio('${uid}', '${exId}', ${exMeta?.puntoObtenido || 0}); event.stopPropagation();" title="Borrar intentos y resetear estado">
                 <i class="fas fa-undo-alt"></i> Reset
               </button>
             </div>
