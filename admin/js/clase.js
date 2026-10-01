@@ -16,6 +16,7 @@ if (!claseId) window.location.href = 'clases.html';
 let claseActual = null;
 let currentBloquesActivos = [];
 let currentExamenesActivos = [];
+let currentExamenesFechas = {};
 let currentTandasModo = {};
 let currentTandasIds = [];
 let claseCurriculum = null;
@@ -317,6 +318,7 @@ async function loadClase() {
   claseActual.id = claseId;
   currentBloquesActivos = claseActual.bloquesActivos || [];
   currentExamenesActivos = claseActual.examenesActivos || [];
+  currentExamenesFechas = claseActual.examenesFechas || {};
   currentTandasModo = claseActual.tandasModo || {};
   currentTandasIds = claseActual.tandasIds || [];
   
@@ -1265,7 +1267,7 @@ function renderExamenes(clase) {
   allMapped.forEach(taskId => {
     if (taskId.startsWith('examen:')) {
       const [_, mod, ra] = taskId.split(':');
-      exams.push({ id: taskId, label: `Examen Oficial RA ${ra} (${mod})` });
+      exams.push({ id: taskId, label: `Examen RA${ra}` });
     }
     if (taskId.startsWith('custom_')) {
       const custom = (claseCurriculum.customTasks || []).find(t => t.id === taskId);
@@ -1280,18 +1282,27 @@ function renderExamenes(clase) {
 
   container.innerHTML = exams.map(ex => {
     const isChecked = currentExamenesActivos.includes(ex.id) ? 'checked' : '';
+    const dateVal = currentExamenesFechas[ex.id] || '';
     return `
       <div class="col-md-6 col-lg-4">
         <div class="card bg-dark border-secondary h-100">
-          <div class="card-body p-3 d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="mb-1 text-light">${ex.label}</h6>
-              <div class="text-muted small">${ex.id.startsWith('custom_') ? 'Tarea Personalizada' : 'Examen Oficial BOJA'}</div>
+          <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <h6 class="mb-1 text-light">${ex.label}</h6>
+                <div class="text-muted small">${ex.id.startsWith('custom_') ? 'Tarea Personalizada' : 'Examen Oficial BOJA'}</div>
+              </div>
+              <div class="form-check form-switch ms-3">
+                <input class="form-check-input" type="checkbox" style="transform: scale(1.3);" 
+                       id="chk_ex_${ex.id}" ${isChecked}>
+              </div>
             </div>
-            <div class="form-check form-switch ms-3">
-              <input class="form-check-input" type="checkbox" style="transform: scale(1.3);" 
-                     id="chk_ex_${ex.id}" ${isChecked}>
-            </div>
+            ${ex.id.startsWith('examen:') ? `
+              <div class="mt-2">
+                <label class="small text-muted mb-1"><i class="fas fa-calendar-alt me-1"></i>Fecha y hora</label>
+                <input type="datetime-local" class="form-control form-control-sm bg-black text-light border-secondary" id="date_ex_${ex.id}" value="${dateVal}">
+              </div>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -1300,7 +1311,7 @@ function renderExamenes(clase) {
 }
 
 window._saveExamenes = async function() {
-  if (!currentClaseId) return;
+  if (!claseId) return;
   const btn = document.querySelector('button[onclick="window._saveExamenes()"]');
   const originalHtml = btn.innerHTML;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
@@ -1309,12 +1320,22 @@ window._saveExamenes = async function() {
   try {
     const checks = document.querySelectorAll('input[id^="chk_ex_"]');
     const nuevos = [];
+    const fechas = {};
     checks.forEach(chk => {
-      if (chk.checked) nuevos.push(chk.id.replace('chk_ex_', ''));
+      const exId = chk.id.replace('chk_ex_', '');
+      if (chk.checked) nuevos.push(exId);
+      
+      if (exId.startsWith('examen:')) {
+        const dateInput = document.getElementById('date_ex_' + exId);
+        if (dateInput && dateInput.value) {
+          fechas[exId] = dateInput.value;
+        }
+      }
     });
     
-    await fb.updateDoc(fb.doc(db, 'clases', currentClaseId), { examenesActivos: nuevos });
+    await fb.updateDoc(fb.doc(db, 'clases', claseId), { examenesActivos: nuevos, examenesFechas: fechas });
     currentExamenesActivos = nuevos;
+    currentExamenesFechas = fechas;
     showAdminToast('✅', 'Exámenes activados actualizados');
     
     // Refresh gradebook to reflect changes

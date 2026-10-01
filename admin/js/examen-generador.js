@@ -198,10 +198,23 @@ window._cerrarExamenTest = async (id) => {
 };
 
 window._deleteExamenTest = async (id) => {
-  if (confirm('¿Eliminar examen por completo? Se perderán las notas.')) {
-    const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  if (confirm('¿Eliminar examen por completo? Se borrarán todas las respuestas e intentos asociados.')) {
+    const { doc, deleteDoc, collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    
+    // 1. Borrar intentos y respuestas asociados
+    const q = query(collection(db, "respuestas_test"), where("examenId", "==", id));
+    const snap = await getDocs(q);
+    
+    const deletePromises = [];
+    snap.forEach(d => {
+      deletePromises.push(deleteDoc(doc(db, "respuestas_test", d.id)));
+    });
+    await Promise.all(deletePromises);
+    
+    // 2. Borrar el examen
     await deleteDoc(doc(db, "examenes_test", id));
-    showAdminToast('Examen eliminado', 'warning');
+    
+    showAdminToast(`Examen y ${snap.size} intentos eliminados`, 'warning');
   }
 };
 

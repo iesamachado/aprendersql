@@ -86,7 +86,7 @@ function buildTaskOptions() {
   const mData = window.BOJA_DATA[currentModule];
   if (mData) {
     mData.ras.forEach(ra => {
-      taskOptions.push({ id: `examen:${currentModule}:${ra.id}`, label: `Examen Oficial RA ${ra.id}`, group: `RA ${ra.id}`, typeIcon: 'fas fa-file-signature' });
+      taskOptions.push({ id: `examen:${currentModule}:${ra.id}`, label: `Examen RA${ra.id}`, group: `RA ${ra.id}`, typeIcon: 'fas fa-file-signature' });
     });
   }
 

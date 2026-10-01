@@ -4,11 +4,16 @@ const BLOQUES = [
   { id: 101, tipo: "teoria", nombre: "Tema 1: Sistemas de almacenamiento", modulo: "0372", curso: "1º ASIR", ra: "1", implementado: true, desc: "Sistemas lógicos de almacenamiento, tipos de bases de datos, SGBD." },
   { 
     id: 109, tipo: "tarea", nombre: "Tema 1: Tarea - Investigación SGBD", modulo: "0372", curso: "1º ASIR", ra: "1", implementado: true, temaRef: 101,
-    desc: "Investiga un SGBD relacional alternativo (PostgreSQL, SQL Server, Oracle, etc.) y compáralo con MySQL/MariaDB. Prepara una presentación en PDF (10-15 diapositivas) y exponlo en clase.",
+    desc: "Investiga un sistema gestor de base de datos relacional. Haz una presentación y preséntala en clase durante 5 minutos.<br><br><b>Debes tener en cuenta:</b><br>- No explicar uno de los 5 SGBD más conocidos (MariaDB, MySQL, Oracle, PostgreSQL, Microsoft SQL Server).<br>- Explica en qué se diferencia tu SGBD con alguno de los 5 más conocidos.<br>- Explica de dónde viene, algo de su historia, de sus desarrolladores...<br>- Explica para qué suele usarse, cuáles son sus características.<br>- Explica su plan de precios. ¿Cuánto vale?<br>- ¿Es software libre? ¿Qué licencia tiene?<br>- Si encuentras alguna anécdota, cuéntala.<br>- La presentación en clase debe durar 5 minutos. No 2, ni 10. Haced la presentación y calculad cuánto tardáis en exponerla.<br><br><b>Entregar:</b><br>Presentación en formato PDF que se llame <code>Tarea1_NombreSistemaGestor.pdf</code>.<br>El trabajo se realiza por parejas, excepcionalmente entre 3. TODOS los miembros del grupo deben entregar el PDF.",
     rubricaDocente: [
-      "Contenido (4 pts): Profundidad de la investigación y características del SGBD.",
-      "Comparativa (3 pts): Cuadro comparativo claro frente a MariaDB (licencias, rendimiento, casos de uso).",
-      "Presentación (3 pts): Claridad, formato visual del PDF y soltura en la exposición oral."
+      "Elección del SGBD (0.5 pts): El SGBD no es uno de los 5 más conocidos.",
+      "Historia y Creadores (1.5 pts): Explica de dónde viene, su historia y quiénes son los desarrolladores.",
+      "Características y Casos de Uso (2 pts): Detalla para qué suele usarse, sus características técnicas y puntos fuertes.",
+      "Comparativa (2 pts): Compara claramente las diferencias respecto a uno de los 5 SGBD dominantes.",
+      "Licencia y Precios (1 pt): Aclara si es software libre, el tipo de licencia y su plan de precios.",
+      "Anécdota o Curiosidad (1 pt): Cuenta de forma atractiva alguna anécdota o dato curioso del sistema.",
+      "Control del Tiempo (1 pt): La exposición oral se ajusta de forma precisa a los 5 minutos exigidos.",
+      "Entrega y Formato (1 pt): Se ha entregado en PDF con el nombre correcto por todos los miembros del grupo."
     ]
   },
   { id: 102, tipo: "teoria", nombre: "Tema 2.1: Diagramas E-R", modulo: "0372", curso: "1º ASIR", ra: "2", implementado: true, desc: "Conceptos, atributos, relaciones y ejemplos de Diagramas Entidad-Relación." },

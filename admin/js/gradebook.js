@@ -82,7 +82,7 @@ export async function initGradebook(claseActual, curriculum, currentTandasIds, c
         activeTasks.push({
           id: taskId,
           mappedId: taskId,
-          label: `Examen Oficial RA ${ra} (${mod})`,
+          label: `Examen RA${ra}`,
           type: 'examen'
         });
       }
@@ -114,7 +114,9 @@ export async function initGradebook(claseActual, curriculum, currentTandasIds, c
         label: `Examen: ${ex.titulo} (Global)`,
         type: 'examen_test_global',
         exId: exId,
-        raHint: 1
+        raHint: 1,
+        estado: ex.estado,
+        criteriosEvaluados: Array.from(critSet)
       });
       
       // Comentamos esto a petición del usuario: No quiere ver los criterios desglosados como columnas en la vista de Tareas.
@@ -205,10 +207,25 @@ async function fetchGrades() {
           fb.where('claseId', '==', currentClase.id)
         );
         const testSnap = await fb.getDocs(testQ);
+        
+        // Group by examenId to handle multiple attempts (keep highest grade)
+        const bestAttempts = {};
+        
         testSnap.forEach(docSnap => {
           const data = docSnap.data();
           if (!data.entregadoEn || !data.notasCriterios) return;
           
+          if (!bestAttempts[data.examenId] || data.nota > bestAttempts[data.examenId].nota) {
+             bestAttempts[data.examenId] = data;
+          }
+        });
+        
+        for (const exId in bestAttempts) {
+          // Ignorar intentos huérfanos de exámenes que han sido eliminados por el profesor
+          const examExists = activeTasks.some(t => t.type === 'examen_test_global' && t.exId === exId);
+          if (!examExists) continue;
+
+          const data = bestAttempts[exId];
           window.testGradesGlobal[st.uid][`test:${data.examenId}`] = data.nota;
           
           for (const crit in data.notasCriterios) {
@@ -220,7 +237,7 @@ async function fetchGrades() {
             if (!testCriterioGrades[st.uid][crit]) testCriterioGrades[st.uid][crit] = [];
             testCriterioGrades[st.uid][crit].push(nota);
           }
-        });
+        }
       } catch (e) {
         console.warn("No se pudieron cargar notas de exámenes test:", e);
       }
@@ -378,7 +395,28 @@ function renderGradebookTasks() {
             const manScore = manualGrades[st.uid]?.[t.id];
             if (manScore !== undefined) score = manScore;
           }
-          html += `<td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${t.id}" value="${score !== '' ? score : ''}" style="width: 70px; margin: 0 auto;"></td>`;
+          
+          let hasRubrica = false;
+          if (t.type === 'offline' && window.BLOQUES) {
+            const bId = t.id.split(':')[1];
+            const bDef = window.BLOQUES.find(x => x.id == bId);
+            if (bDef && bDef.rubricaDocente && bDef.rubricaDocente.length > 0) {
+              hasRubrica = true;
+            }
+          }
+          
+          if (hasRubrica) {
+            html += `<td>
+              <div class="d-flex align-items-center justify-content-center">
+                <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${t.id}" value="${score !== '' ? score : ''}" style="width: 60px;">
+                <button class="btn btn-sm btn-outline-primary ms-1" onclick="window._openRubricaModal('${st.uid}', '${t.id}', '${escape(st.nombre || 'Sin Nombre')}')" title="Evaluar con Rúbrica">
+                  <i class="fas fa-tasks"></i>
+                </button>
+              </div>
+            </td>`;
+          } else {
+            html += `<td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${t.id}" value="${score !== '' ? score : ''}" style="width: 70px; margin: 0 auto;"></td>`;
+          }
         });
       }
       html += `</tr>`;
@@ -447,8 +485,28 @@ function renderGradebookTasks() {
           if (manScore !== undefined) score = manScore;
         }
         
-        html += `<tr><td class="text-start sticky-left bg-dark border-end"><div class="text-info fw-bold small">${st.nombre || 'Sin Nombre'}</div></td>
-          <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${selectedTask.id}" value="${score !== '' ? score : ''}" style="width: 100px; margin: 0 auto;"></td></tr>`;
+        let hasRubrica = false;
+        if (selectedTask.type === 'offline' && window.BLOQUES) {
+          const bId = selectedTask.id.split(':')[1];
+          const bDef = window.BLOQUES.find(x => x.id == bId);
+          if (bDef && bDef.rubricaDocente && bDef.rubricaDocente.length > 0) {
+            hasRubrica = true;
+          }
+        }
+
+        html += `<tr><td class="text-start sticky-left bg-dark border-end"><div class="text-info fw-bold small">${st.nombre || 'Sin Nombre'}</div></td>`;
+        if (hasRubrica) {
+          html += `<td>
+            <div class="d-flex align-items-center justify-content-center">
+              <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${selectedTask.id}" value="${score !== '' ? score : ''}" style="width: 80px;">
+              <button class="btn btn-sm btn-outline-primary ms-2" onclick="window._openRubricaModal('${st.uid}', '${selectedTask.id}', '${escape(st.nombre || 'Sin Nombre')}')" title="Evaluar con Rúbrica">
+                <i class="fas fa-tasks"></i>
+              </button>
+            </div>
+          </td></tr>`;
+        } else {
+          html += `<td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${selectedTask.id}" value="${score !== '' ? score : ''}" style="width: 100px; margin: 0 auto;"></td></tr>`;
+        }
       });
       
       // Calculate average for the selected task
@@ -618,7 +676,16 @@ function renderGradebookRAs() {
       </th>
     `;
   });
-  thHtml += `<th class="text-center align-middle" style="min-width: 120px;">Nota Módulo</th>`;
+  const isGlobalVisible = visibilityConfig['global'] === true;
+  const globalEyeIcon = isGlobalVisible ? 'fa-eye text-success' : 'fa-eye-slash text-muted';
+  thHtml += `
+    <th class="text-center align-middle" style="min-width: 120px;">
+      <div class="fw-bold mb-1">Nota Módulo</div>
+      <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="window._toggleVisibility('global')">
+        <i class="fas ${globalEyeIcon}" title="Alternar visibilidad de la Nota Módulo"></i>
+      </button>
+    </th>
+  `;
   header.innerHTML = thHtml;
 
   // 3. Build Body and Calculate Grades
@@ -646,22 +713,30 @@ function renderGradebookRAs() {
         const gradesForCrit = [];
         activeTasks.forEach(t => {
           if (currentCurriculum[mod].mapeo[ra] && currentCurriculum[mod].mapeo[ra][crit] && currentCurriculum[mod].mapeo[ra][crit].includes(t.mappedId)) {
-            const autoScore = t.type === 'tanda' ? tandaGrades[st.uid]?.[t.id] : undefined;
             const manScore = manualGrades[st.uid]?.[t.id];
             
-            if (manScore !== undefined && manScore !== '') {
-              gradesForCrit.push(parseFloat(manScore));
-            } else if (autoScore !== undefined) {
-              gradesForCrit.push(parseFloat(autoScore));
+            if (t.type === 'examen_test_global') {
+              if (manScore !== undefined && manScore !== '') {
+                gradesForCrit.push(parseFloat(manScore));
+              } else {
+                const testCritId = ra + crit;
+                const testNotas = testCriterioGrades[st.uid]?.[testCritId] || [];
+                if (testNotas.length > 0) {
+                  testNotas.forEach(n => gradesForCrit.push(n));
+                } else if (t.estado === 'cerrado') {
+                  gradesForCrit.push(0);
+                }
+              }
+            } else {
+              const autoScore = t.type === 'tanda' ? tandaGrades[st.uid]?.[t.id] : undefined;
+              if (manScore !== undefined && manScore !== '') {
+                gradesForCrit.push(parseFloat(manScore));
+              } else if (autoScore !== undefined) {
+                gradesForCrit.push(parseFloat(autoScore));
+              }
             }
           }
         });
-        
-        // Añadir notas de exámenes test online para este criterio (promedio aritmético)
-        // Ojo: los tests guardan el criterio como '1a', pero critPesos tiene la clave 'a'
-        const testCritId = ra + crit; 
-        const testNotas = testCriterioGrades[st.uid]?.[testCritId] || [];
-        testNotas.forEach(n => gradesForCrit.push(n));
         
         if (gradesForCrit.length > 0) {
           // Average the grades for this criterion
@@ -702,10 +777,12 @@ function renderGradebookRAs() {
       } else {
         const passClass = finalRaScore >= 5 ? 'btn-outline-success' : 'btn-outline-danger fw-bold';
         if (finalRaScore < 5) allRAsPassed = false;
+        
+        const displayScore = finalRaScore >= 5 ? finalRaScore.toFixed(2) : Math.trunc(finalRaScore);
         const critDataJson = encodeURIComponent(JSON.stringify(st._critDetails[ra] || {}));
         tbHtml += `<td class="text-center">
-                     <button class="btn btn-sm ${passClass} w-100 fw-bold" onclick="window._showRaDetails('${st.nombre}', '${ra}', '${finalRaScore.toFixed(2)}', '${critDataJson}')">
-                       ${finalRaScore.toFixed(2)}
+                     <button class="btn btn-sm ${passClass} w-100 fw-bold" onclick="window._showRaDetails('${st.nombre}', '${ra}', '${displayScore}', '${critDataJson}')">
+                       ${displayScore}
                      </button>
                    </td>`;
       }
@@ -720,7 +797,8 @@ function renderGradebookRAs() {
     if (finalGlobal === null) {
       tbHtml += `<td class="text-muted">-</td>`;
     } else if (!allRAsPassed) {
-      tbHtml += `<td><span class="badge bg-danger">Suspenso (${finalGlobal.toFixed(2)})</span></td>`;
+      const displayGlobal = finalGlobal >= 5 ? finalGlobal.toFixed(2) : Math.trunc(finalGlobal);
+      tbHtml += `<td><span class="badge bg-danger">Suspenso (${displayGlobal})</span></td>`;
     } else {
       tbHtml += `<td class="text-success fw-bold">${finalGlobal.toFixed(2)}</td>`;
     }
@@ -819,4 +897,148 @@ window._showRaDetails = function(studentName, ra, raScore, critDataStr) {
   
   const bsModal = new bootstrap.Modal(modal);
   bsModal.show();
+};
+
+
+window._updateRubricaTotal = function() {
+  const inputs = document.querySelectorAll('.rubrica-pt-input');
+  let total = 0;
+  inputs.forEach(inp => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) total += v;
+  });
+  // Cap at 10 just in case
+  if (total > 10) total = 10;
+  document.getElementById('rubrica-nota-final').value = parseFloat(total.toFixed(2));
+};
+
+window._saveRubricaGrade = async function() {
+  const ctx = window.currentRubricaContext;
+  if (!ctx) return;
+  const finalScore = document.getElementById('rubrica-nota-final').value;
+  if (!finalScore) return;
+  
+  const inputEl = document.querySelector(`input.grade-input[data-uid="${ctx.uid}"][data-tid="${ctx.taskId}"]`);
+  if (inputEl) {
+    inputEl.value = finalScore;
+    inputEl.classList.add('border-warning');
+  }
+  
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalRubrica'));
+  modal.hide();
+};
+window.currentRubricaContext = null;
+
+window._openRubricaModal = function(uid, taskId, stNombre) {
+  stNombre = unescape(stNombre);
+  const bId = taskId.split(':')[1];
+  const bDef = window.BLOQUES.find(x => x.id == bId);
+  if (!bDef || !bDef.rubricaDocente) return;
+  
+  window.currentRubricaContext = { uid, taskId };
+  document.getElementById('rubrica-alumno-name').innerText = `Alumno: ${stNombre} | Tarea: ${bDef.nombre}`;
+  
+  const container = document.getElementById('rubrica-criterios-container');
+  let html = '';
+  bDef.rubricaDocente.forEach((r, idx) => {
+    let maxPts = 10;
+    const match = r.match(/\((\d+(?:\.\d+)?)\s*pts?\)/i);
+    if (match) {
+      maxPts = parseFloat(match[1]);
+    }
+    
+    const numBoxes = Math.round(maxPts / 0.25);
+    
+    let boxesHtml = '';
+    // Un box inicial para nota 0
+    boxesHtml += `<div class="rubrica-box text-muted border border-secondary rounded-1 d-inline-block text-center me-1 mb-1" 
+                       style="width: 30px; height: 30px; line-height: 28px; cursor: pointer; font-size: 0.8rem;"
+                       onclick="window._setRubricaRowGrade(${idx}, 0, this)" title="0 pts">0</div>`;
+                       
+    for(let i=1; i<=numBoxes; i++) {
+      const val = i * 0.25;
+      boxesHtml += `<div class="rubrica-box text-muted border border-secondary rounded-1 d-inline-block text-center me-1 mb-1" 
+                         style="width: 35px; height: 30px; line-height: 28px; cursor: pointer; font-size: 0.8rem;"
+                         data-val="${val}"
+                         onclick="window._setRubricaRowGrade(${idx}, ${val}, this)" title="${val} pts">${val}</div>`;
+    }
+    
+    html += `
+      <div class="mb-3 border-bottom border-secondary pb-2 rubrica-row" id="rubrica-row-${idx}">
+        <label class="form-label text-light mb-1">${r}</label>
+        <div class="d-flex flex-wrap align-items-center mt-1">
+          ${boxesHtml}
+          <input type="hidden" class="rubrica-pt-input" id="rubrica-val-${idx}" value="0">
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+  
+  // No podemos saber los subtotales individuales porque solo guardamos la nota final, 
+  // así que por defecto empezarán en 0 a no ser que implementemos almacenamiento por criterio de rúbrica.
+  // Pero dejaremos la nota final tal como estaba, aunque si tocan un botón se recalculará desde 0.
+  const existingGrade = document.querySelector(`input.grade-input[data-uid="${uid}"][data-tid="${taskId}"]`).value;
+  document.getElementById('rubrica-nota-final').value = existingGrade || '';
+  
+  const modal = new bootstrap.Modal(document.getElementById('modalRubrica'));
+  modal.show();
+};
+
+window._setRubricaRowGrade = function(rowIdx, val, clickedBox) {
+  const rowEl = document.getElementById(`rubrica-row-${rowIdx}`);
+  const inputEl = document.getElementById(`rubrica-val-${rowIdx}`);
+  inputEl.value = val;
+  
+  // Estilizar boxes
+  const boxes = rowEl.querySelectorAll('.rubrica-box');
+  boxes.forEach(box => {
+    const boxVal = parseFloat(box.getAttribute('data-val') || 0);
+    if (boxVal <= val && boxVal > 0) {
+      box.classList.remove('text-muted', 'border-secondary', 'bg-dark');
+      box.classList.add('bg-primary', 'text-white', 'border-primary');
+    } else if (boxVal === 0 && val === 0) {
+      box.classList.remove('text-muted', 'border-secondary', 'bg-dark');
+      box.classList.add('bg-danger', 'text-white', 'border-danger');
+    } else {
+      box.classList.add('text-muted', 'border-secondary');
+      box.classList.remove('bg-primary', 'bg-danger', 'text-white', 'border-primary', 'border-danger');
+    }
+  });
+  
+  window._updateRubricaTotal();
+};
+
+window._updateRubricaTotal = function() {
+  const inputs = document.querySelectorAll('.rubrica-pt-input');
+  let total = 0;
+  inputs.forEach(inp => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) total += v;
+  });
+  // Cap at 10 just in case
+  if (total > 10) total = 10;
+  document.getElementById('rubrica-nota-final').value = parseFloat(total.toFixed(2));
+};
+
+window._saveRubricaGrade = async function() {
+  const ctx = window.currentRubricaContext;
+  if (!ctx) return;
+  const finalScore = document.getElementById('rubrica-nota-final').value;
+  if (!finalScore) return;
+  
+  const inputEl = document.querySelector(`input.grade-input[data-uid="${ctx.uid}"][data-tid="${ctx.taskId}"]`);
+  if (inputEl) {
+    inputEl.value = finalScore;
+    inputEl.classList.add('border-warning');
+    if (window._saveManualGrade) {
+       window._saveManualGrade(inputEl);
+    } else {
+       inputEl.dispatchEvent(new Event('change'));
+    }
+  }
+  
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalRubrica'));
+  modal.hide();
 };
