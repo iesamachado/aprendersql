@@ -101,6 +101,7 @@ function setupExamenGenerador() {
           enunciado: p.enunciado,
           tema: p.tema,
           ra: p.ra,
+          criterio: p.criterio || 'N/A',
           opciones: p.opciones.map(o => ({ texto: o.texto })) // NO 'correcta' field
         };
       });

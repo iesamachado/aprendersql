@@ -3,6 +3,7 @@ import { initTaskPage, showToast } from './auth.js';
 const { user, userDoc, db, fb } = await initTaskPage();
 window.currentBloquesFull = [];
 window.currentTestExams = [];
+window.userTestSubmissions = new Set();
 window.currentClase = null;
 const urlParams = new URLSearchParams(window.location.search);
 const claseId = urlParams.get('claseId');
@@ -328,10 +329,24 @@ function loadActiveTestExams() {
       exams.push({ id: docSnap.id, ...d });
     });
     window.currentTestExams = exams;
-    renderAllTandasUI();
+    
+    // Fetch submissions to know if the user already took the exams
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(module => {
+      const { query, collection, where, getDocs } = module;
+      const subQuery = query(collection(db, "respuestas_test"), where("uid", "==", currentUser.uid), where("claseId", "==", userDoc.claseId));
+      getDocs(subQuery).then(subSnap => {
+        window.userTestSubmissions.clear();
+        subSnap.forEach(s => window.userTestSubmissions.add(s.data().examenId));
+        renderAllTandasUI();
+      }).catch(e => {
+        console.error("Error cargando entregas de tests", e);
+        renderAllTandasUI(); // render anyway
+      });
+    });
   });
 }
-loadActiveTestExams();
+// Run it after auth is ready
+setTimeout(() => { if (userDoc) loadActiveTestExams(); }, 1500); // we will replace the direct call with an auth listener or timeout
 
 function renderAllTandasUI() {
   const container = document.getElementById('tandas-container');

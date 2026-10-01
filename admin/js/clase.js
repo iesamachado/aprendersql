@@ -276,119 +276,33 @@ function getTopicNameForClassroom(bloque) {
   if (bloque.tipo === 'tarea') return 'Proyectos y Tareas';
   return 'Ejercicios Prácticos';
 }
-window._publishTaskToClassroom = async (bloqueId) => {
+window._copyTaskToClipboard = (bloqueId) => {
   const bloque = window.BLOQUES.find(b => b.id == bloqueId);
   if (!bloque) return;
-  const bloqueNombre = bloque.nombre;
-  const bloqueDesc = bloque.desc;
-  const tipo = bloque.tipo;
-  const token = localStorage.getItem('gclassroom_token');
-  if (!token) {
-    showAdminToast('⚠️', 'Inicia sesión con Google para usar Classroom.', 'warning');
-    return;
-  }
   
-  let courseId = claseActual.classroomCourseId;
+  const url = `https://iesamachado.github.io/aprendersql/task/teoria.html?bloqueId=${bloque.id}&claseId=${claseId}`;
   
-  if (!courseId) {
-    try {
-      const res = await fetch('https://classroom.googleapis.com/v1/courses?teacherId=me&courseStates=ACTIVE', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.courses && data.courses.length > 0) {
-        let text = 'Para vincular esta clase de AprenderSQL, elige el número del curso de Classroom:\n\n';
-        data.courses.forEach((c, index) => {
-          text += `${index + 1}. ${c.name} ${c.section ? '('+c.section+')' : ''}\n`;
-        });
-        const selection = prompt(text);
-        if (!selection) return;
-        const idx = parseInt(selection) - 1;
-        if (!isNaN(idx) && data.courses[idx]) {
-          courseId = data.courses[idx].id;
-          await fb.updateDoc(fb.doc(db, 'clases', claseId), { classroomCourseId: courseId });
-          claseActual.classroomCourseId = courseId;
-          showAdminToast('✅', 'Clase vinculada correctamente.', 'success');
-        } else {
-          return;
-        }
-      } else {
-        alert("No tienes cursos activos en Classroom.");
-        return;
-      }
-    } catch(e) {
-      showAdminToast('❌', 'Error obteniendo cursos: ' + e.message, 'error');
-      return;
-    }
-  }
-
-  // Extraer el nombre del Tema para agruparlo en Classroom
-  const bloqueData = window.BLOQUES.find(b => String(b.id) === String(bloqueId)) || { nombre: bloqueNombre, tipo: tipo };
-  const topicName = getTopicNameForClassroom(bloqueData);
-  let topicId = null;
-
-  try {
-    // Obtener topics existentes
-    const topRes = await fetch(`https://classroom.googleapis.com/v1/courses/${courseId}/topics`, { headers: { Authorization: `Bearer ${token}` } });
-    const topData = await topRes.json();
-    const existingTopics = topData.topic || [];
-    const foundTopic = existingTopics.find(t => t.name.toLowerCase() === topicName.toLowerCase());
-    
-    if (foundTopic) {
-      topicId = foundTopic.topicId;
-    } else {
-      // Crear nuevo topic
-      const createTopRes = await fetch(`https://classroom.googleapis.com/v1/courses/${courseId}/topics`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: topicName })
-      });
-      const createTopData = await createTopRes.json();
-      if (createTopData.topicId) topicId = createTopData.topicId;
-    }
-  } catch (e) {
-    console.warn("No se pudo manejar el topic de classroom", e);
-  }
-
-  try {
-    const isTeoria = tipo === 'teoria';
-    const endpoint = isTeoria 
-      ? `https://classroom.googleapis.com/v1/courses/${courseId}/courseWorkMaterials`
-      : `https://classroom.googleapis.com/v1/courses/${courseId}/courseWork`;
-
-    const bodyData = {
-      title: `AprenderSQL: ${bloqueNombre}`,
-      description: `${bloqueDesc}\n\nEnlace directo a las instrucciones detalladas en la plataforma.`,
-      state: 'PUBLISHED',
-      materials: [{ link: { url: `https://iesamachado.github.io/aprendersql/task/teoria.html?bloqueId=${bloqueId}&claseId=${claseId}` } }]
-    };
-
-    if (topicId) {
-      bodyData.topicId = topicId;
-    }
-
-    if (!isTeoria) {
-      bodyData.workType = 'ASSIGNMENT';
-      bodyData.maxPoints = 100;
-    }
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyData)
+  let text = `📋 ${bloque.nombre}\n\n`;
+  text += `${bloque.desc}\n\n`;
+  
+  if (bloque.rubricaDocente && bloque.rubricaDocente.length > 0) {
+    text += `✅ RÚBRICA / OBJETIVOS:\n`;
+    bloque.rubricaDocente.forEach(r => {
+      text += `• ${r}\n`;
     });
-    
-    if (res.status === 401) {
-      if (confirm('La sesión de Google Classroom ha caducado. ¿Quieres renovarla ahora?')) {
-        await window._renewClassroomToken();
-      }
-      return;
-    }
-    if (!res.ok) throw new Error("No se pudo crear. Verifica tus permisos de Classroom.");
-    showAdminToast('✅', `Publicado en Classroom bajo el tema "${topicName || 'General'}"`, 'success');
-  } catch (e) {
-    showAdminToast('❌', e.message, 'error');
+    text += `\n`;
   }
+  
+  text += `🔗 INSTRUCCIONES COMPLETAS:\n${url}`;
+  
+  const el = document.createElement('textarea');
+  el.value = text;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  
+  showAdminToast('✅', 'Enunciado copiado al portapapeles', 'success');
 };
 
 async function loadClase() {
@@ -714,8 +628,8 @@ function renderBloques(clase) {
            </a>` : '';
            
         const classroomBtn = (bloque.implementado) ? 
-          `<button class="btn btn-sm btn-outline-success text-nowrap ms-2" onclick="window._publishTaskToClassroom('${bloque.id}')" title="Publicar en Classroom">
-             <i class="fab fa-google"></i> Publicar
+          `<button class="btn btn-sm btn-outline-info text-nowrap ms-2" onclick="window._copyTaskToClipboard('${bloque.id}')" title="Copiar enunciado para Classroom">
+             <i class="far fa-copy"></i> Copiar Enunciado
            </button>` : '';
 
         const mappedWarning = (bloque.implementado && bloque.tipo === 'tarea' && !isTaskMapped(`bloque:${bloque.id}`))
@@ -1421,6 +1335,28 @@ window._saveExamenes = async function() {
     db = adminCtx.db;
     fb = adminCtx.fb;
     await loadClase();
+    
+    // Recuperar pestaña activa desde la URL
+    const hash = window.location.hash;
+    if (hash) {
+      const tabTrigger = document.querySelector(`button[data-bs-target="${hash}"]`);
+      if (tabTrigger) {
+        new bootstrap.Tab(tabTrigger).show();
+      }
+    }
+
+    // Guardar la pestaña activa en la URL sin recargar
+    const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabEls.forEach(el => {
+      el.addEventListener('shown.bs.tab', function (event) {
+        const targetPane = event.target.getAttribute('data-bs-target');
+        if (history.replaceState) {
+          history.replaceState(null, null, targetPane);
+        } else {
+          window.location.hash = targetPane;
+        }
+      });
+    });
   } catch(e) {
     console.error("Error al inicializar clase:", e);
     if(typeof showAdminToast === 'function') showAdminToast('❌', 'Error al cargar los datos', 'error');

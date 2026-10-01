@@ -14,41 +14,60 @@
         <li>Tipos de Bases de Datos según su Modelo</li>
         <li>Concepto de Base de Datos y Utilidad de un SGBD</li>
         <li>Arquitectura y Elementos de un SGBD</li>
-        <li>Clasificación de SGBD (Libres y Propietarios)</li>
+        <li>Clasificación de SGBD</li>
         <li>Sistemas Centralizados vs Distribuidos</li>
+        <li>Un Poco de Historia de las BBDD</li>
+        
       </ol>
     </div>
   </div>
 
   <!-- 1. Ficheros -->
   <h2 class="text-info mt-5 mb-3 border-bottom pb-2">1. Sistemas Lógicos de Almacenamiento</h2>
-  <p class="fs-5">Antes de las bases de datos, la información persistente se guardaba exclusivamente mediante el sistema de ficheros del Sistema Operativo.</p>
+  <div class="alert alert-secondary fs-5 mb-4 border-start border-4 border-primary">
+    <i class="fas fa-microchip text-primary me-2"></i><strong>Tipos de Memoria:</strong> En informática diferenciamos entre memoria <strong>volátil</strong> (como la RAM, rápida pero se borra al apagar) y <strong>persistente</strong> (Discos duros, pendrives, donde la información no se pierde). Para guardar la información persistente en el disco usamos <strong>Ficheros</strong>.
+  </div>
+  <p class="fs-5">Antes de la popularización de las bases de datos, la información persistente de las aplicaciones se guardaba exclusivamente mediante el sistema de ficheros del Sistema Operativo.</p>
   
   <div class="row g-3 my-3">
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="card h-100">
         <div class="card-body">
           <h5 class="card-title text-primary"><i class="fas fa-file-alt"></i> Según Contenido</h5>
           <ul class="list-unstyled">
-            <li><strong>Texto:</strong> Organizado con caracteres legibles (txt, csv).</li>
-            <li><strong>Binario:</strong> Datos complejos que requieren decodificación (imágenes, ejecutables).</li>
+            <li class="mb-2"><strong>Texto:</strong> Organizado con caracteres legibles alfanuméricos (txt, csv). Se leen con el bloc de notas.</li>
+            <li><strong>Binario:</strong> Datos complejos que requieren software para decodificarse (imágenes, vídeos, ejecutables).</li>
           </ul>
         </div>
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="card h-100">
         <div class="card-body">
           <h5 class="card-title text-primary"><i class="fas fa-sitemap"></i> Según Organización</h5>
           <ul class="list-unstyled">
-            <li><strong>Secuenciales:</strong> Para acceder a un dato, hay que leer los anteriores (ej. cintas magnéticas).</li>
-            <li><strong>Relativos/Directos:</strong> Acceso mediante una posición calculada (hash).</li>
-            <li><strong>Indexados:</strong> Utilizan un índice auxiliar para localizar registros rápidamente.</li>
+            <li class="mb-2"><strong>Secuenciales:</strong> Para acceder a un dato hay que recorrer todos los anteriores.</li>
+            <li class="mb-2"><strong>Relativos:</strong> Acceso mediante saltos al estar posicionados a X posiciones del inicio.</li>
+            <li><strong>Indexados:</strong> Tienen un índice que permite saltar directamente a cualquier dato.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title text-primary"><i class="fas fa-briefcase"></i> Según Uso / Utilidad</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><strong>Maestro:</strong> Contiene la información principal y crítica de la aplicación.</li>
+            <li class="mb-2"><strong>Histórico:</strong> Contiene transacciones pasadas, ya no necesarias en el día a día pero guardadas por seguridad.</li>
+            <li><strong>Temporal:</strong> Usados momentáneamente por los programas y luego descartados.</li>
           </ul>
         </div>
       </div>
     </div>
   </div>
+
+
 
   <div class="alert alert-danger border-danger mt-4 mb-5">
     <h5><i class="fas fa-exclamation-triangle text-danger"></i> Problemas de usar solo ficheros clásicos</h5>
@@ -150,22 +169,35 @@
       <i class="fas fa-microscope me-2"></i> Diseccionando la definición
     </div>
     <div class="card-body">
-      <div class="row g-4">
-        <div class="col-md-3">
-          <h6 class="text-primary fw-bold border-bottom pb-2">1. Datos</h6>
-          <p class="small text-secondary mb-0">Es la materia prima en bruto. Puede ser texto (un nombre), números (un precio) o fechas. Por sí solos, descontextualizados, no dicen mucho.</p>
+      <p class="text-light mb-3">La definición académica de BBDD incluye siempre las siguientes 7 partes clave:</p>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <h6 class="text-primary fw-bold border-bottom pb-1">1. Conjunto de Datos</h6>
+          <p class="small text-secondary mb-0">Un dato es una parte de la información de un objeto o suceso (fechas, números, texto...).</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="text-primary fw-bold border-bottom pb-1">2. Relacionados</h6>
+          <p class="small text-secondary mb-0">Los datos tienen relación entre sí y se conectan lógicamente.</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="text-primary fw-bold border-bottom pb-1">3. Almacenados</h6>
+          <p class="small text-secondary mb-0">El almacenamiento persistente (disco) es su función principal.</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-primary fw-bold border-bottom pb-2">2. Estructurados y Relacionados</h6>
-          <p class="small text-secondary mb-0">No están tirados al azar en un texto. Siguen un orden estricto (filas y columnas) y se conectan lógicamente (ej: un "Alumno" se relaciona con sus "Asignaturas").</p>
+          <h6 class="text-primary fw-bold border-bottom pb-1">4. Sistemáticamente</h6>
+          <p class="small text-secondary mb-0">El proceso está parametrizado siguiendo un patrón o modelo.</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-primary fw-bold border-bottom pb-2">3. Mismo Contexto</h6>
-          <p class="small text-secondary mb-0">Tienen un propósito y ámbito común. Jamás mezclamos las recetas médicas de un hospital con el inventario de una ferretería en la misma base de datos.</p>
+          <h6 class="text-primary fw-bold border-bottom pb-1">5. Automatizado</h6>
+          <p class="small text-secondary mb-0">Se gestiona de forma digital mediante ordenadores, no en papel.</p>
         </div>
         <div class="col-md-3">
-          <h6 class="text-primary fw-bold border-bottom pb-2">4. SGBD (Intermediario)</h6>
-          <p class="small text-secondary mb-0">Tú nunca tocas los bits de los datos directamente en el disco. Le pides las cosas al SGBD hablando en SQL, y él los busca, ordena y te los entrega de forma segura.</p>
+          <h6 class="text-primary fw-bold border-bottom pb-1">6. Uso posterior</h6>
+          <p class="small text-secondary mb-0">Debemos poder consultar y manipular los datos en el futuro.</p>
+        </div>
+        <div class="col-md-3">
+          <h6 class="text-primary fw-bold border-bottom pb-1">7. Mismo Contexto</h6>
+          <p class="small text-secondary mb-0">La información pertenece a un mismo ámbito (ej: datos de un hospital).</p>
         </div>
       </div>
     </div>
@@ -226,13 +258,13 @@ graph LR
     </div>
   </div>
 
-  <h4 >Características y Utilidad de un SGBD:</h4>
+  <h4 >Las 9 Características Principales de un SGBD:</h4>
   <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
     <div class="col">
       <ul class="list-group list-group-flush border rounded h-100">
         <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-eye-slash text-primary me-2"></i> <strong>Abstracción e Independencia:</strong> El programador no necesita saber cómo se guardan físicamente los bytes en el disco.</div>
+            <div><i class="fas fa-eye-slash text-primary me-2"></i> <strong>1. Abstracción:</strong> Nos oculta los detalles de almacenamiento físico de bajo nivel.</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalAbstraccion">
               <i class="fas fa-car"></i> Más info
             </button>
@@ -240,7 +272,7 @@ graph LR
         </li>
         <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-shield-alt text-primary me-2"></i> <strong>Integridad:</strong> Mecanismos que impiden meter una letra en un campo numérico (reglas, restricciones).</div>
+            <div><i class="fas fa-shield-alt text-primary me-2"></i> <strong>2. Integridad:</strong> Mecanismos que aseguran la consistencia de los datos (reglas, tipos).</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalIntegridad">
               <i class="fas fa-user-shield"></i> Más info
             </button>
@@ -248,9 +280,20 @@ graph LR
         </li>
         <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-lock text-primary me-2"></i> <strong>Seguridad:</strong> Autenticación, roles y permisos de lectura/escritura por tabla.</div>
+            <div><i class="fas fa-lock text-primary me-2"></i> <strong>3. Seguridad:</strong> Control de acceso, usuarios, roles y contraseñas.</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalSeguridad">
               <i class="fas fa-id-card"></i> Más info
+            </button>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div><i class="fas fa-book text-primary me-2"></i> <strong>4. Metadata (Diccionario):</strong> La BBDD guarda información sobre su propia estructura interna.</div>
+        </li>
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-exchange-alt text-primary me-2"></i> <strong>5. Transacciones:</strong> Operaciones seguras en bloque ("todo o nada").</div>
+            <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalTransacciones">
+              <i class="fas fa-gamepad"></i> Más info
             </button>
           </div>
         </li>
@@ -259,25 +302,26 @@ graph LR
     <div class="col">
       <ul class="list-group list-group-flush border rounded h-100">
         <li class="list-group-item">
-          <div class="d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-exchange-alt text-primary me-2"></i> <strong>Transacciones (ACID):</strong> Operaciones en bloque seguras ("todo o nada").</div>
-            <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalTransacciones">
-              <i class="fas fa-gamepad"></i> Más info
-            </button>
-          </div>
+          <div><i class="fas fa-desktop text-primary me-2"></i> <strong>6. Monitorización:</strong> Herramientas para vigilar el rendimiento, uso de memoria y cuellos de botella.</div>
         </li>
         <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-users text-primary me-2"></i> <strong>Concurrencia:</strong> Controla bloqueos para que miles de usuarios lean/escriban a la vez sin corromper datos.</div>
+            <div><i class="fas fa-users text-primary me-2"></i> <strong>7. Concurrencia:</strong> Bloqueos inteligentes para que miles de usuarios lean/escriban a la vez.</div>
             <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalFilosofos">
               <i class="fas fa-info-circle"></i> Más info
             </button>
           </div>
         </li>
         <li class="list-group-item">
+          <div><i class="fas fa-plug text-primary me-2"></i> <strong>8. Independencia:</strong> Cambiar el software o el hardware subyacente no rompe las aplicaciones ni los datos.</div>
+        </li>
+        <li class="list-group-item">
+          <div><i class="fas fa-network-wired text-primary me-2"></i> <strong>9. Conectividad:</strong> Permite acceso remoto y en red estándar mediante lenguajes como SQL.</div>
+        </li>
+        <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-undo text-primary me-2"></i> <strong>Recuperación:</strong> Backups y logs para restaurar el sistema tras una caída o fallo eléctrico.</div>
-            <button class="btn btn-sm btn-outline-info text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalRecuperacion">
+            <div><i class="fas fa-undo text-secondary me-2"></i> <em>Extra: Recuperación (Backups y Logs)</em></div>
+            <button class="btn btn-sm btn-outline-secondary text-nowrap ms-2" type="button" data-bs-toggle="modal" data-bs-target="#modalRecuperacion">
               <i class="fas fa-plane"></i> Más info
             </button>
           </div>
@@ -429,6 +473,48 @@ graph LR
     </div>
   </div>
 
+
+
+  <div class="mt-4 p-4 rounded bg-dark border border-info shadow-sm mb-5">
+    <div class="row align-items-center">
+      <div class="col-md-3 text-center mb-3 mb-md-0">
+        <i class="fab fa-linux fa-5x text-info mb-3"></i>
+        <h5 class="text-white mb-0">Proyecto GNU</h5>
+        <small class="text-secondary">Richard Stallman (1983)</small>
+        <div class="mt-3">
+          <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="modal" data-bs-target="#modalGNU">
+            <i class="fas fa-lightbulb me-1"></i> Curiosidades
+          </button>
+        </div>
+      </div>
+      <div class="col-md-9 text-light">
+        <p class="fs-5 text-warning mb-3"><i class="fas fa-quote-left me-2"></i><strong>El Movimiento del Software Libre</strong> establece 4 libertades fundamentales:</p>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="p-3 bg-black bg-opacity-25 border border-secondary rounded h-100">
+              <span class="badge bg-primary mb-2">Libertad 0</span><br><strong>Usar</strong> el programa con cualquier propósito.
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 bg-black bg-opacity-25 border border-secondary rounded h-100">
+              <span class="badge bg-success mb-2">Libertad 1</span><br><strong>Estudiar y modificar</strong> el código fuente.
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 bg-black bg-opacity-25 border border-secondary rounded h-100">
+              <span class="badge bg-warning text-dark mb-2">Libertad 2</span><br><strong>Distribuir</strong> copias libremente a terceros.
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 bg-black bg-opacity-25 border border-secondary rounded h-100">
+              <span class="badge bg-info text-dark mb-2">Libertad 3</span><br><strong>Mejorar</strong> el programa y hacer públicas esas mejoras.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 6. Distribución -->
   <h2 class="text-info mt-5 mb-3 border-bottom pb-2">6. Ubicación: Centralizadas vs Distribuidas</h2>
   <p>Las bases de datos se clasifican también en función de cómo se reparte su arquitectura física y de red a través de los servidores:</p>
@@ -499,6 +585,8 @@ graph LR
       </div>
     </div>
   </div>
+
+
 
   <!-- Modal Filósofos -->
   <div class="modal fade" id="modalFilosofos" tabindex="-1" aria-labelledby="modalFilosofosLabel" aria-hidden="true">
@@ -678,4 +766,89 @@ graph LR
       </div>
     </div>
   </div>
+
+
+  <!-- SECCIONES AÑADIDAS: HISTORIA -->
+  <h2 class="text-info mt-5 mb-4 border-bottom pb-2">7. Historia de las BBDD</h2>
+  
+  <div class="row g-0">
+    <div class="col-12 mb-3 px-2">
+      <div class="p-4 bg-secondary bg-opacity-10 rounded border-start border-4 border-info">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-landmark text-info fa-3x me-4"></i>
+          <p class="fs-5 mb-0">Desde que el ser humano escribe, documenta, y desde que documenta, almacena datos. El ejemplo antiguo más célebre de concentración de conocimiento fue la <strong>Biblioteca de Alejandría</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 p-2">
+      <div class="card h-100 border-secondary shadow-sm bg-dark text-light">
+        <div class="card-body">
+          <h5 class="text-warning"><i class="fas fa-microchip me-2"></i> 1884 - Tarjetas Perforadas</h5>
+          <p class="mb-0"><strong>Herman Hollerith</strong> inventa el tabulador electromagnético, sentando las bases del procesamiento automático de información.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6 p-2">
+      <div class="card h-100 border-secondary shadow-sm bg-dark text-light">
+        <div class="card-body">
+          <h5 class="text-warning"><i class="fas fa-tape me-2"></i> Años 50 y 60</h5>
+          <p class="mb-0">Aparición de <strong>cintas magnéticas</strong> y <strong>discos duros</strong>. <strong>Charles Bachman</strong> desarrolla el primer SGBD en red (IDS).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 p-2">
+      <div class="card h-100 shadow-sm bg-dark text-light border-0 border-start border-4 border-primary">
+        <div class="card-body">
+          <h5 class="text-primary"><i class="fas fa-table me-2"></i> Años 70 - El Modelo Relacional</h5>
+          <p class="mb-0"><strong>Edgar Frank Codd</strong> publica las reglas matemáticas que definen el <strong>Modelo Relacional</strong>, revolucionando para siempre el almacenamiento de datos.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 p-2">
+      <div class="card h-100 shadow-sm bg-dark text-light border-0 border-start border-4 border-danger">
+        <div class="card-body">
+          <h5 class="text-danger"><i class="fas fa-building me-2"></i> El primer SGBD Comercial</h5>
+          <p class="mb-0"><strong>Larry Ellison</strong>, basándose en el trabajo de Codd, crea <em>Relational Software System</em>, que actualmente conocemos como <strong>Oracle Corporation</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+  <div class="mt-5 border-top pt-4 text-center">
+    <h3 class="text-info"><i class="fas fa-file-pdf"></i> Presentación Original Completa</h3>
+    <p class="fs-5">Aquí tienes la presentación original completa de este tema en formato PDF.</p>
+    <a href="../normativa/1o/Tema%201.-%20Sistemas%20de%20almacenamiento%20de%20la%20informaci%C3%B3n.pdf" target="_blank" class="btn btn-danger btn-lg mt-2 text-white fw-bold shadow">
+      <i class="fas fa-file-pdf me-2"></i> Abrir Presentación Original (PDF)
+    </a>
+  </div>
+
+<!-- Modal GNU -->
+<div class="modal fade" id="modalGNU" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-light border-info">
+      <div class="modal-header border-info">
+        <h5 class="modal-title text-info"><i class="fas fa-lightbulb"></i> Curiosidades del Proyecto GNU</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ul>
+          <li class="mb-3"><strong>Acrónimo recursivo:</strong> GNU significa <em>"GNU's Not Unix"</em> (GNU No es Unix). Richard Stallman lo llamó así porque diseñó el sistema para que fuera compatible con Unix, pero sin usar código propietario de Unix.</li>
+          <li class="mb-3"><strong>La pieza que faltaba:</strong> En 1991, el proyecto GNU tenía casi todo listo (compilador GCC, editores, bash...) pero les faltaba el núcleo del sistema operativo. Un estudiante finlandés llamado <strong>Linus Torvalds</strong> creó el núcleo Linux y lo unió a las herramientas GNU, dando lugar a lo que hoy llamamos GNU/Linux.</li>
+          <li class="mb-3"><strong>Emacs y la impresora:</strong> El movimiento del Software Libre comenzó, en parte, porque Stallman se frustró cuando el laboratorio del MIT compró una nueva impresora y el fabricante no le dio el código fuente del controlador para arreglar un problema de atascos de papel.</li>
+        </ul>
+      </div>
+      <div class="modal-footer border-info">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 </div>

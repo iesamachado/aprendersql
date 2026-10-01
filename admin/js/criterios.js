@@ -7,8 +7,37 @@ let currentContext = 'template';
 let currentModule = '0372';
 let curriculumData = { customTasks: [] };
 let taskOptions = []; 
+let testExamsGlobal = [];
 
 async function init() {
+  try {
+    const qTest = fb.query(fb.collection(db, 'examenes_test'), fb.where('creadoPor', '==', user.uid));
+    const testSnap = await fb.getDocs(qTest);
+    testSnap.forEach(d => { testExamsGlobal.push({id: d.id, ...d.data()}); });
+  } catch (e) { console.error(e); }
+
+  // Recuperar pestaña activa desde la URL
+  const hash = window.location.hash;
+  if (hash) {
+    const tabTrigger = document.querySelector(`button[data-bs-target="${hash}"]`);
+    if (tabTrigger) {
+      new bootstrap.Tab(tabTrigger).show();
+    }
+  }
+
+  // Guardar la pestaña activa en la URL sin recargar
+  const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+  tabEls.forEach(el => {
+    el.addEventListener('shown.bs.tab', function (event) {
+      const targetPane = event.target.getAttribute('data-bs-target');
+      if (history.replaceState) {
+        history.replaceState(null, null, targetPane);
+      } else {
+        window.location.hash = targetPane;
+      }
+    });
+  });
+
   document.getElementById('context-selector').addEventListener('change', async (e) => {
     currentContext = e.target.value;
     await loadCurriculum();
@@ -57,30 +86,55 @@ function buildTaskOptions() {
   const mData = window.BOJA_DATA[currentModule];
   if (mData) {
     mData.ras.forEach(ra => {
-      taskOptions.push({ id: `examen:${currentModule}:${ra.id}`, label: `Examen Oficial RA ${ra.id}`, group: 'Exámenes', ra: ra.id });
+      taskOptions.push({ id: `examen:${currentModule}:${ra.id}`, label: `Examen Oficial RA ${ra.id}`, group: `RA ${ra.id}`, typeIcon: 'fas fa-file-signature' });
     });
   }
 
-  (window.BLOQUES || []).filter(b => b.tipo === 'tarea').forEach(b => {
-    taskOptions.push({ id: `bloque:${b.id}`, label: `Tarea: ${b.nombre}`, group: 'Tareas Offline', ra: b.ra || null });
+  (window.BLOQUES || []).filter(b => b.tipo === 'tarea' && b.modulo === currentModule).forEach(b => {
+    taskOptions.push({ id: `bloque:${b.id}`, label: `Tarea Offline: ${b.nombre}`, group: b.ra ? `RA ${b.ra}` : 'Otras Tareas', typeIcon: 'fas fa-file-pdf' });
   });
-  for (let b = 1; b <= 6; b++) {
-    let raStr = b === 1 ? '3' : (b >= 2 && b <= 4 ? '4' : '5');
-    let bLabel = '';
-    if (b===1) bLabel = 'Creación de Tablas (DDL)';
-    if (b===2) bLabel = 'Consultas Básicas (SELECT)';
-    if (b===3) bLabel = 'Agrupación (GROUP BY)';
-    if (b===4) bLabel = 'Subconsultas';
-    if (b===5) bLabel = 'Modificación de Datos (DML)';
-    if (b===6) bLabel = 'Programación SQL (Funciones/Procs)';
-    taskOptions.push({ id: `tanda:${b}:practica`, label: `Bloque ${b} [MODO PRÁCTICA]: ${bLabel}`, group: 'Ejercicios Prácticos (Interactivos)', ra: raStr });
-    taskOptions.push({ id: `tanda:${b}:examen`, label: `Bloque ${b} [MODO EXAMEN]: ${bLabel}`, group: 'Ejercicios Prácticos (Interactivos)', ra: raStr });
+  
+  // Las tandas interactivas son exclusivas de 1º (0372)
+  if (currentModule === '0372') {
+    for (let b = 1; b <= 6; b++) {
+      let raStr = b === 1 ? '3' : (b >= 2 && b <= 4 ? '4' : '5');
+      let bLabel = '';
+      if (b===1) bLabel = 'Creación Tablas';
+      if (b===2) bLabel = 'Consultas Básicas';
+      if (b===3) bLabel = 'Agrupación';
+      if (b===4) bLabel = 'Subconsultas';
+      if (b===5) bLabel = 'Modificación (DML)';
+      if (b===6) bLabel = 'Programación SQL';
+      taskOptions.push({ id: `tanda:${b}:practica`, label: `Plataforma: ${bLabel} [PRÁCTICA]`, group: `RA ${raStr}`, typeIcon: 'fas fa-laptop-code' });
+      taskOptions.push({ id: `tanda:${b}:examen`, label: `Plataforma: ${bLabel} [EXAMEN]`, group: `RA ${raStr}`, typeIcon: 'fas fa-laptop-code' });
+    }
   }
+  
+  testExamsGlobal.forEach(ex => {
+    let raStr = 'Otras Tareas';
+    if (ex.ra) {
+      raStr = `RA ${ex.ra}`;
+    } else if (ex.preguntas && ex.preguntas.length > 0) {
+      const firstCrit = ex.preguntas[0].criterio;
+      if (firstCrit && firstCrit !== 'N/A') {
+        raStr = `RA ${firstCrit.charAt(0)}`;
+      }
+    }
+    taskOptions.push({ id: `test:${ex.id}`, label: `Examen Test: ${ex.titulo}`, group: raStr, typeIcon: 'fas fa-list-check' });
+  });
+
   if (curriculumData.customTasks) {
     curriculumData.customTasks.forEach(t => {
-      taskOptions.push({ id: t.id, label: `Personalizada: ${t.nombre}`, group: 'Tareas Personalizadas (Offline)', ra: null });
+      taskOptions.push({ id: t.id, label: `Personalizada: ${t.nombre}`, group: 'Otras Tareas', typeIcon: 'fas fa-user-edit' });
     });
   }
+  
+  // Sort taskOptions by group so the accordion renders sequentially RA 1, RA 2, etc.
+  taskOptions.sort((a, b) => {
+    if (a.group === 'Otras Tareas') return 1;
+    if (b.group === 'Otras Tareas') return -1;
+    return a.group.localeCompare(b.group);
+  });
 }
 
 async function loadClases() {
@@ -513,7 +567,11 @@ function renderMapping() {
     }
   }
 
-  const groups = [...new Set(taskOptions.map(t => t.group))];
+  const groups = [...new Set(taskOptions.map(t => t.group))].sort((a,b) => {
+    if (a === 'Otras Tareas') return 1;
+    if (b === 'Otras Tareas') return -1;
+    return a.localeCompare(b);
+  });
   
   let html = '<div class="accordion accordion-flush" id="accordionMapping">';
   
