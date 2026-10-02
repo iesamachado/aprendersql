@@ -1,4 +1,4 @@
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot, deleteField } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initTaskPage, showToast } from "./auth.js";
 
 let db, auth, user, userDoc;
@@ -132,9 +132,9 @@ async function initStudentState(exId) {
 }
 
 function startTimer() {
-  // El tiempo límite lo calculamos desde que el PROFESOR lanzó el examen (creadoEn)
-  // o si no está disponible, un fallback. Mejor desde que el profe lo creó para que todos acaben a la vez.
-  const inicioMs = examen.creadoEn ? examen.creadoEn.toMillis() : Date.now();
+  // El tiempo límite lo calculamos desde que el PROFESOR activó el examen (activadoEn).
+  // Si es un examen antiguo y no lo tiene, usamos creadoEn como fallback.
+  const inicioMs = examen.activadoEn ? examen.activadoEn.toMillis() : (examen.creadoEn ? examen.creadoEn.toMillis() : Date.now());
   const finMs = inicioMs + (examen.tiempoMinutos * 60 * 1000);
 
   timerInterval = setInterval(() => {
@@ -201,8 +201,8 @@ window.showQuestion = (renderIdx) => {
     const isChecked = respuestaDoc.respuestas[q.id] === optOrigIdx ? 'checked' : '';
     const selClass = isChecked ? 'selected' : '';
     return `
-      <label class="opt-label ${selClass}">
-        <input type="radio" name="current_q_opt" class="d-none" value="${optOrigIdx}" ${isChecked} onchange="window.selectOption('${q.id}', ${optOrigIdx})">
+      <label class="opt-label ${selClass}" onclick="window.toggleOption('${q.id}', ${optOrigIdx}, this, event)">
+        <input type="radio" name="current_q_opt" class="d-none" value="${optOrigIdx}" ${isChecked}>
         <span>${texto}</span>
       </label>
     `;
@@ -215,26 +215,51 @@ window.showQuestion = (renderIdx) => {
   document.getElementById('btn-next').disabled = renderIdx === examen.preguntas.length - 1;
 };
 
-window.selectOption = async (qId, origOptIdx) => {
-  respuestaDoc.respuestas[qId] = origOptIdx;
-  
-  // Update UI immediately
-  const labels = document.querySelectorAll('.opt-label');
-  labels.forEach(l => l.classList.remove('selected'));
-  const checked = document.querySelector(`input[value="${origOptIdx}"]`);
-  if(checked) checked.parentElement.classList.add('selected');
-  
-  document.getElementById(`nav-btn-${currentQIndex}`).classList.add('answered');
-  updateCounts();
-  
-  // Guardar en Firestore en background
-  try {
-    await updateDoc(respuestaRef, {
-      [`respuestas.${qId}`]: origOptIdx
-    });
-  } catch (e) {
-    console.error("Error guardando respuesta", e);
-    showToast('error', 'Error de conexión. Se guardará cuando vuelva.');
+window.toggleOption = async (qId, origOptIdx, labelEl, event) => {
+  event.preventDefault(); // Stop native label action
+
+  if (respuestaDoc.respuestas[qId] === origOptIdx) {
+    // Unselect
+    delete respuestaDoc.respuestas[qId];
+    document.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
+    
+    // Uncheck native radio just in case
+    const radio = labelEl.querySelector('input');
+    if (radio) radio.checked = false;
+
+    document.getElementById(`nav-btn-${currentQIndex}`).classList.remove('answered');
+    updateCounts();
+    
+    try {
+      await updateDoc(respuestaRef, {
+        [`respuestas.${qId}`]: deleteField()
+      });
+    } catch (e) {
+      console.error(e);
+      showToast('error', 'Error guardando. Se reintentará.');
+    }
+  } else {
+    // Select
+    respuestaDoc.respuestas[qId] = origOptIdx;
+    
+    document.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
+    labelEl.classList.add('selected');
+    
+    // Check native radio just in case
+    const radio = labelEl.querySelector('input');
+    if (radio) radio.checked = true;
+    
+    document.getElementById(`nav-btn-${currentQIndex}`).classList.add('answered');
+    updateCounts();
+    
+    try {
+      await updateDoc(respuestaRef, {
+        [`respuestas.${qId}`]: origOptIdx
+      });
+    } catch (e) {
+      console.error(e);
+      showToast('error', 'Error guardando. Se reintentará.');
+    }
   }
 };
 

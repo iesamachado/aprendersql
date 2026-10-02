@@ -18,6 +18,9 @@
       .print-q { margin-bottom: 15px; page-break-inside: avoid; }
       .print-opt { margin-left: 20px; }
     }
+    .table-hover-row:hover td {
+      background-color: rgba(255,255,255,0.1) !important;
+    }
   </style>
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
@@ -40,24 +43,27 @@
 
     <!-- Resultados en Vivo -->
     <div class="card bg-black border-secondary mb-4">
-      <div class="card-header bg-secondary bg-opacity-10 fw-bold border-secondary">
-        <i class="fas fa-chart-line me-2 text-info"></i>Entregas de Alumnos
+      <div class="card-header bg-secondary bg-opacity-10 fw-bold border-secondary d-flex justify-content-between align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#collapseEntregas">
+        <div><i class="fas fa-chart-line me-2 text-info"></i>Entregas de Alumnos</div>
+        <i class="fas fa-chevron-down text-muted"></i>
       </div>
-      <div class="card-body p-0">
-        <table class="table table-dark table-striped mb-0 text-center">
-          <thead>
-            <tr>
-              <th class="text-start ps-4">Alumno</th>
-              <th>Entregado el</th>
-              <th>Resumen (A / E / B)</th>
-              <th>Nota (10)</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="resultados-list">
-            <tr><td colspan="4" class="py-4">Cargando entregas...</td></tr>
-          </tbody>
-        </table>
+      <div class="collapse" id="collapseEntregas">
+        <div class="card-body p-0">
+          <table class="table table-dark table-striped mb-0 text-center">
+            <thead>
+              <tr>
+                <th class="text-start ps-4">Alumno</th>
+                <th>Entregado el</th>
+                <th>Resumen (A / E / B)</th>
+                <th>Nota (10)</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="resultados-list">
+              <tr><td colspan="4" class="py-4">Cargando entregas...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     
@@ -88,6 +94,21 @@
   </div>
 </div>
 
+<!-- Modal para ver detalles de una pregunta -->
+<div class="modal fade" id="modal-question-details" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border-secondary">
+      <div class="modal-header border-secondary bg-black">
+        <h5 class="modal-title"><i class="fas fa-question-circle me-2 text-warning"></i>Detalle de la Pregunta</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="question-details-body">
+        Cargando...
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <!-- Contenedor Oculto para Impresión (se rellena dinámicamente) -->
   <div id="print-area" class="bg-white text-dark w-100" style="display: none; position: absolute; top:0; left:0; min-height: 100vh;"></div>
@@ -100,6 +121,7 @@
     let db;
     let examen = null;
     let bancoPreguntasCompleto = [];
+    let globalQStats = {};
 
     initAdminPage().then(async (fb) => {
       db = fb.db;
@@ -155,8 +177,9 @@
       const qStats = {};
       examen.preguntas.forEach(p => {
          const fullQ = bancoPreguntasCompleto.find(x => x.id === p.id) || p;
-         qStats[p.id] = { id: p.id, enunciado: fullQ.enunciado, criterio: fullQ.criterio || 'N/A', acertada: 0, fallada: 0, blanco: 0 };
+         qStats[p.id] = { id: p.id, enunciado: fullQ.enunciado, opciones: fullQ.opciones || [], correcta: fullQ.correcta, criterio: fullQ.criterio || 'N/A', acertada: 0, fallada: 0, blanco: 0 };
       });
+      globalQStats = qStats;
 
       snap.forEach(docSnap => {
         const d = docSnap.data();
@@ -344,7 +367,7 @@
                      const st = qStats[p.id];
                      if (!st) return '';
                      return `
-                       <tr>
+                       <tr style="cursor: pointer;" class="table-hover-row" onclick="window.showQuestionDetails('${p.id}')">
                          <td>${i + 1}</td>
                          <td class="small text-truncate" style="max-width:300px;" title="${st.enunciado}">${st.enunciado}</td>
                          <td><span class="badge bg-secondary">${st.criterio}</span></td>
@@ -524,6 +547,61 @@
       h += `</div></div>`;
       return h;
     }
+
+    window.showQuestionDetails = function(qId) {
+      const st = globalQStats[qId];
+      if (!st) return;
+      
+      let html = `<div class="mb-4">
+        <h6 class="text-info fw-bold">Enunciado:</h6>
+        <div class="p-3 bg-secondary bg-opacity-10 rounded border border-secondary">${st.enunciado}</div>
+      </div>`;
+      
+      html += `<h6 class="text-info fw-bold">Opciones de respuesta:</h6><div class="list-group">`;
+      if (st.opciones && st.opciones.length > 0) {
+        st.opciones.forEach((opt, idx) => {
+          const isCorrect = opt.correcta;
+          const bgClass = isCorrect ? 'bg-success bg-opacity-25 border-success' : 'bg-dark border-secondary';
+          const icon = isCorrect ? '<i class="fas fa-check text-success me-2"></i>' : '<i class="fas fa-times text-danger opacity-50 me-2"></i>';
+          
+          html += `
+            <div class="list-group-item ${bgClass} text-light d-flex align-items-center">
+              ${icon}
+              <div>${opt.texto}</div>
+              ${isCorrect ? '<span class="badge bg-success ms-auto">Correcta</span>' : ''}
+            </div>
+          `;
+        });
+      } else {
+        html += `<div class="text-muted">No hay opciones disponibles.</div>`;
+      }
+      html += `</div>`;
+      
+      html += `<div class="mt-4 row text-center">
+        <div class="col-4">
+          <div class="p-2 bg-success bg-opacity-10 rounded border border-success">
+            <div class="fs-4 fw-bold text-success">${st.acertada}</div>
+            <div class="small text-muted">Aciertos</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="p-2 bg-danger bg-opacity-10 rounded border border-danger">
+            <div class="fs-4 fw-bold text-danger">${st.fallada}</div>
+            <div class="small text-muted">Fallos</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="p-2 bg-warning bg-opacity-10 rounded border border-warning">
+            <div class="fs-4 fw-bold text-warning">${st.blanco}</div>
+            <div class="small text-muted">En Blanco</div>
+          </div>
+        </div>
+      </div>`;
+
+      document.getElementById('question-details-body').innerHTML = html;
+      const modal = new bootstrap.Modal(document.getElementById('modal-question-details'));
+      modal.show();
+    };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/firebase-config.js"></script>

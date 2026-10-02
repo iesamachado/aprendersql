@@ -182,9 +182,9 @@ function loadTestExamsForClass() {
 
 // Global actions
 window._activarExamenTest = async (id) => {
-  if (confirm('¿Activar este examen? Los alumnos de la clase empezarán a verlo en su panel y el tiempo empezará a contar cuando entren.')) {
+  if (confirm('¿Activar este examen? Los alumnos de la clase empezarán a verlo en su panel y el tiempo global empezará a contar desde este instante.')) {
     const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    await updateDoc(doc(db, "examenes_test", id), { estado: 'activo' });
+    await updateDoc(doc(db, "examenes_test", id), { estado: 'activo', activadoEn: serverTimestamp() });
     showAdminToast('Examen activado y visible', 'success');
   }
 };
