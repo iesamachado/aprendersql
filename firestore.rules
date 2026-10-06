@@ -195,7 +195,8 @@ service cloud.firestore {
     
     // Banco de preguntas: solo accesible para docentes y admin. Los alumnos no pueden ni leerlas.
     match /preguntas/{preguntaId} {
-      allow read, write: if isDocente();
+      allow read: if isAuth();
+      allow write: if isDocente();
     }
 
     // Definición de exámenes test lanzados a una clase

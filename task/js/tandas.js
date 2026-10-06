@@ -121,13 +121,22 @@ window._showMyGrades = async function() {
     
     // Fetch tanda grades
     const tandaGrades = {};
-    const q = fb.query(fb.collection(db, 'intentos_tandas'), fb.where('uid', '==', user.uid));
+    const q = fb.query(fb.collection(db, 'usuarios', user.uid, 'examenes'));
     const querySnapshot = await fb.getDocs(q);
     querySnapshot.forEach(doc => {
       const data = doc.data();
-      const tId = `tanda:${data.bloque}:${data.bd}`;
-      // For student view, we just take the max score they got across modes
-      if (!tandaGrades[tId] || data.nota > tandaGrades[tId]) tandaGrades[tId] = data.nota;
+      // data.tandaId is "Bloque 101 - AREPAZO"
+      const match = data.tandaId?.match(/Bloque (\d+) - (.+)/i);
+      if (match) {
+        const bId = match[1];
+        const bd = match[2].toLowerCase();
+        // Since activeTasks pushes `tanda:{mappedId}` where mappedId is e.g. `tanda:101:arepazo`
+        const tId = `tanda:${bId}:${bd}`;
+        const notaStr = data.puntosMaximos > 0 ? ((data.puntuacion / data.puntosMaximos) * 10).toFixed(2) : (data.puntuacion || 0);
+        const nota = parseFloat(notaStr);
+        // For student view, we just take the max score they got across modes
+        if (!tandaGrades[tId] || nota > tandaGrades[tId]) tandaGrades[tId] = nota;
+      }
     });
 
     // Determine active tasks (similar to gradebook)

@@ -157,7 +157,7 @@ async function loadAlumno() {
 
     
     // Cargar Intentos de Tandas
-    const tandasSnap = await getDocs(query(collection(db, 'intentos_tandas'), where('uid', '==', uid)));
+    const tandasSnap = await getDocs(query(collection(db, 'usuarios', uid, 'examenes')));
     const accordionTandas = document.getElementById('accordion-tandas');
     accordionTandas.innerHTML = '';
     
@@ -166,28 +166,37 @@ async function loadAlumno() {
     } else {
       let tandasArr = [];
       tandasSnap.forEach(d => tandasArr.push(d.data()));
-      tandasArr.sort((a,b) => b.fechaInicio.toMillis() - a.fechaInicio.toMillis());
+      tandasArr.sort((a,b) => (b.fecha || '').localeCompare(a.fecha || '')); // sort desc
       
       tandasArr.forEach((tanda, i) => {
         const idCol = `tanda-col-${i}`;
-        const fecha = tanda.fechaFin ? tanda.fechaFin.toDate().toLocaleString('es-ES') : 'En curso';
-        const isFin = !!tanda.fechaFin;
-        const notaStr = isFin ? parseFloat(tanda.nota).toFixed(1) : '-';
-        const color = notaStr >= 5 ? 'success' : (isFin ? 'danger' : 'warning');
+        const fecha = tanda.fecha ? new Date(tanda.fecha).toLocaleString('es-ES') : 'Desconocida';
+        const notaStr = tanda.puntosMaximos > 0 ? ((tanda.puntuacion / tanda.puntosMaximos) * 10).toFixed(1) : (tanda.puntuacion || 0);
+        const color = notaStr >= 5 ? 'success' : 'danger';
         
         let detalleHtml = '';
-        if (tanda.respuestas && tanda.respuestas.length > 0) {
+        if (tanda.respuestas && Object.keys(tanda.respuestas).length > 0) {
           detalleHtml = `<table class="table table-dark table-sm mt-3">
-            <thead><tr><th>Ejercicio</th><th>Estado</th><th>Intentos</th><th>Ptos</th></tr></thead>
+            <thead><tr><th>Ejercicio</th><th>Estado</th><th>Ptos</th><th>Query</th></tr></thead>
             <tbody>
-              ${tanda.respuestas.map(r => `
+              ${Object.keys(tanda.respuestas).map(k => {
+                const r = tanda.respuestas[k];
+                const exData = window.EJERCICIOS ? window.EJERCICIOS.find(e => e.id == k) : null;
+                const questionText = r.enunciado || (exData ? exData.pregunta : null);
+                
+                let idCol = `#${k}`;
+                if (questionText) {
+                  idCol = `<details><summary style="cursor:pointer" class="text-info">Pregunta</summary><div class="small mt-1 text-light bg-secondary p-1 rounded">${questionText}</div><div class="text-muted" style="font-size:0.6rem">ID: ${k}</div></details>`;
+                }
+
+                return `
                 <tr>
-                  <td>#${r.ejercicioId}</td>
-                  <td>${r.resuelto ? '<span class="text-success"><i class="fas fa-check"></i> Correcto</span>' : '<span class="text-danger"><i class="fas fa-times"></i> Fallo</span>'}</td>
-                  <td>${r.intentos_gastados || 1}</td>
-                  <td>${r.ptos || 0}</td>
+                  <td style="max-width:200px">${idCol}</td>
+                  <td>${r.isCorrect ? '<span class="text-success"><i class="fas fa-check"></i> Correcto</span>' : '<span class="text-danger"><i class="fas fa-times"></i> Fallo</span>'}</td>
+                  <td>${r.puntos || 0}</td>
+                  <td><code class="text-muted small">${r.query ? r.query.substring(0,80) + (r.query.length>80?'...':'') : ''}</code></td>
                 </tr>
-              `).join('')}
+              `}).join('')}
             </tbody>
           </table>`;
         } else {
@@ -199,7 +208,7 @@ async function loadAlumno() {
             <h2 class="accordion-header">
               <button class="accordion-button collapsed bg-dark text-light border-0 rounded shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#${idCol}">
                 <div class="d-flex align-items-center w-100 me-3">
-                  <span class="fw-bold me-auto">${tanda.tandaId}</span>
+                  <span class="fw-bold me-auto">${tanda.tandaId || 'Tanda Genérica'}</span>
                   <span class="text-muted small me-3">${fecha}</span>
                   <span class="badge bg-${color} fs-6">Nota: ${notaStr}</span>
                 </div>

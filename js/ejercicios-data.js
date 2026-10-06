@@ -32571,6 +32571,9 @@ window.BLOQUES = BLOQUES; window.EJERCICIOS = EJERCICIOS; window.EJERCICIOS_DB =
 // CATÁLOGO DE MEDALLAS / LOGROS
 // ─────────────────────────────────────────────────────────
 window.MEDALLAS_CATALOGO = [
+  // Hitos de Práctica
+  { id: 'repaso_test', name: 'Mente Inquieta', desc: 'Realiza un test de repaso voluntario.', icon: '🧠', public: true },
+  
   // Hitos de ejercicios resueltos
   { id: 'first_blood', name: 'Primera Sangre', desc: 'Resuelve tu primer ejercicio.', icon: '🩸', public: true },
   { id: 'novato_sql', name: 'Novato SQL', desc: 'Resuelve 10 ejercicios.', icon: '🔰', public: true },

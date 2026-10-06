@@ -65,6 +65,21 @@ function loadTeoria() {
     })
     .then(htmlContent => {
       document.getElementById('teoria-wrapper').innerHTML = htmlContent;
+      
+      // Inject practice test button
+      if (bloqueData.modulo && bloqueData.ra) {
+          const testBtnContainer = document.createElement('div');
+          testBtnContainer.className = "text-center my-5 pb-5 border-top border-secondary pt-4";
+          testBtnContainer.innerHTML = `
+            <h4 class="text-white mb-3"><i class="fas fa-brain text-primary me-2"></i>¿Has entendido la teoría?</h4>
+            <p class="text-secondary mb-4">Genera un test aleatorio de hasta 20 preguntas sobre este tema para comprobar tus conocimientos.</p>
+            <button class="btn btn-outline-primary btn-lg" onclick="window.location.href='practica.html?modulo=${bloqueData.modulo}&ra=${bloqueData.ra}'">
+                <i class="fas fa-play me-2"></i>Voy a probar mis conocimientos
+            </button>
+          `;
+          document.getElementById('teoria-wrapper').appendChild(testBtnContainer);
+      }
+      
       if (typeof window.initInteractiveTheory === 'function') {
         window.initInteractiveTheory();
       }
