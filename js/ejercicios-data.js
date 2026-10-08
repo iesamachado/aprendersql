@@ -32627,7 +32627,15 @@ window.MEDALLAS_CATALOGO = [
   { id: 'cabezota', name: 'El Cabezota', desc: 'Falla 10 veces seguidas en el mismo ejercicio.', icon: '🧱', public: false },
   { id: 'error_sintaxis', name: 'Ups...', desc: 'Provoca tu primer error de sintaxis SQLite.', icon: '💥', public: false },
   { id: 'comentario', name: 'El Documentador', desc: 'Añade un comentario en tu consulta usando -- o /* */', icon: '📝', public: false },
-  { id: 'spanglish', name: 'El Traductor', desc: 'Usa AS para renombrar una columna.', icon: '🏷️', public: false }
-  ,{ id: 'examen_test', name: 'Superviviente de Test', desc: 'Completa tu primer examen tipo test.', icon: '📝', public: true },
-  { id: 'examen_perfecto', name: 'El Sabio', desc: 'Saca más de un 9 en un examen tipo test.', icon: '🎓', public: true }
+  { id: 'spanglish', name: 'El Traductor', desc: 'Usa AS para renombrar una columna.', icon: '🏷️', public: false },
+  
+  // Exámenes y Repaso
+  { id: 'examen_test', name: 'Superviviente de Test', desc: 'Completa tu primer examen tipo test.', icon: '📝', public: true },
+  { id: 'examen_perfecto', name: 'El Sabio', desc: 'Saca más de un 9 en un examen tipo test.', icon: '🎓', public: true },
+  { id: 'examen_3', name: 'Veterano de Guerra', desc: 'Completa 3 exámenes tipo test.', icon: '⚔️', public: true },
+  { id: 'examen_5', name: 'Gladiador', desc: 'Completa 5 exámenes tipo test.', icon: '🛡️', public: true },
+  { id: 'examen_perfecto_3', name: 'Genio Indiscutible', desc: 'Saca más de un 9 en 3 exámenes tipo test.', icon: '✨', public: true },
+  { id: 'repaso_5', name: 'Estudiante Constante', desc: 'Realiza 5 tests de repaso.', icon: '📚', public: true },
+  { id: 'repaso_10', name: 'Rata de Biblioteca', desc: 'Realiza 10 tests de repaso.', icon: '📖', public: true },
+  { id: 'repaso_25', name: 'Erudito', desc: 'Realiza 25 tests de repaso.', icon: '🦉', public: true }
 ];

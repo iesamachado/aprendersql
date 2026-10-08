@@ -470,30 +470,49 @@ async function renderAlumnos(clase) {
     
     alumnosData.forEach(a => {
       if (a.gremio && scores[a.gremio]) {
-        scores[a.gremio].pts += (a.puntosTotal || 0);
+        const uPts = a.puntosTotal || 0;
+        scores[a.gremio].pts += uPts;
         scores[a.gremio].count += 1;
-        totalPts += (a.puntosTotal || 0);
+        totalPts += uPts;
+        
+        if (!scores[a.gremio].mvp || uPts > scores[a.gremio].mvp.pts) {
+          scores[a.gremio].mvp = { name: a.nombre || a.email || 'Anónimo', pts: uPts };
+        }
       }
     });
 
     const sortedGremios = Object.entries(scores).sort((a,b) => b[1].pts - a[1].pts);
     if(totalPts === 0) totalPts = 1;
 
-    gremiosContainer.innerHTML = sortedGremios.map(([name, data], idx) => `
-      <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-end mb-1">
-          <div>
-            <span class="fs-5">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon}</span>
-            <span class="fw-bold text-light ms-2">${name}</span>
-            <span class="badge bg-secondary ms-2">${data.count} miembros</span>
-          </div>
-          <span class="fw-bold text-info">${data.pts} pts</span>
+    gremiosContainer.innerHTML = sortedGremios.map(([name, data], idx) => {
+      let gapHtml = '';
+      if (idx > 0) {
+        const prevData = sortedGremios[idx - 1][1];
+        const ptsNeeded = prevData.pts - data.pts + 1;
+        gapHtml = `<div class="text-danger small mt-1" style="font-size: 0.8rem;"><i class="fas fa-arrow-up"></i> ${ptsNeeded} pts para superar a ${sortedGremios[idx - 1][0]}</div>`;
+      }
+      
+      let mvpHtml = '';
+      if (data.mvp) {
+        mvpHtml = `<div class="text-muted small mt-1" style="font-size: 0.8rem;"><i class="fas fa-star text-warning"></i> MVP: <strong class="text-light">${data.mvp.name}</strong> (${data.mvp.pts} pts)</div>`;
+      }
+
+      return `
+      <div class="mb-4 p-3 rounded shadow-sm" style="background: rgba(255,255,255,0.05); border-left: 4px solid var(--bs-${data.color.replace('bg-', '')}); transition: transform 0.2s ease-in-out;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fs-5 fw-bold">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon} <span class="text-light">${name}</span> <span class="badge bg-secondary ms-2 align-middle fs-6" style="font-size: 0.75rem !important;">${data.count} miembros</span></span>
+          <span class="fs-5 fw-bold text-info">${data.pts} <span class="text-secondary fs-6">pts</span></span>
         </div>
-        <div class="progress border border-secondary" style="height: 14px; background:#1e293b">
-          <div class="progress-bar ${data.color} progress-bar-striped" style="width: ${(data.pts / totalPts) * 100}%"></div>
+        <div class="progress mb-2" style="height: 12px; background: #1e293b; border-radius: 6px;">
+          <div class="progress-bar ${data.color} progress-bar-striped ${idx === 0 ? 'progress-bar-animated' : ''}" style="width: ${(data.pts / totalPts) * 100}%; border-radius: 6px;"></div>
+        </div>
+        <div class="d-flex justify-content-between">
+          ${mvpHtml}
+          ${gapHtml}
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
   }
 }
 

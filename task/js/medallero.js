@@ -180,62 +180,74 @@ async function renderGremioPodium() {
 
   const maxPerGuild = Math.ceil(claseIds.length / 4);
   
-  const guildCounts = {
-    'La Orden del JOIN': 0,
-    'El Cártel del SELECT': 0,
-    'La Hermandad del DROP': 0,
-    'Los Ninjas del WHERE': 0
-  };
-  
-  const scores = {
-    'La Orden del JOIN': { icon: '🛡️', pts: 0, color: 'bg-primary' },
-    'El Cártel del SELECT': { icon: '🗡️', pts: 0, color: 'bg-success' },
-    'La Hermandad del DROP': { icon: '🧙‍♂️', pts: 0, color: 'bg-danger' },
-    'Los Ninjas del WHERE': { icon: '🦂', pts: 0, color: 'bg-warning' }
+  const guildMembers = {
+    'La Orden del JOIN': { icon: '🛡️', color: 'primary', pts: 0, members: [] },
+    'El Cártel del SELECT': { icon: '🗡️', color: 'success', pts: 0, members: [] },
+    'La Hermandad del DROP': { icon: '🧙‍♂️', color: 'danger', pts: 0, members: [] },
+    'Los Ninjas del WHERE': { icon: '🦂', color: 'warning', pts: 0, members: [] }
   };
   
   let totalGlobalPts = 0;
   
   allUsers.forEach(u => {
-    if (claseIds.includes(u.id) && u.gremio && guildCounts[u.gremio] !== undefined) {
-      guildCounts[u.gremio]++;
-      scores[u.gremio].pts += (u.puntosTotal || 0);
-      totalGlobalPts += (u.puntosTotal || 0);
+    if (claseIds.includes(u.id) && u.gremio && guildMembers[u.gremio]) {
+      const uPts = u.puntosTotal || 0;
+      guildMembers[u.gremio].pts += uPts;
+      totalGlobalPts += uPts;
+      guildMembers[u.gremio].members.push(u.displayName || u.nombre || u.email || 'Anónimo');
+      
+      if (!guildMembers[u.gremio].mvp || uPts > guildMembers[u.gremio].mvp.pts) {
+        guildMembers[u.gremio].mvp = { name: u.displayName || u.nombre || u.email || 'Anónimo', pts: uPts };
+      }
     }
   });
 
   if (!userDoc.gremio) {
     let html = `
       <div class="small text-light mb-3">No tienes gremio. ¡Únete a una facción!</div>
-      <div class="d-grid gap-2">
+      <div class="row g-3 text-start">
     `;
     
-    const guilds = [
-      { n: 'La Orden del JOIN', i: '🛡️', c: 'outline-primary' },
-      { n: 'El Cártel del SELECT', i: '🗡️', c: 'outline-success' },
-      { n: 'La Hermandad del DROP', i: '🧙‍♂️', c: 'outline-danger' },
-      { n: 'Los Ninjas del WHERE', i: '🦂', c: 'outline-warning' }
-    ];
-    
-    guilds.forEach(g => {
-      const count = guildCounts[g.n];
-      const plazasBadge = `<span class="badge bg-dark border border-secondary text-light ms-2" style="font-size:0.7rem">${count}/${maxPerGuild} <i class="fas fa-users"></i></span>`;
+    Object.entries(guildMembers).forEach(([name, data]) => {
+      const count = data.members.length;
+      const isFull = count >= maxPerGuild;
       
-      html += `<div class="d-flex gap-2">`;
-      if (count >= maxPerGuild) {
-        html += `<button class="btn btn-sm btn-${g.c} fw-bold text-start flex-grow-1" disabled>${g.i} ${g.n} <span class="badge bg-secondary ms-2">(LLENO)</span> ${plazasBadge}</button>`;
-      } else {
-        html += `<button class="btn btn-sm btn-${g.c} fw-bold text-start flex-grow-1" onclick="joinGremio('${g.n}', '${g.i}')">${g.i} ${g.n} ${plazasBadge}</button>`;
-      }
-      html += `<button class="btn btn-sm btn-outline-secondary px-3" onclick="window.showGremioLore('${g.n}')" title="Leer historia de la facción"><i class="fas fa-info-circle"></i></button>`;
-      html += `</div>`;
+      const memberList = data.members.length > 0 
+        ? data.members.map(m => `<li><i class="fas fa-user text-secondary me-1" style="font-size:0.6rem;"></i>${m}</li>`).join('') 
+        : `<li class="text-muted fst-italic">Sin miembros</li>`;
+      
+      html += `
+        <div class="col-12">
+          <div class="card bg-dark shadow-sm h-100" style="border: 1px solid var(--bs-${data.color}); border-left: 4px solid var(--bs-${data.color}); background: rgba(255,255,255,0.02) !important;">
+            <div class="card-body p-2 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="card-title fw-bold text-${data.color} mb-0" style="font-size: 0.9rem;">
+                  ${data.icon} ${name}
+                </h6>
+                <span class="badge bg-secondary" style="font-size: 0.7rem;">${count}/${maxPerGuild} <i class="fas fa-users"></i></span>
+              </div>
+              <div class="small mb-2 text-light overflow-auto flex-grow-1" style="max-height: 70px; font-size: 0.75rem;">
+                <ul class="list-unstyled mb-0">${memberList}</ul>
+              </div>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-sm btn-outline-${data.color} fw-bold flex-grow-1" 
+                  onclick="joinGremio('${name}', '${data.icon}')" 
+                  ${isFull ? 'disabled' : ''}>
+                  ${isFull ? 'LLENO' : 'UNIRSE'}
+                </button>
+                <button class="btn btn-sm btn-outline-secondary px-2" onclick="window.showGremioLore('${name}')" title="Historia"><i class="fas fa-info-circle"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     });
     html += `</div>`;
     container.innerHTML = html;
     
   } else {
     // Ya tiene gremio, cargar ranking local de la clase
-    const sorted = Object.entries(scores).sort((a,b) => b[1].pts - a[1].pts);
+    const sorted = Object.entries(guildMembers).sort((a,b) => b[1].pts - a[1].pts);
     if (totalGlobalPts === 0) totalGlobalPts = 1; 
     
     let html = `
@@ -249,21 +261,37 @@ async function renderGremioPodium() {
     sorted.forEach(([name, data], idx) => {
       const isMine = (name === userDoc.gremio);
       const pct = (data.pts / totalGlobalPts) * 100;
-      const count = guildCounts[name];
+      const count = data.members.length;
       const plazasBadge = `<span class="badge bg-dark border border-secondary text-secondary ms-2" style="font-size:0.65rem">${count}/${maxPerGuild} <i class="fas fa-users"></i></span>`;
       
+      let gapHtml = '';
+      if (idx > 0) {
+        const prevData = sorted[idx - 1][1];
+        const ptsNeeded = prevData.pts - data.pts + 1;
+        gapHtml = `<div class="text-danger mt-1" style="font-size: 0.7rem;"><i class="fas fa-arrow-up"></i> ${ptsNeeded} pts para superar a ${sorted[idx - 1][0]}</div>`;
+      }
+      
+      let mvpHtml = '';
+      if (data.mvp) {
+        mvpHtml = `<div class="text-muted mt-1" style="font-size: 0.7rem;"><i class="fas fa-star text-warning"></i> MVP: <strong class="text-light">${data.mvp.name}</strong> (${data.mvp.pts})</div>`;
+      }
+
       html += `
-        <div>
-          <div class="d-flex justify-content-between small fw-bold mb-1 align-items-end">
+        <div class="p-2 rounded shadow-sm" style="background: rgba(255,255,255,0.03); border-left: 3px solid var(--bs-${data.color});">
+          <div class="d-flex justify-content-between align-items-center mb-1">
             <span>
-              <span class="fs-6 ${isMine ? 'text-warning' : 'text-light'}">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon} ${name} ${isMine ? '(Tú)' : ''}</span>
+              <span class="small fw-bold ${isMine ? 'text-light' : 'text-secondary'}">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon} ${name} ${isMine ? '(Tú)' : ''}</span>
               <i class="fas fa-info-circle text-secondary ms-1 cursor-pointer" onclick="window.showGremioLore('${name}')" title="Leer historia" style="cursor:pointer"></i>
               ${plazasBadge}
             </span>
-            <span class="text-info fs-6">${data.pts} <span class="text-secondary" style="font-size:0.75rem">pts</span></span>
+            <span class="text-info small fw-bold">${data.pts} pts</span>
           </div>
-          <div class="progress" style="height: 10px; background: #1e293b">
-            <div class="progress-bar ${data.color}" style="width: ${pct}%"></div>
+          <div class="progress" style="height: 10px; background: #1e293b; border-radius: 4px;">
+            <div class="progress-bar bg-${data.color} ${idx === 0 ? 'progress-bar-striped progress-bar-animated' : ''}" style="width: ${pct}%; border-radius: 4px;"></div>
+          </div>
+          <div class="d-flex justify-content-between">
+            ${mvpHtml}
+            ${gapHtml}
           </div>
         </div>
       `;

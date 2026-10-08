@@ -831,18 +831,23 @@ async function loadGremioLeaderboard() {
     }
     
     const scores = {
-      'La Orden del JOIN': { icon: '🛡️', pts: 0, color: 'bg-primary' },
-      'El Cártel del SELECT': { icon: '🗡️', pts: 0, color: 'bg-success' },
-      'La Hermandad del DROP': { icon: '🧙‍♂️', pts: 0, color: 'bg-danger' },
-      'Los Ninjas del WHERE': { icon: '🦂', pts: 0, color: 'bg-warning' }
+      'La Orden del JOIN': { icon: '🛡️', pts: 0, color: 'bg-primary', mvp: null },
+      'El Cártel del SELECT': { icon: '🗡️', pts: 0, color: 'bg-success', mvp: null },
+      'La Hermandad del DROP': { icon: '🧙‍♂️', pts: 0, color: 'bg-danger', mvp: null },
+      'Los Ninjas del WHERE': { icon: '🦂', pts: 0, color: 'bg-warning', mvp: null }
     };
     
     let totalGlobalPts = 0;
     
     allUsers.forEach(u => {
       if (u.gremio && scores[u.gremio]) {
-        scores[u.gremio].pts += (u.puntosTotal || 0);
-        totalGlobalPts += (u.puntosTotal || 0);
+        const uPts = u.puntosTotal || 0;
+        scores[u.gremio].pts += uPts;
+        totalGlobalPts += uPts;
+        
+        if (!scores[u.gremio].mvp || uPts > scores[u.gremio].mvp.pts) {
+          scores[u.gremio].mvp = { name: u.displayName || u.email || 'Anónimo', pts: uPts };
+        }
       }
     });
     
@@ -850,17 +855,35 @@ async function loadGremioLeaderboard() {
     
     if (totalGlobalPts === 0) totalGlobalPts = 1; 
     
-    container.innerHTML = sorted.map(([name, data], idx) => `
-      <div>
-        <div class="d-flex justify-content-between small fw-bold mb-1 align-items-end">
-          <span class="fs-6">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon} <span class="text-light">${name}</span></span>
-          <span class="text-info fs-6">${data.pts} <span class="text-secondary" style="font-size:0.75rem">pts</span></span>
+    container.innerHTML = sorted.map(([name, data], idx) => {
+      let gapHtml = '';
+      if (idx > 0) {
+        const prevData = sorted[idx - 1][1];
+        const ptsNeeded = prevData.pts - data.pts + 1; // +1 to surpass
+        gapHtml = `<div class="text-danger small mt-1" style="font-size: 0.8rem;"><i class="fas fa-arrow-up"></i> ${ptsNeeded} pts para superar a ${sorted[idx - 1][0]}</div>`;
+      }
+      
+      let mvpHtml = '';
+      if (data.mvp) {
+        mvpHtml = `<div class="text-muted small mt-1" style="font-size: 0.8rem;"><i class="fas fa-star text-warning"></i> MVP: <strong class="text-light">${data.mvp.name}</strong> (${data.mvp.pts} pts)</div>`;
+      }
+
+      return `
+      <div class="mb-4 p-3 rounded shadow-sm" style="background: rgba(255,255,255,0.05); border-left: 4px solid var(--bs-${data.color.replace('bg-', '')}); transition: transform 0.2s ease-in-out;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fs-5 fw-bold">${idx === 0 && data.pts > 0 ? '👑 ' : ''}${data.icon} <span class="text-light">${name}</span></span>
+          <span class="fs-5 fw-bold text-info">${data.pts} <span class="text-secondary fs-6">pts</span></span>
         </div>
-        <div class="progress" style="height: 10px; background: #1e293b">
-          <div class="progress-bar ${data.color}" style="width: ${(data.pts / totalGlobalPts) * 100}%"></div>
+        <div class="progress mb-2" style="height: 12px; background: #1e293b; border-radius: 6px;">
+          <div class="progress-bar ${data.color} progress-bar-striped ${idx === 0 ? 'progress-bar-animated' : ''}" style="width: ${(data.pts / totalGlobalPts) * 100}%; border-radius: 6px;"></div>
+        </div>
+        <div class="d-flex justify-content-between">
+          ${mvpHtml}
+          ${gapHtml}
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
   } catch(e) { console.error('Error leaderboard gremios:', e); }
 }
 window.showGremioModal = async function() {
@@ -872,8 +895,8 @@ window.showGremioModal = async function() {
     document.getElementById('gremio-leaderboard').style.display = 'none';
     
     const selectorDiv = document.getElementById('gremio-selector');
-    const btns = selectorDiv.querySelectorAll('button');
-    btns.forEach(b => { b.disabled = true; b.innerHTML += ' <i class="fas fa-spinner fa-spin ms-2"></i>'; });
+    const container = document.getElementById('gremio-cards-container');
+    if(container) container.innerHTML = '<div class="col-12 text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p class="text-muted mt-2">Cargando facciones...</p></div>';
 
     try {
       const claseIds = currentClase?.alumnosIds || [user.uid];
@@ -886,39 +909,53 @@ window.showGremioModal = async function() {
         uSnap.forEach(d => allUsers.push({ id: d.id, ...d.data() }));
       }
       
-      const guildCounts = {
-        'La Orden del JOIN': 0,
-        'El Cártel del SELECT': 0,
-        'La Hermandad del DROP': 0,
-        'Los Ninjas del WHERE': 0
+      const guildMembers = {
+        'La Orden del JOIN': { icon: '🛡️', color: 'primary', members: [] },
+        'El Cártel del SELECT': { icon: '🗡️', color: 'success', members: [] },
+        'La Hermandad del DROP': { icon: '🧙‍♂️', color: 'danger', members: [] },
+        'Los Ninjas del WHERE': { icon: '🦂', color: 'warning', members: [] }
       };
 
       allUsers.forEach(u => {
-        if (claseIds.includes(u.id) && u.gremio && guildCounts[u.gremio] !== undefined) {
-          guildCounts[u.gremio]++;
+        if (claseIds.includes(u.id) && u.gremio && guildMembers[u.gremio]) {
+          guildMembers[u.gremio].members.push(u.displayName || u.nombre || u.email || 'Anónimo');
         }
       });
 
-      btns.forEach(b => {
-        const guildName = b.getAttribute('onclick').match(/'([^']+)'/)[1];
-        const count = guildCounts[guildName] || 0;
+      const container = document.getElementById('gremio-cards-container');
+      container.innerHTML = Object.entries(guildMembers).map(([name, data]) => {
+        const count = data.members.length;
+        const isFull = count >= maxPerGuild;
         
-        b.innerHTML = b.innerHTML.replace(/ <span class="badge.*/, '');
-        b.innerHTML = b.innerHTML.replace(/ <i class="fas fa-spinner fa-spin ms-2"><\/i>/, '');
-        
-        const plazasBadge = `<span class="badge bg-dark border border-secondary text-light float-end" style="font-size:0.7rem">${count}/${maxPerGuild} <i class="fas fa-users"></i></span>`;
-        
-        if (count >= maxPerGuild) {
-          b.disabled = true;
-          if(!b.innerHTML.includes('(LLENO)')) b.innerHTML += ` <span class="badge bg-secondary ms-2">(LLENO)</span> ${plazasBadge}`;
-        } else {
-          b.disabled = false;
-          b.innerHTML += ` ${plazasBadge}`;
-        }
-      });
+        const memberList = data.members.length > 0 
+          ? data.members.map(m => `<li><i class="fas fa-user text-secondary me-2" style="font-size:0.7rem;"></i>${m}</li>`).join('') 
+          : `<li class="text-muted fst-italic">Sin miembros aún</li>`;
+
+        return `
+        <div class="col-md-6">
+          <div class="card bg-dark shadow-sm border-${data.color} h-100" style="border-color: var(--bs-${data.color}) !important; background: rgba(255,255,255,0.02) !important;">
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title fw-bold text-${data.color} mb-3 border-bottom border-secondary pb-2">
+                ${data.icon} ${name}
+                <span class="badge bg-secondary float-end">${count}/${maxPerGuild}</span>
+              </h6>
+              <ul class="small mb-3 text-light list-unstyled flex-grow-1" style="min-height: 50px;">
+                ${memberList}
+              </ul>
+              <button class="btn btn-outline-${data.color} w-100 fw-bold" 
+                onclick="joinGremio('${name}', '${data.icon}')" 
+                ${isFull ? 'disabled' : ''}>
+                ${isFull ? 'FACCION LLENA' : 'UNIRSE A ESTA FACCIÓN'}
+              </button>
+            </div>
+          </div>
+        </div>
+        `;
+      }).join('');
+      
     } catch(e) {
       console.error('Error calculando límites de gremio:', e);
-      btns.forEach(b => { b.disabled = false; b.innerHTML = b.innerHTML.replace(/ <i class="fas fa-spinner fa-spin ms-2"><\/i>/, ''); });
+      document.getElementById('gremio-cards-container').innerHTML = '<div class="text-danger">Error al cargar las facciones.</div>';
     }
   } else {
     document.getElementById('gremio-selector').style.display = 'none';

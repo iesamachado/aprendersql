@@ -131,6 +131,7 @@ if (btnSync) {
       for (let i = 0; i < total; i++) {
         const userDocSnap = alumnos[i];
         const u = userDocSnap.data();
+        const uid = userDocSnap.id;
         let modified = false;
         let gainedStr = [];
         
@@ -148,19 +149,96 @@ if (btnSync) {
           }
         };
 
+        // 1. XP y Medallas de Ejercicios
         const exs = u.ejerciciosOK || 0;
         if (exs >= 1) checkAdd('first_blood');
         if (exs >= 10) checkAdd('novato_sql');
         if (exs >= 25) checkAdd('aprendiz_sql');
         if (exs >= 50) checkAdd('experto_sql');
         if (exs >= 100) checkAdd('maestro_sql');
+        
+        let calculatedXp = 0;
+        const ejSnap = await fb.getDocs(fb.collection(db, `usuarios/${uid}/ejercicios`));
+        ejSnap.forEach(d => {
+           if (d.data().superado) calculatedXp += (d.data().puntosObtenidos || 5);
+        });
+
+        // 2. XP y Medallas de Exámenes
+        const exSnap = await fb.getDocs(fb.query(fb.collection(db, 'respuestas_test'), fb.where('uid', '==', uid)));
+        let examenesCompletados = 0;
+        let examenesPerfectos = 0;
+        
+        exSnap.forEach(d => {
+           const data = d.data();
+           if (data.entregadoEn && data.puntosOtorgados) {
+               examenesCompletados++;
+               calculatedXp += 5; // por entregar
+               if (data.nota !== undefined) {
+                   if (data.nota >= 5) calculatedXp += 5; // por aprobar
+                   if (data.nota >= 9) { calculatedXp += 5; examenesPerfectos++; } // por sobresaliente
+               }
+           }
+        });
+        
+        if (examenesCompletados >= 1) checkAdd('examen_test');
+        if (examenesCompletados >= 3) checkAdd('examen_3');
+        if (examenesCompletados >= 5) checkAdd('examen_5');
+        if (examenesPerfectos >= 1) checkAdd('examen_perfecto');
+        if (examenesPerfectos >= 3) checkAdd('examen_perfecto_3');
+
+        // 3. XP y Medallas de Repaso
+        const repSnap = await fb.getDocs(fb.collection(db, `usuarios/${uid}/examenes`));
+        let repasosCount = 0;
+        let repasosAprobados = new Set();
+        
+        const repasos = [];
+        repSnap.forEach(d => repasos.push(d.data()));
+        repasos.sort((a,b) => new Date(a.fecha) - new Date(b.fecha)); // Orden cronológico para bonus 1ra vez
+        
+        repasos.forEach(data => {
+            if (data.puntuacion !== undefined) {
+                repasosCount++;
+                let nota = data.puntuacion / 10;
+                calculatedXp += 2; // base participation
+                if (nota >= 5) {
+                    if (!repasosAprobados.has(data.tandaId)) {
+                        calculatedXp += 3; // pass first time
+                        if (nota >= 9) calculatedXp += 5; // excellent first time
+                        repasosAprobados.add(data.tandaId);
+                    } else {
+                        calculatedXp += 1; // pass repetition
+                    }
+                }
+            }
+        });
+        
+        if (repasosCount >= 1) checkAdd('repaso_test');
+        if (repasosCount >= 5) checkAdd('repaso_5');
+        if (repasosCount >= 10) checkAdd('repaso_10');
+        if (repasosCount >= 25) checkAdd('repaso_25');
+
+        let updatePayload = {};
+        if (modified) {
+            updatePayload.logros = userLogros;
+        }
+        
+        if ((u.puntosTotal || 0) !== calculatedXp) {
+            updatePayload.puntosTotal = calculatedXp;
+            modified = true;
+            addLog(`XP recalculado para ${u.nombre || u.email}: ${u.puntosTotal || 0} -> ${calculatedXp}`, 'text-info');
+        }
+        
+        if ((u.repasosCount || 0) !== repasosCount) {
+            updatePayload.repasosCount = repasosCount;
+            modified = true;
+        }
 
         if (modified) {
-          await fb.updateDoc(fb.doc(db, 'usuarios', userDocSnap.id), { logros: userLogros });
+          await fb.updateDoc(fb.doc(db, 'usuarios', uid), updatePayload);
           updatedCount++;
-          addLog(`${u.nombre || u.email} ha ganado: ${gainedStr.join(', ')}`, 'text-warning');
-        } else {
-          // addLog(`${u.nombre || u.email}: Al día.`, 'text-muted'); // Muy verboso si hay cientos
+          if (gainedStr.length > 0) {
+              addLog(`${u.nombre || u.email} ha ganado medallas: ${gainedStr.join(', ')}`, 'text-warning');
+          }
         }
         
         // Actualizar progreso

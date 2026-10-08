@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Ayuda: Gamificación y Medallas — AprenderSQL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="task/css/style.css">
+  <style>
+    .gamification-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid;
+    }
+    .gamification-section.ejercicios { border-color: var(--bs-primary); }
+    .gamification-section.examenes { border-color: var(--bs-danger); }
+    .gamification-section.repaso { border-color: var(--bs-success); }
+    
+    .medal-icon {
+      font-size: 2rem;
+      display: inline-block;
+      width: 50px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="bg-dark text-light">
+  <div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+      <h2><i class="fas fa-gamepad text-info me-2"></i> Guía de Gamificación: Experiencia y Medallas</h2>
+      <button class="btn btn-outline-secondary" onclick="window.history.back()"><i class="fas fa-arrow-left me-2"></i> Volver</button>
+    </div>
+
+    <p class="lead mb-5">En AprenderSQL, tu esfuerzo se recompensa. Completar retos, realizar exámenes y explorar las cláusulas SQL te otorgará Puntos de Experiencia (XP) y Medallas. ¡Compite con otros gremios y llega a lo más alto de la clasificación!</p>
+
+    <!-- Sección de Ejercicios Prácticos -->
+    <div class="gamification-section ejercicios">
+      <h3 class="text-primary mb-4"><i class="fas fa-laptop-code me-2"></i> Ejercicios Prácticos</h3>
+      <p>Resolver ejercicios es la principal fuente de experiencia. Recibirás XP cada vez que resuelvas un ejercicio correctamente (los puntos dependen de la dificultad del mismo).</p>
+      
+      <h5 class="mt-4 border-bottom border-secondary pb-2">Medallas de Progreso</h5>
+      <ul class="list-unstyled">
+        <li class="mb-2"><span class="medal-icon">🩸</span> <strong>Primera Sangre:</strong> Resuelve tu primer ejercicio.</li>
+        <li class="mb-2"><span class="medal-icon">🔰</span> <strong>Novato SQL:</strong> Resuelve 10 ejercicios.</li>
+        <li class="mb-2"><span class="medal-icon">🎓</span> <strong>Aprendiz SQL:</strong> Resuelve 25 ejercicios.</li>
+        <li class="mb-2"><span class="medal-icon">🛠️</span> <strong>Experto SQL:</strong> Resuelve 50 ejercicios.</li>
+        <li class="mb-2"><span class="medal-icon">👑</span> <strong>Maestro SQL:</strong> Resuelve 100 ejercicios.</li>
+      </ul>
+
+      <h5 class="mt-4 border-bottom border-secondary pb-2">Rachas Imparables</h5>
+      <ul class="list-unstyled">
+        <li class="mb-2"><span class="medal-icon">🔥</span> <strong>En Racha (x3):</strong> Resuelve 3 ejercicios seguidos sin fallar.</li>
+        <li class="mb-2"><span class="medal-icon">🚀</span> <strong>Imparable (x5):</strong> Resuelve 5 ejercicios seguidos sin fallar.</li>
+        <li class="mb-2"><span class="medal-icon">⚡</span> <strong>Racha Épica (x10):</strong> Resuelve 10 ejercicios seguidos sin fallar.</li>
+        <li class="mb-2"><span class="medal-icon">🎇</span> <strong>Dios del SQL (x20):</strong> Resuelve 20 ejercicios seguidos sin fallar.</li>
+      </ul>
+
+      <h5 class="mt-4 border-bottom border-secondary pb-2">Cláusulas y Conceptos SQL</h5>
+      <p>Conseguirás medallas automáticamente la primera vez que utilices de forma correcta cláusulas específicas en tus consultas (por ejemplo: <code>ORDER BY</code>, <code>GROUP BY</code>, <code>JOIN</code>, Subconsultas, Funciones de Agregación, etc.). ¡Experimenta con el lenguaje para coleccionarlas todas!</p>
+
+      <h5 class="mt-4 border-bottom border-secondary pb-2"><i class="fas fa-user-secret text-warning me-2"></i> Medallas Secretas</h5>
+      <p class="text-muted fst-italic">Existen medallas ocultas que solo descubrirás realizando acciones muy específicas, cometiendo errores curiosos (como Little Bobby Tables), o siendo muy cabezota al intentar un ejercicio muchas veces. ¡Juega y descúbrelas!</p>
+    </div>
+
+    <!-- Sección de Exámenes -->
+    <div class="gamification-section examenes">
+      <h3 class="text-danger mb-4"><i class="fas fa-file-signature me-2"></i> Exámenes Oficiales</h3>
+      <p>Los exámenes realizados en clase también contribuyen a tu progreso. Los puntos y medallas se otorgan <strong>cuando el profesor publica las notas oficiales</strong>.</p>
+      
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="card bg-dark border-secondary h-100">
+            <div class="card-body">
+              <h5 class="card-title text-info">Puntos de Experiencia (XP)</h5>
+              <ul class="mb-0">
+                <li><strong>Entregar el examen:</strong> +5 XP garantizados.</li>
+                <li><strong>Aprobar el examen (Nota &ge; 5):</strong> +5 XP extra.</li>
+                <li><strong>Sobresaliente (Nota &ge; 9):</strong> +5 XP extra.</li>
+              </ul>
+              <div class="mt-2 text-muted small">Podrás ganar hasta un máximo de 15 XP por examen.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card bg-dark border-secondary h-100">
+            <div class="card-body">
+              <h5 class="card-title text-warning">Medallas Especiales</h5>
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2"><span class="medal-icon">📝</span> <strong>Superviviente de Test:</strong> Completa tu primer examen tipo test.</li>
+                <li class="mb-2"><span class="medal-icon">⚔️</span> <strong>Veterano de Guerra:</strong> Completa 3 exámenes tipo test.</li>
+                <li class="mb-2"><span class="medal-icon">🛡️</span> <strong>Gladiador:</strong> Completa 5 exámenes tipo test.</li>
+                <li class="mb-2"><span class="medal-icon">🎓</span> <strong>El Sabio:</strong> Saca más de un 9 en un examen tipo test.</li>
+                <li><span class="medal-icon">✨</span> <strong>Genio Indiscutible:</strong> Saca más de un 9 en 3 exámenes tipo test distintos.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de Repaso Voluntario -->
+    <div class="gamification-section repaso">
+      <h3 class="text-success mb-4"><i class="fas fa-dumbbell me-2"></i> Tests de Repaso Voluntarios</h3>
+      <p>La práctica hace al maestro. Realizar tests de repaso desde la sección de "Tandas y Repaso" es una excelente forma de farmear XP y prepararte para los exámenes reales.</p>
+      
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="card bg-dark border-secondary h-100">
+            <div class="card-body">
+              <h5 class="card-title text-info">Puntos de Experiencia (XP)</h5>
+              <ul>
+                <li><strong>Aprobar por primera vez (Nota &ge; 5):</strong> +5 XP.</li>
+                <li><strong>Sobresaliente por primera vez (Nota &ge; 9):</strong> +5 XP extra (Total: 10 XP).</li>
+                <li><strong>Repetir y aprobar un test:</strong> +3 XP.</li>
+                <li><strong>Participar o Suspender (Nota < 5):</strong> +2 XP.</li>
+              </ul>
+              <div class="mt-2 text-muted small">Puedes repetir los tests tantas veces como quieras para sumar XP (3 XP por cada aprobado adicional).</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card bg-dark border-secondary h-100">
+            <div class="card-body">
+              <h5 class="card-title text-warning">Medallas Especiales</h5>
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2"><span class="medal-icon">🧠</span> <strong>Mente Inquieta:</strong> Realiza tu primer test de repaso voluntario.</li>
+                <li class="mb-2"><span class="medal-icon">📚</span> <strong>Estudiante Constante:</strong> Realiza 5 tests de repaso.</li>
+                <li class="mb-2"><span class="medal-icon">📖</span> <strong>Rata de Biblioteca:</strong> Realiza 10 tests de repaso.</li>
+                <li><span class="medal-icon">🦉</span> <strong>Erudito:</strong> Realiza 25 tests de repaso.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

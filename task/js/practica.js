@@ -250,47 +250,72 @@ async function procesarGamificacion(nota) {
   const testKey = `${examen.modulo}_${examen.ra}`;
   const practicasRealizadas = userDoc.practicasRealizadas || [];
   
+  let xpGanado = 2; // participation / failing grade
   if (nota >= 5) {
-    let xpGanado = 0;
-    
     if (!practicasRealizadas.includes(testKey)) {
-      xpGanado = 15; // first time completion bonus
+      xpGanado = 5; // pass first time
+      if (nota >= 9) {
+          xpGanado += 5; // excellent bonus
+      }
       practicasRealizadas.push(testKey);
     } else {
-      xpGanado = 2; // repetition
+      xpGanado = 3; // repetition with passing grade
     }
-    
-    const nuevosPts = (userDoc.puntosTotal || 0) + xpGanado;
-    let updateData = { puntosTotal: nuevosPts, practicasRealizadas: practicasRealizadas };
-    
-    const userLogros = userDoc.logros || [];
-    let logroDesbloqueado = false;
-    if (!userLogros.some(l => l.id === 'repaso_test')) {
-      const med = window.MEDALLAS_CATALOGO?.find(m => m.id === 'repaso_test');
+  }
+  
+  const nuevosPts = (userDoc.puntosTotal || 0) + xpGanado;
+  const repasosCount = (userDoc.repasosCount || 0) + 1;
+  let updateData = { 
+    puntosTotal: nuevosPts, 
+    practicasRealizadas: practicasRealizadas,
+    repasosCount: repasosCount 
+  };
+  
+  const userLogros = userDoc.logros || [];
+  let logrosNuevos = [];
+  
+  const checkAdd = (id) => {
+    if (!userLogros.some(l => l.id === id)) {
+      const med = window.MEDALLAS_CATALOGO?.find(m => m.id === id);
       if (med) {
         userLogros.push({ id: med.id, name: med.name, desc: med.desc, icon: med.icon, ts: new Date().toISOString() });
-        updateData.logros = userLogros;
-        logroDesbloqueado = med;
+        logrosNuevos.push(med);
       }
     }
+  };
+
+  if (repasosCount >= 1) checkAdd('repaso_test');
+  if (repasosCount >= 5) checkAdd('repaso_5');
+  if (repasosCount >= 10) checkAdd('repaso_10');
+  if (repasosCount >= 25) checkAdd('repaso_25');
+
+  if (logrosNuevos.length > 0) {
+    updateData.logros = userLogros;
+  }
+  
+  try {
+    await ctxFb.updateDoc(ctxFb.doc(db, 'usuarios', user.uid), updateData);
+    userDoc.puntosTotal = nuevosPts;
+    userDoc.practicasRealizadas = practicasRealizadas;
+    userDoc.logros = userLogros;
+    userDoc.repasosCount = repasosCount;
     
-    try {
-      await ctxFb.updateDoc(ctxFb.doc(db, 'usuarios', user.uid), updateData);
-      userDoc.puntosTotal = nuevosPts;
-      userDoc.practicasRealizadas = practicasRealizadas;
-      userDoc.logros = userLogros;
-      
-      const headerPts = document.getElementById('user-points');
-      if (headerPts) headerPts.innerText = nuevosPts;
-      
-      if (logroDesbloqueado) {
-         showToast(logroDesbloqueado.icon, `¡Logro desbloqueado! ${logroDesbloqueado.name} (+${xpGanado} XP)`, 'success');
-      } else {
-         showToast('⭐', `+${xpGanado} XP por práctica de repaso`, 'success');
-      }
-    } catch(e) {
-      console.error("Error updating gamification", e);
+    const headerPts = document.getElementById('user-points');
+    if (headerPts) headerPts.innerText = nuevosPts;
+    
+    if (logrosNuevos.length > 0) {
+       // Show toast for the first new medal
+       const l = logrosNuevos[0];
+       showToast(l.icon, `¡Logro desbloqueado! ${l.name} (+${xpGanado} XP)`, 'success');
+       // If multiple, show extra toast or just let them discover in profile
+       if (logrosNuevos.length > 1) {
+           setTimeout(() => showToast('🏅', `¡Has desbloqueado ${logrosNuevos.length} logros nuevos!`, 'success'), 3000);
+       }
+    } else {
+       showToast('⭐', `+${xpGanado} XP por práctica de repaso`, 'success');
     }
+  } catch(e) {
+    console.error("Error updating gamification", e);
   }
 
   // Guardar el intento SIEMPRE para que el profesor lo vea

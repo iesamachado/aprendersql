@@ -237,6 +237,10 @@
         if (needsUpdate) {
           updateDoc(doc(db, "respuestas_test", docSnap.id), { nota, notasCriterios, examenId: examen.id, claseId: examen.claseId });
         }
+        
+        // Actualizar el objeto local para que funcione correctamente la gamificación
+        d.nota = nota;
+        d.notasCriterios = notasCriterios;
 
         html += `
           <tr>

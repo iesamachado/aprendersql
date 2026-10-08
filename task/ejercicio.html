@@ -239,13 +239,10 @@
       <div class="modal-body p-4 text-center">
         <div id="gremio-selector" style="display:none;">
           <h6 class="mb-3 text-light">Aún no tienes gremio. ¡Elige tu facción!</h6>
-          <div class="d-grid gap-2">
-            <button class="btn btn-outline-primary fw-bold text-start" onclick="joinGremio('La Orden del JOIN', '🛡️')">🛡️ La Orden del JOIN</button>
-            <button class="btn btn-outline-success fw-bold text-start" onclick="joinGremio('El Cártel del SELECT', '🗡️')">🗡️ El Cártel del SELECT</button>
-            <button class="btn btn-outline-danger fw-bold text-start" onclick="joinGremio('La Hermandad del DROP', '🧙‍♂️')">🧙‍♂️ La Hermandad del DROP</button>
-            <button class="btn btn-outline-warning fw-bold text-start" onclick="joinGremio('Los Ninjas del WHERE', '🦂')">🦂 Los Ninjas del WHERE</button>
+          <div id="gremio-cards-container" class="row g-3 text-start">
+            <!-- Cards generadas por JS -->
           </div>
-          <p class="text-muted small mt-3">Tus puntos sumarán al total de tu facción. ¡Haz que gane tu equipo!</p>
+          <p class="text-muted small mt-4">Tus puntos sumarán al total de tu facción. ¡Haz que gane tu equipo!</p>
         </div>
         
         <div id="gremio-leaderboard" style="display:none;">
