@@ -1,4 +1,18 @@
 (function() {
+    // 0. Cargar banner de advertencia para usuarios de Windows
+    try {
+        const curScript = document.currentScript;
+        const scriptSrc = curScript ? curScript.src : '';
+        const baseJsDir = (scriptSrc && scriptSrc.includes('/')) ? scriptSrc.substring(0, scriptSrc.lastIndexOf('/')) : 'js';
+        if (!document.querySelector('script[src*="windows-banner.js"]')) {
+            const bannerScript = document.createElement('script');
+            bannerScript.src = baseJsDir + '/windows-banner.js';
+            document.head.appendChild(bannerScript);
+        }
+    } catch (e) {
+        console.warn('No se pudo precargar windows-banner.js', e);
+    }
+
     let storedTheme = 'dark';
     try {
         storedTheme = localStorage.getItem('aprendersql_theme') || 'dark';
