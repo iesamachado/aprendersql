@@ -134,7 +134,8 @@ INSERT INTO Platos (nombre_plato, descripcion, precio_venta, categoria) VALUES
 ('Jugo de Guanábana', 'Jugo natural', 3.50, 'Bebidas'),
 ('Malta', 'Bebida de malta sin alcohol', 2.50, 'Bebidas'),
 ('Frescolita', 'Refresco venezolano sabor a kolita', 2.50, 'Bebidas'),
-('Quesillo', 'Postre tipo flan venezolano', 4.50, 'Postres');
+('Quesillo', 'Postre tipo flan venezolano', 4.50, 'Postres'),
+('Café con Leche', 'Café tradicional con leche caliente', 2.00, 'Bebidas');
 
 -- --- C. DATOS DE RECETAS (10 Platos de Ejemplo) ---
 -- (IDs de Platos: 1=Reina, 3=Pelúa, 4=Dominó, 11=Pabellón, 12=Tequeños, 13=Emp. Carne, 17=Cachapa, 22=Tajadas, 26=Jugo Parchita, 30=Quesillo)
@@ -222,7 +223,9 @@ INSERT INTO Clientes (nombre, apellido, telefono, email) VALUES
 ('Víctor', 'Peña', '+34600000047', 'victor.pena@email.com'),
 ('Alicia', 'Calvo', '+34600000048', 'alicia.calvo@email.com'),
 ('Emilio', 'Vicente', '+34600000049', 'emilio.vicente@email.com'),
-('Teresa', 'Arias', '+34600000050', 'teresa.arias@email.com');
+('Teresa', 'Arias', '+34600000050', 'teresa.arias@email.com'),
+('Valentina', 'Rojas', '+34600000051', 'valentina.rojas@email.com'),
+('Gabriel', 'Mendoza', '+34600000052', 'gabriel.mendoza@email.com');
 
 -- --- E. DATOS DE PEDIDOS Y LÍNEAS (10 Pedidos de Ejemplo) ---
 -- (Platos: 1=Reina, 3=Pelúa, 4=Dominó, 5=Pernil, 11=Pabellón, 12=Tequeños, 13=Emp. Carne, 15=Emp. Queso, 17=Cachapa, 18=Patacón, 26=Jugo Parchita, 28=Malta, 29=Frescolita, 30=Quesillo)
@@ -398,7 +401,9 @@ INSERT INTO Pedidos (cliente_id, fecha_hora, tipo_pedido, estado, total_pedido) 
 (17, '2025-10-26 21:30:00', 'Mesa', 'Pagado', 16.50),
 (18, '2025-10-27 13:00:00', 'Para llevar', 'Pagado', 10.50),
 (19, '2025-10-27 20:45:00', 'Mesa', 'Pagado', 16.00),
-(20, '2025-10-28 14:00:00', 'Delivery', 'Entregado', 17.00);
+(20, '2025-10-28 14:00:00', 'Delivery', 'Entregado', 17.00),
+-- Pedido 71 (Pedido sin líneas para consultas de pedidos vacíos)
+(52, '2025-10-29 18:00:00', 'Para llevar', 'Pendiente', 0.00);
 
 INSERT INTO Lineas_Pedido (pedido_id, plato_id, cantidad, precio_unitario_snapshot) VALUES
 -- Pedido 41 (Total: 15.00)

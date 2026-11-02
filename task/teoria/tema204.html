@@ -2,240 +2,648 @@
   <div class="text-center mb-5">
     <h1 class="display-5 text-primary"><i class="fas fa-database me-3"></i>Tema 4: Automatización</h1>
     <p class="lead">Módulo: Administración de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA4</span></p>
-    <p class="text-secondary">Eventos · Triggers · Procedimientos y Funciones</p>
+    <p class="text-secondary">Triggers · Procedimientos · Pseudotablas NEW/OLD · Cursores · Excepciones · Eventos</p>
   </div>
 
-
-  <!-- Índice -->
-  <div class="card border-info mb-5">
+  <!-- Índice del Tema -->
+  <div class="card border-info mb-5 shadow-sm">
     <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
-      <i class="fas fa-list me-2"></i>Índice del Tema
+      <i class="fas fa-list-ul me-2"></i>Índice de Contenidos
     </div>
     <div class="card-body">
       <ul class="list-unstyled mb-0" style="line-height: 2.2;">
-        <li><a href="#triggers" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. Triggers (Disparadores)</a></li>
-        <li><a href="#cursores" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Cursores (Iteración)</a></li>
-        <li><a href="#excepciones" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. Excepciones (Manejo de Errores)</a></li>
-        <li><a href="#eventos" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Eventos Programados</a></li>
+        <li><a href="#triggers" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. Triggers (Disparadores): Concepto, Momentos y Eventos</a></li>
+        <li><a href="#new-old" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Las Pseudotablas NEW y OLD en Detalle</a></li>
+        <li><a href="#metodologia" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. Metodología Pautada: De Procedure a Trigger (Paso a Paso)</a></li>
+        <li><a href="#ejemplos-triggers" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Catálogo de Ejemplos en MariaDB (Auditoría, Envíos, Seguridad)</a></li>
+        <li><a href="#cursores" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>5. Cursores (Iteración Registro a Registro)</a></li>
+        <li><a href="#excepciones" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>6. Excepciones y Handlers (Manejo de Errores)</a></li>
+        <li><a href="#eventos" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>7. Eventos Programados (Event Scheduler)</a></li>
       </ul>
     </div>
   </div>
-  
 
-<!-- Table of Contents -->
-    <div class="card mb-5 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title mb-3"><i class="fas fa-list-ul"></i> Índice de Contenidos</h5>
-            <ul class="list-unstyled mb-0 ms-3">
-                <li class="mb-2"><a href="#triggers" class="text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>1. Triggers (Disparadores)</a></li>
-                <li class="mb-2"><a href="#cursores" class="text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>2. Cursores</a></li>
-                <li class="mb-2"><a href="#excepciones" class="text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>3. Excepciones (Manejo de Errores)</a></li>
-                <li><a href="#eventos" class="text-decoration-none hover-shadow"><i class="fas fa-chevron-right fa-sm me-2"></i>4. Eventos Programados</a></li>
-            </ul>
-        </div>
+  <!-- Section 1: Triggers -->
+  <section id="triggers" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-bolt text-warning me-2"></i>1. Triggers (Disparadores): Concepto, Momentos y Eventos
+    </h2>
+    <p class="lead mt-3">
+      Un <strong>Trigger</strong> (o disparador) es un bloque de código SQL almacenado en el motor de la base de datos que se ejecuta <strong>automáticamente de forma reactiva</strong> cuando ocurre una operación de manipulación de datos (<code>INSERT</code>, <code>UPDATE</code> o <code>DELETE</code>) sobre una tabla determinada.
+    </p>
+
+    <div class="alert alert-dark border-secondary mt-3">
+      <i class="fas fa-lightbulb text-warning me-2"></i>
+      <strong>Idea fundamental:</strong> A diferencia de una función o un procedimiento almacenado ordinario, un trigger <em>nunca se llama de forma manual</em> (no existe un <code>CALL mi_trigger()</code>). Se dispara por sí solo en el servidor cuando se produce el evento para el que fue programado.
     </div>
 
-    <!-- Section 1: Triggers -->
-    <section id="triggers" class="mb-5">
-        <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-bolt text-warning"></i> 1. Triggers (Disparadores)</h2>
-        <p class="lead mt-3">Los triggers o disparadores son procedimientos que se ejecutan de forma automática cuando pasa algo en la base de datos (eventos <code>INSERT</code>, <code>UPDATE</code> o <code>DELETE</code>).</p>
-        
-        <h4 class="mt-4"><i class="fas fa-question-circle text-secondary"></i> ¿Para qué sirven?</h4>
-        <ul class="list-group list-group-flush mb-4 rounded">
-            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Registrar, auditar y monitorear los procesos de cambio.</li>
-            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Validar valores aprobando o negando acciones realizadas por sentencias SQL.</li>
-            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Preservar la consistencia y claridad de los valores (ej. recalcular el total de un pedido al añadir una línea).</li>
-        </ul>
-
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3 mb-md-0">
-                <div class="card bg-success h-100 opacity-75">
-                    <div class="card-header"><i class="fas fa-thumbs-up"></i> Ventajas</div>
-                    <div class="card-body">
-                        <ul class="mb-0">
-                            <li>Ofrecen chequeos de seguridad en valores de las tablas.</li>
-                            <li>Fuerzan restricciones dinámicas de integridad de datos e integridad referencial.</li>
-                            <li>Aseguran que las operaciones relacionadas se realicen juntas de forma implícita.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card border-danger bg-danger bg-opacity-10 h-100">
-                    <div class="card-header"><i class="fas fa-thumbs-down"></i> Desventajas</div>
-                    <div class="card-body">
-                        <ul class="mb-0">
-                            <li>Se tiene que programar anticipadamente lo que tiene que realizar el trigger.</li>
-                            <li>Aunque es un procedimiento, no se puede invocar directamente.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+    <h4 class="mt-4"><i class="fas fa-shield-alt text-secondary me-2"></i>¿Para qué se utilizan en Administración de BBDD?</h4>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card h-100 border-primary bg-dark">
+          <div class="card-body">
+            <h5 class="card-title text-primary"><i class="fas fa-user-secret me-2"></i>Auditoría y Trazabilidad</h5>
+            <p class="card-text small text-light">Registrar quién (<code>USER()</code>), cuándo (<code>NOW()</code>) y qué modificó en tablas críticas (salarios, contraseñas, emails o estados de pedidos).</p>
+          </div>
         </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-warning bg-dark">
+          <div class="card-body">
+            <h5 class="card-title text-warning"><i class="fas fa-ban me-2"></i>Integridad y Restricciones</h5>
+            <p class="card-text small text-light">Validar reglas de negocio avanzadas que una simple <code>CHECK</code> no puede comprobar, o impedir borrados accidentales abortando la transacción con errores personalizados.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-success bg-dark">
+          <div class="card-body">
+            <h5 class="card-title text-success"><i class="fas fa-sync me-2"></i>Cálculos y Sincronización</h5>
+            <p class="card-text small text-light">Recalcular totales, aplicar tarifas según códigos postales, descontar stock en almacén o actualizar saldos de forma desatendida.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <h4 class="mt-4"><i class="fas fa-code text-secondary"></i> Sintaxis de Creación</h4>
-        <pre><code>CREATE TRIGGER nombre_trigger
-{BEFORE | AFTER} {INSERT | UPDATE | DELETE}
+    <h4 class="mt-4"><i class="fas fa-sliders-h text-secondary me-2"></i>Los Dos Componentes del Disparo: Momento y Acción</h4>
+    <p>Para configurar cualquier trigger en MariaDB debemos responder a dos preguntas esenciales:</p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card border-info h-100">
+          <div class="card-header bg-info bg-opacity-25 text-info fw-bold">
+            <i class="fas fa-clock me-2"></i>1. Momento de Disparo: BEFORE vs AFTER
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-3">
+                <span class="badge bg-primary fs-6 mb-1">BEFORE</span>
+                <p class="small mb-0">Se ejecuta <strong>antes</strong> de que la modificación se aplique físicamente a la tabla o se validen restricciones de integridad.
+                <br><em>Ideal para:</em> Validar datos, modificar o sanitizar valores entrantes (modificando <code>NEW.columna</code>), o cancelar la instrucción antes de que toque la tabla.</p>
+              </li>
+              <li>
+                <span class="badge bg-success fs-6 mb-1">AFTER</span>
+                <p class="small mb-0">Se ejecuta <strong>después</strong> de que la fila ha sido guardada/actualizada/eliminada satisfactoriamente.
+                <br><em>Ideal para:</em> Operaciones en <strong>otras tablas</strong>, como alimentar tablas de auditoría histórica, descontar inventario en almacén o actualizar acumulados.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card border-warning h-100">
+          <div class="card-header bg-warning bg-opacity-25 text-warning fw-bold">
+            <i class="fas fa-bolt me-2"></i>2. Operación DML Disparadora
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <span class="badge bg-secondary me-2">INSERT</span>
+                <span class="small">Se activa cuando entra una nueva fila (<code>INSERT INTO ...</code>).</span>
+              </li>
+              <li class="mb-2">
+                <span class="badge bg-secondary me-2">UPDATE</span>
+                <span class="small">Se activa cuando cambia algún dato en una fila ya existente (<code>UPDATE ...</code>).</span>
+              </li>
+              <li class="mb-3">
+                <span class="badge bg-secondary me-2">DELETE</span>
+                <span class="small">Se activa cuando una fila va a desaparecer (<code>DELETE FROM ...</code>).</span>
+              </li>
+            </ul>
+            <div class="alert alert-secondary p-2 mb-0 small">
+              <i class="fas fa-info-circle me-1"></i> Esto produce un total de <strong>6 combinaciones posibles</strong> por tabla: <code>BEFORE INSERT</code>, <code>AFTER INSERT</code>, <code>BEFORE UPDATE</code>, <code>AFTER UPDATE</code>, <code>BEFORE DELETE</code> y <code>AFTER DELETE</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="mt-4"><i class="fas fa-code text-secondary me-2"></i>Sintaxis Estándar y el uso de DELIMITER en MariaDB</h4>
+    <p>Dado que el cuerpo del trigger contendrá varias sentencias finalizadas con punto y coma (<code>;</code>), es imprescindible cambiar temporalmente el delimitador de sentencias del cliente con <code>DELIMITER</code>:</p>
+
+    <pre><code>DELIMITER //
+
+CREATE TRIGGER nombre_del_trigger
+{ BEFORE | AFTER } { INSERT | UPDATE | DELETE }
 ON nombre_tabla
 FOR EACH ROW
 BEGIN
-    -- Acciones SQL a ejecutar
-END;</code></pre>
-        
-        <div class="alert alert-info mt-3">
-            <strong>BEFORE o AFTER:</strong><br>
-            <ul class="mb-0 mt-2">
-                <li><strong>BEFORE:</strong> Si queremos que se ejecute ANTES del evento que ha disparado el trigger.</li>
-                <li><strong>AFTER:</strong> Si queremos que se ejecute DESPUÉS del evento.</li>
-            </ul>
-        </div>
+    -- Bloque de instrucciones SQL
+    -- Condiciones IF, bucles, asignaciones o llamadas a procedimientos
+END //
 
-        <h4 class="mt-4"><i class="fas fa-exchange-alt text-secondary"></i> Tablas NEW y OLD</h4>
-        <p>Nos servirán en nuestros triggers para recuperar los valores que se han modificado y han disparado nuestro trigger.</p>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card border-primary bg-primary bg-opacity-10 mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-plus-circle"></i> Tabla NEW</h5>
-                        <p class="card-text">Disponible en triggers de <code>INSERT</code> y <code>UPDATE</code>. Contiene los nuevos valores insertados o actualizados.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card border-warning bg-warning bg-opacity-10 mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-minus-circle"></i> Tabla OLD</h5>
-                        <p class="card-text">Disponible en triggers de <code>DELETE</code> y <code>UPDATE</code>. Contiene los valores antiguos o borrados.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+DELIMITER ;</code></pre>
 
-    <!-- Section 2: Cursors -->
-    <section id="cursores" class="mb-5">
-        <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-hand-pointer text-primary"></i> 2. Cursores (Iteración)</h2>
-        <p class="mt-3">Los cursores permiten iterar a través de un conjunto de resultados (filas de una consulta <code>SELECT</code>) dentro de un procedimiento almacenado o trigger, procesando una fila a la vez.</p>
-        
-        <h4 class="mt-4"><i class="fas fa-list-ol text-secondary"></i> Pasos para usar un Cursor</h4>
-        <ol class="list-group list-group-numbered list-group-flush mb-4 rounded">
-            <li class="list-group-item"><strong>Declaración:</strong> <code>DECLARE nombre_cursor CURSOR FOR consulta_select;</code></li>
-            <li class="list-group-item"><strong>Apertura:</strong> <code>OPEN nombre_cursor;</code> (Ejecuta la consulta)</li>
-            <li class="list-group-item"><strong>Lectura (Fetch):</strong> <code>FETCH nombre_cursor INTO variable1, variable2;</code> (Avanza a la siguiente fila)</li>
-            <li class="list-group-item"><strong>Cierre:</strong> <code>CLOSE nombre_cursor;</code> (Libera los recursos)</li>
-        </ol>
-        
-        <h4 class="mt-4"><i class="fas fa-code text-secondary"></i> Ejemplo de Uso</h4>
+    <div class="alert alert-warning mt-3">
+      <strong><i class="fas fa-exclamation-triangle me-2"></i>Granularidad: ¿Por qué siempre <code>FOR EACH ROW</code>?</strong>
+      <br>
+      En MariaDB, los triggers se ejecutan a nivel de fila (<em>Row-Level Triggers</em>). Si una única sentencia <code>UPDATE clientes SET estado = 'Inactivo' WHERE ciudad = 'Granada';</code> actualiza 40 registros, el trigger se ejecutará <strong>40 veces independientes</strong>, una por cada fila afectada.
+    </div>
+
+    <h4 class="mt-4"><i class="fas fa-tools text-secondary me-2"></i>Administración de Triggers en el Servidor</h4>
+    <pre><code>-- Listar todos los triggers de la base de datos actual
+SHOW TRIGGERS;
+
+-- Listar los triggers asociados a una tabla concreta
+SHOW TRIGGERS LIKE 'pedidos';
+
+-- Consultar metadatos avanzados desde el diccionario del sistema
+SELECT TRIGGER_NAME, EVENT_MANIPULATION, EVENT_OBJECT_TABLE, ACTION_TIMING, CREATED
+FROM information_schema.TRIGGERS
+WHERE TRIGGER_SCHEMA = DATABASE();
+
+-- Eliminar un trigger existente
+DROP TRIGGER IF EXISTS trg_auditar_pedidos;</code></pre>
+  </section>
+
+  <!-- Section 2: NEW and OLD -->
+  <section id="new-old" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-exchange-alt text-warning me-2"></i>2. Las Pseudotablas NEW y OLD en Detalle
+    </h2>
+    <p class="lead mt-3">
+      Dentro del cuerpo de un trigger no podemos saber "mágicamente" qué fila se está tocando usando un <code>SELECT</code> corriente. Para ello, MariaDB proporciona dos pseudorregistros especiales: <strong><code>NEW</code></strong> y <strong><code>OLD</code></strong>.
+    </p>
+
+    <p>
+      Estas variables tienen exactamente los mismos campos y tipos de datos que la tabla que dispara el evento. Para acceder a sus columnas se usa la sintaxis de punto: <code>NEW.nombre_columna</code> y <code>OLD.nombre_columna</code>.
+    </p>
+
+    <div class="table-responsive my-4">
+      <table class="table table-bordered table-dark table-hover align-middle">
+        <thead class="table-primary text-dark text-center">
+          <tr>
+            <th>Evento DML</th>
+            <th>Pseudotabla <code>OLD</code> (Valores Anteriores)</th>
+            <th>Pseudotabla <code>NEW</code> (Valores Nuevos)</th>
+            <th>¿Permite modificación con <code>SET</code>?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-bold text-center text-info">INSERT</td>
+            <td class="text-danger text-center"><i class="fas fa-times-circle me-1"></i> No disponible (es <code>NULL</code>)</td>
+            <td class="text-success"><i class="fas fa-check-circle me-1"></i> Contiene los datos de la nueva fila que se va a insertar.</td>
+            <td><span class="badge bg-success">Sí</span> Sólo en <code>BEFORE INSERT</code> (ej: <code>SET NEW.fecha = NOW();</code>)</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-center text-warning">UPDATE</td>
+            <td class="text-info"><i class="fas fa-check-circle me-1"></i> Contiene los datos originales antes de modificarse.</td>
+            <td class="text-success"><i class="fas fa-check-circle me-1"></i> Contiene los datos entrantes propuestos por el usuario.</td>
+            <td><span class="badge bg-success">Sí</span> Sólo en <code>BEFORE UPDATE</code> (ej: <code>SET NEW.descuento = 10;</code>)</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-center text-danger">DELETE</td>
+            <td class="text-info"><i class="fas fa-check-circle me-1"></i> Contiene los datos de la fila justo antes de ser eliminada.</td>
+            <td class="text-danger text-center"><i class="fas fa-times-circle me-1"></i> No disponible (la fila deja de existir)</td>
+            <td><span class="badge bg-secondary">No</span> No tiene sentido asignar valores a una fila que va a desaparecer.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
+        <div class="card h-100 border-primary bg-primary bg-opacity-10">
+          <div class="card-header fw-bold text-primary"><i class="fas fa-filter me-2"></i>Detección de Cambios Reales en UPDATE</div>
+          <div class="card-body">
+            <p class="small">Cuando un usuario ejecuta un <code>UPDATE</code>, muchas veces las columnas no cambian realmente su contenido. Para no registrar auditorías vacías o no gastar CPU innecesariamente, filtramos con un condicional:</p>
+            <pre class="mb-0"><code>IF OLD.salario <> NEW.salario THEN
+    -- El salario ha cambiado de verdad
+    -- Ejecutamos la auditoría o la lógica
+END IF;</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-danger bg-danger bg-opacity-10">
+          <div class="card-header fw-bold text-danger"><i class="fas fa-skull-crossbones me-2"></i>¡La Trampa de MariaDB! Error 1442 (Tabla Mutante)</div>
+          <div class="card-body">
+            <p class="small"><strong>El error más común de los alumnos:</strong> En un trigger de la tabla <code>pedidos</code> intentan hacer:</p>
+            <code class="text-danger">UPDATE pedidos SET total = 100 WHERE id = NEW.id;</code>
+            <p class="small mt-2 mb-0"><strong>MariaDB lo rechazará con:</strong> <em>ERROR 1442: Can't update table 'pedidos' in stored function/trigger because it is already used by statement...</em>
+            <br><span class="text-success fw-bold">Solución correcta:</span> Haz el trigger <code>BEFORE</code> y modifica la columna directamente con:
+            <br><code>SET NEW.total = 100;</code> (¡Sin lanzar ningún UPDATE!).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Metodologia Procedure -> Trigger -->
+  <section id="metodologia" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-route text-warning me-2"></i>3. Metodología Pautada: De Procedure a Trigger (Paso a Paso)
+    </h2>
+    <p class="lead mt-3">
+      Programar triggers directamente suele ser frustrante para los estudiantes: como saltan de fondo de forma implícita, si hay un fallo sintáctico, de tipos o un cálculo erróneo, la consola de MariaDB solo muestra un error opaco al hacer el <code>INSERT</code> o <code>UPDATE</code>.
+    </p>
+
+    <div class="card border-success bg-dark mb-4">
+      <div class="card-body">
+        <h5 class="text-success"><i class="fas fa-graduation-cap me-2"></i>La Filosofía Didáctica: Separar la Lógica del Disparo</h5>
+        <p class="mb-0">
+          Para construir triggers sin perdernos, dividimos siempre el problema en <strong>dos fases estructuradas</strong>:
+          <br>
+          <strong>1. Crear y probar un Stored Procedure</strong> con toda la lógica de negocio pura y dura, probándolo manualmente en la consola con <code>CALL</code>.
+          <br>
+          <strong>2. Crear el Trigger</strong> como una "fina capa reactiva" que solo se encarga de extraer los datos de <code>NEW</code> u <code>OLD</code> y llamar al Procedure.
+        </p>
+      </div>
+    </div>
+
+    <!-- Fases Visuales -->
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card border-primary h-100">
+          <div class="card-header bg-primary text-white fw-bold">
+            <i class="fas fa-cogs me-2"></i>FASE 1: El Stored Procedure (La Lógica)
+          </div>
+          <div class="card-body">
+            <p class="small text-secondary mb-3">En el procedimiento almacenado nos centramos exclusivamente en resolver el problema algorítmico:</p>
+            <ol class="list-group list-group-numbered mb-3">
+              <li class="list-group-item bg-dark text-light border-secondary">
+                <strong>Parámetros de entrada:</strong> Definir qué datos necesita recibir mediante parámetros <code>IN</code> (IDs, importes, cantidades).
+              </li>
+              <li class="list-group-item bg-dark text-light border-secondary">
+                <strong>Variables locales:</strong> Declarar variables internas con <code>DECLARE</code> y volcar datos de consultas con <code>SELECT columna INTO v_variable FROM ...</code>.
+              </li>
+              <li class="list-group-item bg-dark text-light border-secondary">
+                <strong>Cálculos y validaciones:</strong> Realizar operaciones matemáticas, aplicar descuentos o evaluar condiciones lógicas con <code>IF ... THEN ... ELSE</code>.
+              </li>
+              <li class="list-group-item bg-dark text-light border-secondary">
+                <strong>Modificación de tablas:</strong> Ejecutar el <code>UPDATE</code>, <code>INSERT INTO historico</code> o lanzar un error de interrupción con <code>SIGNAL</code>.
+              </li>
+            </ol>
+            <div class="alert alert-info py-2 px-3 small mb-0">
+              <i class="fas fa-vial me-1"></i> <strong>Prueba Unitaria:</strong> Ejecutamos <code>CALL sp_logica(1, 50);</code> en el terminal y comprobamos con un <code>SELECT</code> que la base de datos reacciona como queremos.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card border-warning h-100">
+          <div class="card-header bg-warning text-dark fw-bold">
+            <i class="fas fa-plug me-2"></i>FASE 2: El Trigger (El Cableado Reactivo)
+          </div>
+          <div class="card-body">
+            <p class="small text-secondary mb-3">Una vez que el procedure funciona a la perfección, crear el trigger es coser y cantar:</p>
+            <ol class="list-group list-group-numbered mb-3">
+              <li class="list-group-item bg-dark text-light border-secondary">
+                <strong>Decidir el Disparador:</strong>
+                <ul class="small mt-1 ps-3 mb-0">
+                  <li>¿Qué tabla lo dispara?</li>
+                  <li>¿Qué acción: <code>INSERT</code>, <code>UPDATE</code> o <code>DELETE</code>?</li>
+                  <li>¿Qué momento: <code>BEFORE</code> o <code>AFTER</code>?</li>
+                </ul>
+              </li>
+              <li class="list-group-item bg-dark text-light border-secondary">
+                <strong>Obtener los datos de entrada:</strong> Extraer exactamente los parámetros que el procedure exige leyendo los campos de <code>NEW</code> (en inserciones/actualizaciones) o de <code>OLD</code> (en borrados).
+              </li>
+              <li class="list-group-item bg-dark text-light border-secondary">
+                <strong>Invocar el Procedure:</strong> Escribir una única línea limpia dentro del trigger:
+                <code class="d-block mt-1 text-warning">CALL sp_logica(NEW.id, NEW.importe);</code>
+              </li>
+            </ol>
+            <div class="alert alert-secondary py-2 px-3 small mb-0">
+              <i class="fas fa-check-double me-1"></i> <strong>Resultado:</strong> Si el trigger falla, sabemos exactamente si el error es de sintaxis del evento o de la lógica interna del procedure.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-danger mt-4">
+      <h6 class="alert-heading fw-bold"><i class="fas fa-exclamation-circle me-2"></i>2 Reglas de Oro de MariaDB al llamar Procedures desde Triggers:</h6>
+      <ul class="mb-0 small">
+        <li><strong>Prohibido devolver Result Sets directos:</strong> El procedure invocado por un trigger NO puede hacer un <code>SELECT columna FROM ...</code> simple a pantalla sin cláusula <code>INTO</code>. Los triggers son silenciosos y no admiten devolver resultados interactivos al cliente.</li>
+        <li><strong>Prohibido el control explícito de transacciones:</strong> El procedure no puede contener sentencias <code>COMMIT</code> ni <code>ROLLBACK</code>. La transacción la gobierna la instrucción SQL original que disparó el evento.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Section 4: Practical Examples -->
+  <section id="ejemplos-triggers" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-laptop-code text-warning me-2"></i>4. Catálogo de Ejemplos en MariaDB
+    </h2>
+    <p class="lead mt-3">A continuación repasamos los 4 casos de uso más importantes en MariaDB, aplicando la metodología pautada y los diferentes momentos de disparo.</p>
+
+    <!-- Ejemplo 1: Metodología Completa Stock -->
+    <div class="card border-primary mb-4 shadow">
+      <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-boxes me-2"></i>Ejemplo 1: Metodología Pautada (Descuento de Stock al Vender)</span>
+        <span class="badge bg-light text-dark">AFTER INSERT + PROCEDURE</span>
+      </div>
+      <div class="card-body">
+        <p class="small text-light"><strong>Escenario:</strong> Cada vez que se añade una línea de venta en <code>lineas_pedido(id, pedido_id, producto_id, cantidad)</code>, debemos descontar automáticamente esa cantidad del <code>stock</code> en la tabla <code>productos(id, nombre, stock)</code>. Si no hay suficiente stock, impedimos la venta.</p>
+
+        <h6 class="text-info mt-3"><i class="fas fa-terminal me-2"></i>Paso 1: Programar el Stored Procedure con la lógica</h6>
         <pre><code>DELIMITER //
-CREATE PROCEDURE procesar_empleados()
+
+CREATE OR REPLACE PROCEDURE sp_descontar_stock(
+    IN p_producto_id INT,
+    IN p_cantidad INT
+)
+BEGIN
+    -- 1. Declarar variables locales
+    DECLARE v_stock_actual INT DEFAULT 0;
+
+    -- 2. Obtener el stock actual del producto mediante SELECT INTO
+    SELECT stock INTO v_stock_actual
+    FROM productos
+    WHERE id = p_producto_id;
+
+    -- 3. Comprobaciones lógicas y cálculos
+    IF v_stock_actual IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El producto especificado no existe en el catálogo.';
+    ELSEIF v_stock_actual < p_cantidad THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Stock insuficiente para completar la venta.';
+    ELSE
+        -- 4. Modificar la tabla destino
+        UPDATE productos
+        SET stock = stock - p_cantidad
+        WHERE id = p_producto_id;
+    END IF;
+END //
+
+DELIMITER ;</code></pre>
+
+        <div class="alert alert-secondary py-2 small mb-3">
+          <strong><i class="fas fa-play text-success me-1"></i>Probando el procedure de forma aislada:</strong>
+          <br>Podemos ejecutar <code>CALL sp_descontar_stock(1, 2);</code> para comprobar que resta 2 unidades del producto 1 sin necesidad de disparar nada todavía.
+        </div>
+
+        <h6 class="text-warning mt-4"><i class="fas fa-bolt me-2"></i>Paso 2: Conectar el Trigger reactivo</h6>
+        <p class="small text-light mb-2">Decidimos: Momento <strong>AFTER</strong> (porque la línea ya debe estar registrada), Evento <strong>INSERT</strong>, Tabla <strong>lineas_pedido</strong>. Extraemos <code>NEW.producto_id</code> y <code>NEW.cantidad</code>:</p>
+
+        <pre><code>DELIMITER //
+
+CREATE OR REPLACE TRIGGER trg_descontar_stock_venta
+AFTER INSERT ON lineas_pedido
+FOR EACH ROW
+BEGIN
+    -- Llamamos directamente al procedure con los datos entrantes de la pseudotabla NEW
+    CALL sp_descontar_stock(NEW.producto_id, NEW.cantidad);
+END //
+
+DELIMITER ;</code></pre>
+      </div>
+    </div>
+
+    <!-- Ejemplo 2: Auditoría AFTER UPDATE -->
+    <div class="card border-info mb-4 shadow">
+      <div class="card-header bg-info bg-opacity-25 text-info fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-history me-2"></i>Ejemplo 2: Auditoría y Trazabilidad Histórica</span>
+        <span class="badge bg-info text-dark">AFTER UPDATE (OLD vs NEW)</span>
+      </div>
+      <div class="card-body">
+        <p class="small text-light"><strong>Escenario:</strong> En la tabla <code>jugadores(id, nombre, puntos)</code> queremos registrar en una tabla histórica cada vez que se modifican los puntos de un jugador, guardando los puntos antiguos, los nuevos, la fecha exacta y el usuario de base de datos que ejecutó la orden.</p>
+
+        <pre><code>-- 1. Tabla para almacenar el histórico
+CREATE TABLE IF NOT EXISTS historico_puntos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    jugador_id INT NOT NULL,
+    puntos_antiguos INT NOT NULL,
+    puntos_nuevos INT NOT NULL,
+    fecha_modificacion DATETIME DEFAULT NOW(),
+    usuario_bd VARCHAR(80) NOT NULL
+);
+
+-- 2. Trigger de auditoría reactivo
+DELIMITER //
+
+CREATE OR REPLACE TRIGGER trg_auditar_puntos_jugador
+AFTER UPDATE ON jugadores
+FOR EACH ROW
+BEGIN
+    -- Comparamos si el valor de la columna ha cambiado realmente
+    IF OLD.puntos <> NEW.puntos THEN
+        INSERT INTO historico_puntos (
+            jugador_id,
+            puntos_antiguos,
+            puntos_nuevos,
+            fecha_modificacion,
+            usuario_bd
+        ) VALUES (
+            NEW.id,
+            OLD.puntos,
+            NEW.puntos,
+            NOW(),
+            USER()
+        );
+    END IF;
+END //
+
+DELIMITER ;</code></pre>
+      </div>
+    </div>
+
+    <!-- Ejemplo 3: Seguridad BEFORE DELETE con SIGNAL -->
+    <div class="card border-danger mb-4 shadow">
+      <div class="card-header bg-danger bg-opacity-25 text-danger fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-user-shield me-2"></i>Ejemplo 3: Seguridad Anti-Desastres (Bloqueo de Borrado)</span>
+        <span class="badge bg-danger">BEFORE DELETE + SIGNAL</span>
+      </div>
+      <div class="card-body">
+        <p class="small text-light"><strong>Escenario:</strong> En la tabla <code>pedidos(id, cliente_id, estado, total)</code> debemos impedir terminantemente que cualquier usuario o script borre pedidos que ya figuren como <code>'Pagado'</code> o <code>'Entregado'</code>. Si alguien lo intenta, abortamos con un mensaje de error personalizado.</p>
+
+        <pre><code>DELIMITER //
+
+CREATE OR REPLACE TRIGGER trg_proteger_pedidos_facturados
+BEFORE DELETE ON pedidos
+FOR EACH ROW
+BEGIN
+    -- En un DELETE consultamos la fila que se va a borrar a través de OLD
+    IF OLD.estado IN ('Pagado', 'Entregado') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'ACCESO DENEGADO: No está permitido borrar pedidos facturados o entregados.';
+    END IF;
+END //
+
+DELIMITER ;</code></pre>
+        <div class="alert alert-secondary py-2 small mb-0">
+          <i class="fas fa-info-circle me-1"></i> El código de estado <code>SQLSTATE '45000'</code> es el estándar SQL para definir una excepción no controlada definida por el usuario.
+        </div>
+      </div>
+    </div>
+
+    <!-- Ejemplo 4: Cálculo Preventivo BEFORE UPDATE/INSERT -->
+    <div class="card border-warning mb-4 shadow">
+      <div class="card-header bg-warning bg-opacity-25 text-warning fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-calculator me-2"></i>Ejemplo 4: Cálculo Automático e Interceptación de Valores</span>
+        <span class="badge bg-warning text-dark">BEFORE UPDATE (SET NEW.campo)</span>
+      </div>
+      <div class="card-body">
+        <p class="small text-light"><strong>Escenario:</strong> En la tabla <code>pedidos(id, cp, gastos_envio)</code>, si se modifica el Código Postal (<code>cp</code>), el sistema debe recalcular los gastos de envío automáticamente antes de persistir los cambios en disco. Recuerda que no podemos hacer <code>UPDATE pedidos</code> para no provocar el Error 1442.</p>
+
+        <pre><code>DELIMITER //
+
+CREATE OR REPLACE TRIGGER trg_recalcular_gastos_envio
+BEFORE UPDATE ON pedidos
+FOR EACH ROW
+BEGIN
+    -- Verificamos si el código postal ha cambiado
+    IF OLD.cp <> NEW.cp THEN
+        -- Interceptamos el nuevo valor antes de que se grabe en disco
+        IF NEW.cp LIKE '18%' THEN
+            SET NEW.gastos_envio = 0.00; -- Envío local gratuito (ej. Granada)
+        ELSEIF NEW.cp LIKE '28%' OR NEW.cp LIKE '08%' THEN
+            SET NEW.gastos_envio = 4.95; -- Tarifa peninsular reducida (Madrid / Barcelona)
+        ELSE
+            SET NEW.gastos_envio = 8.50; -- Tarifa estándar
+        END IF;
+    END IF;
+END //
+
+DELIMITER ;</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Cursors -->
+  <section id="cursores" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-hand-pointer text-primary me-2"></i>5. Cursores (Iteración Registro a Registro)</h2>
+    <p class="mt-3">Las bases de datos relacionales trabajan por defecto de forma masiva sobre conjuntos de datos. Sin embargo, cuando se requiere una lógica compleja que necesita evaluar una fila a la vez, se utilizan <strong>Cursores</strong> dentro de un Procedimiento Almacenado.</p>
+    
+    <h4 class="mt-4"><i class="fas fa-list-ol text-secondary me-2"></i>Los 4 Pasos Obligatorios para Usar un Cursor</h4>
+    <ol class="list-group list-group-numbered list-group-flush mb-4 rounded">
+      <li class="list-group-item bg-dark text-light border-secondary"><strong>Declaración:</strong> <code>DECLARE nombre_cursor CURSOR FOR consulta_select;</code> (Debe ir después de declarar las variables corrientes).</li>
+      <li class="list-group-item bg-dark text-light border-secondary"><strong>Apertura:</strong> <code>OPEN nombre_cursor;</code> (Ejecuta internamente la consulta y sitúa el puntero al inicio).</li>
+      <li class="list-group-item bg-dark text-light border-secondary"><strong>Lectura (Fetch):</strong> <code>FETCH nombre_cursor INTO var1, var2;</code> (Copia los datos de la fila actual a variables locales y avanza a la siguiente).</li>
+      <li class="list-group-item bg-dark text-light border-secondary"><strong>Cierre:</strong> <code>CLOSE nombre_cursor;</code> (Libera la memoria del servidor).</li>
+    </ol>
+    
+    <h4 class="mt-4"><i class="fas fa-code text-secondary me-2"></i>Ejemplo Completo con Loop y Handler de Fin</h4>
+    <pre><code>DELIMITER //
+
+CREATE OR REPLACE PROCEDURE procesar_empleados()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
+    DECLARE var_id INT;
     DECLARE var_nombre VARCHAR(100);
     
     -- 1. Declarar cursor
-    DECLARE cursor_empleados CURSOR FOR SELECT nombre FROM empleados;
+    DECLARE cursor_empleados CURSOR FOR 
+        SELECT id, nombre FROM empleados;
     
-    -- Manejador de fin de cursor (ver sección de excepciones)
+    -- Manejador de fin de cursor: cuando FETCH no encuentre más filas, done pasa a TRUE
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
     -- 2. Abrir cursor
     OPEN cursor_empleados;
 
     read_loop: LOOP
-        -- 3. Leer fila
-        FETCH cursor_empleados INTO var_nombre;
+        -- 3. Leer la fila actual
+        FETCH cursor_empleados INTO var_id, var_nombre;
         
+        -- Si ya no quedan registros, salimos del bucle
         IF done THEN
             LEAVE read_loop;
         END IF;
         
-        -- Acciones con var_nombre...
+        -- Procesamiento individual de cada empleado (ej. cálculos, inserciones)
     END LOOP;
 
     -- 4. Cerrar cursor
     CLOSE cursor_empleados;
 END //
+
 DELIMITER ;</code></pre>
-    </section>
+  </section>
 
-    <!-- Section 3: Exceptions -->
-    <section id="excepciones" class="mb-5">
-        <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-exclamation-triangle text-warning"></i> 3. Excepciones (Manejo de Errores)</h2>
-        <p class="mt-3">En MariaDB, el manejo de errores y advertencias en bloques de código se realiza utilizando <strong>HANDLERS</strong>. Nos permiten definir qué acción tomar cuando ocurre un estado SQL específico, error o si no se encuentran más filas en un cursor.</p>
-        
-        <h4 class="mt-4"><i class="fas fa-code text-secondary"></i> Sintaxis de Handlers</h4>
-        <pre><code>DECLARE {CONTINUE | EXIT} HANDLER FOR {condición_error} 
+  <!-- Section 6: Exceptions -->
+  <section id="excepciones" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-exclamation-triangle text-warning me-2"></i>6. Excepciones y Handlers (Manejo de Errores)</h2>
+    <p class="mt-3">En MariaDB, el control de errores dentro de procedimientos y triggers se realiza mediante <strong>HANDLERS</strong> (manejadores). Permiten interceptar fallos como claves primarias duplicadas, valores nulos o desconexiones, evitando que el script aborte inesperadamente.</p>
+    
+    <h4 class="mt-4"><i class="fas fa-code text-secondary me-2"></i>Sintaxis de Handlers</h4>
+    <pre><code>DECLARE { CONTINUE | EXIT } HANDLER FOR { condición_error }
 BEGIN
-    -- Código a ejecutar cuando ocurra la condición
+    -- Instrucciones a ejecutar al ocurrir la excepción
 END;</code></pre>
-        
-        <div class="row mt-4">
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-header fw-bold">Tipos de Handler</div>
-                    <div class="card-body">
-                        <ul>
-                            <li class="mb-2"><span class="badge bg-primary">CONTINUE</span><br>Ejecuta el bloque del handler y luego continúa con la siguiente instrucción después de la que causó el error.</li>
-                            <li><span class="badge bg-danger">EXIT</span><br>Ejecuta el bloque del handler y luego termina la ejecución del bloque <code>BEGIN...END</code> actual.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-header fw-bold">Condiciones de Error Comunes</div>
-                    <div class="card-body">
-                        <ul>
-                            <li><code>SQLEXCEPTION</code>: Cualquier error (estado SQL distinto de 00000, 01000 y 02000).</li>
-                            <li><code>SQLWARNING</code>: Advertencias (estado SQL comienza con 01).</li>
-                            <li><code>NOT FOUND</code>: Usado típicamente en cursores cuando <code>FETCH</code> no encuentra más filas.</li>
-                            <li><code>Código de error SQL</code>: Por ejemplo, <code>1062</code> (Entrada duplicada).</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+    
+    <div class="row mt-4 g-3">
+      <div class="col-md-6">
+        <div class="card h-100 border-secondary bg-dark">
+          <div class="card-header fw-bold text-info"><i class="fas fa-traffic-light me-2"></i>Acción del Handler</div>
+          <div class="card-body">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-3">
+                <span class="badge bg-primary fs-6 mb-1">CONTINUE</span>
+                <p class="small mb-0">Ejecuta el bloque del manejador y <strong>continúa</strong> con la siguiente instrucción que seguía a la sentencia que falló.</p>
+              </li>
+              <li>
+                <span class="badge bg-danger fs-6 mb-1">EXIT</span>
+                <p class="small mb-0">Ejecuta el bloque del manejador y <strong>termina inmediatamente</strong> la ejecución del bloque <code>BEGIN...END</code> actual.</p>
+              </li>
+            </ul>
+          </div>
         </div>
-    </section>
-
-    <!-- Section 4: Events -->
-    <section id="eventos" class="mb-5">
-        <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-clock text-success"></i> 4. Eventos Programados</h2>
-        <p class="mt-3">Los eventos (Events) son tareas planificadas que el servidor ejecuta de forma automática en un momento específico o en intervalos regulares (similar a los <i>cron jobs</i> de Linux).</p>
-        
-        <div class="alert alert-warning mt-3">
-            <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Para que los eventos funcionen, el planificador de eventos debe estar activo en el servidor:
-            <code class="d-block mt-2 p-2 text-warning rounded">SET GLOBAL event_scheduler = ON;</code>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-secondary bg-dark">
+          <div class="card-header fw-bold text-warning"><i class="fas fa-bug me-2"></i>Condiciones de Error Comunes</div>
+          <div class="card-body">
+            <ul class="small mb-0">
+              <li class="mb-2"><code>SQLEXCEPTION</code>: Atrapa cualquier error estándar SQL (códigos de error que no sean advertencias o fin de datos).</li>
+              <li class="mb-2"><code>SQLWARNING</code>: Atrapa avisos o warnings generados por el motor.</li>
+              <li class="mb-2"><code>NOT FOUND</code>: Usado típicamente en cursores cuando <code>FETCH</code> ya no devuelve más filas.</li>
+              <li><code>Código de error numérico</code>: Por ejemplo, <code>1062</code> (clave primaria o índice único duplicado).</li>
+            </ul>
+          </div>
         </div>
+      </div>
+    </div>
+  </section>
 
-        <h4 class="mt-4"><i class="fas fa-code text-secondary"></i> Sintaxis Básica</h4>
-        <pre><code>CREATE EVENT nombre_evento
-ON SCHEDULE {AT timestamp | EVERY intervalo}
-[STARTS timestamp] [ENDS timestamp]
+  <!-- Section 7: Events -->
+  <section id="eventos" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-clock text-success me-2"></i>7. Eventos Programados (Event Scheduler)</h2>
+    <p class="mt-3">Los eventos (Events) son tareas temporales que el servidor de MariaDB ejecuta de forma desatendida en un momento futuro o con una periodicidad establecida (el equivalente a los <i>cron jobs</i> de Linux dentro del motor de base de datos).</p>
+    
+    <div class="alert alert-warning mt-3">
+      <i class="fas fa-info-circle me-2"></i><strong>Prerrequisito imprescindible:</strong> Para que los eventos se ejecuten, el planificador debe estar encendido en la configuración o en la sesión del servidor:
+      <code class="d-block mt-2 p-2 bg-dark text-warning rounded border border-warning">SET GLOBAL event_scheduler = ON;</code>
+    </div>
+
+    <h4 class="mt-4"><i class="fas fa-code text-secondary me-2"></i>Sintaxis Básica de Creación</h4>
+    <pre><code>CREATE EVENT nombre_evento
+ON SCHEDULE { AT timestamp | EVERY intervalo [STARTS timestamp] [ENDS timestamp] }
 DO
 BEGIN
-    -- Sentencias SQL
+    -- Sentencias SQL a ejecutar de forma automática
 END;</code></pre>
-        
-        <div class="row mt-4">
-            <div class="col-md-6 mb-3">
-                <h5 class="text-secondary"><i class="fas fa-calendar-day"></i> Evento Único (AT)</h5>
-                <p>Se ejecuta una sola vez en el momento especificado.</p>
-                <pre><code>CREATE EVENT evento_unico
-ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 1 HOUR
+    
+    <div class="row mt-4 g-3">
+      <div class="col-md-6">
+        <div class="card h-100 border-secondary bg-dark">
+          <div class="card-header text-info fw-bold"><i class="fas fa-calendar-day me-2"></i>Evento Único (AT)</div>
+          <div class="card-body">
+            <p class="small text-secondary">Se ejecuta una única vez en un momento exacto del futuro.</p>
+            <pre class="mb-0"><code>CREATE EVENT cerrar_promocion
+ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 1 DAY
 DO
-  UPDATE ofertas SET activa = FALSE;</code></pre>
-            </div>
-            <div class="col-md-6 mb-3">
-                <h5 class="text-secondary"><i class="fas fa-sync-alt"></i> Evento Recurrente (EVERY)</h5>
-                <p>Se repite periódicamente.</p>
-                <pre><code>CREATE EVENT limpiar_logs
+    UPDATE ofertas SET activa = FALSE WHERE id = 12;</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-secondary bg-dark">
+          <div class="card-header text-success fw-bold"><i class="fas fa-sync-alt me-2"></i>Evento Recurrente (EVERY)</div>
+          <div class="card-body">
+            <p class="small text-secondary">Se repite periódicamente a intervalos constantes.</p>
+            <pre class="mb-0"><code>CREATE EVENT depurar_logs_antiguos
 ON SCHEDULE EVERY 1 WEEK
 DO
-  DELETE FROM logs WHERE fecha < NOW() - INTERVAL 1 MONTH;</code></pre>
-            </div>
+    DELETE FROM auditoria 
+    WHERE fecha < NOW() - INTERVAL 6 MONTH;</code></pre>
+          </div>
         </div>
-    </section>
-</div>
-
-<!-- Bootstrap 5 JS Bundle -->
+      </div>
+    </div>
+  </section>
 </div>

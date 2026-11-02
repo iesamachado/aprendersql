@@ -35,7 +35,7 @@ async function initEditorPage() {
   const claseId = params.get('claseId');
   const tandaId = params.get('tandaId');
   const bloqueId = params.get('bloqueId'); // Si viene por bloque (nuevo sistema)
-  const testExId = params.get('testExId');
+  const testExId = params.get('testExId') || params.get('testId');
   currentModo = params.get('modo') || 'practica';
 
   if (testExId && userDoc.rol !== 'alumno') {
@@ -104,7 +104,11 @@ async function initEditorPage() {
     if(!bloque) { alert('Bloque no encontrado'); return; }
     currentTanda = bloque.nombre;
     titleBadge.textContent = bloque.nombre;
-    currentEjercicios = window.EJERCICIOS.filter(e => e.grupo === bloque.nombre);
+    currentEjercicios = window.EJERCICIOS.filter(e => 
+      e.bloque_id == parseInt(bloqueId) || 
+      e.grupo === bloque.nombre || 
+      (bloque.nombre && bloque.nombre.includes(e.grupo))
+    );
   } else if (tandaId) {
     // Sistema legacy: por bd (ej: "1:nba")
     const [bId, bd] = tandaId.split(':');
@@ -424,6 +428,123 @@ async function loadExercise(id) {
   document.getElementById('run-spinner').style.display = 'none';
 }
 
+// Registrar funciones de compatibilidad con MySQL/MariaDB en SQLite (sql.js)
+function registerCustomFunctions(db) {
+  if (!db || !db.create_function) return;
+
+  // CONCAT: Si algún argumento es NULL en MariaDB devuelve NULL
+  db.create_function('CONCAT', (...args) => {
+    if (args.some(a => a === null || a === undefined)) return null;
+    return args.map(String).join('');
+  });
+
+  // CONCAT_WS: Ignora NULLs y concatena con el separador
+  db.create_function('CONCAT_WS', (sep, ...args) => {
+    if (sep === null || sep === undefined) return null;
+    return args.filter(a => a !== null && a !== undefined).map(String).join(String(sep));
+  });
+
+  // MONTH: Extrae el mes de una fecha (1-12)
+  db.create_function('MONTH', (dateStr) => {
+    if (!dateStr) return null;
+    const m = String(dateStr).match(/\d{4}-(\d{2})/);
+    if (m) return parseInt(m[1], 10);
+    const d = new Date(dateStr);
+    return isNaN(d) ? null : d.getMonth() + 1;
+  });
+
+  // YEAR: Extrae el año (4 dígitos)
+  db.create_function('YEAR', (dateStr) => {
+    if (!dateStr) return null;
+    const m = String(dateStr).match(/^(\d{4})/);
+    if (m) return parseInt(m[1], 10);
+    const d = new Date(dateStr);
+    return isNaN(d) ? null : d.getFullYear();
+  });
+
+  // DAY / DAYOFMONTH: Extrae el día del mes (1-31)
+  const dayFn = (dateStr) => {
+    if (!dateStr) return null;
+    const m = String(dateStr).match(/\d{4}-\d{2}-(\d{2})/);
+    if (m) return parseInt(m[1], 10);
+    const d = new Date(dateStr);
+    return isNaN(d) ? null : d.getDate();
+  };
+  db.create_function('DAY', dayFn);
+  db.create_function('DAYOFMONTH', dayFn);
+
+  // NOW / CURRENT_TIMESTAMP
+  const nowFn = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
+  db.create_function('NOW', nowFn);
+
+  // CURDATE / CURRENT_DATE
+  const curdateFn = () => new Date().toISOString().slice(0, 10);
+  db.create_function('CURDATE', curdateFn);
+
+  // DATEDIFF: Diferencia en días entre d1 y d2
+  db.create_function('DATEDIFF', (d1, d2) => {
+    if (!d1 || !d2) return null;
+    const t1 = new Date(d1).getTime();
+    const t2 = new Date(d2).getTime();
+    return Math.round((t1 - t2) / (1000 * 60 * 60 * 24));
+  });
+
+  // IF: Operador condicional escalar
+  db.create_function('IF', (cond, trueVal, falseVal) => {
+    return cond ? trueVal : falseVal;
+  });
+
+  // IFNULL: Devuelve defaultVal si val es NULL
+  db.create_function('IFNULL', (val, defaultVal) => {
+    return (val !== null && val !== undefined) ? val : defaultVal;
+  });
+}
+
+// Adaptar consultas MariaDB/MySQL con sintaxis no soportada directamente por SQLite en el navegador
+function adaptSqlForSqlite(sql) {
+  if (!sql) return sql;
+  let res = '';
+  let i = 0;
+  const regex = /([><]=?|!=|=)\s*(ALL|ANY|SOME)\s*\(/gi;
+  let match;
+  while ((match = regex.exec(sql)) !== null) {
+    res += sql.slice(i, match.index);
+    const op = match[1].trim();
+    const quantifier = match[2].toUpperCase();
+    const startIdx = match.index + match[0].length;
+    let depth = 1;
+    let endIdx = startIdx;
+    while (endIdx < sql.length && depth > 0) {
+      if (sql[endIdx] === '(') depth++;
+      else if (sql[endIdx] === ')') depth--;
+      endIdx++;
+    }
+    if (depth !== 0) {
+      res += match[0];
+      i = startIdx;
+      continue;
+    }
+    const subquery = sql.slice(startIdx, endIdx - 1).trim();
+    i = endIdx;
+    regex.lastIndex = endIdx;
+    if ((op === '=' || op === '==') && (quantifier === 'ANY' || quantifier === 'SOME')) {
+      res += 'IN (' + subquery + ')';
+    } else if ((op === '!=' || op === '<>') && quantifier === 'ALL') {
+      res += 'NOT IN (' + subquery + ')';
+    } else {
+      let orderDir = 'DESC';
+      if (op === '>' || op === '>=') {
+        orderDir = (quantifier === 'ALL') ? 'DESC' : 'ASC';
+      } else if (op === '<' || op === '<=') {
+        orderDir = (quantifier === 'ALL') ? 'ASC' : 'DESC';
+      }
+      res += op + ' (SELECT * FROM (' + subquery + ') AS _sub ORDER BY 1 ' + orderDir + ' LIMIT 1)';
+    }
+  }
+  res += sql.slice(i);
+  return res;
+}
+
 async function loadDatabase(bdName) {
   try {
     if (!window.initSqlJs) throw new Error('sql.js no cargado');
@@ -434,6 +555,7 @@ async function loadDatabase(bdName) {
     
     const res = await fetch(`../${path}`);
     sqlDb = new SQL.Database(); // Siempre inicializar vacía
+    registerCustomFunctions(sqlDb);
     
     if (!res.ok) {
       console.warn(`No se encontró el script ${path}, iniciando la BD totalmente vacía (ideal para DDL).`);
@@ -540,9 +662,10 @@ async function runQuery() {
   try {
     // 1. Ejecutar query del alumno
     let resAlumno = [];
+    const adaptedQuery = adaptSqlForSqlite(query);
     if (isDML) {
       try {
-        sqlDb.run(query);
+        sqlDb.run(adaptedQuery);
         resAlumno = [{ columns: ['Resultado'], values: [['Comando ejecutado correctamente']] }];
       } catch (err) {
         if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX))/i.test(query)) {
@@ -555,7 +678,7 @@ async function runQuery() {
       }
     } else {
       try {
-        resAlumno = sqlDb.exec(query);
+        resAlumno = sqlDb.exec(adaptedQuery);
       } catch (err) {
         window._lastSqlError = true;
         throw err;
@@ -565,12 +688,14 @@ async function runQuery() {
     renderResults(resAlumno);
 
     const dbCopy = new sqlDb.constructor(sqlDb.export());
+    registerCustomFunctions(dbCopy);
     let resSolucion = [];
     try {
-      resSolucion = dbCopy.exec(ex.query_solucion);
+      const adaptedSolucion = adaptSqlForSqlite(ex.query_solucion);
+      resSolucion = dbCopy.exec(adaptedSolucion);
     } catch(e) { console.error('Error en solución oficial:', e); }
 
-    const isCorrect = compareResults(resAlumno, resSolucion, isDML, dbCopy);
+    const isCorrect = compareResults(resAlumno, resSolucion, isDML, dbCopy, ex);
     
     if (currentModo === 'practica') {
       if (isCorrect) {
@@ -647,20 +772,71 @@ function showFeedback(isSuccess, title, msg) {
   document.getElementById('feedback-message').textContent = msg;
 }
 
-// Comparación estricta de DataFrames (solo SELECT por ahora)
-function compareResults(resA, resS, isDML, dbCopy) {
+// Normalizar valores de celda para comparación robusta (tolerancia numérica, trim y case-insensitivity)
+function normalizeCell(val) {
+  if (val === null || val === undefined) return null;
+  if (typeof val === 'number') {
+    return Math.round(val * 10000) / 10000;
+  }
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+      const num = parseFloat(trimmed);
+      if (!isNaN(num)) return Math.round(num * 10000) / 10000;
+    }
+    return trimmed;
+  }
+  return val;
+}
+
+function cellEquals(c1, c2) {
+  const n1 = normalizeCell(c1);
+  const n2 = normalizeCell(c2);
+  if (n1 === null && n2 === null) return true;
+  if (n1 === null || n2 === null) return false;
+  if (typeof n1 === 'number' && typeof n2 === 'number') {
+    return Math.abs(n1 - n2) < 0.0001;
+  }
+  return String(n1).toLowerCase() === String(n2).toLowerCase();
+}
+
+function rowToKey(row) {
+  return row.map(normalizeCell).map(c => {
+    if (c === null) return '__NULL__';
+    if (typeof c === 'number') return `N:${c}`;
+    return `S:${String(c).toLowerCase()}`;
+  }).join('|||');
+}
+
+// Comparación de DataFrames (solo SELECT)
+function compareResults(resA, resS, isDML, dbCopy, ex) {
   if (isDML) return true; // TODO: Lógica DML (comparar tablas post-ejecución)
   if (!resA.length && !resS.length) return true;
   if (!resA.length || !resS.length) return false;
   
   const vA = resA[0].values, vS = resS[0].values;
   if (vA.length !== vS.length) return false;
+  if (vA.length === 0 && vS.length === 0) return true;
   if (vA[0].length !== vS[0].length) return false;
 
+  // 1. Comprobación directa fila por fila
+  let directMatch = true;
   for (let i = 0; i < vS.length; i++) {
     for (let j = 0; j < vS[i].length; j++) {
-      if (String(vA[i][j]) !== String(vS[i][j])) return false;
+      if (!cellEquals(vA[i][j], vS[i][j])) {
+        directMatch = false;
+        break;
+      }
     }
+    if (!directMatch) break;
+  }
+  if (directMatch) return true;
+
+  // 2. Si no coincide en orden exacto, comprobamos como multiconjunto (las mismas filas independientemente del orden)
+  const keysA = vA.map(rowToKey).sort();
+  const keysS = vS.map(rowToKey).sort();
+  for (let i = 0; i < keysS.length; i++) {
+    if (keysA[i] !== keysS[i]) return false;
   }
   return true;
 }
