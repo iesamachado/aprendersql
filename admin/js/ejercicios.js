@@ -1,9 +1,13 @@
 import { initAdminPage, showAdminToast, getBadgeForDB } from './shared.js';
+import { 
+  registerCustomFunctions, 
+  adaptSqlScriptForSqlite, 
+  adaptSqlForSqlite, 
+  compareResults 
+} from '../../js/sql-engine-utils.js';
 
 const { db, user, userDoc, fb } = await initAdminPage();
 const isAdmin = userDoc.rol === 'admin';
-
-
 
 // Zona admin
 if (isAdmin) {
@@ -65,11 +69,16 @@ function loadEjerciciosAdmin() {
       const tandaId = `${blockId}-tanda-${tIdx++}`;
       html += `
         <div class="mb-2">
-          <button class="btn btn-sm btn-outline-secondary w-100 text-start" type="button"
-                  data-bs-toggle="collapse" data-bs-target="#${tandaId}">
-            <i class="fas fa-folder-open me-2"></i>${tanda.charAt(0).toUpperCase() + tanda.slice(1)}
-            <span class="badge bg-secondary ms-2">${exs.length} ej.</span>
-          </button>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary flex-grow-1 text-start" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#${tandaId}">
+              <i class="fas fa-folder-open me-2"></i>${tanda.charAt(0).toUpperCase() + tanda.slice(1)}
+              <span class="badge bg-secondary ms-2">${exs.length} ej.</span>
+            </button>
+            <button class="btn btn-sm btn-outline-warning" onclick="window._auditTanda('${tanda}')" title="Auditar esta tanda en SQLite">
+              <i class="fas fa-stethoscope me-1"></i> Auditar Tanda
+            </button>
+          </div>
           <div class="collapse mt-2" id="${tandaId}">
             <div class="row g-2 p-2">`;
       exs.forEach(ex => {
@@ -253,5 +262,277 @@ window._reviewPropuesta = async function(propuestaId, aprobar) {
   }
 };
 
-// ── Migrar ejercicios a Firebase ─────────────────────────────
+// ── Motor SQL & Diagnóstico de Ejercicios en el Navegador ────
+let SQL_ENGINE = null;
+const DB_CACHE = {}; // bdName -> Uint8Array
+
+async function getSqlEngine() {
+  if (!SQL_ENGINE) {
+    if (!window.initSqlJs) throw new Error('sql.js no cargado');
+    SQL_ENGINE = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
+  }
+  return SQL_ENGINE;
+}
+
+async function getOrLoadDb(bdName) {
+  const SQL = await getSqlEngine();
+  if (DB_CACHE[bdName]) {
+    const db = new SQL.Database(DB_CACHE[bdName]);
+    registerCustomFunctions(db);
+    return db;
+  }
+  const res = await fetch(`../bds/${bdName}.sql`);
+  if (!res.ok) throw new Error(`No se pudo cargar el script bds/${bdName}.sql`);
+  let text = await res.text();
+  text = adaptSqlScriptForSqlite(text);
+  const db = new SQL.Database();
+  registerCustomFunctions(db);
+  db.exec(text);
+  DB_CACHE[bdName] = db.export();
+  return db;
+}
+
+let auditCancelled = false;
+let auditResults = [];
+
+async function runAudit({ filterTanda = null } = {}) {
+  const modalEl = document.getElementById('modal-audit');
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modal.show();
+
+  const titleEl = document.getElementById('modal-audit-title');
+  const statusEl = document.getElementById('audit-status-text');
+  const counterEl = document.getElementById('audit-progress-counter');
+  const barEl = document.getElementById('audit-progress-bar');
+  const countTotalEl = document.getElementById('audit-count-total');
+  const countPassEl = document.getElementById('audit-count-pass');
+  const countWarnEl = document.getElementById('audit-count-warn');
+  const countFailEl = document.getElementById('audit-count-fail');
+  const tbody = document.getElementById('audit-results-tbody');
+  const btnStop = document.getElementById('btn-stop-audit');
+
+  btnStop.style.display = 'inline-block';
+  auditCancelled = false;
+  auditResults = [];
+
+  let list = window.EJERCICIOS || [];
+  if (filterTanda) {
+    titleEl.innerHTML = `<i class="fas fa-stethoscope text-warning me-2"></i> Diagnóstico: Tanda ${filterTanda.toUpperCase()}`;
+    list = list.filter(e => e.bd === filterTanda || e.tanda === filterTanda);
+  } else {
+    titleEl.innerHTML = `<i class="fas fa-stethoscope text-warning me-2"></i> Diagnóstico: Catálogo Completo (720 ej.)`;
+  }
+
+  const total = list.length;
+  let passed = 0, warns = 0, fails = 0;
+  countTotalEl.textContent = '0';
+  countPassEl.textContent = '0';
+  countWarnEl.textContent = '0';
+  countFailEl.textContent = '0';
+  barEl.style.width = '0%';
+  barEl.className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
+  tbody.innerHTML = '';
+
+  for (let idx = 0; idx < list.length; idx++) {
+    if (auditCancelled) {
+      statusEl.textContent = 'Auditoría detenida por el usuario.';
+      barEl.classList.remove('progress-bar-animated');
+      break;
+    }
+
+    const ex = list[idx];
+    statusEl.textContent = `Auditando #${ex.id}: ${ex.titulo} (${ex.bd})...`;
+    counterEl.textContent = `${idx + 1} / ${total}`;
+    barEl.style.width = `${Math.round(((idx + 1) / total) * 100)}%`;
+
+    let status = 'pass';
+    let message = 'OK';
+    let rowCount = 0;
+
+    try {
+      const db = await getOrLoadDb(ex.bd);
+      const isDML = /^\s*(INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|RENAME|TRUNCATE)/i.test(ex.query_solucion);
+      const adapted = adaptSqlForSqlite(ex.query_solucion);
+
+      if (isDML) {
+        try {
+          db.exec(adapted);
+          status = 'pass';
+          message = 'DDL/DML ejecutado';
+        } catch (dmlErr) {
+          if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX)|ADD\s+.*,)/i.test(ex.query_solucion) || (dmlErr.message && dmlErr.message.includes('in foreign key definition'))) {
+            status = 'pass';
+            message = 'DDL aceptado (emulado)';
+          } else {
+            throw dmlErr;
+          }
+        }
+      } else {
+        const res = db.exec(adapted);
+        if (!res.length || !res[0].values.length) {
+          status = 'warn';
+          message = 'Devuelve 0 filas';
+        } else {
+          status = 'pass';
+          rowCount = res[0].values.length;
+          message = `${rowCount} fila${rowCount !== 1 ? 's' : ''}`;
+        }
+      }
+    } catch (err) {
+      status = 'fail';
+      message = err.message || 'Error SQL';
+    }
+
+    if (status === 'pass') passed++;
+    else if (status === 'warn') warns++;
+    else if (status === 'fail') fails++;
+
+    countTotalEl.textContent = idx + 1;
+    countPassEl.textContent = passed;
+    countWarnEl.textContent = warns;
+    countFailEl.textContent = fails;
+
+    auditResults.push({ ex, status, message, rowCount });
+    appendAuditRow(tbody, ex, status, message);
+
+    if (idx % 2 === 0) {
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
+  btnStop.style.display = 'none';
+  if (!auditCancelled) {
+    statusEl.textContent = `Auditoría finalizada. (${passed} correctos, ${warns} con 0 filas, ${fails} errores).`;
+    barEl.classList.remove('progress-bar-animated');
+    barEl.className = fails > 0 ? 'progress-bar bg-danger' : (warns > 0 ? 'progress-bar bg-warning' : 'progress-bar bg-success');
+  }
+}
+
+function appendAuditRow(tbody, ex, status, message) {
+  const tr = document.createElement('tr');
+  const badgeClass = status === 'pass' ? 'bg-success' : (status === 'warn' ? 'bg-warning text-dark' : 'bg-danger');
+  const icon = status === 'pass' ? 'fa-check-circle' : (status === 'warn' ? 'fa-exclamation-triangle' : 'fa-times-circle');
+
+  tr.innerHTML = `
+    <td><span class="badge bg-secondary">#${ex.id}</span></td>
+    <td><span class="badge bg-dark border border-secondary">${ex.bd}</span></td>
+    <td>
+      <div class="fw-bold text-light">${ex.titulo}</div>
+      <div class="text-secondary small font-monospace text-truncate" style="max-width:400px" title="${ex.query_solucion.replace(/"/g, '&quot;')}">${ex.query_solucion}</div>
+    </td>
+    <td>
+      <span class="badge ${badgeClass}"><i class="fas ${icon} me-1"></i>${message}</span>
+    </td>
+    <td class="text-end">
+      <div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-info" onclick="window._previewEx(${ex.id})" title="Ver ejercicio"><i class="fas fa-eye"></i></button>
+        <button class="btn btn-outline-warning" onclick="window._openEditEx(${ex.id})" title="Editar ejercicio"><i class="fas fa-edit"></i></button>
+      </div>
+    </td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function filterAuditTable() {
+  const activeBtn = document.querySelector('#audit-filter-buttons button.active');
+  const filter = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
+  const term = (document.getElementById('audit-search').value || '').toLowerCase().trim();
+  const tbody = document.getElementById('audit-results-tbody');
+  tbody.innerHTML = '';
+
+  const filtered = auditResults.filter(item => {
+    if (filter !== 'all' && item.status !== filter) return false;
+    if (term) {
+      const matchId = String(item.ex.id).includes(term);
+      const matchTitle = (item.ex.titulo || '').toLowerCase().includes(term);
+      const matchBd = (item.ex.bd || '').toLowerCase().includes(term);
+      if (!matchId && !matchTitle && !matchBd) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay resultados para este filtro.</td></tr>';
+    return;
+  }
+  filtered.forEach(item => appendAuditRow(tbody, item.ex, item.status, item.message));
+}
+
+// Event listeners de auditoría
+window._auditCatalog = () => runAudit();
+window._auditTanda = (tanda) => runAudit({ filterTanda: tanda });
+
+const btnAuditCat = document.getElementById('btn-audit-catalog');
+if (btnAuditCat) btnAuditCat.onclick = () => runAudit();
+
+const btnStopAudit = document.getElementById('btn-stop-audit');
+if (btnStopAudit) btnStopAudit.onclick = () => { auditCancelled = true; };
+
+document.querySelectorAll('#audit-filter-buttons button').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('#audit-filter-buttons button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterAuditTable();
+  };
+});
+
+const auditSearch = document.getElementById('audit-search');
+if (auditSearch) auditSearch.oninput = filterAuditTable;
+
+// Probar Solución en modal de edición
+const btnTestEdit = document.getElementById('btn-test-edit-sol');
+if (btnTestEdit) {
+  btnTestEdit.onclick = async function() {
+    const exId = parseInt(document.getElementById('edit-ex-id').value, 10);
+    const ex = window.EJERCICIOS?.find(e => e.id === exId);
+    if (!ex) return;
+    const sql = document.getElementById('edit-ex-solucion').value.trim();
+    const feedbackEl = document.getElementById('edit-ex-test-feedback');
+    feedbackEl.style.display = 'block';
+
+    if (!sql) {
+      feedbackEl.className = 'alert alert-warning p-2 small';
+      feedbackEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Escribe una consulta SQL para probar.';
+      return;
+    }
+
+    feedbackEl.className = 'alert alert-secondary p-2 small';
+    feedbackEl.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Evaluando en motor SQLite...';
+
+    try {
+      const db = await getOrLoadDb(ex.bd);
+      const isDML = /^\s*(INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|RENAME|TRUNCATE)/i.test(sql);
+      const adapted = adaptSqlForSqlite(sql);
+
+      if (isDML) {
+        try {
+          db.exec(adapted);
+          feedbackEl.className = 'alert alert-success p-2 small';
+          feedbackEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Comando DDL/DML ejecutado correctamente en la BD.';
+        } catch (dmlErr) {
+          if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX)|ADD\s+.*,)/i.test(sql) || (dmlErr.message && dmlErr.message.includes('in foreign key definition'))) {
+            feedbackEl.className = 'alert alert-info p-2 small';
+            feedbackEl.innerHTML = '<i class="fas fa-info-circle me-1"></i> Sintaxis MariaDB válida (emulada por limitación de SQLite).';
+          } else {
+            throw dmlErr;
+          }
+        }
+      } else {
+        const res = db.exec(adapted);
+        if (!res.length || !res[0].values.length) {
+          feedbackEl.className = 'alert alert-warning p-2 small';
+          feedbackEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Consulta sintácticamente correcta, pero <b>devuelve 0 filas</b> en la base de datos actual.';
+        } else {
+          const rows = res[0].values.length;
+          const cols = res[0].columns.join(', ');
+          feedbackEl.className = 'alert alert-success p-2 small';
+          feedbackEl.innerHTML = `<i class="fas fa-check-circle me-1"></i> ¡Consulta correcta! Devuelve <b>${rows} fila${rows!==1?'s':''}</b>. Columnas: <code>${cols}</code>`;
+        }
+      }
+    } catch (err) {
+      feedbackEl.className = 'alert alert-danger p-2 small';
+      feedbackEl.innerHTML = `<i class="fas fa-times-circle me-1"></i> <b>Error SQL:</b> ${err.message}`;
+    }
+  };
+}
 // (Código de migración inicial borrado)

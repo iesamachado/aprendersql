@@ -31,7 +31,32 @@ CREATE TABLE Incidentes (
     FOREIGN KEY (id_guardia) REFERENCES Guardias(id_guardia)
 );
 
-INSERT INTO Celdas (bloque, nivel_seguridad) VALUES ('A', 1), ('B', 3), ('C', 5);
-INSERT INTO Villanos (alias, diagnostico, id_celda) VALUES ('Joker', 'Psicopatía Severa', 3), ('Dos Caras', 'Trastorno de Identidad Disociativo', 2), ('El Pingüino', 'Megalomanía', 1);
-INSERT INTO Guardias (nombre, turno) VALUES ('Aaron Cash', 'Mañana'), ('Frank Boles', 'Noche');
-INSERT INTO Incidentes (id_villano, id_guardia, fecha, descripcion) VALUES (1, 1, '2026-06-01', 'Intento de envenenamiento de la comida'), (1, 2, '2026-06-15', 'Agresión al guardia');
+-- ========================================================
+-- DATOS INICIALES
+-- ========================================================
+INSERT INTO Celdas (id_celda, bloque, nivel_seguridad) VALUES 
+(1, 'A', 1), 
+(2, 'B', 3), 
+(3, 'C', 5),
+(4, 'D', 3), -- nivel_seguridad = 3 repetido (ex 758 Var 2), nivel BETWEEN 2 AND 4 (ex 722 Var 1), celda vacía (ex 745)
+(5, 'E', 4);
+
+INSERT INTO Villanos (id_villano, alias, diagnostico, id_celda) VALUES 
+(1, 'Joker', 'Psicopatía Severa', 3), 
+(2, 'Dos Caras', 'Trastorno de Identidad Disociativo', 2), 
+(3, 'El Pingüino', 'Megalomanía', 1),
+(4, 'Harley Quinn', 'Delirio Compartido', 3), -- comparte celda 3 con Joker (ex 737 Var 1, ex 758 Var 1)
+(5, 'Hiedra Venenosa', NULL, NULL),          -- id_celda IS NULL (ex 724), diagnostico IS NULL (ex 724 Var 1)
+(6, 'Enigma', 'Obsesión Compulsiva', 2);     -- villano sin incidentes (ex 745 Var 2)
+
+INSERT INTO Guardias (id_guardia, nombre, turno) VALUES 
+(1, 'Aaron Cash', 'Mañana'), 
+(2, 'Frank Boles', 'Noche'),
+(3, 'Stan Merket', 'Noche'),   -- turno 'Noche' repetido -> COUNT > 1 (ex 737), compañeros de turno (ex 758)
+(4, 'Zachary Baker', 'Tarde'); -- guardia sin incidentes (ex 745 Var 1)
+
+INSERT INTO Incidentes (id_incidente, id_villano, id_guardia, fecha, descripcion) VALUES 
+(1, 1, 1, '2023-05-10', 'Intento de envenenamiento de la comida'), -- fecha en 2023 (ex 722)
+(2, 1, 1, '2024-01-15', 'Agresión al guardia'),                     -- fecha en enero 2024 (ex 722 Var 2)
+(3, 1, 1, '2026-06-01', 'Motín en el bloque C'),                   -- Aaron Cash tiene 3 incidentes: COUNT > 2 (ex 748); Joker tiene 3 incidentes: COUNT >= 3 (ex 737 Var 2, ex 748 Var 2)
+(4, 2, 2, '2026-06-15', NULL);                                      -- descripcion IS NULL (ex 724 Var 2)

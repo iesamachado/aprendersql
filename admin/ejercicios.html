@@ -14,11 +14,16 @@
 <div class="admin-wrapper">
   <aside class="admin-sidebar" id="admin-sidebar"></aside>
   <main class="admin-main">
-    <div class="admin-page-title">
-      <i class="fas fa-dumbbell text-warning"></i> Catálogo de Ejercicios
+    <div class="admin-page-title d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <i class="fas fa-dumbbell text-warning"></i> Catálogo de Ejercicios
+      </div>
+      <div>
+        <button id="btn-audit-catalog" class="btn btn-sm btn-outline-warning">
+          <i class="fas fa-stethoscope me-1"></i> Auditar Catálogo SQL
+        </button>
+      </div>
     </div>
-
-
 
     <!-- Lista de ejercicios por bloque -->
     <div id="ejercicios-admin-list" class="mt-4"></div>
@@ -56,12 +61,16 @@
           <label class="form-label small text-secondary">Solución SQL</label>
           <textarea id="edit-ex-solucion" class="form-control dark-input" rows="3" style="font-family:monospace"></textarea>
         </div>
+        <div id="edit-ex-test-feedback" class="mb-3" style="display:none"></div>
         <div class="mb-3">
           <label class="form-label small text-secondary">Variaciones (JSON array)</label>
           <textarea id="edit-ex-variaciones" class="form-control dark-input" rows="5" style="font-family:monospace;font-size:0.8rem"></textarea>
         </div>
       </div>
       <div class="modal-footer">
+        <button type="button" class="btn btn-outline-info me-auto" id="btn-test-edit-sol">
+          <i class="fas fa-vial me-1"></i> Probar Solución
+        </button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-warning" id="btn-save-ex">Guardar</button>
       </div>
@@ -87,7 +96,97 @@
   </div>
 </div>
 
+<!-- Modal Diagnóstico y Auditoría de Ejercicios -->
+<div class="modal fade" id="modal-audit" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content bg-dark text-white border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title" id="modal-audit-title">
+          <i class="fas fa-stethoscope text-warning me-2"></i> Diagnóstico y Auditoría de Ejercicios SQL
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="btn-close-audit-x"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Barra de progreso -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="small text-muted" id="audit-status-text">Iniciando auditoría...</span>
+            <span class="badge bg-secondary" id="audit-progress-counter">0 / 0</span>
+          </div>
+          <div class="progress" style="height: 10px;">
+            <div id="audit-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Tarjetas de métricas -->
+        <div class="row g-3 mb-4 text-center">
+          <div class="col-md-3">
+            <div class="p-3 bg-black bg-opacity-40 rounded border border-secondary">
+              <div class="text-secondary small text-uppercase fw-bold">Auditados</div>
+              <div class="fs-4 fw-bold text-white" id="audit-count-total">0</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="p-3 bg-black bg-opacity-40 rounded border border-success">
+              <div class="text-success small text-uppercase fw-bold">Correctos</div>
+              <div class="fs-4 fw-bold text-success" id="audit-count-pass">0</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="p-3 bg-black bg-opacity-40 rounded border border-warning">
+              <div class="text-warning small text-uppercase fw-bold">0 Filas (Vacíos)</div>
+              <div class="fs-4 fw-bold text-warning" id="audit-count-warn">0</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="p-3 bg-black bg-opacity-40 rounded border border-danger">
+              <div class="text-danger small text-uppercase fw-bold">Errores SQL</div>
+              <div class="fs-4 fw-bold text-danger" id="audit-count-fail">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtros rápidos -->
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div class="btn-group btn-group-sm" role="group" id="audit-filter-buttons">
+            <button type="button" class="btn btn-outline-secondary active" data-filter="all">Todos</button>
+            <button type="button" class="btn btn-outline-danger" data-filter="fail">Solo Errores</button>
+            <button type="button" class="btn btn-outline-warning" data-filter="warn">Solo 0 Filas</button>
+            <button type="button" class="btn btn-outline-success" data-filter="pass">Solo Correctos</button>
+          </div>
+          <input type="text" id="audit-search" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Buscar por ID, título o BD..." style="max-width: 250px;">
+        </div>
+
+        <!-- Tabla de resultados -->
+        <div class="table-responsive" style="max-height: 400px;">
+          <table class="table table-dark table-hover table-sm align-middle text-start" style="font-size:0.85rem">
+            <thead>
+              <tr class="text-secondary border-secondary">
+                <th style="width: 60px">ID</th>
+                <th style="width: 100px">BD</th>
+                <th>Ejercicio / Consulta</th>
+                <th style="width: 130px">Resultado</th>
+                <th style="width: 100px" class="text-end">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="audit-results-tbody">
+              <tr><td colspan="5" class="text-center text-muted py-4">Esperando inicio...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-outline-danger me-auto" id="btn-stop-audit" style="display:none">
+          <i class="fas fa-stop me-1"></i> Detener
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 <script src="../js/firebase-config.js"></script>
 <script src="../js/ejercicios-data.js"></script>
 <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>

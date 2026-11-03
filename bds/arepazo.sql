@@ -225,7 +225,8 @@ INSERT INTO Clientes (nombre, apellido, telefono, email) VALUES
 ('Emilio', 'Vicente', '+34600000049', 'emilio.vicente@email.com'),
 ('Teresa', 'Arias', '+34600000050', 'teresa.arias@email.com'),
 ('Valentina', 'Rojas', '+34600000051', 'valentina.rojas@email.com'),
-('Gabriel', 'Mendoza', '+34600000052', 'gabriel.mendoza@email.com');
+('Gabriel', 'Mendoza', '+34600000052', 'gabriel.mendoza@email.com'),
+('Fernando', 'Morales', '+34600000053', NULL);
 
 -- --- E. DATOS DE PEDIDOS Y LÍNEAS (10 Pedidos de Ejemplo) ---
 -- (Platos: 1=Reina, 3=Pelúa, 4=Dominó, 5=Pernil, 11=Pabellón, 12=Tequeños, 13=Emp. Carne, 15=Emp. Queso, 17=Cachapa, 18=Patacón, 26=Jugo Parchita, 28=Malta, 29=Frescolita, 30=Quesillo)
@@ -501,4 +502,12 @@ INSERT INTO Recetas (plato_id, ingrediente_id, cantidad_kg) VALUES
 (29,23,330);
 
 update Recetas set cantidad_kg = cantidad_kg/1000 where receta_id>30;
-update Recetas set cantidad_kg = cantidad_kg*2 
+update Recetas set cantidad_kg = cantidad_kg*2;
+
+-- Tablas auxiliares para ejercicios DDL (DROP TABLE y ADD CONSTRAINT)
+CREATE TABLE IF NOT EXISTS Notas_Pedido (nota_id INT PRIMARY KEY, pedido_id INT);
+CREATE TABLE IF NOT EXISTS Fotos_Plato (foto_id INT PRIMARY KEY, plato_id INT);
+CREATE TABLE IF NOT EXISTS Direcciones_Cliente (dir_id INT PRIMARY KEY, cliente_id INT);
+CREATE TABLE IF NOT EXISTS Platos_Temporada (id INT PRIMARY KEY, nombre VARCHAR(50));
+CREATE TABLE IF NOT EXISTS Pedidos_Archivados (id INT PRIMARY KEY, fecha DATE);
+CREATE TABLE IF NOT EXISTS Test_Clientes (id INT PRIMARY KEY, test VARCHAR(50));
