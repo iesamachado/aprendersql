@@ -4,7 +4,7 @@ import {
   adaptSqlScriptForSqlite, 
   adaptSqlForSqlite, 
   compareResults 
-} from '../../js/sql-engine-utils.js';
+} from '../../js/sql-engine-utils.js?v=2';
 
 const { db, user, userDoc, fb } = await initAdminPage();
 const isAdmin = userDoc.rol === 'admin';

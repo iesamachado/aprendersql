@@ -14921,7 +14921,7 @@ const EJERCICIOS = [
     "grupo": "Consultas Avanzadas",
     "tema": "LEFT JOIN",
     "titulo": "Todos los Villanos",
-    "enunciado": "Muestra el <b>alias</b> de <b>todos</b> los villanos y el <b>bloque</b> de su celda (si tienen).",
+    "enunciado": "Muestra el <b>alias</b> de <b>todos</b> los villanos y el <b>bloque</b> de su celda (incluso si no tienen celda asignada, mostrando NULL).",
     "bd": "arkham",
     "query_solucion": "SELECT Villanos.alias, Celdas.bloque FROM Villanos LEFT JOIN Celdas ON Villanos.id_celda = Celdas.id_celda;",
     "puntos": 25,

@@ -5,7 +5,7 @@ import {
   adaptSqlScriptForSqlite, 
   adaptSqlForSqlite, 
   compareResults 
-} from '../../js/sql-engine-utils.js';
+} from '../../js/sql-engine-utils.js?v=2';
 
 let user, userDoc, db, fb;
 let currentClase = null;
