@@ -145,42 +145,56 @@ tablaAlaQueValaFK(atributoDeLaOtraTabla)
 ¿Cómo creamos
 nuestra primera
 tabla?
-CREATE DATABASE DGT
+DROP DATABASE IF EXISTS DGT;
+CREATE DATABASE DGT;
+USE DGT;
+
+DROP TABLE IF EXISTS Persona;
 CREATE TABLE Persona(
-dni VARCHAR (9) PRIMARY KEY,
-nombre NVARCHAR (250) NOT NUL
-)
-CREATE TABLE Multa(
-id INT PRIMARY KEY,
-precio DECIMAL(18,2) NOT NULL,
-DNI_Persona VARCHAR (9) NOT NULL,
-FOREIGN KEY (DNI_Persona)
-REFERENCES Persona(DNI)
-)
+    dni VARCHAR (9) PRIMARY KEY,
+    nombre NVARCHAR (250) NOT NULL,
+    email VARCHAR (100) UNIQUE,
+    puntos INT DEFAULT 8
+);
 
-Primary Key doble y tabla NN
-●
-
-Si por ejemplo queremos crear una PK Doble, no podemos deﬁnirla al deﬁnir el campo y se deﬁne al ﬁnal del
-create table.
-
-USE DGT
+DROP TABLE IF EXISTS Coche;
 CREATE TABLE Coche
 (
-Matricula VARCHAR(7) PRIMARY KEY,
-Es_Gasolina BIT NOT NULL,
-Color Varchar(10) NOT NULL,
-Cilindrada INT NOT NULL
-)
+    Matricula VARCHAR(7) PRIMARY KEY,
+    bastidor VARCHAR(17) UNIQUE NOT NULL,
+    Es_Gasolina BIT NOT NULL,
+    Color Varchar(10) DEFAULT 'Blanco',
+    Cilindrada INT NOT NULL
+);
+
+DROP TABLE IF EXISTS Multa;
+CREATE TABLE Multa(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    precio DECIMAL(18,2) NOT NULL,
+    pagada BIT DEFAULT 0,
+    DNI_Persona VARCHAR (9) NOT NULL,
+    FOREIGN KEY (DNI_Persona) REFERENCES Persona(dni)
+);
+
+DROP TABLE IF EXISTS PersonaCoche;
 CREATE TABLE PersonaCoche
 (
-DNI VARCHAR (9),
-Matricula VARCHAR(7),
-CONSTRAINT fkDNI FOREIGN KEY (DNI) REFERENCES Persona(DNI),
-CONSTRAINT fkCocke FOREIGN KEY (Matricula) REFERENCES Coche(Matricula),
-)
+    DNI VARCHAR (9),
+    Matricula VARCHAR(7),
+    CONSTRAINT fkDNI FOREIGN KEY (DNI) REFERENCES Persona(dni),
+    CONSTRAINT fkCoche FOREIGN KEY (Matricula) REFERENCES Coche(Matricula),
+    PRIMARY KEY (DNI, Matricula)
+);
 
-PRIMARY KEY (DNI, Matricula)
+Restricción CHECK:
+Permite validar reglas de negocio en la BD (ej. edad >= 18, precio > 0).
+Si la condición evalúa a FALSE, el motor rechaza el INSERT/UPDATE.
+Es la última línea de defensa (defensa en profundidad) aunque se valide en la app.
+
+Tablas Temporales (TEMPORARY TABLE):
+Tablas privadas para la sesión o conexión actual.
+Sirven para cálculos intermedios y evitar colisiones entre usuarios.
+Al desconectarse el usuario o terminar el script, se eliminan automáticamente sin dejar basura en producción.
 
 ●
 

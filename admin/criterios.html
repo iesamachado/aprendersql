@@ -18,10 +18,15 @@
     .crit-desc { flex-grow: 1; font-size: 0.9rem; color: var(--text-secondary); }
     .crit-mapping { min-width: 250px; }
     .select2-container--bootstrap-5 .select2-selection { background-color: var(--bg-dark); border-color: var(--border-color); color: var(--text-primary); }
+    .hover-bg:hover { background-color: rgba(255,255,255,0.06); }
+    .btn-xs { font-size: 0.75rem; padding: 0.15rem 0.45rem; }
+    .task-card { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .task-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
   </style>
   <script src="../js/theme-switcher.js"></script>
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
+
 <body>
 <div class="admin-wrapper">
   <aside class="admin-sidebar" id="admin-sidebar"></aside>
@@ -179,7 +184,7 @@
 <script src="../js/ejercicios-data.js"></script>
 <script src="js/boja-data.js"></script>
 <script>window.FIREBASE_CONFIG = FIREBASE_CONFIG; window.APP_CONFIG = APP_CONFIG;</script>
-<script type="module" src="js/criterios.js?v=3"></script>
+<script type="module" src="js/criterios.js?v=7"></script>
 <script src="../js/load-footer.js"></script>
 </body>
 </html>

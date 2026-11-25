@@ -31,6 +31,13 @@ CREATE TABLE Registro_Misiones (
 );
 
 -- ========================================================
+-- Tablas auxiliares para ejercicios DDL (DROP TABLE, etc.)
+-- ========================================================
+CREATE TABLE IF NOT EXISTS Villanos_Capturados (id_villano INT PRIMARY KEY, nombre VARCHAR(100));
+CREATE TABLE IF NOT EXISTS Patrullas (id_patrulla INT PRIMARY KEY, sector VARCHAR(50));
+CREATE TABLE IF NOT EXISTS Emergencias (id_emergencia INT PRIMARY KEY, descripcion VARCHAR(200));
+
+-- ========================================================
 -- DATOS INICIALES
 -- ========================================================
 INSERT INTO Agencias (id_agencia, nombre_agencia, ciudad) VALUES 

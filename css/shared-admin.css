@@ -365,3 +365,19 @@ body {
     color: #ffffff !important;
     background-color: #0284c7 !important;
 }
+
+/* Quitar flechitas (spinners) de los inputs de notas y permitir números de dos decimales sin corte */
+input.grade-input::-webkit-outer-spin-button,
+input.grade-input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+input.grade-input[type="number"] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+input.grade-input {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  font-variant-numeric: tabular-nums;
+}

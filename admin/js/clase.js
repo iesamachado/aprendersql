@@ -1,13 +1,19 @@
 import { initAdminPage, showAdminToast } from './shared.js';
-import { initGradebook } from './gradebook.js';
+import { initGradebook } from './gradebook.js?v=7';
 
 // Exponer funciones globales para onclick inmediatamente (evita errores si el usuario hace click muy rápido)
 window._syncPendingStudents = syncPendingStudents;
 window._addAlumnoToClass = addAlumnoToClass;
 window._removeFromClass = removeFromClass;
+window._removePendingEmail = removePendingEmail;
 window._saveBloques = saveBloques;
 window._saveTandas = saveTandas;
 window._verResultados = verResultados;
+window._openEditTareaOffline = openEditTareaOffline;
+window._openEditTareaModalSelector = openEditTareaModalSelector;
+window._onTareaSelectChanged = onTareaSelectChanged;
+window._saveTareaOfflineChanges = saveTareaOfflineChanges;
+window._resetTareaOfflineOriginal = resetTareaOfflineOriginal;
 
 let db, fb;
 const claseId = new URLSearchParams(window.location.search).get('id');
@@ -20,6 +26,29 @@ let currentExamenesFechas = {};
 let currentTandasModo = {};
 let currentTandasIds = [];
 let claseCurriculum = null;
+let currentEditingTareaId = null;
+
+// Backup de bloques originales para poder restablecer
+if (!window._ORIGINAL_BLOQUES && window.BLOQUES) {
+  window._ORIGINAL_BLOQUES = window.BLOQUES.map(b => ({ ...b }));
+}
+
+function applyTareasOfflineConfig(config = {}) {
+  if (!window.BLOQUES || !window._ORIGINAL_BLOQUES) return;
+  window.BLOQUES.forEach(b => {
+    const orig = window._ORIGINAL_BLOQUES.find(o => o.id === b.id);
+    if (!orig) return;
+    if (config && config[b.id]) {
+      b.nombre = config[b.id].nombre !== undefined ? config[b.id].nombre : orig.nombre;
+      b.desc = config[b.id].desc !== undefined ? config[b.id].desc : orig.desc;
+      b.isCustomized = true;
+    } else {
+      b.nombre = orig.nombre;
+      b.desc = orig.desc;
+      b.isCustomized = false;
+    }
+  });
+}
 
 window._openClassroomSyncModal = async () => {
   const token = localStorage.getItem('gclassroom_token');
@@ -284,7 +313,8 @@ window._copyTaskToClipboard = (bloqueId) => {
   const url = `https://iesamachado.github.io/aprendersql/task/teoria.html?bloqueId=${bloque.id}&claseId=${claseId}`;
   
   let text = `📋 ${bloque.nombre}\n\n`;
-  text += `${bloque.desc}\n\n`;
+  const cleanDesc = (bloque.desc || '').replace(/<br\s*[\/]?>/gi, '\n').replace(/<[^>]*>/g, '');
+  text += `${cleanDesc}\n\n`;
   
   if (bloque.rubricaDocente && bloque.rubricaDocente.length > 0) {
     text += `✅ RÚBRICA / OBJETIVOS:\n`;
@@ -321,6 +351,10 @@ async function loadClase() {
   currentExamenesFechas = claseActual.examenesFechas || {};
   currentTandasModo = claseActual.tandasModo || {};
   currentTandasIds = claseActual.tandasIds || [];
+  claseActual.tareasOfflineConfig = claseActual.tareasOfflineConfig || {};
+  
+  // Aplicar personalizaciones de tareas offline para esta clase
+  applyTareasOfflineConfig(claseActual.tareasOfflineConfig);
   
   claseCurriculum = claseActual.curriculum;
   if (!claseCurriculum) {
@@ -380,50 +414,67 @@ async function renderAlumnos(clase) {
     });
   }
 
+  // Crear lista de alumnos registrados y ordenar alfabéticamente
+  const listaAlumnosRegistrados = [];
   for (const uid of registradosIds) {
     const alumno = alumnosDataMap[uid];
     if (alumno) {
-      registradosEmails.push(alumno.email);
-      
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>
-          <div class="d-flex align-items-center gap-2">
-            ${alumno.foto ? `<img src="${alumno.foto}" style="width:28px;height:28px;border-radius:50%">` : '<div style="width:28px;height:28px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center">👤</div>'}
-            <div>
-              <div class="small fw-bold text-info">${alumno.nombre || '—'}</div>
-              <div class="text-muted" style="font-size:0.7rem">${alumno.email}</div>
-            </div>
-          </div>
-        </td>
-        <td>
-          <span class="badge bg-warning text-dark me-1" title="Puntos Totales">⭐ ${alumno.puntosTotal || 0}</span>
-          <span class="badge bg-danger text-white" title="Medallas conseguidas">🏅 ${alumno.logros?.length || 0}</span>
-        </td>
-        <td class="small"><span class="badge bg-success">${alumno.ejerciciosOK || 0} ej. superados</span></td>
-        <td>
-          <a class="btn btn-sm btn-outline-info me-1" href="alumno.html?uid=${uid}&claseId=${clase.id}" title="Ver perfil y ejercicios completados"><i class="fas fa-eye"></i></a>
-          <button class="btn btn-sm btn-outline-warning me-1" onclick="window._showMedallas('${uid}')" title="Ver Medallas"><i class="fas fa-medal"></i></button>
-          <button class="btn btn-sm btn-outline-danger" onclick="window._removeFromClass('${uid}')" title="Quitar de clase"><i class="fas fa-times"></i></button>
-        </td>
-      `;
-      container.appendChild(tr);
+      listaAlumnosRegistrados.push({ uid, ...alumno });
+      if (alumno.email) registradosEmails.push(alumno.email);
     }
   }
 
+  listaAlumnosRegistrados.sort((a, b) => {
+    const nameA = a.nombre || a.email || '';
+    const nameB = b.nombre || b.email || '';
+    return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+  });
+
+  for (const alumno of listaAlumnosRegistrados) {
+    const uid = alumno.uid;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div class="d-flex align-items-center gap-2">
+          ${alumno.foto ? `<img src="${alumno.foto}" style="width:28px;height:28px;border-radius:50%">` : '<div style="width:28px;height:28px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center">👤</div>'}
+          <div>
+            <div class="small fw-bold text-info">${alumno.nombre || '—'}</div>
+            <div class="text-muted" style="font-size:0.7rem">${alumno.email}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span class="badge bg-warning text-dark me-1" title="Puntos Totales">⭐ ${alumno.puntosTotal || 0}</span>
+        <span class="badge bg-danger text-white" title="Medallas conseguidas">🏅 ${alumno.logros?.length || 0}</span>
+      </td>
+      <td class="small"><span class="badge bg-success">${alumno.ejerciciosOK || 0} ej. superados</span></td>
+      <td>
+        <a class="btn btn-sm btn-outline-info me-1" href="alumno.html?uid=${uid}&claseId=${clase.id}" title="Ver perfil y ejercicios completados"><i class="fas fa-eye"></i></a>
+        <button class="btn btn-sm btn-outline-warning me-1" onclick="window._showMedallas('${uid}')" title="Ver Medallas"><i class="fas fa-medal"></i></button>
+        <button class="btn btn-sm btn-outline-danger" onclick="window._removeFromClass('${uid}')" title="Eliminar alumno de la clase"><i class="fas fa-trash"></i></button>
+      </td>
+    `;
+    container.appendChild(tr);
+  }
+
   const pendingEmails = (clase.alumnosEmails || []).filter(e => !registradosEmails.includes(e));
+  pendingEmails.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+
   if (pendingEmails.length > 0) {
     const pendingRow = document.createElement('tr');
-    pendingRow.innerHTML = `<td colspan="4" class="bg-dark text-muted small fw-bold py-2"><i class="fas fa-envelope me-2"></i>Pendientes de registro:</td>`;
+    pendingRow.innerHTML = `<td colspan="4" class="bg-dark text-muted small fw-bold py-2"><i class="fas fa-envelope me-2"></i>Pendientes de registro (${pendingEmails.length}):</td>`;
     container.appendChild(pendingRow);
     
     pendingEmails.forEach(email => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td colspan="4">
-          <div class="d-flex align-items-center gap-2">
-            <div style="width:28px;height:28px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:0.7rem"><i class="fas fa-envelope"></i></div>
-            <div class="text-muted small">${email} <span class="badge bg-secondary ms-2">Pendiente</span></div>
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <div style="width:28px;height:28px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:0.7rem"><i class="fas fa-envelope"></i></div>
+              <div class="text-muted small">${email} <span class="badge bg-secondary ms-2">Pendiente</span></div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="window._removePendingEmail('${email}')" title="Eliminar invitación pendiente"><i class="fas fa-trash"></i></button>
           </div>
         </td>
       `;
@@ -653,9 +704,17 @@ function renderBloques(clase) {
              <i class="far fa-copy"></i> Copiar Enunciado
            </button>` : '';
 
+        const editBtn = (isTaskMode) ? 
+          `<button class="btn btn-sm btn-outline-warning text-nowrap ms-2" onclick="window._openEditTareaOffline('${bloque.id}')" title="Modificar título y descripción de esta tarea para esta clase">
+             <i class="fas fa-edit"></i> Modificar
+           </button>` : '';
+
         const mappedWarning = (bloque.implementado && bloque.tipo === 'tarea' && !isTaskMapped(`bloque:${bloque.id}`))
           ? `<i class="fas fa-exclamation-triangle text-warning ms-2" title="Esta tarea no tiene criterios BOJA asignados en tu Mapeo Curricular"></i>`
           : '';
+
+        const customBadge = bloque.isCustomized ? 
+          `<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50" style="font-size:0.65rem;" title="Esta tarea ha sido modificada para esta clase"><i class="fas fa-pen me-1"></i>Modificada</span>` : '';
 
         html += `
           <div class="list-group-item ${activeClass} ${disabled} border-start border-4 mb-2 rounded d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3" style="transition: all 0.2s;">
@@ -663,6 +722,7 @@ function renderBloques(clase) {
               <div class="d-flex align-items-center gap-2 mb-1">
                 ${isRepaso ? '<span class="badge bg-secondary text-light" style="font-size:0.6rem">REPASO</span>' : ''}
                 <span class="badge bg-${badgeColor}" style="font-size:0.7rem">${badgeText}</span>
+                ${customBadge}
                 <h6 class="mb-0 text-white" style="${titleFontSize}">${bloque.nombre}${mappedWarning}</h6>
               </div>
               <div class="text-muted ${isRepaso ? '' : 'small'}">${bloque.desc}</div>
@@ -671,6 +731,7 @@ function renderBloques(clase) {
             <div class="d-flex align-items-center gap-2 ${isRepaso ? 'opacity-75' : ''}">
               ${previewBtn}
               ${classroomBtn}
+              ${editBtn}
               <div class="form-check form-switch m-0 fs-4 ms-2">
                 <input class="form-check-input block-toggle-input" type="checkbox" role="switch" 
                        value="${bloque.id}" ${isActive ? 'checked' : ''} ${disabled}
@@ -714,6 +775,196 @@ async function saveBloques() {
   }
 }
 
+// --- Funciones para Modificar Tareas Offline ---
+function openEditTareaOffline(bloqueId) {
+  const modalEl = document.getElementById('modalEditTareaOffline');
+  if (!modalEl) return;
+  
+  populateEditTareaSelect(bloqueId);
+  loadTareaIntoEditModal(bloqueId);
+  
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modal.show();
+}
+
+function openEditTareaModalSelector() {
+  const modalEl = document.getElementById('modalEditTareaOffline');
+  if (!modalEl) return;
+
+  const mod = claseActual?.modulo || '0372';
+  let modBloques = (window.BLOQUES || []).filter(b => b.tipo === 'tarea' && (b.modulo === mod || (mod === '0377' && b.modulo === '0372')));
+  const firstId = modBloques.length > 0 ? modBloques[0].id : null;
+
+  populateEditTareaSelect(firstId);
+  if (firstId) {
+    loadTareaIntoEditModal(firstId);
+  }
+  
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modal.show();
+}
+
+function populateEditTareaSelect(selectedId) {
+  const select = document.getElementById('edit-tarea-select');
+  if (!select) return;
+  
+  const mod = claseActual?.modulo || '0372';
+  let modBloques = (window.BLOQUES || []).filter(b => b.tipo === 'tarea' && (b.modulo === mod || (mod === '0377' && b.modulo === '0372')));
+  
+  select.innerHTML = modBloques.map(b => {
+    const isRepaso = b.modulo !== mod;
+    const prefix = isRepaso ? '[Repaso 1º] ' : `[RA ${b.ra || '?'}] `;
+    const customSuffix = b.isCustomized ? ' ✏️ (Modificada)' : '';
+    const sel = String(b.id) === String(selectedId) ? 'selected' : '';
+    return `<option value="${b.id}" ${sel}>${prefix}${b.nombre}${customSuffix}</option>`;
+  }).join('');
+}
+
+function loadTareaIntoEditModal(bloqueId) {
+  currentEditingTareaId = parseInt(bloqueId);
+  const bloque = (window.BLOQUES || []).find(b => b.id === currentEditingTareaId);
+  if (!bloque) return;
+  
+  const nombreInput = document.getElementById('edit-tarea-nombre');
+  const descInput = document.getElementById('edit-tarea-desc');
+  const customAlert = document.getElementById('edit-tarea-custom-alert');
+  const resetBtn = document.getElementById('btn-reset-tarea-offline');
+  
+  if (nombreInput) nombreInput.value = bloque.nombre || '';
+  if (descInput) {
+    let formattedDesc = (bloque.desc || '').replace(/<br\s*[\/]?>/gi, '\n');
+    descInput.value = formattedDesc;
+  }
+  
+  const isCustom = !!(claseActual?.tareasOfflineConfig?.[bloque.id]);
+  if (customAlert) {
+    if (isCustom) customAlert.classList.remove('d-none');
+    else customAlert.classList.add('d-none');
+  }
+  if (resetBtn) {
+    resetBtn.disabled = !isCustom;
+  }
+}
+
+function onTareaSelectChanged(newId) {
+  loadTareaIntoEditModal(newId);
+}
+
+async function saveTareaOfflineChanges() {
+  if (!currentEditingTareaId) return;
+  const nombreInput = document.getElementById('edit-tarea-nombre');
+  const descInput = document.getElementById('edit-tarea-desc');
+  
+  const nombre = (nombreInput ? nombreInput.value : '').trim();
+  let desc = (descInput ? descInput.value : '').trim();
+  
+  if (!nombre) {
+    showAdminToast('⚠️', 'El título de la tarea no puede estar vacío', 'warning');
+    return;
+  }
+  
+  // Convertir saltos de línea a <br> si el usuario escribió líneas normales
+  if (desc.includes('\n')) {
+    desc = desc.replace(/\r\n/g, '\n').replace(/\n/g, '<br>');
+  }
+  
+  const saveBtn = document.getElementById('btn-save-tarea-offline');
+  const originalHtml = saveBtn ? saveBtn.innerHTML : '';
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Guardando...';
+  }
+  
+  try {
+    if (!claseActual.tareasOfflineConfig) claseActual.tareasOfflineConfig = {};
+    claseActual.tareasOfflineConfig[String(currentEditingTareaId)] = {
+      nombre: nombre,
+      desc: desc
+    };
+    
+    await fb.updateDoc(fb.doc(db, 'clases', claseId), {
+      tareasOfflineConfig: claseActual.tareasOfflineConfig
+    });
+    
+    // Aplicar cambios en memoria para BLOQUES
+    applyTareasOfflineConfig(claseActual.tareasOfflineConfig);
+    
+    // Redibujar bloques en pantalla
+    renderBloques(claseActual);
+    
+    // Actualizar Cuaderno de Notas si está disponible
+    if (typeof initGradebook === 'function') {
+      await initGradebook(claseActual, claseCurriculum, currentTandasIds, currentTandasModo, currentBloquesActivos, currentExamenesActivos);
+    }
+    
+    showAdminToast('✅', 'Tarea offline modificada correctamente');
+    
+    const modalEl = document.getElementById('modalEditTareaOffline');
+    if (modalEl) {
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+  } catch(e) {
+    console.error("Error al guardar tarea offline:", e);
+    showAdminToast('❌', 'Error al guardar tarea: ' + e.message, 'error');
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalHtml;
+    }
+  }
+}
+
+async function resetTareaOfflineOriginal() {
+  if (!currentEditingTareaId) return;
+  const orig = (window._ORIGINAL_BLOQUES || []).find(b => b.id === currentEditingTareaId);
+  if (!orig) return;
+  
+  if (!confirm(`¿Restablecer el título y descripción originales para "${orig.nombre}"?`)) {
+    return;
+  }
+  
+  const resetBtn = document.getElementById('btn-reset-tarea-offline');
+  const originalHtml = resetBtn ? resetBtn.innerHTML : '';
+  if (resetBtn) {
+    resetBtn.disabled = true;
+    resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Restableciendo...';
+  }
+  
+  try {
+    if (claseActual?.tareasOfflineConfig) {
+      delete claseActual.tareasOfflineConfig[String(currentEditingTareaId)];
+      delete claseActual.tareasOfflineConfig[currentEditingTareaId];
+      await fb.updateDoc(fb.doc(db, 'clases', claseId), {
+        tareasOfflineConfig: claseActual.tareasOfflineConfig
+      });
+    }
+    
+    applyTareasOfflineConfig(claseActual.tareasOfflineConfig);
+    renderBloques(claseActual);
+    
+    if (typeof initGradebook === 'function') {
+      await initGradebook(claseActual, claseCurriculum, currentTandasIds, currentTandasModo, currentBloquesActivos, currentExamenesActivos);
+    }
+    
+    showAdminToast('✅', 'Tarea restablecida a los valores originales');
+    
+    const modalEl = document.getElementById('modalEditTareaOffline');
+    if (modalEl) {
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+  } catch(e) {
+    console.error("Error al restablecer tarea:", e);
+    showAdminToast('❌', 'Error al restablecer: ' + e.message, 'error');
+  } finally {
+    if (resetBtn) {
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = originalHtml;
+    }
+  }
+}
+
 async function addAlumnoToClass() {
   const email = document.getElementById('clase-modal-add-email').value.trim().toLowerCase();
   if (!email) return;
@@ -746,12 +997,51 @@ async function addAlumnoToClass() {
 }
 
 async function removeFromClass(uid) {
-  if (!confirm('¿Quitar alumno de esta clase? Sus intentos no se borrarán, pero perderá acceso a la clase.')) return;
+  if (!confirm('¿Eliminar a este alumno de la clase? Sus intentos y notas no se borrarán, pero perderá acceso a la clase.')) return;
   try {
     const nuevosIds = (claseActual.alumnosIds || []).filter(id => id !== uid);
-    await fb.updateDoc(fb.doc(db, 'clases', claseId), { alumnosIds: nuevosIds });
-    await fb.updateDoc(fb.doc(db, 'usuarios', uid), { claseId: fb.deleteField() });
-    showAdminToast('✅', 'Alumno quitado');
+    
+    // Obtener correo del alumno si es posible para limpiar también alumnosEmails si estaba ahí
+    let alumnoEmail = null;
+    try {
+      const snapU = await fb.getDoc(fb.doc(db, 'usuarios', uid));
+      if (snapU.exists()) alumnoEmail = snapU.data()?.email;
+    } catch (_) {}
+
+    const payloadClase = { alumnosIds: nuevosIds };
+    if (alumnoEmail && Array.isArray(claseActual.alumnosEmails) && claseActual.alumnosEmails.includes(alumnoEmail)) {
+      payloadClase.alumnosEmails = claseActual.alumnosEmails.filter(e => e.toLowerCase() !== alumnoEmail.toLowerCase());
+    }
+
+    await fb.updateDoc(fb.doc(db, 'clases', claseId), payloadClase);
+    claseActual.alumnosIds = nuevosIds;
+    if (payloadClase.alumnosEmails) claseActual.alumnosEmails = payloadClase.alumnosEmails;
+
+    // Intentar desvincular claseId en usuarios/{uid}
+    try {
+      if (fb.deleteField) {
+        await fb.updateDoc(fb.doc(db, 'usuarios', uid), { claseId: fb.deleteField() });
+      } else {
+        await fb.updateDoc(fb.doc(db, 'usuarios', uid), { claseId: null });
+      }
+    } catch (eUser) {
+      console.warn('No se pudo limpiar claseId en usuarios/' + uid, eUser);
+    }
+
+    showAdminToast('✅', 'Alumno eliminado de la clase');
+    loadClase();
+  } catch (e) {
+    showAdminToast('❌', e.message, 'error');
+  }
+}
+
+async function removePendingEmail(email) {
+  if (!confirm(`¿Eliminar la invitación pendiente para ${email}?`)) return;
+  try {
+    const nuevosEmails = (claseActual.alumnosEmails || []).filter(e => e.toLowerCase() !== email.toLowerCase());
+    await fb.updateDoc(fb.doc(db, 'clases', claseId), { alumnosEmails: nuevosEmails });
+    claseActual.alumnosEmails = nuevosEmails;
+    showAdminToast('✅', 'Invitación eliminada');
     loadClase();
   } catch (e) {
     showAdminToast('❌', e.message, 'error');

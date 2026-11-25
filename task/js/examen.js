@@ -8,6 +8,9 @@ let respuestaRef = null;
 
 let currentQIndex = 0; // Index in the shuffled array
 let timerInterval = null;
+let antiCheatInitialized = false;
+let isWarningModalOpen = false;
+let isConfirmingSubmit = false;
 
 initTaskPage().then(async (ctx) => {
   db = ctx.db; auth = ctx.auth; user = ctx.user; userDoc = ctx.userDoc;
@@ -60,6 +63,7 @@ initTaskPage().then(async (ctx) => {
       startTimer();
       renderNav();
       showQuestion(0);
+      setupExamenAntiCheat(exId);
       
       document.getElementById('loading-ui').classList.add('d-none');
       document.getElementById('exam-ui').style.setProperty('display', 'flex', 'important');
@@ -68,6 +72,7 @@ initTaskPage().then(async (ctx) => {
       startTimer();
       renderNav();
       showQuestion(0);
+      setupExamenAntiCheat(exId);
       
       document.getElementById('loading-ui').classList.add('d-none');
       document.getElementById('exam-ui').style.setProperty('display', 'flex', 'important');
@@ -267,33 +272,108 @@ document.getElementById('btn-prev').addEventListener('click', () => window.showQ
 document.getElementById('btn-next').addEventListener('click', () => window.showQuestion(currentQIndex + 1));
 
 document.getElementById('btn-entregar').addEventListener('click', () => { if(!respuestaDoc) return; 
+  isConfirmingSubmit = true;
   const ans = Object.keys(respuestaDoc.respuestas).length;
   const total = examen.preguntas.length;
+  let conf = false;
   if (ans < total) {
-    if(!confirm(`Te faltan ${total - ans} preguntas por responder. ¿Seguro que quieres entregar ya?`)) return;
+    conf = confirm(`Te faltan ${total - ans} preguntas por responder. ¿Seguro que quieres entregar ya?`);
   } else {
-    if(!confirm('¿Seguro que quieres entregar el examen? No podrás cambiar las respuestas.')) return;
+    conf = confirm('¿Seguro que quieres entregar el examen? No podrás cambiar las respuestas.');
   }
-  entregarExamen();
+  setTimeout(() => { isConfirmingSubmit = false; }, 600);
+  if (!conf) return;
+  entregarExamen(false);
 });
 
-async function entregarExamen() {
+function setupExamenAntiCheat(exId) {
+  if (antiCheatInitialized) return;
+  antiCheatInitialized = true;
+
+  if (userDoc?.rol !== 'alumno') return;
+  if (!examen || examen.estado !== 'activo' || respuestaDoc?.entregadoEn) return;
+
+  const storageKey = `cheat_warn_test_${user.uid}_${exId}`;
+  let warnings = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
+
+  if (warnings >= 2) {
+    entregarExamen(true, 'Examen cerrado y entregado automáticamente por cambio de ventana reiterado (2 avisos acumulados).');
+    return;
+  }
+
+  let lastViolationTs = 0;
+
+  const handleViolation = () => {
+    if (respuestaDoc?.entregadoEn || isWarningModalOpen || isConfirmingSubmit) return;
+    if (userDoc?.rol !== 'alumno' || examen?.estado !== 'activo') return;
+
+    const now = Date.now();
+    if (now - lastViolationTs < 2500) return;
+    lastViolationTs = now;
+
+    warnings = parseInt(sessionStorage.getItem(storageKey) || '0', 10) + 1;
+    sessionStorage.setItem(storageKey, warnings.toString());
+
+    if (warnings === 1) {
+      isWarningModalOpen = true;
+      const modalEl = document.getElementById('modal-anti-cheat-warning');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalEl.addEventListener('hidden.bs.modal', () => {
+          setTimeout(() => { isWarningModalOpen = false; }, 1000);
+        }, { once: true });
+        modal.show();
+      } else {
+        alert('⚠️ PRIMER AVISO: Está prohibido cambiar de ventana o pestaña durante el examen. Si sales de la pantalla una segunda vez, tu examen se cerrará y se entregará automáticamente.');
+        setTimeout(() => { isWarningModalOpen = false; }, 1000);
+      }
+    } else if (warnings >= 2) {
+      const modalEl = document.getElementById('modal-anti-cheat-warning');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+      }
+      entregarExamen(true, 'Examen cerrado y entregado automáticamente por cambio de ventana reiterado (2 avisos).');
+    }
+  };
+
+  setTimeout(() => {
+    window.addEventListener('blur', handleViolation);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        handleViolation();
+      }
+    });
+  }, 1500);
+}
+
+async function entregarExamen(forced = false, forcedReason = '') {
+  forced = (forced === true);
   if (timerInterval) clearInterval(timerInterval);
   document.getElementById('exam-ui').style.setProperty('display', 'none', 'important');
   document.getElementById('btn-entregar').style.display = 'none';
   document.getElementById('loading-ui').classList.remove('d-none');
   
   try {
-    await updateDoc(respuestaRef, {
+    const updatePayload = {
       entregadoEn: serverTimestamp()
-    });
+    };
+    if (forced) {
+      updatePayload.cerradoAutomatico = true;
+      updatePayload.motivoCierre = forcedReason;
+    }
+    await updateDoc(respuestaRef, updatePayload);
     respuestaDoc.entregadoEn = true;
-    showFinished();
+    showFinished(forced ? forcedReason : null);
   } catch(e) {
     console.error(e);
-    alert('Error al entregar. Comprueba tu conexión.');
-    document.getElementById('exam-ui').style.setProperty('display', 'flex', 'important');
-    document.getElementById('loading-ui').classList.add('d-none');
+    if (!forced) {
+      alert('Error al entregar. Comprueba tu conexión.');
+      document.getElementById('exam-ui').style.setProperty('display', 'flex', 'important');
+      document.getElementById('loading-ui').classList.add('d-none');
+    } else {
+      showFinished(forcedReason);
+    }
   }
 }
 
@@ -315,7 +395,10 @@ async function showFinished(msgOverride) {
   endUi.classList.remove('d-none');
   
   if (msgOverride) {
-    endUi.querySelector('p').innerText = msgOverride;
+    const pEl = endUi.querySelector('p');
+    if (pEl) {
+      pEl.innerHTML = `<span class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>${msgOverride}</span>`;
+    }
   }
   
   // Si el profe ya ha publicado las notas, las mostramos

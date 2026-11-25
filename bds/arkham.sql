@@ -32,6 +32,13 @@ CREATE TABLE Incidentes (
 );
 
 -- ========================================================
+-- Tablas auxiliares para ejercicios DDL (DROP TABLE, etc.)
+-- ========================================================
+CREATE TABLE IF NOT EXISTS Fugas (id_fuga INT PRIMARY KEY, fecha DATE);
+CREATE TABLE IF NOT EXISTS Visitas (id_visita INT PRIMARY KEY, visitante VARCHAR(100));
+CREATE TABLE IF NOT EXISTS Turnos_Guardia (id_turno INT PRIMARY KEY, horario VARCHAR(50));
+
+-- ========================================================
 -- DATOS INICIALES
 -- ========================================================
 INSERT INTO Celdas (id_celda, bloque, nivel_seguridad) VALUES 

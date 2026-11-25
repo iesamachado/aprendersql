@@ -3613,19 +3613,19 @@ const EJERCICIOS = [
     "grupo": "DDL",
     "tema": "DROP TABLE",
     "titulo": "Borrar tabla inútil",
-    "enunciado": "Elimina por completo la tabla <b>Inventarios</b>.",
+    "enunciado": "Elimina por completo la tabla <b>Subastas</b>.",
     "bd": "mmorpg",
-    "query_solucion": "DROP TABLE Inventarios;",
+    "query_solucion": "DROP TABLE Subastas;",
     "puntos": 15,
     "pista": "Revisa la sintaxis de DROP TABLE",
     "variaciones": [
       {
-        "enunciado": "Elimina por completo la tabla <b>Objetos</b>.",
-        "query_solucion": "DROP TABLE Objetos;"
+        "enunciado": "Elimina por completo la tabla <b>Canjes</b>.",
+        "query_solucion": "DROP TABLE Canjes;"
       },
       {
-        "enunciado": "Elimina por completo la tabla <b>Gremios</b>.",
-        "query_solucion": "DROP TABLE Gremios;"
+        "enunciado": "Elimina por completo la tabla <b>Mascotas</b>.",
+        "query_solucion": "DROP TABLE Mascotas;"
       }
     ]
   },
@@ -4933,19 +4933,19 @@ const EJERCICIOS = [
     "grupo": "DDL",
     "tema": "DROP TABLE",
     "titulo": "Borrar tabla",
-    "enunciado": "Elimina por completo la tabla <b>Cajas_Botin</b>.",
+    "enunciado": "Elimina por completo la tabla <b>Trampas</b>.",
     "bd": "dungeon",
-    "query_solucion": "DROP TABLE Cajas_Botin;",
+    "query_solucion": "DROP TABLE Trampas;",
     "puntos": 15,
     "pista": "Revisa la sintaxis de DROP TABLE",
     "variaciones": [
       {
-        "enunciado": "Elimina por completo la tabla <b>Crawlers</b>.",
-        "query_solucion": "DROP TABLE Crawlers;"
+        "enunciado": "Elimina por completo la tabla <b>Recompensas</b>.",
+        "query_solucion": "DROP TABLE Recompensas;"
       },
       {
-        "enunciado": "Elimina por completo la tabla <b>Patrocinadores</b>.",
-        "query_solucion": "DROP TABLE Patrocinadores;"
+        "enunciado": "Elimina por completo la tabla <b>Logros</b>.",
+        "query_solucion": "DROP TABLE Logros;"
       }
     ]
   },
@@ -11599,19 +11599,19 @@ const EJERCICIOS = [
     "grupo": "DDL",
     "tema": "DROP TABLE",
     "titulo": "Eliminar Registro",
-    "enunciado": "Elimina completamente la tabla <code>Registro_Misiones</code>.",
+    "enunciado": "Elimina completamente la tabla <code>Villanos_Capturados</code>.",
     "bd": "heroes",
-    "query_solucion": "DROP TABLE Registro_Misiones;",
+    "query_solucion": "DROP TABLE Villanos_Capturados;",
     "puntos": 10,
     "pista": "Cuidado, esta instrucción borra la tabla y sus datos de forma irreversible.",
     "variaciones": [
       {
-        "enunciado": "Elimina completamente la tabla <code>Misiones</code>.",
-        "query_solucion": "DROP TABLE Misiones;"
+        "enunciado": "Elimina completamente la tabla <code>Patrullas</code>.",
+        "query_solucion": "DROP TABLE Patrullas;"
       },
       {
-        "enunciado": "Elimina completamente la tabla <code>Agencias</code>.",
-        "query_solucion": "DROP TABLE Agencias;"
+        "enunciado": "Elimina completamente la tabla <code>Emergencias</code>.",
+        "query_solucion": "DROP TABLE Emergencias;"
       }
     ]
   },
@@ -12919,19 +12919,19 @@ const EJERCICIOS = [
     "grupo": "DDL",
     "tema": "DROP TABLE",
     "titulo": "Borrar tabla",
-    "enunciado": "Elimina la tabla <code>Matriculas</code> de la base de datos.",
+    "enunciado": "Elimina la tabla <code>Hechizos_Oscuros</code> de la base de datos.",
     "bd": "hogwarts",
-    "query_solucion": "DROP TABLE Matriculas;",
+    "query_solucion": "DROP TABLE Hechizos_Oscuros;",
     "puntos": 10,
     "pista": "Usa la instrucción DROP TABLE.",
     "variaciones": [
       {
-        "enunciado": "Elimina la tabla <code>Asignaturas</code>.",
-        "query_solucion": "DROP TABLE Asignaturas;"
+        "enunciado": "Elimina la tabla <code>Castigos</code>.",
+        "query_solucion": "DROP TABLE Castigos;"
       },
       {
-        "enunciado": "Elimina la tabla <code>Casas</code>.",
-        "query_solucion": "DROP TABLE Casas;"
+        "enunciado": "Elimina la tabla <code>Torneos</code>.",
+        "query_solucion": "DROP TABLE Torneos;"
       }
     ]
   },
@@ -14194,20 +14194,20 @@ const EJERCICIOS = [
     "bloque_id": 1,
     "grupo": "DDL",
     "tema": "DROP TABLE",
-    "titulo": "Eliminar historial de incidentes",
-    "enunciado": "Borra la tabla <code>Incidentes</code> de la base de datos.",
+    "titulo": "Eliminar tabla",
+    "enunciado": "Borra la tabla <code>Fugas</code> de la base de datos.",
     "bd": "arkham",
-    "query_solucion": "DROP TABLE Incidentes;",
+    "query_solucion": "DROP TABLE Fugas;",
     "puntos": 10,
     "pista": "Usa el comando DROP TABLE.",
     "variaciones": [
       {
-        "enunciado": "Borra la tabla <code>Villanos</code> de la base de datos.",
-        "query_solucion": "DROP TABLE Villanos;"
+        "enunciado": "Borra la tabla <code>Visitas</code> de la base de datos.",
+        "query_solucion": "DROP TABLE Visitas;"
       },
       {
-        "enunciado": "Borra la tabla <code>Guardias</code> de la base de datos.",
-        "query_solucion": "DROP TABLE Guardias;"
+        "enunciado": "Borra la tabla <code>Turnos_Guardia</code> de la base de datos.",
+        "query_solucion": "DROP TABLE Turnos_Guardia;"
       }
     ]
   },
@@ -15537,14 +15537,14 @@ const EJERCICIOS = [
     "grupo": "DDL",
     "tema": "DROP TABLE",
     "titulo": "Borrar tabla",
-    "enunciado": "Elimina por completo la tabla <code>Libro_Hechizos</code> de la base de datos.",
+    "enunciado": "Elimina por completo la tabla <code>Ubicaciones</code> de la base de datos.",
     "bd": "dnd",
-    "query_solucion": "DROP TABLE Libro_Hechizos;",
+    "query_solucion": "DROP TABLE Ubicaciones;",
     "puntos": 10,
     "pista": "Cuidado con DROP TABLE.",
     "variaciones": [
       {
-        "enunciado": "Elimina la tabla <code>Monstruos</code> (asumiendo que existe).",
+        "enunciado": "Elimina la tabla <code>Monstruos</code>.",
         "query_solucion": "DROP TABLE Monstruos;"
       },
       {

@@ -46,9 +46,11 @@ service cloud.firestore {
       allow create: if isSelf(uid) || isAdmin();
 
       // El propio usuario puede actualizar sus datos, EXCEPTO su rol.
+      // El docente puede actualizar campos que no sean rol ni email (por ejemplo asignar o limpiar claseId).
       // El admin puede actualizar cualquier campo.
       allow update: if isAdmin()
-                    || (isSelf(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol']));
+                    || (isSelf(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol']))
+                    || (isDocente() && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol', 'email']));
 
       // Solo el admin puede eliminar usuarios.
       allow delete: if isAdmin();

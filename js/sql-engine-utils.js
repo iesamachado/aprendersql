@@ -148,6 +148,8 @@ export function adaptSqlForSqlite(sql) {
   
   // Adaptar RENAME TABLE a ALTER TABLE RENAME TO (soportado por SQLite)
   sql = sql.replace(/RENAME\s+TABLE\s+(\w+)\s+TO\s+(\w+)/gi, 'ALTER TABLE $1 RENAME TO $2');
+  // Adaptar ALTER TABLE CHANGE [COLUMN] a RENAME COLUMN (soportado por SQLite 3.25+)
+  sql = sql.replace(/ALTER\s+TABLE\s+([a-zA-Z0-9_`"']+)\s+CHANGE(?:\s+COLUMN)?\s+([a-zA-Z0-9_`"']+)\s+([a-zA-Z0-9_`"']+)(?:\s+[^;]*)?/gi, 'ALTER TABLE $1 RENAME COLUMN $2 TO $3');
   // Adaptar TRUNCATE TABLE a DELETE FROM
   sql = sql.replace(/TRUNCATE\s+(TABLE\s+)?(\w+)/gi, 'DELETE FROM $2');
   // Adaptar AUTO_INCREMENT para CREATE TABLE
@@ -245,9 +247,130 @@ export function rowToKey(row) {
 }
 
 /**
- * Compara dos resultados de ejecución SQL (SELECT).
+ * Normaliza un tipo SQL a su forma canónica para comparación tolerante.
+ * INT, INTEGER, TINYINT, SMALLINT, MEDIUMINT, BIGINT → 'integer'
+ * VARCHAR(n), CHAR(n) → 'varchar'
+ * TEXT, LONGTEXT, MEDIUMTEXT, TINYTEXT → 'text'
+ * DECIMAL(p,s), NUMERIC(p,s), FLOAT, DOUBLE, REAL → 'real'
+ * BOOLEAN, BOOL → 'integer'  (SQLite los almacena como integer)
+ * DATE, DATETIME, TIMESTAMP → 'text'  (SQLite los almacena como text)
  */
-export function compareResults(resA, resS, isDML, dbCopy, ex) {
+function normalizeSqlType(type) {
+  if (!type) return '';
+  const t = String(type).trim().toLowerCase();
+  if (/^(int|integer|tinyint|smallint|mediumint|bigint|boolean|bool)/.test(t)) return 'integer';
+  if (/^(varchar|char)/.test(t)) return 'varchar';
+  if (/^(text|longtext|mediumtext|tinytext)/.test(t)) return 'text';
+  if (/^(decimal|numeric|float|double|real)/.test(t)) return 'real';
+  if (/^(date|datetime|timestamp)/.test(t)) return 'text';
+  return t.replace(/\(.*\)/, '').trim(); // quita parámetros para tipos desconocidos
+}
+
+/**
+ * Extrae los nombres de tablas mencionados en una query DDL (CREATE/ALTER/DROP TABLE).
+ */
+function extractTableNames(sql) {
+  const tables = new Set();
+  const patterns = [
+    /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([`"']?[\w]+[`"']?)/gi,
+    /ALTER\s+TABLE\s+([`"']?[\w]+[`"']?)/gi,
+    /DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?([`"']?[\w]+[`"']?)/gi,
+    /RENAME\s+TABLE\s+([`"']?[\w]+[`"']?)/gi,
+    /ALTER\s+TABLE\s+([`"']?[\w]+[`"']?)\s+RENAME\s+TO\s+([`"']?[\w]+[`"']?)/gi,
+  ];
+  for (const re of patterns) {
+    let m;
+    while ((m = re.exec(sql)) !== null) {
+      // m[1] es siempre la tabla; m[2] existe en RENAME TO
+      [m[1], m[2]].filter(Boolean).forEach(t => tables.add(t.replace(/[`"']/g, '')));
+    }
+  }
+  return [...tables];
+}
+
+/**
+ * Obtiene la info de columnas de una tabla con PRAGMA table_info.
+ * Devuelve null si la tabla no existe.
+ */
+function getTableInfo(db, tableName) {
+  try {
+    const res = db.exec(`PRAGMA table_info("${tableName}")`);
+    if (!res.length || !res[0].values.length) return null;
+    // columns: cid, name, type, notnull, dflt_value, pk
+    return res[0].values.map(row => ({
+      name: String(row[1]).toLowerCase(),
+      type: normalizeSqlType(row[2]),
+      notnull: Number(row[3]),
+      dflt_value: row[4] !== null && row[4] !== undefined ? String(row[4]).trim() : null,
+      pk: Number(row[5]),
+    }));
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Compara la estructura DDL resultante en dbAlumno vs dbSolucion.
+ * Ejecuta la query_solucion en dbSolucion y compara PRAGMA table_info de cada tabla.
+ */
+export function compareDDL(dbAlumno, querySolucion) {
+  if (!dbAlumno || !querySolucion) return false;
+
+  // Crear una BD limpia donde ejecutar la solución oficial
+  const dbSol = new dbAlumno.constructor();
+  try {
+    const adaptedSol = adaptSqlForSqlite(querySolucion);
+    dbSol.exec(adaptedSol);
+  } catch (e) {
+    console.error('Error ejecutando solución DDL:', e);
+    return false;
+  }
+
+  // Extraer tablas de la query solución
+  const tables = extractTableNames(querySolucion);
+  if (!tables.length) return false;
+
+  for (const table of tables) {
+    const colsAlumno = getTableInfo(dbAlumno, table);
+    const colsSol = getTableInfo(dbSol, table);
+
+    // Si la solución crea la tabla pero el alumno no la tiene → incorrecto
+    if (!colsAlumno && colsSol) return false;
+    // Si la solución la elimina (DROP) y el alumno tampoco la tiene → correcto
+    if (!colsAlumno && !colsSol) continue;
+    // Si la solución la elimina pero el alumno aún la tiene → incorrecto
+    if (colsAlumno && !colsSol) return false;
+
+    // Comparar columnas (conjunto, insensible al orden)
+    if (colsAlumno.length !== colsSol.length) return false;
+
+    const byName = arr => Object.fromEntries(arr.map(c => [c.name, c]));
+    const mapA = byName(colsAlumno);
+    const mapS = byName(colsSol);
+
+    for (const name of Object.keys(mapS)) {
+      const cA = mapA[name];
+      const cS = mapS[name];
+      if (!cA) return false; // columna de la solución no existe en el alumno
+      if (cA.type !== cS.type) return false;
+      if (cA.notnull !== cS.notnull) return false;
+      if (cA.pk !== cS.pk) return false;
+      // dflt_value: comparar como strings normalizados
+      const dA = cA.dflt_value !== null ? cA.dflt_value.toLowerCase().replace(/^'|'$/g, '') : null;
+      const dS = cS.dflt_value !== null ? cS.dflt_value.toLowerCase().replace(/^'|'$/g, '') : null;
+      if (dA !== dS) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Compara dos resultados de ejecución SQL (SELECT).
+ * isDDL: la query del alumno es DDL (CREATE/ALTER/DROP); en ese caso se compara la estructura.
+ * isDML: la query es DML puro (INSERT/UPDATE/DELETE); se acepta si no hay error SQL.
+ */
+export function compareResults(resA, resS, isDML, isDDL, dbAlumno, querySolucion) {
+  if (isDDL) return compareDDL(dbAlumno, querySolucion);
   if (isDML) return true;
   if (!resA.length && !resS.length) return true;
   if (!resA.length || !resS.length) return false;
@@ -288,6 +411,7 @@ if (typeof window !== 'undefined') {
     normalizeCell,
     cellEquals,
     rowToKey,
+    compareDDL,
     compareResults
   };
 }

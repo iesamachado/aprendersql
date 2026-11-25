@@ -32,6 +32,13 @@ CREATE TABLE Inventarios (
 );
 
 -- ========================================================
+-- Tablas auxiliares para ejercicios DDL (DROP TABLE, etc.)
+-- ========================================================
+CREATE TABLE IF NOT EXISTS Subastas (id_subasta INT PRIMARY KEY, precio INT);
+CREATE TABLE IF NOT EXISTS Canjes (id_canje INT PRIMARY KEY, codigo VARCHAR(50));
+CREATE TABLE IF NOT EXISTS Mascotas (id_mascota INT PRIMARY KEY, nombre VARCHAR(50));
+
+-- ========================================================
 -- DATOS INICIALES
 -- ========================================================
 INSERT INTO Gremios (id_gremio, nombre, nivel_gremio) VALUES 

@@ -4,7 +4,8 @@ import {
   adaptSqlScriptForSqlite, 
   adaptSqlForSqlite, 
   compareResults 
-} from '../../js/sql-engine-utils.js?v=2';
+} from '../../js/sql-engine-utils.js?v=4';
+
 
 const { db, user, userDoc, fb } = await initAdminPage();
 const isAdmin = userDoc.rol === 'admin';
@@ -360,7 +361,7 @@ async function runAudit({ filterTanda = null } = {}) {
           status = 'pass';
           message = 'DDL/DML ejecutado';
         } catch (dmlErr) {
-          if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX)|ADD\s+.*,)/i.test(ex.query_solucion) || (dmlErr.message && dmlErr.message.includes('in foreign key definition'))) {
+          if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|RENAME\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX)|ADD\s+.*,)/i.test(ex.query_solucion) || (dmlErr.message && dmlErr.message.includes('in foreign key definition'))) {
             status = 'pass';
             message = 'DDL aceptado (emulado)';
           } else {
@@ -510,7 +511,7 @@ if (btnTestEdit) {
           feedbackEl.className = 'alert alert-success p-2 small';
           feedbackEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Comando DDL/DML ejecutado correctamente en la BD.';
         } catch (dmlErr) {
-          if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX)|ADD\s+.*,)/i.test(sql) || (dmlErr.message && dmlErr.message.includes('in foreign key definition'))) {
+          if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|RENAME\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX)|ADD\s+.*,)/i.test(sql) || (dmlErr.message && dmlErr.message.includes('in foreign key definition'))) {
             feedbackEl.className = 'alert alert-info p-2 small';
             feedbackEl.innerHTML = '<i class="fas fa-info-circle me-1"></i> Sintaxis MariaDB válida (emulada por limitación de SQLite).';
           } else {

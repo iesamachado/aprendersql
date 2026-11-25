@@ -33,6 +33,13 @@ CREATE TABLE Cajas_Botin (
 );
 
 -- ========================================================
+-- Tablas auxiliares para ejercicios DDL (DROP TABLE, etc.)
+-- ========================================================
+CREATE TABLE IF NOT EXISTS Trampas (id_trampa INT PRIMARY KEY, tipo VARCHAR(50));
+CREATE TABLE IF NOT EXISTS Recompensas (id_recompensa INT PRIMARY KEY, puntos INT);
+CREATE TABLE IF NOT EXISTS Logros (id_logro INT PRIMARY KEY, nombre VARCHAR(50));
+
+-- ========================================================
 -- DATOS INICIALES
 -- ========================================================
 INSERT INTO Niveles (id_nivel, numero_planta, bioma, jefe_final) VALUES 

@@ -10,6 +10,39 @@ let tandaGrades = {}; // uid -> { taskId: score }
 let testCriterioGrades = {}; // uid -> { criterio: [nota1, nota2, ...] } (de exámenes test online)
 let visibilityConfig = {};
 let examenesActivos = []; // "RA1": true, "tanda:1:arepazo": true
+let collapsedRAs = new Set(); // Conjunto de números de RA plegados horizontalmente
+
+function getTestExamenTema(ex) {
+  if (ex.tema && !isNaN(parseInt(ex.tema))) return parseInt(ex.tema);
+  if (ex.ra && !isNaN(parseInt(ex.ra))) return parseInt(ex.ra);
+  
+  if (Array.isArray(ex.preguntas) && ex.preguntas.length > 0) {
+    const counts = {};
+    ex.preguntas.forEach(p => {
+      const t = parseInt(p.ra || p.tema);
+      if (!isNaN(t) && t >= 1 && t <= 6) {
+        counts[t] = (counts[t] || 0) + 1;
+      }
+    });
+    let bestTema = null;
+    let maxCount = 0;
+    for (const t in counts) {
+      if (counts[t] > maxCount) {
+        maxCount = counts[t];
+        bestTema = parseInt(t);
+      }
+    }
+    if (bestTema) return bestTema;
+  }
+  
+  const match = (ex.titulo || '').match(/(?:Tema|RA|T)\s*(\d+)/i);
+  if (match) {
+    const t = parseInt(match[1]);
+    if (!isNaN(t) && t >= 1 && t <= 6) return t;
+  }
+  
+  return 1;
+}
 
 export async function initGradebook(claseActual, curriculum, currentTandasIds, currentTandasModo, currentBloquesActivos, currentExamenesActivos = []) {
   const admin = await initAdminPage();
@@ -22,31 +55,33 @@ export async function initGradebook(claseActual, curriculum, currentTandasIds, c
   // 1. Identify active tasks
   activeTasks = [];
   
-  // A) Tandas Interactivas
-  currentTandasIds.forEach(tId => {
-    // tId is "b:bd" e.g. "1:arepazo"
-    const [b, bd] = tId.split(':');
-    const modo = currentTandasModo[tId] || 'practica';
-    const mappedId = `tanda:${b}:${modo}`;
-    
-    let bLabel = '';
-    if (b==='1') bLabel = 'Creación Tablas';
-    if (b==='2') bLabel = 'Consultas Básicas';
-    if (b==='3') bLabel = 'Agrupación';
-    if (b==='4') bLabel = 'Subconsultas';
-    if (b==='5') bLabel = 'Modificación (DML)';
-    if (b==='6') bLabel = 'Programación';
+  // A) Tandas Interactivas (Disponibles ÚNICAMENTE para 0372 - 1º de Gestión de BBDD)
+  if (currentClase?.modulo !== '0377') {
+    currentTandasIds.forEach(tId => {
+      // tId is "b:bd" e.g. "1:arepazo"
+      const [b, bd] = tId.split(':');
+      const modo = currentTandasModo[tId] || 'practica';
+      const mappedId = `tanda:${b}:${modo}`;
+      
+      let bLabel = '';
+      if (b==='1') bLabel = 'Creación Tablas';
+      if (b==='2') bLabel = 'Consultas Básicas';
+      if (b==='3') bLabel = 'Agrupación';
+      if (b==='4') bLabel = 'Subconsultas';
+      if (b==='5') bLabel = 'Modificación (DML)';
+      if (b==='6') bLabel = 'Programación';
 
-    activeTasks.push({
-      id: `tanda:${tId}`, // Unique ID for this specific run
-      mappedId: mappedId, // ID used in curriculum mapping
-      label: `Tanda ${bLabel} (${bd}) [${modo}]`,
-      type: 'tanda',
-      b: b,
-      bd: bd,
-      modo: modo
+      activeTasks.push({
+        id: `tanda:${tId}`, // Unique ID for this specific run
+        mappedId: mappedId, // ID used in curriculum mapping
+        label: `Tanda ${bLabel} (${bd}) [${modo}]`,
+        type: 'tanda',
+        b: b,
+        bd: bd,
+        modo: modo
+      });
     });
-  });
+  }
 
   // B) Tareas Offline
   if (window.BLOQUES) {
@@ -60,17 +95,16 @@ export async function initGradebook(claseActual, curriculum, currentTandasIds, c
     });
   }
 
-  // C) Custom Tasks / Exámenes Oficiales
-  // The teacher maps custom tasks. If they mapped an Exam in the curriculum, we should show it here.
-  // Wait, if an Exam is in the mapping, it means it's part of the curriculum. Should we always show it if it has weights?
-  // Let's just show all mapped tasks from the curriculum that are "examen" or "custom".
+  // C) Custom Tasks / Exámenes Oficiales / Exámenes Test
+  const allMapped = new Set();
   if (curriculum) {
-    const allMapped = new Set();
-    ['0372', '0377'].forEach(mod => {
-      if (curriculum[mod] && curriculum[mod].mapeo) {
-        for (const ra in curriculum[mod].mapeo) {
-          for (const c in curriculum[mod].mapeo[ra]) {
-            curriculum[mod].mapeo[ra][c].forEach(t => allMapped.add(t));
+    const mod = currentClase?.modulo || '0372';
+    const targetMods = [mod];
+    targetMods.forEach(m => {
+      if (curriculum[m] && curriculum[m].mapeo) {
+        for (const ra in curriculum[m].mapeo) {
+          for (const c in curriculum[m].mapeo[ra]) {
+            (curriculum[m].mapeo[ra][c] || []).forEach(t => allMapped.add(t));
           }
         }
       }
@@ -82,9 +116,25 @@ export async function initGradebook(claseActual, curriculum, currentTandasIds, c
         activeTasks.push({
           id: taskId,
           mappedId: taskId,
-          label: `Examen RA${ra}`,
-          type: 'examen'
+          label: `Examen Oficial RA${ra}`,
+          type: 'examen',
+          raHint: parseInt(ra)
         });
+      }
+      if (taskId.startsWith('test:')) {
+        const parts = taskId.split(':');
+        if (parts.length === 3) {
+          const [_, mod, tema] = parts;
+          activeTasks.push({
+            id: taskId,
+            mappedId: taskId,
+            label: `Examen Test Tema ${tema}`,
+            type: 'test_tema',
+            tema: parseInt(tema),
+            mod: mod,
+            raHint: parseInt(tema)
+          });
+        }
       }
       if (taskId.startsWith('custom_')) {
         const custom = (curriculum.customTasks || []).find(t => t.id === taskId);
@@ -99,45 +149,46 @@ export async function initGradebook(claseActual, curriculum, currentTandasIds, c
   }
 
   // D) Exámenes Test Activos (creados específicamente para esta clase)
+  // Agrupados por tema (1 a 6) para calcular una única nota por tema mediante media aritmética
+  window.classTestsByTema = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+  window.classTestExams = [];
   try {
     const qTest = fb.query(fb.collection(db, 'examenes_test'), fb.where('claseId', '==', currentClase.id));
     const testSnap = await fb.getDocs(qTest);
     testSnap.forEach(snap => {
       const ex = snap.data();
       const exId = snap.id;
-      const critSet = new Set();
-      (ex.preguntas || []).forEach(p => { if (p.criterio && p.criterio !== 'N/A') critSet.add(p.criterio); });
-      
-      activeTasks.push({
-        id: `test:${exId}`,
-        mappedId: `test:${exId}`,
-        label: `Examen: ${ex.titulo} (Global)`,
-        type: 'examen_test_global',
-        exId: exId,
-        raHint: 1,
-        estado: ex.estado,
-        criteriosEvaluados: Array.from(critSet)
-      });
-      
-      // Comentamos esto a petición del usuario: No quiere ver los criterios desglosados como columnas en la vista de Tareas.
-      // Ya se ven en el modal del Resumen RA, y se calculan internamente.
-      /*
-      critSet.forEach(c => {
-        const raNum = parseInt(c.charAt(0)) || 1;
-        activeTasks.push({
-          id: `test:${exId}:${c}`,
-          mappedId: `test:${exId}:${c}`,
-          label: `[Crit ${c}] Examen: ${ex.titulo}`,
-          type: 'examen_test_crit',
-          exId: exId,
-          crit: c,
-          raHint: raNum
-        });
-      });
-      */
-
+      const tema = getTestExamenTema(ex);
+      const item = { id: exId, tema, ...ex };
+      window.classTestExams.push(item);
+      if (window.classTestsByTema[tema]) {
+        window.classTestsByTema[tema].push(item);
+      }
     });
-  } catch (e) { console.error("Error loading test exams in gradebook:", e); }
+  } catch (e) {
+    console.error("Error loading test exams in gradebook:", e);
+  }
+
+  // Si hay exámenes test de un tema en esta clase o mapeados en el currículum, asegurar que el slot unificado existe en activeTasks
+  const modActual = currentClase?.modulo || '0372';
+  for (let tema = 1; tema <= 6; tema++) {
+    const testTaskId = `test:${modActual}:${tema}`;
+    const isMapped = allMapped.has(testTaskId);
+    const hasExamsInClass = (window.classTestsByTema[tema] && window.classTestsByTema[tema].length > 0);
+    if (isMapped || hasExamsInClass) {
+      if (!activeTasks.some(t => t.id === testTaskId)) {
+        activeTasks.push({
+          id: testTaskId,
+          mappedId: testTaskId,
+          label: `Examen Test Tema ${tema}`,
+          type: 'test_tema',
+          tema: tema,
+          mod: modActual,
+          raHint: tema
+        });
+      }
+    }
+  }
 
   // 2. Fetch students
   students = [];
@@ -148,6 +199,13 @@ export async function initGradebook(claseActual, curriculum, currentTandasIds, c
       students.push({ uid, ...snap.data() });
     }
   }
+
+  // Ordenar alumnos por orden alfabético
+  students.sort((a, b) => {
+    const nameA = (a.nombre || a.email || '').trim();
+    const nameB = (b.nombre || b.email || '').trim();
+    return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+  });
 
   // 3. Fetch Grades
   await fetchGrades();
@@ -193,10 +251,12 @@ async function fetchGrades() {
         }
       });
 
-      // Fetch Test Exam grades by criterion for this student
+      // Fetch Test Exam grades by criterion and theme for this student
       testCriterioGrades[st.uid] = {};
-      if (typeof testGradesGlobal === 'undefined') window.testGradesGlobal = {};
-      if (typeof testGradesCrit === 'undefined') window.testGradesCrit = {};
+      if (typeof window.testTemaGrades === 'undefined') window.testTemaGrades = {};
+      if (typeof window.testGradesGlobal === 'undefined') window.testGradesGlobal = {};
+      if (typeof window.testGradesCrit === 'undefined') window.testGradesCrit = {};
+      window.testTemaGrades[st.uid] = {};
       window.testGradesGlobal[st.uid] = {};
       window.testGradesCrit[st.uid] = {};
       
@@ -213,29 +273,47 @@ async function fetchGrades() {
         
         testSnap.forEach(docSnap => {
           const data = docSnap.data();
-          if (!data.entregadoEn || !data.notasCriterios) return;
+          if (!data.entregadoEn) return;
           
-          if (!bestAttempts[data.examenId] || data.nota > bestAttempts[data.examenId].nota) {
+          if (!bestAttempts[data.examenId] || (data.nota !== undefined && data.nota > (bestAttempts[data.examenId].nota || 0))) {
              bestAttempts[data.examenId] = data;
           }
         });
         
-        for (const exId in bestAttempts) {
-          // Ignorar intentos huérfanos de exámenes que han sido eliminados por el profesor
-          const examExists = activeTasks.some(t => t.type === 'examen_test_global' && t.exId === exId);
-          if (!examExists) continue;
+        // 1. Calcular media aritmética para la columna unificada de Examen Test por Tema
+        const modActual = currentClase?.modulo || '0372';
+        for (let tema = 1; tema <= 6; tema++) {
+          const examsInTema = window.classTestsByTema?.[tema] || [];
+          const scores = [];
+          examsInTema.forEach(ex => {
+            const att = bestAttempts[ex.id];
+            if (att && att.nota !== undefined && att.nota !== null) {
+              scores.push(att.nota);
+            }
+          });
 
+          const testTaskId = `test:${modActual}:${tema}`;
+          if (scores.length > 0) {
+            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+            window.testTemaGrades[st.uid][testTaskId] = avg;
+          }
+        }
+
+        // 2. Compatibilidad con exámenes individuales y notas por criterios
+        for (const exId in bestAttempts) {
           const data = bestAttempts[exId];
           window.testGradesGlobal[st.uid][`test:${data.examenId}`] = data.nota;
           
-          for (const crit in data.notasCriterios) {
-            const nota = data.notasCriterios[crit];
-            if (nota === null) continue;
-            
-            window.testGradesCrit[st.uid][`test:${data.examenId}:${crit}`] = nota;
-            
-            if (!testCriterioGrades[st.uid][crit]) testCriterioGrades[st.uid][crit] = [];
-            testCriterioGrades[st.uid][crit].push(nota);
+          if (data.notasCriterios) {
+            for (const crit in data.notasCriterios) {
+              const nota = data.notasCriterios[crit];
+              if (nota === null) continue;
+              
+              window.testGradesCrit[st.uid][`test:${data.examenId}:${crit}`] = nota;
+              
+              if (!testCriterioGrades[st.uid][crit]) testCriterioGrades[st.uid][crit] = [];
+              testCriterioGrades[st.uid][crit].push(nota);
+            }
           }
         }
       } catch (e) {
@@ -255,6 +333,188 @@ async function fetchGrades() {
 
 let entryMode = 'student'; // 'student' or 'task'
 let selectedTaskId = null;
+
+function getTaskWeightInRA(task, raId, currentCurriculum, activeTasks, tasksByRA) {
+  if (!currentCurriculum) return 0;
+
+  let mod = '0372';
+  if (currentCurriculum['0377']?.critPesos?.[raId] || currentCurriculum['0377']?.mapeo?.[raId]) {
+    mod = '0377';
+  } else if (currentCurriculum['0372']?.critPesos?.[raId] || currentCurriculum['0372']?.mapeo?.[raId]) {
+    mod = '0372';
+  }
+
+  const modData = currentCurriculum[mod];
+  if (!modData || !modData.mapeo || !modData.mapeo[raId]) {
+    const countInRa = (tasksByRA && tasksByRA[raId]) ? tasksByRA[raId].length : 0;
+    if (countInRa > 0) return Math.round((100 / countInRa) * 10) / 10;
+    return 0;
+  }
+
+  const mapeoRa = modData.mapeo[raId]; // crit -> [mappedTaskIds]
+  const critPesos = modData.critPesos?.[raId] || {};
+
+  const allCritKeys = Object.keys(mapeoRa);
+  if (allCritKeys.length === 0) {
+    const countInRa = (tasksByRA && tasksByRA[raId]) ? tasksByRA[raId].length : 0;
+    if (countInRa > 0) return Math.round((100 / countInRa) * 10) / 10;
+    return 0;
+  }
+
+  let hasConfiguredCritPesos = false;
+  for (const c in critPesos) {
+    if (parseFloat(critPesos[c]) > 0) {
+      hasConfiguredCritPesos = true;
+      break;
+    }
+  }
+
+  let taskWeightSum = 0;
+  let totalEvaluatedCritWeights = 0;
+
+  allCritKeys.forEach(crit => {
+    const mappedTaskIds = mapeoRa[crit] || [];
+    const activeTasksForCrit = activeTasks.filter(at => mappedTaskIds.includes(at.mappedId));
+    if (activeTasksForCrit.length === 0) return;
+
+    let critWeight = 0;
+    if (hasConfiguredCritPesos) {
+      critWeight = parseFloat(critPesos[crit]) || 0;
+    } else {
+      critWeight = 100 / allCritKeys.length;
+    }
+
+    totalEvaluatedCritWeights += critWeight;
+
+    const isThisTaskEvaluatingCrit = activeTasksForCrit.some(at => at.id === task.id || at.mappedId === task.mappedId);
+    if (isThisTaskEvaluatingCrit) {
+      taskWeightSum += (critWeight / activeTasksForCrit.length);
+    }
+  });
+
+  if (totalEvaluatedCritWeights > 0) {
+    const normalizedPct = (taskWeightSum / totalEvaluatedCritWeights) * 100;
+    const rounded = Math.round(normalizedPct * 10) / 10;
+    return (rounded % 1 === 0) ? rounded : rounded.toFixed(1);
+  }
+
+  const countInRa = (tasksByRA && tasksByRA[raId]) ? tasksByRA[raId].length : 0;
+  if (countInRa > 0) return Math.round((100 / countInRa) * 10) / 10;
+  return 0;
+}
+
+function getRaWeightInModule(raId, currentCurriculum, currentClase) {
+  if (!currentCurriculum) return 0;
+  const mod = currentClase?.modulo || (currentCurriculum['0377']?.raPesos?.[raId] !== undefined ? '0377' : '0372');
+  const modData = currentCurriculum[mod];
+  if (!modData || !modData.raPesos) return 0;
+  const peso = parseFloat(modData.raPesos[raId]);
+  return isNaN(peso) ? 0 : peso;
+}
+
+function syncCurrentInputsToMemory() {
+  const inputs = document.querySelectorAll('.grade-input');
+  inputs.forEach(inp => {
+    const val = inp.value.trim();
+    const uid = inp.dataset.uid;
+    const tid = inp.dataset.tid;
+    if (uid && tid) {
+      if (!manualGrades[uid]) manualGrades[uid] = {};
+      if (val !== '') {
+        manualGrades[uid][tid] = parseFloat(val);
+      } else {
+        delete manualGrades[uid][tid];
+      }
+    }
+  });
+}
+
+function getTaskScoreForStudent(t, stUid) {
+  const manScore = manualGrades[stUid]?.[t.id];
+  if (manScore !== undefined && manScore !== '') {
+    const parsed = parseFloat(manScore);
+    if (!isNaN(parsed)) return parsed;
+  }
+  if (t.type === 'tanda') {
+    const auto = tandaGrades[stUid]?.[t.id];
+    if (auto !== undefined && auto !== '') return parseFloat(auto);
+  } else if (t.type === 'test_tema') {
+    const auto = window.testTemaGrades?.[stUid]?.[t.id];
+    if (auto !== undefined && auto !== '') return parseFloat(auto);
+  } else if (t.type === 'examen_test_global') {
+    const auto = window.testGradesGlobal?.[stUid]?.[t.id];
+    if (auto !== undefined && auto !== '') return parseFloat(auto);
+  } else if (t.type === 'examen_test_crit') {
+    const auto = window.testGradesCrit?.[stUid]?.[t.id];
+    if (auto !== undefined && auto !== '') return parseFloat(auto);
+  }
+  return null;
+}
+
+function getStudentRaGrade(st, raNum, tasksByRA) {
+  const raStr = String(raNum);
+  const mod = currentClase?.modulo || (currentCurriculum?.['0377']?.raPesos?.[raStr] !== undefined ? '0377' : '0372');
+  const modData = currentCurriculum?.[mod];
+  let finalRaScore = null;
+
+  if (modData && modData.critPesos && modData.mapeo && modData.mapeo[raStr]) {
+    const critPesos = modData.critPesos[raStr] || {};
+    let raScore = 0;
+    let evaluatedWeightsSum = 0;
+    let fallbackSum = 0;
+    let fallbackCount = 0;
+
+    for (const crit in critPesos) {
+      const critWeight = critPesos[crit] || 0;
+      const gradesForCrit = [];
+
+      activeTasks.forEach(t => {
+        if (modData.mapeo[raStr]?.[crit]?.includes(t.mappedId)) {
+          const score = getTaskScoreForStudent(t, st.uid);
+          if (score !== null && !isNaN(score)) {
+            gradesForCrit.push(score);
+          } else if (t.type === 'examen_test_global' && t.estado === 'cerrado') {
+            gradesForCrit.push(0);
+          }
+        }
+      });
+
+      if (gradesForCrit.length > 0) {
+        const critAvg = gradesForCrit.reduce((a, b) => a + b, 0) / gradesForCrit.length;
+        if (critWeight > 0) {
+          raScore += critAvg * (critWeight / 100);
+          evaluatedWeightsSum += critWeight;
+        }
+        fallbackSum += critAvg;
+        fallbackCount++;
+      }
+    }
+
+    if (evaluatedWeightsSum > 0) {
+      finalRaScore = raScore / (evaluatedWeightsSum / 100);
+    } else if (fallbackCount > 0) {
+      finalRaScore = fallbackSum / fallbackCount;
+    }
+  }
+
+  // Fallback: media de tareas de este RA si no hay criterios configurados
+  if (finalRaScore === null && tasksByRA && tasksByRA[raNum]) {
+    let taskSum = 0;
+    let taskCount = 0;
+    tasksByRA[raNum].forEach(t => {
+      const score = getTaskScoreForStudent(t, st.uid);
+      if (score !== null && !isNaN(score)) {
+        taskSum += score;
+        taskCount++;
+      }
+    });
+    if (taskCount > 0) {
+      finalRaScore = taskSum / taskCount;
+    }
+  }
+
+  return finalRaScore;
+}
 
 function renderGradebookTasks() {
   const container = document.getElementById('gradebook-tasks-view');
@@ -309,13 +569,51 @@ function renderGradebookTasks() {
 
   // Selector HTML
   let html = `
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div class="btn-group btn-group-sm">
-        <input type="radio" class="btn-check" name="entryMode" id="mode-student" ${entryMode === 'student' ? 'checked' : ''} onchange="window._setEntryMode('student')">
-        <label class="btn btn-outline-primary" for="mode-student"><i class="fas fa-users me-1"></i>Por Alumno</label>
+    <style>
+      .ra-collapsible-th {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.15s ease-in-out;
+      }
+      .ra-collapsible-th:hover {
+        background-color: rgba(255, 193, 7, 0.25) !important;
+      }
+      /* Quitar flechitas (spinners) de inputs de notas y permitir números de dos decimales sin corte */
+      input.grade-input::-webkit-outer-spin-button,
+      input.grade-input::-webkit-inner-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+      }
+      input.grade-input[type="number"] {
+        -moz-appearance: textfield !important;
+        appearance: textfield !important;
+      }
+      input.grade-input {
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <div class="btn-group btn-group-sm">
+          <input type="radio" class="btn-check" name="entryMode" id="mode-student" ${entryMode === 'student' ? 'checked' : ''} onchange="window._setEntryMode('student')">
+          <label class="btn btn-outline-primary" for="mode-student"><i class="fas fa-users me-1"></i>Por Alumno</label>
 
-        <input type="radio" class="btn-check" name="entryMode" id="mode-task" ${entryMode === 'task' ? 'checked' : ''} onchange="window._setEntryMode('task')">
-        <label class="btn btn-outline-primary" for="mode-task"><i class="fas fa-tasks me-1"></i>Por Tarea</label>
+          <input type="radio" class="btn-check" name="entryMode" id="mode-task" ${entryMode === 'task' ? 'checked' : ''} onchange="window._setEntryMode('task')">
+          <label class="btn btn-outline-primary" for="mode-task"><i class="fas fa-tasks me-1"></i>Por Tarea</label>
+        </div>
+
+        ${entryMode === 'student' ? `
+          <div class="btn-group btn-group-sm ms-2">
+            <button class="btn btn-outline-secondary" onclick="window._collapseAllRAs()" title="Plegar todos los RAs para vista compacta">
+              <i class="fas fa-compress-alt me-1"></i>Plegar todos
+            </button>
+            <button class="btn btn-outline-secondary" onclick="window._expandAllRAs()" title="Desplegar todas las tareas de todos los RAs">
+              <i class="fas fa-expand-alt me-1"></i>Desplegar todos
+            </button>
+          </div>
+        ` : ''}
       </div>
   `;
 
@@ -324,9 +622,12 @@ function renderGradebookTasks() {
       <option value="">-- Selecciona una tarea --</option>`;
     for (let i = 1; i <= 6; i++) {
       if (tasksByRA[i].length > 0) {
-        html += `<optgroup label="Resultado de Aprendizaje ${i}">`;
+        const raPeso = getRaWeightInModule(i, currentCurriculum, currentClase);
+        const raPesoText = raPeso > 0 ? ` (${raPeso}% del módulo)` : '';
+        html += `<optgroup label="Resultado de Aprendizaje ${i}${raPesoText}">`;
         tasksByRA[i].forEach(t => {
-          html += `<option value="${t.id}" ${selectedTaskId === t.id ? 'selected' : ''}>${t.label}</option>`;
+          const taskPct = getTaskWeightInRA(t, i, currentCurriculum, activeTasks, tasksByRA);
+          html += `<option value="${t.id}" ${selectedTaskId === t.id ? 'selected' : ''}>${t.label} — [${taskPct}% de RA ${i}]</option>`;
         });
         html += `</optgroup>`;
       }
@@ -341,83 +642,156 @@ function renderGradebookTasks() {
 
   if (entryMode === 'student') {
     // 1. Super headers
-    html += `<tr><th rowspan="2" style="width: 200px;" class="text-start sticky-left align-middle border-end">Alumno</th>`;
+    html += `<tr><th rowspan="2" style="width: 200px;" class="text-start sticky-left align-middle border-end">Alumno <i class="fas fa-sort-alpha-down text-info ms-1" style="font-size: 0.8rem;" title="Alumnos ordenados alfabéticamente"></i></th>`;
     for (let i = 1; i <= 6; i++) {
       if (tasksByRA[i].length > 0) {
-        html += `<th colspan="${tasksByRA[i].length}" class="text-center bg-secondary bg-opacity-25 border-bottom-0">RA ${i}</th>`;
+        const isCollapsed = collapsedRAs.has(i);
+        const colSpan = isCollapsed ? 1 : tasksByRA[i].length;
+        const raPeso = getRaWeightInModule(i, currentCurriculum, currentClase);
+        const raPesoBadge = raPeso > 0 
+          ? `<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 ms-1 fw-semibold" style="font-size: 0.72rem;" title="El RA ${i} vale un ${raPeso}% de la nota final del módulo">${raPeso}%</span>`
+          : '';
+        const chevronIcon = isCollapsed 
+          ? '<i class="fas fa-chevron-right text-warning me-1"></i>' 
+          : '<i class="fas fa-chevron-down text-warning me-1"></i>';
+        const tasksBadge = isCollapsed 
+          ? `<span class="badge bg-secondary ms-1 fw-normal" style="font-size: 0.65rem;" title="${tasksByRA[i].length} tareas plegadas">${tasksByRA[i].length} t.</span>` 
+          : '';
+        const titleTooltip = isCollapsed 
+          ? `RA ${i} plegado (${tasksByRA[i].length} tareas). Haz clic para desplegar horizontalmente.` 
+          : `Haz clic para plegar horizontalmente las tareas del RA ${i}`;
+
+        html += `
+          <th colspan="${colSpan}" 
+              class="text-center align-middle bg-secondary ${isCollapsed ? 'bg-opacity-50 border border-warning border-opacity-50' : 'bg-opacity-25'} border-bottom-0 ra-collapsible-th" 
+              onclick="window._toggleCollapseRA(${i})" 
+              title="${titleTooltip}">
+            <div class="d-inline-flex align-items-center justify-content-center">
+              ${chevronIcon}
+              <span class="fw-bold">RA ${i}</span>
+              ${raPesoBadge}
+              ${tasksBadge}
+            </div>
+          </th>`;
       }
     }
     html += `</tr><tr>`;
+
     // 2. Task headers
     for (let i = 1; i <= 6; i++) {
-      tasksByRA[i].forEach(t => {
-        const isVisible = visibilityConfig[t.id] === true;
-        const eyeIcon = isVisible ? 'fa-eye text-success' : 'fa-eye-slash text-muted';
-        const tooltip = taskOtherRAs[t.id] ? ` title="También evalúa RAs: ${taskOtherRAs[t.id]}"` : '';
+      if (tasksByRA[i].length === 0) continue;
+
+      const isCollapsed = collapsedRAs.has(i);
+      if (isCollapsed) {
         html += `
-          <th style="min-width: 140px;" class="text-center align-middle bg-secondary bg-opacity-10">
-            <div class="small fw-normal mb-1 text-wrap"${tooltip}>${t.label} ${taskOtherRAs[t.id] ? '<sup>*</sup>' : ''}</div>
-            <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="window._toggleVisibility('${t.id}')">
-              <i class="fas ${eyeIcon}" title="Alternar visibilidad"></i>
-            </button>
+          <th style="min-width: 85px; width: 85px;" 
+              class="text-center align-middle bg-secondary bg-opacity-25 ra-collapsible-th border-bottom"
+              onclick="window._toggleCollapseRA(${i})"
+              title="RA ${i} plegado. Haz clic para desplegar sus ${tasksByRA[i].length} tareas">
+            <div class="text-warning small fw-bold"><i class="fas fa-layer-group me-1"></i>Nota RA</div>
+            <div class="text-muted" style="font-size: 0.65rem;"><i class="fas fa-chevron-right me-1"></i>(Plegado)</div>
           </th>
         `;
-      });
+      } else {
+        tasksByRA[i].forEach(t => {
+          const isVisible = visibilityConfig[t.id] === true;
+          const eyeIcon = isVisible ? 'fa-eye text-success' : 'fa-eye-slash text-muted';
+          const taskPct = getTaskWeightInRA(t, i, currentCurriculum, activeTasks, tasksByRA);
+          const raPeso = getRaWeightInModule(i, currentCurriculum, currentClase);
+          const globalContrib = raPeso > 0 ? ` (${Math.round((parseFloat(taskPct) * raPeso / 100) * 10) / 10}% del módulo global)` : '';
+          const otherRasInfo = taskOtherRAs[t.id] ? ` · También evalúa: RA ${taskOtherRAs[t.id]}` : '';
+          const tooltip = `title="Pondera ${taskPct}% en la nota del RA ${i}${globalContrib}${otherRasInfo}"`;
+          html += `
+            <th style="min-width: 140px;" class="text-center align-middle bg-secondary bg-opacity-10">
+              <div class="small fw-normal mb-1 text-wrap"${tooltip}>${t.label} ${taskOtherRAs[t.id] ? '<sup>*</sup>' : ''}</div>
+              <div class="d-flex justify-content-center align-items-center gap-2 mb-1">
+                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 fw-semibold" style="font-size: 0.72rem;" ${tooltip}>
+                  ${taskPct}% del RA
+                </span>
+                <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="window._toggleVisibility('${t.id}')">
+                  <i class="fas ${eyeIcon}" title="Alternar visibilidad"></i>
+                </button>
+              </div>
+            </th>
+          `;
+        });
+      }
     }
     html += `</tr></thead><tbody>`;
 
     students.forEach(st => {
       html += `<tr><td class="text-start sticky-left bg-dark text-nowrap border-end"><div class="text-info fw-bold small">${st.nombre || 'Sin Nombre'}</div></td>`;
       for (let i = 1; i <= 6; i++) {
-        tasksByRA[i].forEach(t => {
-          let score = '';
-          let isManual = false;
-          let placeholder = '-';
-          if (t.type === 'tanda') {
-            const autoScore = tandaGrades[st.uid]?.[t.id];
-            const manScore = manualGrades[st.uid]?.[t.id];
-            if (manScore !== undefined) { score = manScore; isManual = true; }
-            else if (autoScore !== undefined) { score = autoScore; }
-            placeholder = 'Auto';
-          } else if (t.type === 'examen_test_global') {
-            const autoScore = window.testGradesGlobal[st.uid]?.[t.id];
-            const manScore = manualGrades[st.uid]?.[t.id];
-            if (manScore !== undefined) { score = manScore; isManual = true; }
-            else if (autoScore !== undefined) { score = autoScore.toFixed(2); }
-            placeholder = 'Auto';
-          } else if (t.type === 'examen_test_crit') {
-            const autoScore = window.testGradesCrit[st.uid]?.[t.id];
-            const manScore = manualGrades[st.uid]?.[t.id];
-            if (manScore !== undefined) { score = manScore; isManual = true; }
-            else if (autoScore !== undefined) { score = autoScore.toFixed(2); }
-            placeholder = 'Auto';
-          } else {
-            const manScore = manualGrades[st.uid]?.[t.id];
-            if (manScore !== undefined) score = manScore;
+        if (tasksByRA[i].length === 0) continue;
+
+        const isCollapsed = collapsedRAs.has(i);
+        if (isCollapsed) {
+          const raGrade = getStudentRaGrade(st, i, tasksByRA);
+          let gradeHtml = '<span class="text-muted small">-</span>';
+          if (raGrade !== null && !isNaN(raGrade)) {
+            const pass = raGrade >= 5;
+            const badgeClass = pass ? 'bg-success bg-opacity-75 text-white' : 'bg-danger bg-opacity-75 text-white';
+            const displayScore = pass ? raGrade.toFixed(2) : Math.trunc(raGrade);
+            gradeHtml = `<span class="badge ${badgeClass} font-monospace fs-6" title="Nota calculada del RA ${i}: ${raGrade.toFixed(2)}">${displayScore}</span>`;
           }
-          
-          let hasRubrica = false;
-          if (t.type === 'offline' && window.BLOQUES) {
-            const bId = t.id.split(':')[1];
-            const bDef = window.BLOQUES.find(x => x.id == bId);
-            if (bDef && bDef.rubricaDocente && bDef.rubricaDocente.length > 0) {
-              hasRubrica = true;
+          html += `<td class="text-center align-middle bg-black bg-opacity-25 border-secondary" style="width: 85px;">${gradeHtml}</td>`;
+        } else {
+          tasksByRA[i].forEach(t => {
+            let score = '';
+            let isManual = false;
+            let placeholder = '-';
+            if (t.type === 'tanda') {
+              const autoScore = tandaGrades[st.uid]?.[t.id];
+              const manScore = manualGrades[st.uid]?.[t.id];
+              if (manScore !== undefined) { score = manScore; isManual = true; }
+              else if (autoScore !== undefined) { score = autoScore; }
+              placeholder = 'Auto';
+            } else if (t.type === 'test_tema') {
+              const autoScore = window.testTemaGrades?.[st.uid]?.[t.id];
+              const manScore = manualGrades[st.uid]?.[t.id];
+              if (manScore !== undefined) { score = manScore; isManual = true; }
+              else if (autoScore !== undefined) { score = autoScore.toFixed(2); }
+              placeholder = autoScore !== undefined ? 'Auto' : '-';
+            } else if (t.type === 'examen_test_global') {
+              const autoScore = window.testGradesGlobal[st.uid]?.[t.id];
+              const manScore = manualGrades[st.uid]?.[t.id];
+              if (manScore !== undefined) { score = manScore; isManual = true; }
+              else if (autoScore !== undefined) { score = autoScore.toFixed(2); }
+              placeholder = 'Auto';
+            } else if (t.type === 'examen_test_crit') {
+              const autoScore = window.testGradesCrit[st.uid]?.[t.id];
+              const manScore = manualGrades[st.uid]?.[t.id];
+              if (manScore !== undefined) { score = manScore; isManual = true; }
+              else if (autoScore !== undefined) { score = autoScore.toFixed(2); }
+              placeholder = 'Auto';
+            } else {
+              const manScore = manualGrades[st.uid]?.[t.id];
+              if (manScore !== undefined) score = manScore;
             }
-          }
-          
-          if (hasRubrica) {
-            html += `<td>
-              <div class="d-flex align-items-center justify-content-center">
-                <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${t.id}" value="${score !== '' ? score : ''}" style="width: 60px;">
-                <button class="btn btn-sm btn-outline-primary ms-1" onclick="window._openRubricaModal('${st.uid}', '${t.id}', '${escape(st.nombre || 'Sin Nombre')}')" title="Evaluar con Rúbrica">
-                  <i class="fas fa-tasks"></i>
-                </button>
-              </div>
-            </td>`;
-          } else {
-            html += `<td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${t.id}" value="${score !== '' ? score : ''}" style="width: 70px; margin: 0 auto;"></td>`;
-          }
-        });
+            
+            let hasRubrica = false;
+            if (t.type === 'offline' && window.BLOQUES) {
+              const bId = t.id.split(':')[1];
+              const bDef = window.BLOQUES.find(x => x.id == bId);
+              if (bDef && bDef.rubricaDocente && bDef.rubricaDocente.length > 0) {
+                hasRubrica = true;
+              }
+            }
+            
+            if (hasRubrica) {
+              html += `<td>
+                <div class="d-flex align-items-center justify-content-center">
+                  <input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${t.id}" value="${score !== '' ? score : ''}" style="width: 75px;">
+                  <button class="btn btn-sm btn-outline-primary ms-1" onclick="window._openRubricaModal('${st.uid}', '${t.id}', '${escape(st.nombre || 'Sin Nombre')}')" title="Evaluar con Rúbrica">
+                    <i class="fas fa-tasks"></i>
+                  </button>
+                </div>
+              </td>`;
+            } else {
+              html += `<td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${t.id}" value="${score !== '' ? score : ''}" style="width: 78px; margin: 0 auto;"></td>`;
+            }
+          });
+        }
       }
       html += `</tr>`;
     });
@@ -426,32 +800,53 @@ function renderGradebookTasks() {
     html += `</tbody><tfoot><tr class="bg-black fw-bold border-top border-secondary">
                <td class="text-end pe-3 sticky-left bg-black border-end">MEDIA DE LA CLASE:</td>`;
     for (let i = 1; i <= 6; i++) {
-      tasksByRA[i].forEach(t => {
-        let sum = 0;
-        let count = 0;
+      if (tasksByRA[i].length === 0) continue;
+
+      const isCollapsed = collapsedRAs.has(i);
+      if (isCollapsed) {
+        let raSum = 0;
+        let raCount = 0;
         students.forEach(st => {
-          let val = undefined;
-          if (t.type === 'tanda') {
-            val = manualGrades[st.uid]?.[t.id];
-            if (val === undefined) val = tandaGrades[st.uid]?.[t.id];
-          } else if (t.type === 'examen_test_global') {
-            val = manualGrades[st.uid]?.[t.id];
-            if (val === undefined) val = window.testGradesGlobal[st.uid]?.[t.id];
-          } else if (t.type === 'examen_test_crit') {
-            val = manualGrades[st.uid]?.[t.id];
-            if (val === undefined) val = window.testGradesCrit[st.uid]?.[t.id];
-          } else {
-            val = manualGrades[st.uid]?.[t.id];
-          }
-          if (val !== undefined && val !== '') {
-            sum += parseFloat(val);
-            count++;
+          const g = getStudentRaGrade(st, i, tasksByRA);
+          if (g !== null && !isNaN(g)) {
+            raSum += g;
+            raCount++;
           }
         });
-        const avg = count > 0 ? (sum / count).toFixed(2) : '-';
-        const color = avg === '-' ? 'text-muted' : (avg >= 5 ? 'text-success' : 'text-danger');
-        html += `<td class="text-center align-middle fs-6 ${color}">${avg}</td>`;
-      });
+        const avg = raCount > 0 ? (raSum / raCount).toFixed(2) : '-';
+        const color = avg === '-' ? 'text-muted' : (parseFloat(avg) >= 5 ? 'text-success' : 'text-danger');
+        html += `<td class="text-center align-middle font-monospace fs-6 ${color}" style="width: 85px;" title="Media de la clase en RA ${i}: ${avg}">${avg}</td>`;
+      } else {
+        tasksByRA[i].forEach(t => {
+          let sum = 0;
+          let count = 0;
+          students.forEach(st => {
+            let val = undefined;
+            if (t.type === 'tanda') {
+              val = manualGrades[st.uid]?.[t.id];
+              if (val === undefined) val = tandaGrades[st.uid]?.[t.id];
+            } else if (t.type === 'test_tema') {
+              val = manualGrades[st.uid]?.[t.id];
+              if (val === undefined) val = window.testTemaGrades?.[st.uid]?.[t.id];
+            } else if (t.type === 'examen_test_global') {
+              val = manualGrades[st.uid]?.[t.id];
+              if (val === undefined) val = window.testGradesGlobal[st.uid]?.[t.id];
+            } else if (t.type === 'examen_test_crit') {
+              val = manualGrades[st.uid]?.[t.id];
+              if (val === undefined) val = window.testGradesCrit[st.uid]?.[t.id];
+            } else {
+              val = manualGrades[st.uid]?.[t.id];
+            }
+            if (val !== undefined && val !== '') {
+              sum += parseFloat(val);
+              count++;
+            }
+          });
+          const avg = count > 0 ? (sum / count).toFixed(2) : '-';
+          const color = avg === '-' ? 'text-muted' : (avg >= 5 ? 'text-success' : 'text-danger');
+          html += `<td class="text-center align-middle fs-6 ${color}">${avg}</td>`;
+        });
+      }
     }
     html += `</tr></tfoot>`;
   } else {
@@ -461,14 +856,29 @@ function renderGradebookTasks() {
       html += `<tr><th class="text-start">Selecciona una tarea para calificar</th></tr></thead><tbody><tr><td class="text-muted text-center py-4">Utiliza el desplegable superior para elegir una tarea.</td></tr>`;
     } else {
       const isVisible = visibilityConfig[selectedTask.id] === true;
-      const eyeIcon = isVisible ? 'fa-eye text-success' : 'fa-eye-slash text-muted';
-      html += `<tr><th style="width: 250px;" class="text-start sticky-left border-end">Alumno</th>
+      let taskRa = 1;
+      for (let i = 1; i <= 6; i++) {
+        if (tasksByRA[i].some(t => t.id === selectedTask.id)) {
+          taskRa = i;
+          break;
+        }
+      }
+      const taskPct = getTaskWeightInRA(selectedTask, taskRa, currentCurriculum, activeTasks, tasksByRA);
+      const otherRasInfo = taskOtherRAs[selectedTask.id] ? ` · También en RA: ${taskOtherRAs[selectedTask.id]}` : '';
+      const tooltip = `title="Pondera ${taskPct}% en el RA ${taskRa}${otherRasInfo}"`;
+      html += `<tr><th style="width: 250px;" class="text-start sticky-left border-end">Alumno <i class="fas fa-sort-alpha-down text-info ms-1" style="font-size: 0.8rem;" title="Alumnos ordenados alfabéticamente"></i></th>
         <th class="text-center">
-          ${selectedTask.label}
-          <button class="btn btn-sm btn-link p-0 text-decoration-none ms-2" onclick="window._toggleVisibility('${selectedTask.id}')">
-            <i class="fas ${eyeIcon}" title="Alternar visibilidad"></i>
-          </button>
+          <div class="mb-1">${selectedTask.label}</div>
+          <div class="d-flex justify-content-center align-items-center gap-2">
+            <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50" ${tooltip}>
+              ${taskPct}% del RA ${taskRa}
+            </span>
+            <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="window._toggleVisibility('${selectedTask.id}')">
+              <i class="fas ${eyeIcon}" title="Alternar visibilidad"></i>
+            </button>
+          </div>
         </th></tr></thead><tbody>`;
+
       
       students.forEach(st => {
         let score = '';
@@ -480,6 +890,12 @@ function renderGradebookTasks() {
           if (manScore !== undefined) { score = manScore; isManual = true; }
           else if (autoScore !== undefined) { score = autoScore; }
           placeholder = 'Autocalc.';
+        } else if (selectedTask.type === 'test_tema') {
+          const autoScore = window.testTemaGrades?.[st.uid]?.[selectedTask.id];
+          const manScore = manualGrades[st.uid]?.[selectedTask.id];
+          if (manScore !== undefined) { score = manScore; isManual = true; }
+          else if (autoScore !== undefined) { score = autoScore.toFixed(2); }
+          placeholder = autoScore !== undefined ? 'Auto' : '-';
         } else {
           const manScore = manualGrades[st.uid]?.[selectedTask.id];
           if (manScore !== undefined) score = manScore;
@@ -498,14 +914,14 @@ function renderGradebookTasks() {
         if (hasRubrica) {
           html += `<td>
             <div class="d-flex align-items-center justify-content-center">
-              <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${selectedTask.id}" value="${score !== '' ? score : ''}" style="width: 80px;">
+              <input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${selectedTask.id}" value="${score !== '' ? score : ''}" style="width: 85px;">
               <button class="btn btn-sm btn-outline-primary ms-2" onclick="window._openRubricaModal('${st.uid}', '${selectedTask.id}', '${escape(st.nombre || 'Sin Nombre')}')" title="Evaluar con Rúbrica">
                 <i class="fas fa-tasks"></i>
               </button>
             </div>
           </td></tr>`;
         } else {
-          html += `<td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${selectedTask.id}" value="${score !== '' ? score : ''}" style="width: 100px; margin: 0 auto;"></td></tr>`;
+          html += `<td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm text-center dark-input grade-input ${isManual ? 'border-warning' : ''}" placeholder="${placeholder}" data-uid="${st.uid}" data-tid="${selectedTask.id}" value="${score !== '' ? score : ''}" style="width: 90px; margin: 0 auto;"></td></tr>`;
         }
       });
       
@@ -517,6 +933,9 @@ function renderGradebookTasks() {
         if (selectedTask.type === 'tanda') {
           val = manualGrades[st.uid]?.[selectedTask.id];
           if (val === undefined) val = tandaGrades[st.uid]?.[selectedTask.id];
+        } else if (selectedTask.type === 'test_tema') {
+          val = manualGrades[st.uid]?.[selectedTask.id];
+          if (val === undefined) val = window.testTemaGrades?.[st.uid]?.[selectedTask.id];
         } else if (selectedTask.type === 'examen_test_global') {
           val = manualGrades[st.uid]?.[selectedTask.id];
           if (val === undefined) val = window.testGradesGlobal[st.uid]?.[selectedTask.id];
@@ -551,21 +970,48 @@ function renderGradebookTasks() {
 }
 
 window._setEntryMode = function(mode) {
+  syncCurrentInputsToMemory();
   entryMode = mode;
   renderGradebookTasks();
-}
+};
 
 window._setSelectedTask = function(taskId) {
+  syncCurrentInputsToMemory();
   selectedTaskId = taskId;
   renderGradebookTasks();
-}
+};
+
+window._toggleCollapseRA = function(raNum) {
+  syncCurrentInputsToMemory();
+  const num = parseInt(raNum);
+  if (collapsedRAs.has(num)) {
+    collapsedRAs.delete(num);
+  } else {
+    collapsedRAs.add(num);
+  }
+  renderGradebookTasks();
+};
+
+window._collapseAllRAs = function() {
+  syncCurrentInputsToMemory();
+  for (let i = 1; i <= 6; i++) {
+    collapsedRAs.add(i);
+  }
+  renderGradebookTasks();
+};
+
+window._expandAllRAs = function() {
+  syncCurrentInputsToMemory();
+  collapsedRAs.clear();
+  renderGradebookTasks();
+};
 
 window._toggleVisibility = async function(id) {
   visibilityConfig[id] = !visibilityConfig[id];
   renderGradebookTasks();
   renderGradebookRAs();
   showAdminToast('info', 'Visibilidad cambiada. Recuerda Guardar Notas.');
-}
+};
 
 async function saveGrades() {
   const btn = document.querySelector('#notas-pane .btn-danger');
@@ -574,18 +1020,11 @@ async function saveGrades() {
   btn.disabled = true;
 
   try {
-    // 1. Gather all manual inputs
-    const inputs = document.querySelectorAll('.grade-input');
+    // 1. Gather all manual inputs and preserve existing manual grades
+    syncCurrentInputsToMemory();
     const newManualGrades = {};
-    students.forEach(st => newManualGrades[st.uid] = {});
-
-    inputs.forEach(inp => {
-      const val = inp.value.trim();
-      if (val !== '') {
-        const uid = inp.dataset.uid;
-        const tid = inp.dataset.tid;
-        newManualGrades[uid][tid] = parseFloat(val);
-      }
+    students.forEach(st => {
+      newManualGrades[st.uid] = { ...(manualGrades[st.uid] || {}) };
     });
 
     // 2. Save per student
@@ -656,26 +1095,31 @@ function renderGradebookRAs() {
   activeTasks.forEach(t => {
     if (t.raHint) {
        activeRAs.add(t.raHint.toString());
-       if (!raModules[t.raHint.toString()]) raModules[t.raHint.toString()] = currentCurriculum['0372'] ? '0372' : '0377';
+       if (!raModules[t.raHint.toString()]) raModules[t.raHint.toString()] = currentClase?.modulo || (currentCurriculum?.['0377'] ? '0377' : '0372');
     }
   });
 
   const sortedRAs = Array.from(activeRAs).sort((a, b) => parseInt(a) - parseInt(b));
 
   // 2. Build Header
-  let thHtml = `<th style="width: 200px;" class="text-start sticky-left">Alumno</th>`;
+  let thHtml = `<th style="width: 200px;" class="text-start sticky-left">Alumno <i class="fas fa-sort-alpha-down text-info ms-1" style="font-size: 0.8rem;" title="Alumnos ordenados alfabéticamente"></i></th>`;
   sortedRAs.forEach(ra => {
+    const mod = raModules[ra];
+    const raPesoGlobal = currentCurriculum[mod]?.raPesos?.[ra] || 0;
     const isVisible = visibilityConfig[`ra_${ra}`] === true;
     const eyeIcon = isVisible ? 'fa-eye text-success' : 'fa-eye-slash text-muted';
+    const pesoHtml = raPesoGlobal > 0 ? `<div class="small text-muted fw-normal" style="font-size: 0.72rem;">(${raPesoGlobal}% del módulo)</div>` : '';
     thHtml += `
       <th class="text-center align-middle" style="min-width: 120px;">
         <div class="fw-bold mb-1">RA ${ra}</div>
-        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="window._toggleVisibility('ra_${ra}')">
+        ${pesoHtml}
+        <button class="btn btn-sm btn-link p-0 text-decoration-none mt-1" onclick="window._toggleVisibility('ra_${ra}')">
           <i class="fas ${eyeIcon}" title="Alternar visibilidad del RA ${ra}"></i>
         </button>
       </th>
     `;
   });
+
   const isGlobalVisible = visibilityConfig['global'] === true;
   const globalEyeIcon = isGlobalVisible ? 'fa-eye text-success' : 'fa-eye-slash text-muted';
   thHtml += `
@@ -713,27 +1157,9 @@ function renderGradebookRAs() {
         const gradesForCrit = [];
         activeTasks.forEach(t => {
           if (currentCurriculum[mod].mapeo[ra] && currentCurriculum[mod].mapeo[ra][crit] && currentCurriculum[mod].mapeo[ra][crit].includes(t.mappedId)) {
-            const manScore = manualGrades[st.uid]?.[t.id];
-            
-            if (t.type === 'examen_test_global') {
-              if (manScore !== undefined && manScore !== '') {
-                gradesForCrit.push(parseFloat(manScore));
-              } else {
-                const testCritId = ra + crit;
-                const testNotas = testCriterioGrades[st.uid]?.[testCritId] || [];
-                if (testNotas.length > 0) {
-                  testNotas.forEach(n => gradesForCrit.push(n));
-                } else if (t.estado === 'cerrado') {
-                  gradesForCrit.push(0);
-                }
-              }
-            } else {
-              const autoScore = t.type === 'tanda' ? tandaGrades[st.uid]?.[t.id] : undefined;
-              if (manScore !== undefined && manScore !== '') {
-                gradesForCrit.push(parseFloat(manScore));
-              } else if (autoScore !== undefined) {
-                gradesForCrit.push(parseFloat(autoScore));
-              }
+            const score = getTaskScoreForStudent(t, st.uid);
+            if (score !== null && !isNaN(score)) {
+              gradesForCrit.push(score);
             }
           }
         });
@@ -1042,3 +1468,121 @@ window._saveRubricaGrade = async function() {
   const modal = bootstrap.Modal.getInstance(document.getElementById('modalRubrica'));
   modal.hide();
 };
+
+// ============================================================================
+// NAVEGACIÓN Y COMPORTAMIENTO DE INPUTS DE NOTAS (TABULADOR VERTICAL ENTRE ALUMNOS)
+// ============================================================================
+function handleGradeInputNavigation(currentInput, isShift = false) {
+  if (!currentInput) return;
+
+  // 1. Sincronizar inmediatamente el valor en memoria y destacar visualmente si es manual
+  const val = currentInput.value.trim();
+  const uid = currentInput.dataset.uid;
+  const tid = currentInput.dataset.tid;
+  if (uid && tid) {
+    if (!manualGrades[uid]) manualGrades[uid] = {};
+    if (val !== '') {
+      manualGrades[uid][tid] = parseFloat(val);
+      currentInput.classList.add('border-warning');
+    } else {
+      delete manualGrades[uid][tid];
+      currentInput.classList.remove('border-warning');
+    }
+  }
+
+  // 2. Localizar todos los inputs de la misma columna (misma tarea) en orden visual (top-down)
+  const colInputs = Array.from(document.querySelectorAll(`input.grade-input[data-tid="${CSS.escape(tid)}"]`));
+  if (colInputs.length === 0) return;
+
+  const currentIndex = colInputs.indexOf(currentInput);
+  if (currentIndex === -1) return;
+
+  let targetInput = null;
+
+  if (!isShift) {
+    // Tabulador o Enter: BAJAR al siguiente alumno en la misma columna
+    if (currentIndex + 1 < colInputs.length) {
+      targetInput = colInputs[currentIndex + 1];
+    } else {
+      // Si llegó al último alumno de la columna:
+      // Si estamos en la vista 'Por Alumno', pasar al primer alumno de la siguiente columna/tarea
+      const firstRow = document.querySelector('#gradebook-tasks-container tbody tr');
+      const firstRowInputs = Array.from(firstRow ? firstRow.querySelectorAll('input.grade-input') : []);
+      const taskIds = firstRowInputs.map(inp => inp.dataset.tid);
+      const curTaskIdx = taskIds.indexOf(tid);
+      if (curTaskIdx !== -1 && curTaskIdx + 1 < taskIds.length) {
+        const nextTid = taskIds[curTaskIdx + 1];
+        const nextColInputs = Array.from(document.querySelectorAll(`input.grade-input[data-tid="${CSS.escape(nextTid)}"]`));
+        if (nextColInputs.length > 0) targetInput = nextColInputs[0];
+      }
+      if (!targetInput) {
+        targetInput = colInputs[0]; // volver al inicio de la columna
+      }
+    }
+  } else {
+    // Shift + Tabulador: SUBIR al alumno anterior en la misma columna
+    if (currentIndex - 1 >= 0) {
+      targetInput = colInputs[currentIndex - 1];
+    } else {
+      // Si está en el primer alumno, subir al último alumno de la columna anterior
+      const firstRow = document.querySelector('#gradebook-tasks-container tbody tr');
+      const firstRowInputs = Array.from(firstRow ? firstRow.querySelectorAll('input.grade-input') : []);
+      const taskIds = firstRowInputs.map(inp => inp.dataset.tid);
+      const curTaskIdx = taskIds.indexOf(tid);
+      if (curTaskIdx > 0) {
+        const prevTid = taskIds[curTaskIdx - 1];
+        const prevColInputs = Array.from(document.querySelectorAll(`input.grade-input[data-tid="${CSS.escape(prevTid)}"]`));
+        if (prevColInputs.length > 0) targetInput = prevColInputs[prevColInputs.length - 1];
+      }
+      if (!targetInput) {
+        targetInput = colInputs[colInputs.length - 1]; // ir al final de la columna
+      }
+    }
+  }
+
+  if (targetInput) {
+    targetInput.focus();
+    targetInput.select();
+    targetInput.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+}
+
+if (!window._gradebookKeydownAttached) {
+  window._gradebookKeydownAttached = true;
+
+  // Interceptar Tabulador y Enter para bajar al siguiente alumno
+  document.addEventListener('keydown', (e) => {
+    if (!e.target || !e.target.matches('input.grade-input')) return;
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      e.preventDefault();
+      handleGradeInputNavigation(e.target, e.shiftKey);
+    }
+  });
+
+  // Evitar que la rueda del ratón cambie la nota accidentalmente al hacer scroll
+  document.addEventListener('wheel', (e) => {
+    if (e.target && e.target.matches('input.grade-input') && document.activeElement === e.target) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Sincronizar en memoria y marcar borde amarillo al teclear
+  document.addEventListener('input', (e) => {
+    if (!e.target || !e.target.matches('input.grade-input')) return;
+    const inp = e.target;
+    const val = inp.value.trim();
+    const uid = inp.dataset.uid;
+    const tid = inp.dataset.tid;
+    if (uid && tid) {
+      if (!manualGrades[uid]) manualGrades[uid] = {};
+      if (val !== '') {
+        manualGrades[uid][tid] = parseFloat(val);
+        inp.classList.add('border-warning');
+      } else {
+        delete manualGrades[uid][tid];
+        inp.classList.remove('border-warning');
+      }
+    }
+  });
+}
+

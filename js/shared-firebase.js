@@ -22,7 +22,7 @@ export async function initFirebase() {
     getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
   } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
   const {
-    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, increment,
+    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, increment, deleteField,
     collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, limit
   } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
@@ -32,7 +32,7 @@ export async function initFirebase() {
 
   window._fb = {
     auth, db,
-    doc, getDoc, setDoc, updateDoc, deleteDoc, increment,
+    doc, getDoc, setDoc, updateDoc, deleteDoc, increment, deleteField,
     collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, limit,
     signOut, GoogleAuthProvider, signInWithPopup, onAuthStateChanged,
   };

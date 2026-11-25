@@ -4,6 +4,7 @@ const { user, userDoc, db, fb } = await initTaskPage();
 window.currentBloquesFull = [];
 window.currentTestExams = [];
 window.userTestSubmissions = new Set();
+window.userSubmittedExams = new Set();
 window.currentClase = null;
 const urlParams = new URLSearchParams(window.location.search);
 const claseId = urlParams.get('claseId');
@@ -11,6 +12,52 @@ const claseNombre = urlParams.get('cName') || 'Clase';
 
 if (!claseId) window.location.href = 'clases.html';
 document.getElementById('tanda-clase-nombre').textContent = claseNombre;
+
+async function fetchUserSubmittedExams() {
+  window.userSubmittedExams.clear();
+  try {
+    const qExam = fb.query(fb.collection(db, 'usuarios', user.uid, 'examenes'));
+    const examSnap = await fb.getDocs(qExam);
+    examSnap.forEach(doc => {
+      const d = doc.data();
+      if (d.tandaId) {
+        window.userSubmittedExams.add(d.tandaId);
+        window.userSubmittedExams.add(d.tandaId.toLowerCase());
+        const match = d.tandaId.match(/Bloque\s*(\d+)\s*-\s*(.+)/i);
+        if (match) {
+          const bId = match[1];
+          const bd = match[2].trim().toLowerCase();
+          window.userSubmittedExams.add(`${bId}:${bd}`);
+          window.userSubmittedExams.add(`Bloque ${bId} - ${bd.toUpperCase()}`);
+        } else if (d.tandaId.includes(':')) {
+          const [bId, bd] = d.tandaId.split(':');
+          window.userSubmittedExams.add(`${bId}:${bd.toLowerCase()}`);
+          window.userSubmittedExams.add(`Bloque ${bId} - ${bd.toUpperCase()}`);
+        }
+      }
+    });
+  } catch(e) {
+    console.warn("Error cargando exámenes de usuario:", e);
+  }
+
+  try {
+    const qIntentos = fb.query(fb.collection(db, 'intentos_tandas'), fb.where('uid', '==', user.uid));
+    const intentosSnap = await fb.getDocs(qIntentos);
+    intentosSnap.forEach(doc => {
+      const d = doc.data();
+      if (d.modo === 'examen') {
+        if (d.tandaId) {
+          window.userSubmittedExams.add(d.tandaId);
+          window.userSubmittedExams.add(d.tandaId.replace(/^tanda:/, ''));
+        }
+        if (d.bloque && d.bd) {
+          window.userSubmittedExams.add(`${d.bloque}:${d.bd.toLowerCase()}`);
+          window.userSubmittedExams.add(`Bloque ${d.bloque} - ${d.bd.toUpperCase()}`);
+        }
+      }
+    });
+  } catch(e) {}
+}
 
 loadTandas();
 
@@ -25,6 +72,17 @@ async function loadTandas() {
     }
     
     const clase = snap.data();
+    // Aplicar personalizaciones de tareas offline de esta clase si existen
+    if (clase.tareasOfflineConfig && window.BLOQUES) {
+      window.BLOQUES.forEach(b => {
+        const custom = clase.tareasOfflineConfig[b.id];
+        if (custom) {
+          if (custom.nombre !== undefined) b.nombre = custom.nombre;
+          if (custom.desc !== undefined) b.desc = custom.desc;
+        }
+      });
+    }
+
     // Migración de tandasIds y tandasModo (legacy) y bloquesActivos
     const tandasModo = clase.tandasModo || {};
     (clase.tandasIds || []).forEach(tId => { if(!tandasModo[tId]) tandasModo[tId] = 'examen'; });
@@ -79,6 +137,7 @@ async function loadTandas() {
       });
     }
 
+    await fetchUserSubmittedExams();
     window.currentBloquesFull = bloquesActivosFull;
     window.currentClase = clase;
     renderAllTandasUI();
@@ -250,8 +309,11 @@ window._showMyGrades = async function() {
     ['0372', '0377'].forEach(mod => {
       if (!curriculum[mod]) return;
       
-      const pesosGenerales = curriculum[mod].pesos || {};
-      const allModRAs = Object.keys(curriculum[mod].critPesos || {}).sort((a,b) => parseInt(a) - parseInt(b));
+      const pesosGenerales = curriculum[mod].raPesos || curriculum[mod].pesos || {};
+      const allModRAs = Object.keys({
+        ...(curriculum[mod].raPesos || {}),
+        ...(curriculum[mod].critPesos || {})
+      }).sort((a,b) => parseInt(a) - parseInt(b));
       
       for (const ra of allModRAs) {
         if (visConfig[`ra_${ra}`] !== true) continue; // Not visible
@@ -262,8 +324,12 @@ window._showMyGrades = async function() {
         
         let raPesoGlobal = parseFloat(pesosGenerales[ra]) || 0;
         if (raPesoGlobal === 0) {
-          raPesoGlobal = 100 / (allModRAs.length || 1);
+          const totalRAsCount = (window.BOJA_DATA && window.BOJA_DATA[mod] && window.BOJA_DATA[mod].ras)
+            ? window.BOJA_DATA[mod].ras.length
+            : (allModRAs.length || 1);
+          raPesoGlobal = 100 / totalRAsCount;
         }
+        const raPesoFormatted = Number.isInteger(raPesoGlobal) ? raPesoGlobal : parseFloat(raPesoGlobal.toFixed(1));
         
         let raScore = 0;
         let evaluatedWeightsSum = 0;
@@ -346,7 +412,13 @@ window._showMyGrades = async function() {
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <div>
                   <div class="fw-bold text-light mb-1"><span class="badge bg-secondary me-2">RA ${ra}</span>${raTitle}</div>
-                  <div class="small text-muted">Módulo ${mod}</div>
+                  <div class="small text-muted d-flex align-items-center gap-2 flex-wrap">
+                    <span>Módulo ${mod}</span>
+                    <span class="text-secondary">&bull;</span>
+                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">
+                      <i class="fas fa-percentage me-1"></i>${raPesoFormatted}% de la nota final
+                    </span>
+                  </div>
                 </div>
                 <div class="text-end">
                   <div class="fs-5 fw-bold ${isPassed ? 'text-success' : 'text-danger'}">${scoreDisplay}</div>
@@ -360,7 +432,13 @@ window._showMyGrades = async function() {
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <div>
                   <div class="fw-bold text-light mb-1"><span class="badge bg-secondary me-2">RA ${ra}</span>${raTitle}</div>
-                  <div class="small text-muted">Módulo ${mod}</div>
+                  <div class="small text-muted d-flex align-items-center gap-2 flex-wrap">
+                    <span>Módulo ${mod}</span>
+                    <span class="text-secondary">&bull;</span>
+                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">
+                      <i class="fas fa-percentage me-1"></i>${raPesoFormatted}% de la nota final
+                    </span>
+                  </div>
                 </div>
                 <div class="text-end">
                   <div class="fs-5 fw-bold text-muted">-</div>
@@ -370,53 +448,140 @@ window._showMyGrades = async function() {
           `;
         }
           
-          // Render visible tasks
-          const visibleTasksHtml = activeTasks.map(t => {
-            if (visConfig[t.id] !== true) return '';
-            const autoScore = t.type === 'tanda' ? tandaGrades[t.id] : undefined;
-            const manScore = manualGrades[t.id];
-            let displayScore = '-';
-            if (manScore !== undefined && manScore !== '') displayScore = parseFloat(manScore).toFixed(2);
-            else if (autoScore !== undefined) displayScore = parseFloat(autoScore).toFixed(2);
-            
-            // Only show tasks that evaluate THIS RA
-            let evaluatesThisRa = false;
+        // Render visible tasks (aplica a todos los RAs, con o sin nota calculada)
+        const visibleTasksHtml = activeTasks.map(t => {
+          if (visConfig[t.id] !== true) return '';
+          const autoScore = t.type === 'tanda' ? tandaGrades[t.id] : undefined;
+          const manScore = manualGrades[t.id];
+          let displayScore = '-';
+          if (manScore !== undefined && manScore !== '') displayScore = parseFloat(manScore).toFixed(2);
+          else if (autoScore !== undefined) displayScore = parseFloat(autoScore).toFixed(2);
+          
+          // Only show tasks that evaluate THIS RA
+          let evaluatesThisRa = false;
+          if (curriculum[mod].mapeo && curriculum[mod].mapeo[ra]) {
             for (const crit in curriculum[mod].mapeo[ra]) {
               if (curriculum[mod].mapeo[ra][crit].includes(t.mappedId)) evaluatesThisRa = true;
             }
-            if (!evaluatesThisRa) return '';
-            
-            let taskDisplayName = t.id.replace('tanda:','').replace('bloque:','');
-            let taskIcon = 'fa-tasks';
-            if (t.id.startsWith('examen:')) {
-              const raNum = t.id.split(':')[2];
-              taskDisplayName = `Examen RA${raNum}`;
-              taskIcon = 'fa-file-signature text-warning';
-            } else if (t.id.startsWith('custom_')) {
-              const custom = (claseData.curriculum?.customTasks || []).find(x => x.id === t.id);
-              if (custom) taskDisplayName = custom.nombre;
-            } else if (t.type === 'examen_test_global') {
-              const testExam = (window.currentTestExams || []).find(x => `test:${x.id}` === t.id);
-              if (testExam) {
-                taskDisplayName = `Test: ${testExam.titulo}`;
-                taskIcon = 'fa-list-check text-info';
-              }
-            }
-
-            return `
-              <div class="d-flex justify-content-between align-items-center small py-1 border-top border-secondary mt-1">
-                <span class="text-secondary"><i class="fas ${taskIcon} me-1"></i> ${taskDisplayName}</span>
-                <span class="text-light fw-bold">${displayScore}</span>
-              </div>
-            `;
-          }).join('');
+          }
+          if (!evaluatesThisRa) return '';
           
-          html += visibleTasksHtml + `</div>`;
+          let taskDisplayName = t.id;
+          let taskIcon = 'fa-tasks';
+          if (t.id.startsWith('tanda:')) {
+            // tanda:101:arepazo → buscar nombre en BLOQUES por bloque_id numérico
+            const parts = t.id.split(':'); // ['tanda','101','arepazo']
+            const bloqueId = parseInt(parts[1]);
+            const bloque = (window.BLOQUES || []).find(b => b.id === bloqueId);
+            taskDisplayName = bloque ? bloque.nombre : `Tanda ${parts[1]}`;
+            taskIcon = 'fa-layer-group text-info';
+          } else if (t.id.startsWith('bloque:')) {
+            const bloqueId = parseInt(t.id.split(':')[1]);
+            const bloque = (window.BLOQUES || []).find(b => b.id === bloqueId);
+            taskDisplayName = bloque ? bloque.nombre : `Tarea ${t.id.split(':')[1]}`;
+            taskIcon = 'fa-file-alt text-secondary';
+          } else if (t.id.startsWith('examen:')) {
+            const raNum = t.id.split(':')[2];
+            taskDisplayName = `Examen RA${raNum}`;
+            taskIcon = 'fa-file-signature text-warning';
+          } else if (t.id.startsWith('custom_')) {
+            const custom = (claseData.curriculum?.customTasks || []).find(x => x.id === t.id);
+            if (custom) taskDisplayName = custom.nombre;
+          } else if (t.type === 'examen_test_global') {
+            const testExam = (window.currentTestExams || []).find(x => `test:${x.id}` === t.id);
+            if (testExam) {
+              taskDisplayName = `Test: ${testExam.titulo}`;
+              taskIcon = 'fa-list-check text-info';
+            }
+          }
+
+          return `
+            <div class="d-flex justify-content-between align-items-center small py-1 border-top border-secondary mt-1">
+              <span class="text-secondary"><i class="fas ${taskIcon} me-1"></i> ${taskDisplayName}</span>
+              <span class="text-light fw-bold">${displayScore}</span>
+            </div>
+          `;
+        }).join('');
+          
+        html += visibleTasksHtml + `</div>`;
       }
     });
     
+    // --- Tareas visibles sin criterios asignados (no cuentan para la nota) ---
+    const noCountHtmlParts = [];
+    activeTasks.forEach(t => {
+      if (visConfig[t.id] !== true) return; // no visible
+
+      // Comprobar si esta tarea tiene criterios en algún módulo y RA
+      let hasCriteria = false;
+      ['0372', '0377'].forEach(mod => {
+        if (!curriculum[mod] || !curriculum[mod].mapeo) return;
+        for (const ra in curriculum[mod].mapeo) {
+          for (const crit in curriculum[mod].mapeo[ra]) {
+            if (curriculum[mod].mapeo[ra][crit].includes(t.mappedId || t.id)) {
+              hasCriteria = true;
+            }
+          }
+        }
+      });
+      if (hasCriteria) return; // ya aparece en algún RA
+
+      // Calcular nota a mostrar
+      const autoScore = t.type === 'tanda' ? tandaGrades[t.id] : undefined;
+      const manScore = manualGrades[t.id];
+      let displayScore = '-';
+      if (manScore !== undefined && manScore !== '') displayScore = parseFloat(manScore).toFixed(2);
+      else if (autoScore !== undefined) displayScore = parseFloat(autoScore).toFixed(2);
+
+      // Nombre de la tarea
+      let taskDisplayName = t.id;
+      let taskIcon = 'fa-tasks';
+      if (t.id.startsWith('tanda:')) {
+        const parts = t.id.split(':');
+        const bloque = (window.BLOQUES || []).find(b => b.id === parseInt(parts[1]));
+        taskDisplayName = bloque ? bloque.nombre : `Tanda ${parts[1]}`;
+        taskIcon = 'fa-layer-group';
+      } else if (t.id.startsWith('bloque:')) {
+        const bloque = (window.BLOQUES || []).find(b => b.id === parseInt(t.id.split(':')[1]));
+        taskDisplayName = bloque ? bloque.nombre : `Tarea ${t.id.split(':')[1]}`;
+        taskIcon = 'fa-file-alt';
+      } else if (t.id.startsWith('examen:')) {
+        taskDisplayName = `Examen RA${t.id.split(':')[2]}`;
+        taskIcon = 'fa-file-signature';
+      } else if (t.id.startsWith('custom_')) {
+        const custom = (claseData.curriculum?.customTasks || []).find(x => x.id === t.id);
+        if (custom) taskDisplayName = custom.nombre;
+      } else if (t.type === 'examen_test_global') {
+        const testExam = (window.currentTestExams || []).find(x => `test:${x.id}` === t.id);
+        if (testExam) { taskDisplayName = testExam.titulo; taskIcon = 'fa-list-check'; }
+      }
+
+      noCountHtmlParts.push(`
+        <div class="d-flex justify-content-between align-items-center small py-1 border-top border-secondary mt-1">
+          <span class="text-muted"><i class="fas ${taskIcon} me-1"></i> ${taskDisplayName}</span>
+          <span class="text-muted fw-bold">${displayScore}</span>
+        </div>
+      `);
+    });
+
+    if (noCountHtmlParts.length > 0) {
+      html += `
+        <div class="list-group-item bg-dark border-secondary p-3 opacity-75">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="fas fa-eye-slash text-muted"></i>
+            <span class="small fw-bold text-muted">No cuentan para la nota</span>
+            <span class="badge bg-secondary ms-1" title="Estas actividades son visibles pero no tienen criterios de evaluación asignados (p.ej. simulacros).">
+              <i class="fas fa-info-circle me-1"></i>Sin criterios asignados
+            </span>
+          </div>
+          ${noCountHtmlParts.join('')}
+        </div>
+      `;
+    }
+
     if (html === '') {
       container.innerHTML = '<div class="p-4 text-center text-muted">Tu docente aún no ha publicado ninguna calificación de RA para ti.</div>';
+
     } else {
       let globalHtml = '';
       if (evaluatedAnyRA && globalWeightTotal > 0) {
@@ -478,12 +643,12 @@ window._showMyGrades = async function() {
 import { query, where, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 function loadActiveTestExams() {
-  if (!userDoc || !userDoc.claseId) return;
+  const targetClaseId = claseId || userDoc?.claseId;
+  if (!targetClaseId) return;
 
   const exQuery = query(
     collection(db, "examenes_test"), 
-    where("claseId", "==", userDoc.claseId),
-    
+    where("claseId", "==", targetClaseId),
   );
 
   onSnapshot(exQuery, (snap) => {
@@ -501,18 +666,27 @@ function loadActiveTestExams() {
     // Fetch submissions to know if the user already took the exams
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(module => {
       const { query, collection, where, getDocs } = module;
-      const subQuery = query(collection(db, "respuestas_test"), where("uid", "==", user.uid), where("claseId", "==", userDoc.claseId));
+      const subQuery = query(collection(db, "respuestas_test"), where("uid", "==", user.uid), where("claseId", "==", targetClaseId));
       getDocs(subQuery).then(async subSnap => {
         window.userTestSubmissions.clear();
-        subSnap.forEach(s => window.userTestSubmissions.add(s.data().examenId));
+        subSnap.forEach(s => {
+          const d = s.data();
+          if (d.entregadoEn || d.entregado || d.examenId) {
+            window.userTestSubmissions.add(d.examenId);
+          }
+        });
         
         try {
           const { doc, getDoc } = module;
-          const visSnap = await getDoc(doc(db, 'clases', userDoc.claseId, 'config', 'visibilidad'));
+          const visSnap = await getDoc(doc(db, 'clases', targetClaseId, 'config', 'visibilidad'));
           window.visConfig = visSnap.exists() ? visSnap.data() : {};
         } catch(err) {
           console.error("Error loading visibility config", err);
           window.visConfig = {};
+        }
+
+        if (window.userSubmittedExams.size === 0) {
+          await fetchUserSubmittedExams();
         }
         
         renderAllTandasUI();
@@ -672,17 +846,37 @@ function renderAllTandasUI() {
     ` + html;
   }
 
+  // Identificar la última unidad didáctica con contenidos para que sea la única abierta por defecto
+  let lastActiveUnitIndex = -1;
+  for (let i = groupKeys.length - 1; i >= 0; i--) {
+    const k = groupKeys[i];
+    if (/^U\d+/i.test(k) && groups[k] && groups[k].length > 0) {
+      lastActiveUnitIndex = i;
+      break;
+    }
+  }
+  if (lastActiveUnitIndex === -1) {
+    for (let i = groupKeys.length - 1; i >= 0; i--) {
+      const k = groupKeys[i];
+      if (groups[k] && groups[k].length > 0) {
+        lastActiveUnitIndex = i;
+        break;
+      }
+    }
+  }
+
   groupKeys.forEach((groupName, idx) => {
     const groupIsRepaso = groupName.startsWith('REPASO');
     const headerTitleClass = groupIsRepaso ? 'text-warning' : 'text-white';
     const collapseId = `collapse-group-${idx}`;
+    const isOpen = (idx === lastActiveUnitIndex);
     
     html += `<div class="col-12 mt-4 mb-3">
-               <h5 class="${headerTitleClass} border-bottom border-secondary pb-2 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#${collapseId}" style="cursor: pointer; user-select: none;">
-                 <i class="fas fa-layer-group text-primary me-2"></i>${groupName}
-                 <i class="fas fa-chevron-down float-end text-muted small mt-1"></i>
+               <h5 class="${headerTitleClass} border-bottom border-secondary pb-2 cursor-pointer d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#${collapseId}" style="cursor: pointer; user-select: none;">
+                 <span><i class="fas fa-layer-group text-primary me-2"></i>${groupName}</span>
+                 <i class="fas ${isOpen ? 'fa-chevron-down' : 'fa-chevron-right'} chevron-icon text-muted small"></i>
                </h5>
-               <div id="${collapseId}" class="collapse show group-collapse">
+               <div id="${collapseId}" class="collapse ${isOpen ? 'show' : ''} group-collapse">
                  <div class="list-group list-group-flush w-100">`;
                
     groups[groupName].forEach(bloque => {
@@ -716,11 +910,35 @@ function renderAllTandasUI() {
            iconClass = 'fa-check-circle text-success';
            badge = '<span class="badge bg-success" style="font-size:0.7rem">Entregado</span>';
            titleColor = 'text-success';
-           btnText = 'Examen Realizado';
+           btnText = 'Examen ya entregado';
            btnClass = 'btn-outline-success';
            btnDisabled = 'disabled';
         }
         
+        let actionHtml = '';
+        if (hasSubmitted && !isClosed) {
+          actionHtml = `
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 py-2 px-3 fw-semibold">
+              <i class="fas fa-check-circle me-1"></i>Examen ya entregado
+            </span>
+          `;
+        } else if (isClosed && hasSubmitted) {
+          actionHtml = `
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 py-2 px-3 fw-semibold">
+              <i class="fas fa-check-circle me-1"></i>Examen ya entregado
+            </span>
+            <button class="btn btn-sm ${btnClass} text-nowrap" ${btnDisabled} onclick="window.location.href='examen.html?id=${bloque.id}'">
+              <i class="fas fa-eye me-1"></i> ${btnText}
+            </button>
+          `;
+        } else {
+          actionHtml = `
+            <button class="btn btn-sm ${btnClass} text-nowrap" ${btnDisabled} onclick="window.location.href='examen.html?id=${bloque.id}'">
+              <i class="fas ${hasSubmitted ? 'fa-check' : 'fa-eye'} me-1"></i> ${btnText}
+            </button>
+          `;
+        }
+
         html += `
           <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center ${cardClass}" style="transition: all 0.2s;">
             <div class="flex-grow-1 pe-3 mb-3 mb-md-0">
@@ -732,9 +950,7 @@ function renderAllTandasUI() {
               <div class="text-muted small ms-md-4">Preguntas: <strong>${bloque.preguntas ? bloque.preguntas.length : 0}</strong> &nbsp;|&nbsp; Tiempo: <strong>${bloque.tiempoMinutos} min</strong></div>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <button class="btn btn-sm ${btnClass} text-nowrap" ${btnDisabled} onclick="window.location.href='examen.html?id=${bloque.id}'">
-                <i class="fas ${hasSubmitted && !isClosed ? 'fa-check' : 'fa-eye'}"></i> ${btnText}
-              </button>
+              ${actionHtml}
             </div>
           </div>
         `;
@@ -789,14 +1005,33 @@ function renderAllTandasUI() {
       let linkHref = `teoria.html?bloqueId=${bloque.id}&claseId=${claseId}`;
       let namePrefixHtml = '';
       
+      let isSubmittedExam = false;
       if (bloque.isLegacyTanda) {
         const isExamen = bloque.modo === 'examen';
-        btnClass = isExamen ? 'btn-danger' : 'btn-success';
-        btnText = 'Iniciar';
-        iconClass = isExamen ? 'fa-stopwatch text-danger' : 'fa-dumbbell text-success';
-        badgeClass = isExamen ? 'bg-danger' : 'bg-success';
-        badgeText = bloque.modo.toUpperCase();
-        borderColor = isExamen ? 'border-danger' : 'border-success';
+        const [bId, bd] = (bloque.tId || '').split(':');
+        const tandaName = `Bloque ${bId} - ${(bd || '').toUpperCase()}`;
+        isSubmittedExam = isExamen && (
+          window.userSubmittedExams.has(bloque.tId) ||
+          window.userSubmittedExams.has(tandaName) ||
+          window.userSubmittedExams.has((bloque.tId || '').toLowerCase()) ||
+          window.userSubmittedExams.has(tandaName.toLowerCase())
+        );
+
+        if (isSubmittedExam) {
+          btnClass = 'btn-outline-success';
+          btnText = 'Examen ya entregado';
+          iconClass = 'fa-check-circle text-success';
+          badgeClass = 'bg-success';
+          badgeText = 'ENTREGADO';
+          borderColor = 'border-success';
+        } else {
+          btnClass = isExamen ? 'btn-danger' : 'btn-success';
+          btnText = isExamen ? 'Iniciar' : 'Practicar';
+          iconClass = isExamen ? 'fa-stopwatch text-danger' : 'fa-dumbbell text-success';
+          badgeClass = isExamen ? 'bg-danger' : 'bg-success';
+          badgeText = bloque.modo.toUpperCase();
+          borderColor = isExamen ? 'border-danger' : 'border-success';
+        }
         linkHref = `ejercicio.html?tandaId=${bloque.tId}&claseId=${claseId}&modo=${bloque.modo}`;
         namePrefixHtml = `<span style="font-size:1.1rem" class="d-none d-md-inline me-2">${{ arepazo: '🍽️', nba: '🏀', alquiler: '🚗', pokemon: '⚡', futbol: '⚽', refugio: '☢️', heroes: '🦸', hogwarts: '🧙', arkham: '🦇', dnd: '🎲', mmorpg: '⚔️', dungeon: '🐉', baloncesto: '🏀', cosmere: '🌌' }[bloque.bd] || '🗄️'}</span>`;
       } else if (isTheory) {
@@ -845,9 +1080,15 @@ function renderAllTandasUI() {
             <div class="text-muted small ms-md-4">${bloque.desc || ''}</div>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm ${btnClass} text-nowrap" onclick="window.location.href='${linkHref}'">
-              <i class="fas fa-eye"></i> ${btnText}
-            </button>
+            ${isSubmittedExam ? `
+              <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 py-2 px-3 fw-semibold">
+                <i class="fas fa-check-circle me-1"></i>Examen ya entregado
+              </span>
+            ` : `
+              <button class="btn btn-sm ${btnClass} text-nowrap" onclick="window.location.href='${linkHref}'">
+                <i class="fas ${bloque.isLegacyTanda && bloque.modo === 'examen' ? 'fa-play' : 'fa-eye'} me-1"></i> ${btnText}
+              </button>
+            `}
           </div>
         </div>
       `;
@@ -860,4 +1101,22 @@ function renderAllTandasUI() {
     html = '<div class="col-12"><div class="empty-state"><div class="icon">📭</div><h5>No hay tareas</h5><p>Tu profesor no ha asignado ninguna tarea ni temario para esta clase todavía.</p></div></div>';
   }
   container.innerHTML = html;
+
+  // Sincronizar iconos chevron con eventos de collapse
+  container.querySelectorAll('.group-collapse').forEach(collapseEl => {
+    collapseEl.addEventListener('show.bs.collapse', () => {
+      const chevron = collapseEl.parentElement.querySelector('.chevron-icon');
+      if (chevron) {
+        chevron.classList.remove('fa-chevron-right');
+        chevron.classList.add('fa-chevron-down');
+      }
+    });
+    collapseEl.addEventListener('hide.bs.collapse', () => {
+      const chevron = collapseEl.parentElement.querySelector('.chevron-icon');
+      if (chevron) {
+        chevron.classList.remove('fa-chevron-down');
+        chevron.classList.add('fa-chevron-right');
+      }
+    });
+  });
 }

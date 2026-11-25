@@ -2,12 +2,12 @@ import { initTaskPage } from './auth.js';
 
 let user, userDoc, db, fb;
 
-initTaskPage().then(res => {
+initTaskPage().then(async res => {
   user = res.user; userDoc = res.userDoc; db = res.db; fb = res.fb;
-  loadTeoria();
+  await loadTeoria();
 }).catch(console.error);
 
-function loadTeoria() {
+async function loadTeoria() {
   const params = new URLSearchParams(window.location.search);
   const claseId = params.get('claseId');
   const bloqueId = parseInt(params.get('bloqueId'));
@@ -31,10 +31,30 @@ function loadTeoria() {
     }
   };
   
-  const bloqueData = window.BLOQUES?.find(b => b.id === bloqueId);
+  let bloqueData = window.BLOQUES?.find(b => b.id === bloqueId);
   if (!bloqueData) {
     document.getElementById('teoria-wrapper').innerHTML = '<div class="alert alert-danger">Bloque no encontrado.</div>';
     return;
+  }
+
+  // Si se especifica claseId, cargar posibles personalizaciones del título y descripción
+  if (claseId) {
+    try {
+      const snap = await fb.getDoc(fb.doc(db, 'clases', claseId));
+      if (snap.exists()) {
+        const cData = snap.data();
+        if (cData.tareasOfflineConfig && cData.tareasOfflineConfig[bloqueId]) {
+          const custom = cData.tareasOfflineConfig[bloqueId];
+          bloqueData = {
+            ...bloqueData,
+            nombre: custom.nombre !== undefined ? custom.nombre : bloqueData.nombre,
+            desc: custom.desc !== undefined ? custom.desc : bloqueData.desc
+          };
+        }
+      }
+    } catch(e) {
+      console.warn("No se pudo cargar personalización de tarea para la clase:", e);
+    }
   }
   
   document.getElementById('header-bloque-nombre').textContent = (bloqueData.tipo === 'tarea' ? 'Tarea: ' : 'Teoría: ') + bloqueData.nombre;

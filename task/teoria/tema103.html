@@ -52,34 +52,139 @@ USE nombreDeLaBBDD; -- Indicamos al cliente SQL que queremos usar esa bbdd</code
                         <li><code>PRIMARY KEY</code>: Identificador único (implica NOT NULL y UNIQUE).</li>
                         <li><code>FOREIGN KEY</code>: Referencia a otra tabla. Ambas columnas DEBEN TENER EL MISMO DOMINIO.</li>
                         <li><code>DEFAULT</code>: valor predeterminado si no se especifica.</li>
+                        <li><code>CHECK</code>: regla de validación lógica de datos (condición booleana).</li>
                     </ul>
                 </div>
             </div>
 
             <h5 class="mt-4 text-info">Ejemplo Completo con Claves y Relaciones</h5>
             <div class="code-block-wrapper mb-4">
-<pre><code class="language-sql">CREATE DATABASE DGT;
+<pre><code class="language-sql">-- Borrado y creación de la base de datos
+DROP DATABASE IF EXISTS DGT;
+CREATE DATABASE DGT;
 USE DGT;
 
+-- Tabla Persona
+DROP TABLE IF EXISTS Persona;
 CREATE TABLE Persona (
     dni VARCHAR(9) PRIMARY KEY,
-    nombre VARCHAR(250) NOT NULL
+    nombre VARCHAR(250) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    puntos INT DEFAULT 8 CHECK (puntos >= 0 AND puntos <= 15)
 );
 
+-- Tabla Coche
+DROP TABLE IF EXISTS Coche;
+CREATE TABLE Coche (
+    matricula VARCHAR(7) PRIMARY KEY,
+    bastidor VARCHAR(17) UNIQUE NOT NULL,
+    marca VARCHAR(50) NOT NULL,
+    modelo VARCHAR(50) NOT NULL,
+    color VARCHAR(30) DEFAULT 'Blanco'
+);
+
+-- Tabla Multa (relación 1:N con Persona)
+DROP TABLE IF EXISTS Multa;
 CREATE TABLE Multa (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    precio DECIMAL(18,2) NOT NULL,
+    precio DECIMAL(18,2) NOT NULL CHECK (precio > 0),
+    pagada BOOLEAN DEFAULT FALSE,
     DNI_Persona VARCHAR(9) NOT NULL,
     FOREIGN KEY (DNI_Persona) REFERENCES Persona(dni)
 );
 
--- Ejemplo de Primary Key doble
+-- Tabla intermedia PersonaCoche (relación N:M, ejemplo de Primary Key compuesta)
+DROP TABLE IF EXISTS PersonaCoche;
 CREATE TABLE PersonaCoche (
     DNI VARCHAR(9),
     Matricula VARCHAR(7),
     CONSTRAINT fkDNI FOREIGN KEY (DNI) REFERENCES Persona(dni),
+    CONSTRAINT fkMatricula FOREIGN KEY (Matricula) REFERENCES Coche(matricula),
     PRIMARY KEY (DNI, Matricula)
 );</code></pre>
+            </div>
+
+            <!-- Detalle pedagógico: Restricción CHECK -->
+            <div class="card bg-glass border-info border-opacity-25 shadow-sm p-4 mb-4">
+                <h4 class="text-info"><i class="fas fa-check-double me-2"></i>¿Para qué sirve la restricción CHECK? (Validación de Integridad)</h4>
+                <p class="text-secondary">
+                    La restricción <code>CHECK</code> se utiliza para definir <strong>reglas de negocio lógicas</strong> que los datos deben cumplir obligatoriamente al insertarse o actualizarse. Si una sentencia <code>INSERT</code> o <code>UPDATE</code> intenta guardar un valor que evalúe la condición a <code>FALSE</code>, el motor de la base de datos <strong>rechaza la operación y lanza un error</strong>.
+                </p>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100">
+                            <h6 class="text-warning"><i class="fas fa-shield-alt me-2"></i>¿Por qué no validar solo en la aplicación?</h6>
+                            <p class="small text-muted mb-0">
+                                Es el principio de <strong>defensa en profundidad</strong>. Aunque el frontend (formulario web/móvil) y el backend (Java, Python, PHP, Node) validen los datos, alguien podría conectarse directamente por consola, DBeaver, scripts de migración o APIs externas. La restricción <code>CHECK</code> en la base de datos es la <strong>última barrera inquebrantable</strong> para impedir datos corruptos o ilógicos (ej. precios negativos, notas mayores que 10 o aforos &le; 0).
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100">
+                            <h6 class="text-success"><i class="fas fa-code me-2"></i>Formas de sintaxis en MariaDB / MySQL</h6>
+                            <ul class="small text-muted mb-0">
+                                <li><strong>En la propia columna:</strong><br><code>edad INT CHECK (edad &gt;= 18)</code></li>
+                                <li><strong>Al final de la tabla (compuesto):</strong><br><code>CONSTRAINT chk_nota CHECK (nota &gt;= 0 AND nota &lt;= 10)</code></li>
+                                <li><strong>Comparando dos columnas entre sí:</strong><br><code>CHECK (fecha_fin &gt;= fecha_inicio)</code></li>
+                                <li><strong>Añadir a tabla existente:</strong><br><code>ALTER TABLE Celdas ADD CHECK (nivel_seguridad &gt; 0);</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalle pedagógico: Tablas Temporales -->
+            <div class="card bg-glass border-warning border-opacity-25 shadow-sm p-4 mb-4">
+                <h4 class="text-warning"><i class="fas fa-stopwatch me-2"></i>¿Qué son y para qué sirven las Tablas Temporales (<code>TEMPORARY TABLE</code>)?</h4>
+                <p class="text-secondary">
+                    Una tabla temporal (<code>CREATE TEMPORARY TABLE</code>) es una tabla especial cuya vida útil está ligada <strong>única y exclusivamente a la sesión o conexión actual</strong> del cliente SQL. En el momento en que cierras tu conexión con MariaDB/MySQL (o finaliza tu script o aplicación), la tabla y todos sus datos <strong>se destruyen automáticamente sin dejar rastro</strong>.
+                </p>
+                
+                <h6 class="text-info mt-3"><i class="fas fa-lightbulb me-2"></i>Casos de uso reales: ¿Cuándo y por qué utilizarlas?</h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100">
+                            <div class="fw-bold text-light mb-1">1. Cálculos Intermedios</div>
+                            <p class="small text-muted mb-0">
+                                Para almacenar resultados parciales de consultas muy complejas o procesos por lotes (batch) antes de generar un informe final o consolidar estadísticas.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100">
+                            <div class="fw-bold text-light mb-1">2. Aislamiento Total por Sesión</div>
+                            <p class="small text-muted mb-0">
+                                Varios usuarios o hilos concurrentes pueden crear una tabla temporal con el <em>mismo nombre</em> (ej. <code>Calculos</code>) a la vez. Cada usuario solo ve y modifica sus propios datos, sin colisiones ni bloqueos.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100">
+                            <div class="fw-bold text-light mb-1">3. Cero "Basura" en Producción</div>
+                            <p class="small text-muted mb-0">
+                                No ensucian el catálogo de la base de datos de producción. No necesitas acordarte de ejecutar un <code>DROP TABLE</code> manual: cuando el script o la conexión finaliza, el motor limpia la memoria/disco.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block-wrapper mb-2">
+<pre><code class="language-sql">-- Creación de tabla temporal (solo existirá mientras dure tu sesión)
+CREATE TEMPORARY TABLE VentasMesActual (
+    id_venta INT AUTO_INCREMENT PRIMARY KEY,
+    total DECIMAL(10,2) NOT NULL,
+    fecha DATE
+);
+
+-- Se opera con ella exactamente igual que con una tabla normal:
+INSERT INTO VentasMesActual (total, fecha) VALUES (120.50, '2026-11-25');
+SELECT AVG(total) FROM VentasMesActual;
+
+-- Al cerrar tu cliente (DBeaver, terminal o script), desaparece automáticamente.</code></pre>
+                </div>
+                <div class="alert alert-info bg-opacity-10 border-info small mb-0 mt-2">
+                    <i class="fas fa-info-circle me-2 text-info"></i><strong>Diferencia clave con tablas normales:</strong> Una tabla normal persiste en disco para siempre hasta que alguien haga un <code>DROP TABLE</code> explícito. Una tabla temporal es volátil, ultrarrápida y privada para la sesión que la creó.
+                </div>
             </div>
 
             <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de Creación (1-10)</h5>

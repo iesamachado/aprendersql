@@ -31,6 +31,13 @@ CREATE TABLE Matriculas (
 );
 
 -- ========================================================
+-- Tablas auxiliares para ejercicios DDL (DROP TABLE, etc.)
+-- ========================================================
+CREATE TABLE IF NOT EXISTS Hechizos_Oscuros (id_hechizo INT PRIMARY KEY, nombre VARCHAR(100));
+CREATE TABLE IF NOT EXISTS Castigos (id_castigo INT PRIMARY KEY, motivo VARCHAR(100));
+CREATE TABLE IF NOT EXISTS Torneos (id_torneo INT PRIMARY KEY, nombre VARCHAR(100));
+
+-- ========================================================
 -- DATOS INICIALES
 -- ========================================================
 INSERT INTO Casas (id_casa, nombre_casa, fundador) VALUES 

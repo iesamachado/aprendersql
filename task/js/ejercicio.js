@@ -5,7 +5,8 @@ import {
   adaptSqlScriptForSqlite, 
   adaptSqlForSqlite, 
   compareResults 
-} from '../../js/sql-engine-utils.js?v=2';
+} from '../../js/sql-engine-utils.js?v=4';
+
 
 let user, userDoc, db, fb;
 let currentClase = null;
@@ -15,8 +16,15 @@ let currentEjercicios = [];
 let currentDatabaseName = '';
 let currentExId = null;
 
+let isExamSubmitted = false;
+let isConfirmingSubmit = false;
+let isWarningModalOpen = false;
+let antiCheatInitialized = false;
+
 let sqlDb = null;
 let sqlWorker = null;
+let SQL_ENGINE = null;
+const DB_CACHE = {};
 
 // Referencias DOM
 const exListEl = document.getElementById('ex-list');
@@ -72,6 +80,8 @@ async function initEditorPage() {
     document.getElementById('btn-show-schema').onclick = showSchema;
     const nomnomlBtnTest = document.getElementById('btn-show-nomnoml');
     if (nomnomlBtnTest) nomnomlBtnTest.onclick = showSchema;
+    const btnResetTest = document.getElementById('btn-reset-db');
+    if (btnResetTest) btnResetTest.onclick = resetCurrentDatabase;
     return;
   }
   
@@ -99,7 +109,7 @@ async function initEditorPage() {
   
   if (currentModo === 'examen') {
     document.getElementById('btn-submit-tanda').style.display = 'block';
-    document.getElementById('btn-submit-tanda').onclick = submitExam;
+    document.getElementById('btn-submit-tanda').onclick = () => submitExam(false);
     document.getElementById('btn-hint').style.display = 'none';
   }
 
@@ -134,6 +144,7 @@ async function initEditorPage() {
       const snapEx = await fb.getDocs(qEx);
       if (!snapEx.empty) {
         // Ya lo entregó
+        isExamSubmitted = true;
         const lastExam = snapEx.docs.sort((a,b) => b.data().fecha.localeCompare(a.data().fecha))[0].data();
         window.examAnswers = lastExam.respuestas || {};
         const btnSubmit = document.getElementById('btn-submit-tanda');
@@ -141,6 +152,9 @@ async function initEditorPage() {
         btnSubmit.innerHTML = '<i class="fas fa-lock"></i> Examen Entregado';
         btnSubmit.classList.replace('btn-success', 'btn-secondary');
         showToast('ℹ️', 'Estás revisando un examen ya entregado.', 'info');
+      } else {
+        // Examen activo sin entregar -> activar detector anti-trampas
+        setupExamAntiCheat(claseId, currentTanda);
       }
     } catch(e) { console.error('Error cargando examen previo:', e); }
   }
@@ -169,6 +183,9 @@ async function initEditorPage() {
   
   const nomnomlBtn = document.getElementById('btn-show-nomnoml');
   if(nomnomlBtn) nomnomlBtn.onclick = showSchema;
+
+  const btnReset = document.getElementById('btn-reset-db');
+  if (btnReset) btnReset.onclick = resetCurrentDatabase;
 }
 
 async function updateProgressUI() {
@@ -200,13 +217,14 @@ async function updateProgressUI() {
     btn.onclick = () => loadExercise(ex.id);
     
     const displayTitle = currentModo === 'examen' ? `Ejercicio ${idx + 1}` : `#${ex.id} - ${ex.titulo}`;
+    const subtitleHtml = currentModo === 'examen' ? '' : `<div class="text-muted" style="font-size:0.7rem">${ex.tema || ''}</div>`;
     const icon = ex._superado ? '<i class="fas fa-check-circle text-success me-2"></i>' : '<i class="far fa-circle text-secondary me-2"></i>';
     btn.innerHTML = `
-      <div class="d-flex align-items-start">
+      <div class="d-flex align-items-center">
         ${icon}
         <div>
-          <div class="small fw-bold mb-1">${displayTitle}</div>
-          <div class="text-muted" style="font-size:0.7rem">${ex.tema || ''}</div>
+          <div class="small fw-bold ${currentModo === 'examen' ? '' : 'mb-1'}">${displayTitle}</div>
+          ${subtitleHtml}
         </div>
       </div>
     `;
@@ -412,7 +430,7 @@ async function loadExercise(id) {
   exTextEl.innerHTML = ex.enunciado;
   let previousSql = '';
   if (currentModo === 'examen' && window.examAnswers && window.examAnswers[ex.id]) {
-    previousSql = window.examAnswers[ex.id].sql || '';
+    previousSql = window.examAnswers[ex.id].query || window.examAnswers[ex.id].sql || '';
   } else if (currentModo === 'practica' && ex._respuesta_sql) {
     previousSql = ex._respuesta_sql;
   }
@@ -424,27 +442,42 @@ async function loadExercise(id) {
   btnRun.disabled = true;
   document.getElementById('run-spinner').style.display = 'inline-block';
 
-  // Si cambia la BD, cargar el motor sqlite
-  if (currentDatabaseName !== ex.bd) {
-    await loadDatabase(ex.bd);
-    currentDatabaseName = ex.bd;
-  }
+  // Restaurar la base de datos limpia para este ejercicio
+  await loadDatabase(ex.bd);
+  currentDatabaseName = ex.bd;
   
-  btnRun.disabled = false;
+  btnRun.disabled = isExamSubmitted ? true : false;
+  if (isExamSubmitted) sqlEditor.disabled = true;
   document.getElementById('run-spinner').style.display = 'none';
 }
 
+async function resetCurrentDatabase() {
+  const ex = currentEjercicios.find(e => e.id === currentExId);
+  const bd = ex?.bd || currentDatabaseName;
+  if (!bd) return;
+  await loadDatabase(bd);
+  showToast('🔄', 'Base de datos reiniciada al estado inicial.', 'info');
+}
 
-async function loadDatabase(bdName) {
+async function loadDatabase(bdName, forceFetch = false) {
   try {
     if (!window.initSqlJs) throw new Error('sql.js no cargado');
-    const SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
+    if (!SQL_ENGINE) {
+      SQL_ENGINE = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
+    }
+
+    if (DB_CACHE[bdName] && !forceFetch) {
+      sqlDb = new SQL_ENGINE.Database(DB_CACHE[bdName]);
+      registerCustomFunctions(sqlDb);
+      updateSchemaSidebar();
+      return;
+    }
     
     // Cargar desde los scripts .sql en la carpeta bds
     const path = `bds/${bdName}.sql`;
     
     const res = await fetch(`../${path}`);
-    sqlDb = new SQL.Database(); // Siempre inicializar vacía
+    sqlDb = new SQL_ENGINE.Database(); // Siempre inicializar vacía
     registerCustomFunctions(sqlDb);
     
     if (!res.ok) {
@@ -462,6 +495,7 @@ async function loadDatabase(bdName) {
       }
     }
     
+    DB_CACHE[bdName] = sqlDb.export();
     updateSchemaSidebar();
   } catch (e) {
     showToast('❌', 'Error cargando BD: ' + e.message, 'error');
@@ -536,24 +570,31 @@ function showSchema() {
 }
 
 async function runQuery() {
+  if (isExamSubmitted) {
+    showToast('🔒', 'El examen ya ha sido entregado.', 'warning');
+    return;
+  }
   if (!sqlDb || !currentExId) return;
   const query = sqlEditor.value.trim();
   if (!query) return;
 
   const ex = currentEjercicios.find(e => e.id === currentExId);
-  const isDML = /^\s*(INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|RENAME|TRUNCATE)/i.test(query);
+  // isDDL: CREATE/ALTER/DROP/RENAME/TRUNCATE  → estructura de tabla
+  // isDML: INSERT/UPDATE/DELETE               → aceptar si no hay error SQL
+  const isDDL = /^\s*(CREATE|ALTER|DROP|RENAME|TRUNCATE)/i.test(query);
+  const isDML = !isDDL && /^\s*(INSERT|UPDATE|DELETE)/i.test(query);
 
   btnRun.disabled = true;
   try {
     // 1. Ejecutar query del alumno
     let resAlumno = [];
     const adaptedQuery = adaptSqlForSqlite(query);
-    if (isDML) {
+    if (isDDL || isDML) {
       try {
         sqlDb.exec(adaptedQuery);
         resAlumno = [{ columns: ['Resultado'], values: [['Comando ejecutado correctamente']] }];
       } catch (err) {
-        if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX)|ADD\s+.*,)/i.test(query) || (err.message && err.message.includes('in foreign key definition'))) {
+        if (/^\s*ALTER\s+TABLE\s+\w+\s+(MODIFY|CHANGE|ALTER\s+COLUMN|RENAME\s+COLUMN|ADD\s+(CONSTRAINT|CHECK|FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE)|DROP\s+(PRIMARY\s+KEY|FOREIGN\s+KEY|CONSTRAINT|INDEX)|ADD\s+.*,)/i.test(query) || (err.message && err.message.includes('in foreign key definition'))) {
           resAlumno = [{ columns: ['Resultado', 'Aviso'], values: [['Comando aceptado', 'El comando es válido en MariaDB/MySQL, pero no se modificará la tabla por limitación del motor de SQLite en el navegador.']] }];
           showToast('⚠️', 'Comando correcto. No se modifica la BD por limitación del motor.', 'warning');
         } else {
@@ -572,15 +613,19 @@ async function runQuery() {
     
     renderResults(resAlumno);
 
+    // Para SELECT/DML: dbCopy con el estado tras la query del alumno para ejecutar la solución
+    // Para DDL: compareDDL crea su propia BD limpia internamente
     const dbCopy = new sqlDb.constructor(sqlDb.export());
     registerCustomFunctions(dbCopy);
     let resSolucion = [];
-    try {
-      const adaptedSolucion = adaptSqlForSqlite(ex.query_solucion);
-      resSolucion = dbCopy.exec(adaptedSolucion);
-    } catch(e) { console.error('Error en solución oficial:', e); }
+    if (!isDDL) {
+      try {
+        const adaptedSolucion = adaptSqlForSqlite(ex.query_solucion);
+        resSolucion = dbCopy.exec(adaptedSolucion);
+      } catch(e) { console.error('Error en solución oficial:', e); }
+    }
 
-    const isCorrect = compareResults(resAlumno, resSolucion, isDML, dbCopy, ex);
+    const isCorrect = compareResults(resAlumno, resSolucion, isDML, isDDL, sqlDb, ex.query_solucion);
     
     if (currentModo === 'practica') {
       if (isCorrect) {
@@ -614,7 +659,7 @@ async function runQuery() {
       if(btnLista) btnLista.classList.add('border-warning', 'border-2');
     }
   } finally {
-    if (isDML) updateSchemaSidebar();
+    if (isDDL || isDML) updateSchemaSidebar();
     btnRun.disabled = false;
   }
 }
@@ -741,43 +786,128 @@ function showConfetti() {
   };
 }
 
-async function submitExam() {
+function setupExamAntiCheat(claseId, tandaIdentifier) {
+  if (antiCheatInitialized) return;
+  antiCheatInitialized = true;
+
+  if (currentModo !== 'examen' || userDoc?.rol !== 'alumno' || isExamSubmitted) return;
+
+  const storageKey = `cheat_warn_${user.uid}_${claseId || 'clase'}_${tandaIdentifier || currentTanda}`;
+  let warnings = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
+
+  if (warnings >= 2) {
+    submitExam(true, 'Examen cerrado por cambio de ventana reiterado (2 avisos acumulados).');
+    return;
+  }
+
+  let lastViolationTs = 0;
+
+  const handleViolation = () => {
+    if (isExamSubmitted || isWarningModalOpen || isConfirmingSubmit) return;
+    if (currentModo !== 'examen' || userDoc?.rol !== 'alumno') return;
+
+    const now = Date.now();
+    if (now - lastViolationTs < 2500) return; // Debounce 2.5s para no contar blur y visibilitychange juntos
+    lastViolationTs = now;
+
+    warnings = parseInt(sessionStorage.getItem(storageKey) || '0', 10) + 1;
+    sessionStorage.setItem(storageKey, warnings.toString());
+
+    if (warnings === 1) {
+      isWarningModalOpen = true;
+      const modalEl = document.getElementById('modal-anti-cheat-warning');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalEl.addEventListener('hidden.bs.modal', () => {
+          setTimeout(() => { isWarningModalOpen = false; }, 1000);
+        }, { once: true });
+        modal.show();
+      } else {
+        alert('⚠️ PRIMER AVISO: Está prohibido cambiar de ventana o pestaña durante el examen. Si sales de la pantalla una segunda vez, tu examen se cerrará y se entregará automáticamente.');
+        setTimeout(() => { isWarningModalOpen = false; }, 1000);
+      }
+    } else if (warnings >= 2) {
+      const modalEl = document.getElementById('modal-anti-cheat-warning');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+      }
+      submitExam(true, 'Examen cerrado y entregado automáticamente por cambio de ventana (2 avisos).');
+    }
+  };
+
+  setTimeout(() => {
+    window.addEventListener('blur', handleViolation);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        handleViolation();
+      }
+    });
+  }, 1500);
+}
+
+async function submitExam(forced = false, forcedReason = '') {
+  if (isExamSubmitted) return;
+  forced = (forced === true);
+
+  if (!forced) {
+    isConfirmingSubmit = true;
+    let respondidas = 0;
+    currentEjercicios.forEach(ex => {
+      if (window.examAnswers && window.examAnswers[ex.id]) respondidas++;
+    });
+    if (respondidas < currentEjercicios.length) {
+      const conf = confirm(`Faltan ${currentEjercicios.length - respondidas} preguntas por responder. ¿Seguro que quieres entregar?`);
+      setTimeout(() => { isConfirmingSubmit = false; }, 600);
+      if (!conf) return;
+    } else {
+      const conf = confirm('¿Seguro que quieres entregar el examen? No podrás cambiar las respuestas.');
+      setTimeout(() => { isConfirmingSubmit = false; }, 600);
+      if (!conf) return;
+    }
+  }
+
+  isExamSubmitted = true;
   if (!window.examAnswers) window.examAnswers = {};
-  
+
+  // Si había algo escrito en el editor para el ejercicio actual y no se había guardado, guardarlo
+  if (currentExId && sqlEditor && sqlEditor.value.trim() && !window.examAnswers[currentExId]) {
+    window.examAnswers[currentExId] = { query: sqlEditor.value.trim(), isCorrect: false, puntos: 0 };
+  }
+
   let totalPuntosPosibles = 0;
   let puntosConseguidos = 0;
-  let respondidas = 0;
   
   currentEjercicios.forEach(ex => {
     totalPuntosPosibles += (ex.puntos || 10);
     const ans = window.examAnswers[ex.id];
     if (ans) {
-      respondidas++;
       if (ans.isCorrect) puntosConseguidos += ans.puntos;
     }
   });
 
-  if (respondidas < currentEjercicios.length) {
-    if (!confirm(`Faltan ${currentEjercicios.length - respondidas} preguntas por responder. ¿Seguro que quieres entregar?`)) {
-      return;
-    }
+  const btnSubmit = document.getElementById('btn-submit-tanda');
+  if (btnSubmit) {
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entregando...';
   }
 
-  const btnSubmit = document.getElementById('btn-submit-tanda');
-  btnSubmit.disabled = true;
-  btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entregando...';
+  if (sqlEditor) sqlEditor.disabled = true;
+  if (btnRun) btnRun.disabled = true;
+
+  const claseIdParam = new URLSearchParams(window.location.search).get('claseId');
 
   // Guardar en firestore si es alumno
   if (userDoc.rol === 'alumno') {
     try {
-      const claseIdParam = new URLSearchParams(window.location.search).get('claseId');
       const examData = {
         claseId: claseIdParam,
         tandaId: currentTanda,
         fecha: new Date().toISOString(),
         respuestas: window.examAnswers,
         puntuacion: puntosConseguidos,
-        puntosMaximos: totalPuntosPosibles
+        puntosMaximos: totalPuntosPosibles,
+        ...(forced ? { cerradoAutomatico: true, motivoCierre: forcedReason } : {})
       };
       await fb.setDoc(fb.doc(db, 'usuarios', user.uid, 'examenes', `examen_${Date.now()}`), examData);
       
@@ -787,24 +917,41 @@ async function submitExam() {
       });
     } catch(e) {
       console.error(e);
-      alert('Error guardando el examen: ' + e.message);
+      if (!forced) alert('Error guardando el examen: ' + e.message);
     }
   }
 
   // Mostrar nota final
-  const nota = (puntosConseguidos / totalPuntosPosibles) * 10;
+  const nota = totalPuntosPosibles > 0 ? (puntosConseguidos / totalPuntosPosibles) * 10 : 0;
   const overlay = document.getElementById('success-overlay');
   
-  overlay.innerHTML = `
-      <i class="fas fa-clipboard-check text-white mb-3" style="font-size: 5rem; text-shadow: 0 4px 15px rgba(0,0,0,0.2)"></i>
-      <h2 class="text-white fw-bold">Examen Entregado</h2>
-      <p class="text-white-50 fs-4 mb-2">Nota: ${nota.toFixed(1)} / 10</p>
-      <p class="text-white-50 mb-4">${puntosConseguidos} de ${totalPuntosPosibles} puntos</p>
-      <button class="btn btn-light btn-lg fw-bold px-5 rounded-pill shadow" onclick="window.close(); window.location.href='tandas.html?claseId=${new URLSearchParams(window.location.search).get('claseId')}'">
-        Volver a la clase <i class="fas fa-arrow-right ms-2"></i>
-      </button>
-  `;
-  overlay.style.background = 'rgba(15, 23, 42, 0.95)';
+  if (forced) {
+    overlay.innerHTML = `
+        <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 5rem; text-shadow: 0 4px 15px rgba(239, 68, 68, 0.5)"></i>
+        <h2 class="text-white fw-bold">Examen Finalizado</h2>
+        <div class="alert alert-danger mx-auto my-3 text-start px-4 py-3" style="max-width: 520px; background: rgba(220, 38, 38, 0.25); border-color: #ef4444;">
+          <h6 class="fw-bold text-danger mb-2"><i class="fas fa-shield-alt me-2"></i>Examen cerrado por cambio de ventana (2 avisos)</h6>
+          <p class="mb-0 small text-light">Has salido de la pantalla del examen en dos ocasiones. Se ha cerrado el examen y se han entregado automáticamente tus respuestas registradas hasta este momento.</p>
+        </div>
+        <p class="text-white-50 fs-4 mb-2">Nota: <strong class="text-white">${nota.toFixed(1)} / 10</strong></p>
+        <p class="text-white-50 mb-4">${puntosConseguidos} de ${totalPuntosPosibles} puntos</p>
+        <button class="btn btn-danger btn-lg fw-bold px-5 rounded-pill shadow" onclick="window.close(); window.location.href='tandas.html?claseId=${claseIdParam}'">
+          Volver a la clase <i class="fas fa-arrow-right ms-2"></i>
+        </button>
+    `;
+    overlay.style.background = 'rgba(15, 23, 42, 0.98)';
+  } else {
+    overlay.innerHTML = `
+        <i class="fas fa-clipboard-check text-white mb-3" style="font-size: 5rem; text-shadow: 0 4px 15px rgba(0,0,0,0.2)"></i>
+        <h2 class="text-white fw-bold">Examen Entregado</h2>
+        <p class="text-white-50 fs-4 mb-2">Nota: ${nota.toFixed(1)} / 10</p>
+        <p class="text-white-50 mb-4">${puntosConseguidos} de ${totalPuntosPosibles} puntos</p>
+        <button class="btn btn-light btn-lg fw-bold px-5 rounded-pill shadow" onclick="window.close(); window.location.href='tandas.html?claseId=${claseIdParam}'">
+          Volver a la clase <i class="fas fa-arrow-right ms-2"></i>
+        </button>
+    `;
+    overlay.style.background = 'rgba(15, 23, 42, 0.95)';
+  }
   overlay.style.setProperty('display', 'flex', 'important');
 }
 async function loadGremioLeaderboard() {
