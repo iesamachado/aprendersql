@@ -1,124 +1,638 @@
 <div class="tema-content p-4">
   <div class="text-center mb-5">
-    <h1 class="display-5 text-primary"><i class="fas fa-database me-3"></i>Tema 3: Seguridad y Control de Acceso</h1>
-    <p class="lead">Módulo: Administración de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA3</span></p>
-    <p class="text-secondary">Gestión de Usuarios · Privilegios · Roles en MariaDB</p>
+    <h1 class="display-5 text-primary"><i class="fas fa-shield-alt me-3"></i>Tema 3: Seguridad y Control de Acceso</h1>
+    <p class="lead">Módulo: Administración de Sistemas Gestores de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA3</span></p>
+    <p class="text-secondary">Gestión de Cuentas · Privilegios DML, DDL y Administrativos · Granularidad · Roles · Vistas · Sinónimos · Directivas de Seguridad</p>
   </div>
 
-
-  <!-- Índice -->
-  <div class="card border-info mb-5">
+  <!-- Índice del Tema -->
+  <div class="card border-info mb-5 shadow-sm">
     <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
-      <i class="fas fa-list me-2"></i>Índice del Tema
+      <i class="fas fa-list-ul me-2"></i>Índice de Contenidos
     </div>
     <div class="card-body">
       <ul class="list-unstyled mb-0" style="line-height: 2.2;">
-        <li><a href="#introduccion" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. Introducción: La Filosofía de la Seguridad</a></li>
-        <li><a href="#usuarios" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Gestión de Usuarios y Hosts</a></li>
-        <li><a href="#privilegios" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. Privilegios (GRANT y REVOKE)</a></li>
-        <li><a href="#roles" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Roles (Grupos de Usuarios)</a></li>
-        <li><a href="#vistas" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>5. Vistas (Views) como Mecanismo de Seguridad</a></li>
-        <li><a href="#sinonimos" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>6. Sinónimos (Synonyms)</a></li>
+        <li><a href="#filosofia" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. La Filosofía de la Seguridad: "Ser Rancios" y Principio de Mínimo Privilegio</a></li>
+        <li><a href="#usuarios" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Gestión de Usuarios, Hosts y Autenticación</a></li>
+        <li><a href="#catalogo-privilegios" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. Catálogo Completo de Privilegios (DML, DDL y Administrativos)</a></li>
+        <li><a href="#granularidad" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Niveles de Granularidad (Global, BD, Tabla, Columna y Rutina)</a></li>
+        <li><a href="#asignacion-revocacion" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>5. Asignación y Revocación de Privilegios (GRANT, REVOKE y Diagnóstico)</a></li>
+        <li><a href="#roles" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>6. Roles: Agrupación y Centralización de Permisos</a></li>
+        <li><a href="#vistas-seguridad" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>7. Vistas (Views) como Barrera de Seguridad (Fila, Columna y WITH CHECK OPTION)</a></li>
+        <li><a href="#sinonimos" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>8. Sinónimos (Synonyms) y Abstracción de Esquemas</a></li>
+        <li><a href="#buenas-practicas" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>9. Requisitos de Seguridad, Bastionado y Auditoría (mariadb-secure-installation)</a></li>
       </ul>
     </div>
   </div>
-  
 
-<p class="lead text-center">Guía interactiva sobre la gestión de seguridad en bases de datos MariaDB.</p>
+  <!-- Sección 1: Filosofía de la Seguridad -->
+  <section id="filosofia" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-user-shield text-warning me-2"></i>1. La Filosofía de la Seguridad: "Ser Rancios" y Principio de Mínimo Privilegio
+    </h2>
+    <p class="lead mt-3">
+      En administración de bases de datos, la seguridad descansa sobre una máxima pedagógica irrenunciable: <strong>"Ser rancios"</strong>. El administrador de sistemas gestores no debe regalar permisos por comodidad; debe ser extremadamente tacaño y riguroso.
+    </p>
 
-        <!-- Table of Contents -->
-        
-
-        <!-- 1. Introducción -->
-        <h2 id="introduccion"><i class="fas fa-lock"></i> 1. Introducción: La Filosofía de la Seguridad</h2>
-        <p>En el ámbito de la seguridad de bases de datos, existe una regla de oro: <strong>"Ser rancios"</strong>. No estamos aquí para hacer amigos; debemos ser extremadamente tacaños con los permisos que otorgamos.</p>
-        <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle"></i> <strong>Principio de Mínimo Privilegio:</strong> Si nos piden permisos para que un usuario consulte una tabla, jamás le daremos credenciales de administrador (root). Solo concederemos el acceso estricto y necesario.
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card h-100 border-warning bg-dark">
+          <div class="card-body">
+            <h5 class="card-title text-warning"><i class="fas fa-hand-holding-usd me-2"></i>Principio de Mínimo Privilegio</h5>
+            <p class="card-text small text-light">
+              Cada usuario, rol o aplicación informática debe operar con el conjunto <strong>estrictamente mínimo e indispensable</strong> de privilegios para cumplir su función, y solo durante el tiempo necesario. Si una app web solo necesita leer platos, jamás debe tener permisos de <code>UPDATE</code>, <code>DROP</code> o administración global.
+            </p>
+          </div>
         </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-primary bg-dark">
+          <div class="card-body">
+            <h5 class="card-title text-primary"><i class="fas fa-layer-group me-2"></i>Defensa en Profundidad</h5>
+            <p class="card-text small text-light">
+              La seguridad no depende de una única barrera. Se articula en múltiples capas superpuestas: cortafuegos de red, cifrado en tránsito (TLS/SSL), control de acceso a nivel de gestor, aislamiento por usuarios, roles, vistas y restricciones lógicas.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <!-- 2. Usuarios -->
-        <h2 id="usuarios"><i class="fas fa-users"></i> 2. Gestión de Usuarios y Hosts</h2>
-        <p>En MariaDB y MySQL, la gestión de usuarios tiene una particularidad importante respecto a otros sistemas (como SQL Server): a cada usuario se le asocia una <strong>IP o Host</strong> desde la que tiene permitido conectarse.</p>
-        <ul>
-            <li><code>localhost</code>: Solo permite conexiones desde el mismo servidor donde está la base de datos.</li>
-            <li><code>%</code>: Es un comodín que indica que el usuario puede conectarse desde <strong>cualquier máquina</strong>.</li>
-        </ul>
-        <p>Para crear un usuario, utilizamos la instrucción <code>CREATE USER</code>:</p>
-        <pre><code>-- Crear un usuario que puede conectarse desde cualquier lugar
-CREATE USER 'usuario1'@'%' IDENTIFIED BY 'MiContraseñaSegura!';
+    <div class="alert alert-danger">
+      <i class="fas fa-radiation-alt me-2"></i>
+      <strong>Regla de oro:</strong> Jamás utilices la cuenta <code>root</code> para la conexión de aplicaciones backend (PHP, Python, Java, etc.) ni para tareas operativas cotidianas. Si la aplicación sufre una vulnerabilidad de <strong>Inyección SQL (SQLi)</strong>, el atacante obtendría el control total del servidor de base de datos.
+    </div>
+  </section>
 
--- Crear un usuario que solo puede acceder localmente
-CREATE USER 'admin_local'@'localhost' IDENTIFIED BY 'SuperSecreta!';</code></pre>
-        <p>Podemos consultar los usuarios existentes revisando la tabla del sistema:</p>
-        <pre><code>SELECT User, Host FROM mysql.user;</code></pre>
+  <!-- Sección 2: Gestión de Usuarios y Hosts -->
+  <section id="usuarios" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-users-cog text-warning me-2"></i>2. Gestión de Usuarios, Hosts y Autenticación
+    </h2>
+    <p class="lead mt-3">
+      En MariaDB y MySQL, la identidad de una cuenta de usuario no es solo un nombre, sino una tupla compuesta por <strong>'usuario'@'host'</strong>. Un mismo nombre de usuario puede tener contraseñas, permisos y orígenes totalmente independientes según el host desde el que se conecte.
+    </p>
 
-        <!-- 3. Privilegios -->
-        <h2 id="privilegios"><i class="fas fa-key"></i> 3. Privilegios (GRANT y REVOKE)</h2>
-        <p>Una vez creado el usuario, este no tiene permisos para hacer nada. Usamos <code>GRANT</code> para conceder permisos y <code>REVOKE</code> para quitarlos.</p>
-        
-        <h4>Asignar Privilegios</h4>
-        <pre><code>-- Dar permisos específicos sobre una base de datos entera
-GRANT SELECT, INSERT, UPDATE, DELETE ON midb.* TO 'usuario1'@'%';
+    <div class="table-responsive my-4">
+      <table class="table table-bordered table-dark table-hover align-middle">
+        <thead class="table-primary text-dark text-center">
+          <tr>
+            <th>Host Especificado</th>
+            <th>Significado y Ámbito de Conexión</th>
+            <th>Nivel de Seguridad</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>'usuario'@'localhost'</code></td>
+            <td>Solo permite conexiones locales desde la propia máquina que aloja la base de datos (mediante socket UNIX / plugin <code>unix_socket</code> o loopback 127.0.0.1).</td>
+            <td><span class="badge bg-success">Máximo</span> Recomendado para administradores locales.</td>
+          </tr>
+          <tr>
+            <td><code>'usuario'@'%'</code></td>
+            <td>Comodín que permite conexiones desde <strong>cualquier dirección IP o máquina remota</strong> del mundo.</td>
+            <td><span class="badge bg-danger">Riesgo Alto</span> Exige contraseñas muy robustas y cifrado.</td>
+          </tr>
+          <tr>
+            <td><code>'usuario'@'192.168.1.%'</code></td>
+            <td>Permite conexiones únicamente desde máquinas pertenecientes a esa subred IP privada específica.</td>
+            <td><span class="badge bg-info text-dark">Equilibrado</span> Ideal para servidores web o VPNs corporativas.</td>
+          </tr>
+          <tr>
+            <td><code>'usuario'@'servidor-web.dominio.es'</code></td>
+            <td>Restringe el acceso al Fully Qualified Domain Name (FQDN) indicado (resolución inversa DNS).</td>
+            <td><span class="badge bg-secondary">Específico</span> Requiere resolución DNS fiable.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
--- Dar TODOS los privilegios (Solo para administradores)
-GRANT ALL PRIVILEGES ON midb.* TO 'admin_local'@'localhost';</code></pre>
+    <h4><i class="fas fa-code text-secondary me-2"></i>Comandos de Gestión de Cuentas</h4>
+    <pre><code>-- 1. Crear cuentas de usuario
+CREATE USER 'camarero1'@'%' IDENTIFIED BY 'ClaveRobusta2024!';
+CREATE USER 'admin_tienda'@'192.168.1.%' IDENTIFIED BY 'AdminPass*987';
+CREATE USER 'script_backup'@'localhost' IDENTIFIED BY 'BackupLocalSeguro#1';
 
-        <h4>Ver los Privilegios de un Usuario</h4>
-        <pre><code>SHOW GRANTS FOR 'usuario1'@'%';</code></pre>
+-- 2. Modificar contraseñas y atributos de una cuenta existente
+ALTER USER 'camarero1'@'%' IDENTIFIED BY 'NuevaClaveSegura2025$';
 
-        <h4>Revocar Privilegios</h4>
-        <pre><code>-- Quitar el permiso de borrado
-REVOKE DELETE ON midb.* FROM 'usuario1'@'%';</code></pre>
+-- 3. Bloquear y desbloquear una cuenta (suspensión temporal)
+ALTER USER 'camarero1'@'%' ACCOUNT LOCK;
+ALTER USER 'camarero1'@'%' ACCOUNT UNLOCK;
 
-        <!-- 4. Roles -->
-        <h2 id="roles"><i class="fas fa-user-tag"></i> 4. Roles (Grupos de Usuarios)</h2>
-        <p>Los roles permiten agrupar permisos y asignarlos fácilmente a múltiples usuarios, simplificando la administración (por ejemplo, creando roles como <em>cocineros</em>, <em>camareros</em> o <em>jefes</em>).</p>
-        
-        <h4>Crear y configurar un Rol</h4>
-        <pre><code>-- 1. Crear el Rol
-CREATE ROLE 'developers';
+-- 4. Exigir conexión cifrada obligatoria con TLS/SSL
+ALTER USER 'admin_tienda'@'192.168.1.%' REQUIRE SSL;
 
--- 2. Dar permisos al Rol
-GRANT INSERT, UPDATE, DELETE ON mi_empresa.empleados TO 'developers';
+-- 5. Forzar la caducidad de contraseña en el próximo inicio de sesión
+ALTER USER 'camarero1'@'%' PASSWORD EXPIRE;
 
--- 3. Asignar el Rol a un usuario
-GRANT 'developers' TO 'usuario1'@'%';</code></pre>
+-- 6. Renombrar una cuenta de usuario manteniendo sus privilegios
+RENAME USER 'camarero1'@'%' TO 'camarero_principal'@'%';
 
-        <h4>Uso de Roles por parte del Usuario</h4>
-        <p>Por defecto, los roles asignados no están activos hasta que el usuario los habilita o se configuran por defecto.</p>
-        <pre><code>-- Activar un rol en la sesión actual
-SET ROLE 'developers';
+-- 7. Eliminar definitivamente una cuenta
+DROP USER IF EXISTS 'empleado_baja'@'%';
 
--- Activar TODOS los roles que tiene el usuario
+-- 8. Consultar cuentas de usuario registradas en el diccionario del sistema
+SELECT User, Host, plugin, authentication_string, account_locked 
+FROM mysql.user;
+
+-- 9. Verificar la identidad de la sesión activa
+SELECT USER();         -- Devuelve la identidad que el cliente solicitó (ej. 'camarero'@'192.168.1.50')
+SELECT CURRENT_USER(); -- Devuelve la cuenta autenticada según las reglas de privilegios (ej. 'camarero'@'%')</code></pre>
+
+    <div class="alert alert-dark border-secondary">
+      <i class="fas fa-key text-warning me-2"></i>
+      <strong>Plugins de Autenticación:</strong> MariaDB y MySQL utilizan plugins de autenticación para almacenar los hashes de las claves. Los más destacados son <code>mysql_native_password</code> (clásico SHA-1), <code>caching_sha2_password</code> (SHA-256 de alta seguridad por defecto en MySQL 8) y <code>ed25519</code> en MariaDB.
+    </div>
+  </section>
+
+  <!-- Sección 3: Catálogo Completo de Privilegios -->
+  <section id="catalogo-privilegios" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-key text-warning me-2"></i>3. Catálogo Completo de Privilegios (DML, DDL y Administrativos)
+    </h2>
+    <p class="lead mt-3">
+      MariaDB clasifica sus privilegios en tres grandes categorías según la naturaleza de las operaciones que autorizan:
+    </p>
+
+    <!-- Bloques de Categorías -->
+    <div class="row g-4 mb-4">
+      <!-- DML -->
+      <div class="col-lg-4">
+        <div class="card h-100 border-success bg-dark">
+          <div class="card-header bg-success text-white fw-bold">
+            <i class="fas fa-database me-2"></i>Privilegios DML (Datos)
+          </div>
+          <div class="card-body">
+            <p class="small text-light">Autorizan la lectura y manipulación de las filas de las tablas:</p>
+            <ul class="small mb-0 text-light">
+              <li><code>SELECT</code>: Consultar registros.</li>
+              <li><code>INSERT</code>: Añadir nuevas filas.</li>
+              <li><code>UPDATE</code>: Modificar datos existentes.</li>
+              <li><code>DELETE</code>: Borrar filas de tablas (no borra estructuras).</li>
+              <li><code>EXECUTE</code>: Ejecutar rutinas (procedimientos y funciones).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- DDL -->
+      <div class="col-lg-4">
+        <div class="card h-100 border-info bg-dark">
+          <div class="card-header bg-info text-dark fw-bold">
+            <i class="fas fa-cubes me-2"></i>Privilegios DDL (Estructura)
+          </div>
+          <div class="card-body">
+            <p class="small text-light">Autorizan la definición y alteración de objetos de la base de datos:</p>
+            <ul class="small mb-0 text-light">
+              <li><code>CREATE</code>: Crear nuevas bases de datos o tablas.</li>
+              <li><code>ALTER</code>: Modificar estructura (columnas, tipos).</li>
+              <li><code>DROP</code>: Destruir bases de datos, tablas o vistas completas.</li>
+              <li><code>INDEX</code>: Crear y eliminar índices sobre columnas.</li>
+              <li><code>CREATE VIEW</code> / <code>SHOW VIEW</code>: Gestionar e inspeccionar vistas.</li>
+              <li><code>CREATE ROUTINE</code> / <code>ALTER ROUTINE</code>: Crear y modificar procedimientos y funciones.</li>
+              <li><code>TRIGGER</code> / <code>EVENT</code>: Crear disparadores y eventos.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Administrativos -->
+      <div class="col-lg-4">
+        <div class="card h-100 border-danger bg-dark">
+          <div class="card-header bg-danger text-white fw-bold">
+            <i class="fas fa-cogs me-2"></i>Privilegios Administrativos
+          </div>
+          <div class="card-body">
+            <p class="small text-light">Autorizan operaciones sobre el motor, hilos, archivos y seguridad global:</p>
+            <ul class="small mb-0 text-light">
+              <li><code>ALL PRIVILEGES</code>: Todos los privilegios disponibles.</li>
+              <li><code>PROCESS</code>: Ver todas las consultas de todos los usuarios con <code>SHOW PROCESSLIST</code>.</li>
+              <li><code>RELOAD</code>: Recargar privilegios y logs (<code>FLUSH</code>).</li>
+              <li><code>SHUTDOWN</code>: Apagar el servidor MariaDB.</li>
+              <li><code>SUPER</code>: Modificar variables globales, matar hilos ajenos con <code>KILL</code> y gestionar replicación.</li>
+              <li><code>FILE</code>: Leer/escribir archivos en el SO del host (<code>LOAD DATA INFILE</code>, <code>INTO OUTFILE</code>).</li>
+              <li><code>CREATE USER</code>: Administrar cuentas de usuario.</li>
+              <li><code>GRANT OPTION</code>: Delegar permisos a otros.</li>
+              <li><code>SHOW DATABASES</code>: Listar todas las bases de datos.</li>
+              <li><code>LOCK TABLES</code>: Bloquear tablas explícitamente (<code>LOCK TABLES tabla READ/WRITE</code> y <code>UNLOCK TABLES</code>).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      <strong>Distinción vital: DELETE vs DROP</strong>
+      <br>
+      El privilegio <code>DELETE</code> solo autoriza a borrar filas de datos con <code>DELETE FROM tabla WHERE ...</code>; no permite destruir la estructura de la tabla. Para destruir o eliminar una tabla o base de datos entera con <code>DROP TABLE</code> o <code>DROP DATABASE</code> es imprescindible el privilegio <code>DROP</code>.
+    </div>
+
+    <div class="alert alert-danger">
+      <i class="fas fa-file-invoice text-danger me-2"></i>
+      <strong>Riesgo crítico del privilegio FILE:</strong>
+      <br>
+      El privilegio <code>FILE</code> opera a nivel global del servidor. Si se concede a un usuario no confiable, este podría leer ficheros sensibles del sistema operativo del servidor (ej. <code>/etc/passwd</code>) mediante <code>LOAD DATA INFILE</code> o escribir puertas traseras o shells web en directorios accesibles mediante <code>SELECT ... INTO OUTFILE</code>. Por ello, solo debe reservarse estrictamente a administradores.
+    </div>
+  </section>
+
+  <!-- Sección 4: Granularidad de Privilegios -->
+  <section id="granularidad" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-sitemap text-warning me-2"></i>4. Niveles de Granularidad (Global, BD, Tabla, Columna y Rutina)
+    </h2>
+    <p class="lead mt-3">
+      MariaDB permite otorgar privilegios con una granularidad milimétrica. La sintaxis de la cláusula <code>ON</code> determina el nivel de alcance del privilegio:
+    </p>
+
+    <div class="table-responsive my-4">
+      <table class="table table-bordered table-dark table-hover align-middle">
+        <thead class="table-primary text-dark text-center">
+          <tr>
+            <th>Nivel</th>
+            <th>Sintaxis en GRANT / REVOKE</th>
+            <th>Tabla del Sistema en <code>mysql.*</code></th>
+            <th>Ejemplo Típico</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Global</strong></td>
+            <td><code>ON *.*</code></td>
+            <td><code>mysql.user</code></td>
+            <td><code>GRANT RELOAD, PROCESS ON *.* TO 'admin'@'localhost';</code></td>
+          </tr>
+          <tr>
+            <td><strong>Base de Datos</strong></td>
+            <td><code>ON nombre_bd.*</code></td>
+            <td><code>mysql.db</code></td>
+            <td><code>GRANT SELECT, INSERT ON arepazo.* TO 'gestor'@'%';</code></td>
+          </tr>
+          <tr>
+            <td><strong>Tabla</strong></td>
+            <td><code>ON nombre_bd.nombre_tabla</code></td>
+            <td><code>mysql.tables_priv</code></td>
+            <td><code>GRANT SELECT, UPDATE ON arepazo.pedidos TO 'cocina'@'%';</code></td>
+          </tr>
+          <tr>
+            <td><strong>Columna</strong></td>
+            <td><code>GRANT SELECT (c1, c2), UPDATE (c1) ON bd.tabla</code></td>
+            <td><code>mysql.columns_priv</code></td>
+            <td><code>GRANT SELECT (id, nombre, email) ON arepazo.empleados TO 'recepcion'@'%';</code></td>
+          </tr>
+          <tr>
+            <td><strong>Procedimiento / Rutina</strong></td>
+            <td><code>ON PROCEDURE bd.procedimiento</code></td>
+            <td><code>mysql.procs_priv</code></td>
+            <td><code>GRANT EXECUTE ON PROCEDURE arepazo.sp_cierre_caja TO 'cajero'@'%';</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Sección 5: Asignación y Revocación de Privilegios -->
+  <section id="asignacion-revocacion" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-unlock-alt text-warning me-2"></i>5. Asignación y Revocación de Privilegios (GRANT, REVOKE y Diagnóstico)
+    </h2>
+    <p class="lead mt-3">
+      Los privilegios se conceden mediante <code>GRANT</code> y se retiran mediante <code>REVOKE</code>.
+    </p>
+
+    <h4><i class="fas fa-terminal text-secondary me-2"></i>Sintaxis de GRANT</h4>
+    <pre><code>GRANT privilegio1, privilegio2
+ON [nivel]
+TO 'usuario'@'host' [IDENTIFIED BY 'contraseña']
+[WITH GRANT OPTION];</code></pre>
+
+    <div class="alert alert-dark border-secondary my-3">
+      <i class="fas fa-share-alt text-info me-2"></i>
+      <strong>La Cláusula WITH GRANT OPTION:</strong>
+      <br>
+      Permite al usuario receptor conceder a <strong>otros usuarios</strong> los mismos privilegios que él posee sobre ese objeto. Debe manejarse con extrema precaución: si un usuario con <code>WITH GRANT OPTION</code> es comprometido, un atacante podría escalar privilegios y crear nuevos usuarios con accesos no autorizados.
+    </div>
+
+    <h4><i class="fas fa-terminal text-secondary me-2"></i>Sintaxis de REVOKE</h4>
+    <pre><code>-- Revocar un privilegio específico sobre una base de datos
+REVOKE DELETE ON arepazo.* FROM 'camarero1'@'%';
+
+-- Revocar el permiso de delegación WITH GRANT OPTION
+REVOKE GRANT OPTION ON arepazo.* FROM 'gestor'@'%';
+
+-- Revocar TODOS los privilegios que posee un usuario
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'usuario_temporal'@'%';</code></pre>
+
+    <h4><i class="fas fa-eye text-secondary me-2"></i>Inspección de Privilegios</h4>
+    <pre><code>-- Consultar los permisos concedidos al usuario actual conectado
+SHOW GRANTS;
+
+-- Consultar los permisos de una cuenta específica
+SHOW GRANTS FOR 'camarero1'@'%';</code></pre>
+
+    <div class="row g-3 my-3">
+      <div class="col-md-6">
+        <div class="card h-100 border-info bg-dark">
+          <div class="card-header fw-bold text-info"><i class="fas fa-sync me-2"></i>¿Cuándo usar FLUSH PRIVILEGES?</div>
+          <div class="card-body">
+            <p class="small text-light">
+              MariaDB mantiene las tablas de permisos cacheadas en memoria. Cuando ejecutas comandos estándar como <code>GRANT</code>, <code>REVOKE</code> o <code>CREATE USER</code>, MariaDB <strong>actualiza la memoria automáticamente</strong>; <code>FLUSH PRIVILEGES</code> <strong>no es necesario</strong>.
+              <br><br>
+              Solo es obligatorio ejecutar <code>FLUSH PRIVILEGES;</code> si un administrador modifica directamente las tablas del sistema con sentencias manuales <code>INSERT</code>, <code>UPDATE</code> o <code>DELETE</code> sobre <code>mysql.user</code> o <code>mysql.db</code>.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-danger bg-dark">
+          <div class="card-header fw-bold text-danger"><i class="fas fa-bug me-2"></i>Diagnóstico de Errores: "Access Denied"</div>
+          <div class="card-body">
+            <p class="small text-light">
+              Si un usuario recibe el error:
+              <br><code class="text-warning">ERROR 1045 (28000): Access denied for user 'ana'@'192.168.1.45' (using password: YES)</code>
+              <br><br>
+              Las tres causas más frecuentes son:
+              <br>1. La contraseña introducida es incorrecta.
+              <br>2. La cuenta 'ana' existe solo para <code>'ana'@'localhost'</code> pero se está conectando desde una IP remota.
+              <br>3. No se ha otorgado ningún privilegio de acceso ni conexión para ese host.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección 6: Roles -->
+  <section id="roles" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-id-badge text-warning me-2"></i>6. Roles: Agrupación y Centralización de Permisos (Modelo RBAC)
+    </h2>
+    <p class="lead mt-3">
+      Un <strong>Rol</strong> es un contenedor con nombre que agrupa un conjunto de privilegios. Este enfoque implementa el modelo estándar de la industria <strong>RBAC (Role-Based Access Control)</strong>. En lugar de conceder 15 permisos a cada uno de los 50 camareros de una empresa, creamos el rol <code>rol_camarero</code>, le asignamos los permisos una sola vez y otorgamos el rol a los empleados. Esto aplica el principio <strong>DRY (Don't Repeat Yourself)</strong> a la administración de seguridad.
+    </p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card h-100 border-primary bg-dark">
+          <div class="card-header fw-bold text-primary"><i class="fas fa-plus-circle me-2"></i>Paso 1: Crear y Configurar el Rol</div>
+          <div class="card-body">
+            <pre class="mb-0"><code>-- 1. Crear el rol
+CREATE ROLE 'rol_cocinero';
+CREATE ROLE 'rol_camarero';
+
+-- 2. Asignar privilegios al rol
+GRANT SELECT, UPDATE ON arepazo.pedidos TO 'rol_cocinero';
+GRANT SELECT, INSERT ON arepazo.lineas_pedido TO 'rol_camarero';
+
+-- 3. Eliminar un rol si ya no es necesario
+DROP ROLE IF EXISTS 'rol_temporal';</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-success bg-dark">
+          <div class="card-header fw-bold text-success"><i class="fas fa-user-plus me-2"></i>Paso 2: Asignar el Rol al Usuario</div>
+          <div class="card-body">
+            <pre class="mb-0"><code>-- Conceder el rol a uno o varios usuarios
+GRANT 'rol_cocinero' TO 'carlos'@'%';
+GRANT 'rol_camarero' TO 'lucia'@'%';
+
+-- Delegar la administración del rol (permite asignarlo a otros)
+GRANT 'rol_cocinero' TO 'jefe_cocina'@'%' WITH ADMIN OPTION;
+
+-- Revocar el rol de un usuario
+REVOKE 'rol_camarero' FROM 'lucia'@'%';</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4><i class="fas fa-toggle-on text-secondary me-2"></i>Activación de Roles en Sesión</h4>
+    <p>
+      En MariaDB, cuando un usuario inicia sesión, sus roles asignados <strong>no están activos por defecto</strong> a menos que se configure explícitamente. El usuario o el administrador controlan la activación:
+    </p>
+
+    <pre><code>-- Activar un rol específico en la sesión actual
+SET ROLE 'rol_cocinero';
+
+-- Activar TODOS los roles asignados al usuario
 SET ROLE ALL;
 
--- Configurar un rol por defecto para un usuario (requiere admin)
-SET DEFAULT ROLE 'developers' FOR 'usuario1'@'%';
+-- Desactivar todos los roles activos (volver a los permisos base del usuario)
+SET ROLE NONE;
 
--- Comprobar qué rol está activo actualmente
-SELECT CURRENT_ROLE();</code></pre>
+-- Consultar qué rol se encuentra actualmente activo en la sesión
+SELECT CURRENT_ROLE();
 
-        <!-- 5. Vistas -->
-        <h2 id="vistas"><i class="fas fa-eye"></i> 5. Vistas (Views) como Mecanismo de Seguridad</h2>
-        <p>Las vistas no solo sirven para simplificar consultas complejas, sino que son una potente herramienta de seguridad. Permiten dar acceso de lectura a datos específicos de una tabla sin revelar toda la tabla (por ejemplo, ocultando salarios o contraseñas, o mostrando nombres en lugar de claves foráneas).</p>
-        <pre><code>-- Crear una vista segura que oculta datos sensibles
-CREATE VIEW vista_menu_seguro AS 
-SELECT id_plato, nombre_plato, precio 
-FROM menu 
-WHERE disponible = 1;
+-- Configurar un rol predeterminado para que se active automáticamente al conectar
+SET DEFAULT ROLE 'rol_cocinero' FOR 'carlos'@'%';
+SET DEFAULT ROLE ALL FOR 'lucia'@'%';
 
--- Dar permiso al usuario SOLO sobre la vista, no sobre la tabla original
-GRANT SELECT ON restaurante.vista_menu_seguro TO 'invitado'@'%';</code></pre>
+-- Consultar roles asignados y disponibles en el diccionario del sistema
+SELECT * FROM information_schema.APPLICABLE_ROLES;
+SELECT * FROM information_schema.ENABLED_ROLES;</code></pre>
+  </section>
 
-        <!-- 6. Sinónimos -->
-        <h2 id="sinonimos"><i class="fas fa-link"></i> 6. Sinónimos (Synonyms)</h2>
-        <p>En MariaDB, los sinónimos (introducidos en versiones recientes) permiten crear nombres alternativos para objetos de la base de datos (tablas, vistas, secuencias).</p>
-        <p>Son útiles en seguridad para ocultar la ubicación o el nombre real de un esquema, y para facilitar accesos.</p>
-        <pre><code>-- Crear un sinónimo para una tabla (requiere MariaDB 10.5+)
-CREATE SYNONYM empleados_publico FOR hr_schema.tabla_empleados_real_2023;
+  <!-- Sección 7: Vistas como Mecanismo de Seguridad -->
+  <section id="vistas-seguridad" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-eye text-warning me-2"></i>7. Vistas (Views) como Barrera de Seguridad
+    </h2>
+    <p class="lead mt-3">
+      Las Vistas son consultas almacenadas con nombre que actúan como <strong>tablas virtuales</strong>. En seguridad, constituyen una de las herramientas más elegantes para implementar control de acceso granular sin alterar la estructura física de las tablas:
+    </p>
 
--- Ahora podemos dar permisos sobre el sinónimo
-GRANT SELECT ON empleados_publico TO 'usuario_reportes'@'%';</code></pre>
-
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
+        <div class="card h-100 border-info bg-dark">
+          <div class="card-header fw-bold text-info"><i class="fas fa-columns me-2"></i>Seguridad a Nivel de Columna</div>
+          <div class="card-body">
+            <p class="small text-light">Permiten ocultar columnas sensibles (DNI, salarios, contraseñas) proyectando solo los datos públicos:</p>
+            <pre class="mb-0"><code>CREATE VIEW vista_empleados_publico AS
+SELECT id, nombre, apellidos, departamento, extension_telefonica
+FROM empleados;
+-- (Se ocultan: salario_base, cuenta_bancaria, dni)</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-warning bg-dark">
+          <div class="card-header fw-bold text-warning"><i class="fas fa-filter me-2"></i>Seguridad a Nivel de Fila (RLS)</div>
+          <div class="card-body">
+            <p class="small text-light">Añadiendo una cláusula <code>WHERE</code>, restringimos qué registros son visibles según el departamento o sucursal:</p>
+            <pre class="mb-0"><code>CREATE VIEW vista_pedidos_madrid AS
+SELECT * FROM pedidos 
+WHERE sucursal_id = 1;</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <h4><i class="fas fa-shield-alt text-secondary me-2"></i>Desacoplamiento Total de la Tabla Base</h4>
+    <p>
+      El mayor beneficio de seguridad es que podemos otorgar permisos <code>GRANT SELECT</code> al usuario <strong>exclusivamente sobre la vista</strong>, sin darle ningún permiso sobre la tabla subyacente. El usuario podrá consultar la vista con normalidad y el motor resolverá los datos de forma transparente.
+    </p>
+    <pre><code>-- Conceder acceso a la vista sin tocar la tabla empleados original
+GRANT SELECT ON arepazo.vista_empleados_publico TO 'recepcion'@'%';</code></pre>
+
+    <div class="card border-danger bg-dark mb-4">
+      <div class="card-body">
+        <h5 class="text-danger"><i class="fas fa-check-double me-2"></i>La Cláusula WITH CHECK OPTION</h5>
+        <p class="small text-light mb-2">
+          Si una vista es actualizable y permite operaciones <code>INSERT</code> o <code>UPDATE</code>, un usuario podría introducir datos que contradigan el filtro <code>WHERE</code> de la vista (por ejemplo, insertar un pedido de Barcelona a través de la vista de Madrid).
+        </p>
+        <p class="small text-light mb-2">
+          Añadir <code>WITH CHECK OPTION</code> al final de la vista <strong>obliga a que cualquier modificación cumpla estrictamente la condición del WHERE</strong>; en caso contrario, MariaDB aborta la operación con un error:
+        </p>
+        <pre class="mb-0"><code>-- Modificar o recrear una vista existente de forma atómica
+CREATE OR REPLACE VIEW vista_platos_disponibles AS
+SELECT id, nombre, precio, disponible
+FROM platos
+WHERE disponible = 1
+WITH CHECK OPTION;
+
+-- Si alguien intenta ejecutar:
+-- UPDATE vista_platos_disponibles SET disponible = 0 WHERE id = 5;
+-- MariaDB lo RECHAZARÁ inmediatamente con ERROR 1369 (CHECK OPTION failed).
+
+-- Consultar metadatos y código de las vistas en el diccionario del sistema
+SELECT TABLE_NAME, VIEW_DEFINITION FROM information_schema.VIEWS WHERE TABLE_SCHEMA = 'arepazo';</code></pre>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="alert alert-secondary small h-100 mb-0">
+          <i class="fas fa-user-tag me-1"></i> <strong>DEFINER vs INVOKER:</strong> En MariaDB, una vista con <code>SQL SECURITY DEFINER</code> (por defecto) se ejecuta con los privilegios del usuario que creó la vista; con <code>SQL SECURITY INVOKER</code>, se evalúan en cada consulta los permisos del usuario que la está ejecutando.
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="alert alert-info small h-100 mb-0">
+          <i class="fas fa-balance-scale me-1"></i> <strong>Cumplimiento del RGPD:</strong> Las vistas son una herramienta clave para el cumplimiento del Reglamento General de Protección de Datos (RGPD), ya que permiten aplicar la <em>minimización de datos</em> y ocultar o anonimizar información sensible (DNI, salarios, datos bancarios) según el rol laboral.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección 8: Sinónimos -->
+  <section id="sinonimos" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-link text-warning me-2"></i>8. Sinónimos (Synonyms) y Abstracción de Esquemas
+    </h2>
+    <p class="lead mt-3">
+      Introducidos en <strong>MariaDB 10.5+</strong> (mediante compatibilidad con sintaxis Oracle), los <strong>Sinónimos</strong> son alias oficiales asignados a tablas, vistas u otros objetos de la base de datos.
+    </p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card h-100 border-secondary bg-dark">
+          <div class="card-body">
+            <h6 class="text-info"><i class="fas fa-mask me-2"></i>Abstracción y Ocultación</h6>
+            <p class="small text-light mb-0">
+              Permiten ocultar el nombre técnico real de tablas críticas o la estructura interna de esquemas antiguos (ej. <code>tab_emp_v3_2024_final</code> expuesta simplemente como <code>empleados</code>).
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-secondary bg-dark">
+          <div class="card-body">
+            <h6 class="text-success"><i class="fas fa-exchange-alt me-2"></i>Portabilidad</h6>
+            <p class="small text-light mb-0">
+              Facilitan la migración entre entornos sin tener que reescribir consultas en el código de las aplicaciones, redirigiendo el sinónimo hacia la nueva tabla.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-secondary bg-dark">
+          <div class="card-body">
+            <h6 class="text-warning"><i class="fas fa-globe me-2"></i>Sinónimos Públicos vs Privados</h6>
+            <p class="small text-light mb-0">
+              Un sinónimo privado pertenece a un esquema concreto, mientras que un <code>PUBLIC SYNONYM</code> es accesible globalmente por todos los usuarios sin prefijar el esquema.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <pre><code>-- Crear un sinónimo privado para una tabla (MariaDB 10.5+)
+CREATE SYNONYM menu_platos FOR arepazo_prod.tbl_catalogo_platos_interna;
+
+-- Crear un sinónimo público accesible por todos los usuarios (entornos Oracle / extensiones)
+CREATE PUBLIC SYNONYM catalogo_general FOR arepazo_prod.tbl_catalogo_platos_interna;
+
+-- Eliminar un sinónimo
+DROP SYNONYM IF EXISTS menu_platos;
+DROP PUBLIC SYNONYM IF EXISTS catalogo_general;
+
+-- Consultar sinónimos en el catálogo del sistema
+SELECT * FROM information_schema.SYNONYMS;</code></pre>
+  </section>
+
+  <!-- Sección 9: Buenas Prácticas y Bastionado -->
+  <section id="buenas-practicas" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-lock-open text-warning me-2"></i>9. Requisitos de Seguridad, Bastionado y Auditoría (mariadb-secure-installation)
+    </h2>
+    <p class="lead mt-3">
+      El Criterio 3.h exige garantizar el cumplimiento estricto de las directivas de seguridad en el sistema gestor.
+    </p>
+
+    <h4><i class="fas fa-tools text-secondary me-2"></i>El Comando de Bastionado: mariadb-secure-installation</h4>
+    <p>
+      Tras instalar MariaDB, es un requisito de seguridad indispensable ejecutar el asistente interactivo <code>mariadb-secure-installation</code> (o <code>mysql_secure_installation</code>), el cual realiza 4 acciones cruciales:
+    </p>
+
+    <ol class="list-group list-group-numbered mb-4">
+      <li class="list-group-item bg-dark text-light border-secondary">
+        <strong>Establecer contraseña robusta para root:</strong> Evitar accesos desprotegidos a la cuenta de superadministrador.
+      </li>
+      <li class="list-group-item bg-dark text-light border-secondary">
+        <strong>Eliminar usuarios anónimos:</strong> Borrar las cuentas con <code>User = ''</code> en <code>mysql.user</code>, que permiten a cualquier usuario no autenticado conectarse sin aportar credenciales.
+      </li>
+      <li class="list-group-item bg-dark text-light border-secondary">
+        <strong>Desactivar el login remoto de root:</strong> Forzar a que root solo pueda autenticarse desde <code>localhost</code>, mitigando ataques de fuerza bruta remotos desde la red.
+      </li>
+      <li class="list-group-item bg-dark text-light border-secondary">
+        <strong>Eliminar la base de datos 'test':</strong> Borrar la base de datos de pruebas inicial y sus privilegios abiertos asociados, evitando que sea utilizada como vector de ataque.
+      </li>
+    </ol>
+
+    <h4><i class="fas fa-network-wired text-secondary me-2"></i>Directivas de Red y Configuración (my.cnf)</h4>
+    <pre><code># En el archivo de configuración /etc/mysql/my.cnf o /etc/my.cnf.d/server.cnf:
+[mysqld]
+# Escuchar solo en la interfaz local (si la BD y la app están en el mismo servidor)
+bind-address = 127.0.0.1
+
+# O escuchar en la IP privada corporativa:
+# bind-address = 192.168.1.10</code></pre>
+
+    <h4><i class="fas fa-search text-secondary me-2"></i>Auditoría de Cuentas y Privilegios en el Servidor</h4>
+    <p>Un administrador de seguridad debe ejecutar consultas periódicas de auditoría sobre las tablas maestras:</p>
+    <pre><code>-- 1. Detectar cuentas que tienen el peligroso privilegio GRANT OPTION a nivel global
+SELECT User, Host FROM mysql.user WHERE Grant_priv = 'Y';
+
+-- 2. Detectar usuarios con privilegios administrativos de apagado o recarga
+SELECT User, Host, Shutdown_priv, Reload_priv, Process_priv, Super_priv, File_priv
+FROM mysql.user;
+
+-- 3. Identificar cuentas sin contraseña o con autenticación vulnerable
+SELECT User, Host, plugin, password_expired FROM mysql.user;
+
+-- 4. Auditoría de accesos y consultas con MariaDB Audit Plugin
+-- Registra en log de texto estructurado quién conectó, cuándo y qué sentencias ejecutó</code></pre>
+
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle me-2"></i>
+      <strong>Resumen de Normas de Seguridad en Producción:</strong>
+      <ul class="mb-0 mt-2 small">
+        <li>Nunca compartir la misma cuenta de usuario entre varios empleados (para no perder la trazabilidad y la responsabilidad individual).</li>
+        <li>Bloquear o eliminar de inmediato (<code>DROP USER</code> o <code>ACCOUNT LOCK</code>) las cuentas de empleados que causen baja en la empresa.</li>
+        <li>Habilitar políticas de contraseñas robustas (plugins <code>simple_password_check</code> o <code>cracklib_password_check</code>).</li>
+        <li>Exigir conexiones seguras y cifradas mediante <code>REQUIRE SSL</code>.</li>
+        <li>Revocar siempre permisos innecesarios de destrucción de tablas (<code>REVOKE DROP</code>) a cuentas operativas.</li>
+      </ul>
+    </div>
+  </section>
 </div>

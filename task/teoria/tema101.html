@@ -46,9 +46,9 @@
         <div class="card-body">
           <h5 class="card-title text-primary"><i class="fas fa-sitemap"></i> Según Organización</h5>
           <ul class="list-unstyled">
-            <li class="mb-2"><strong>Secuenciales:</strong> Para acceder a un dato hay que recorrer todos los anteriores.</li>
-            <li class="mb-2"><strong>Relativos:</strong> Acceso mediante saltos al estar posicionados a X posiciones del inicio.</li>
-            <li><strong>Indexados:</strong> Tienen un índice que permite saltar directamente a cualquier dato.</li>
+            <li class="mb-2"><strong>Organización Secuencial:</strong> Para acceder a un dato hay que recorrer todos los anteriores secuencialmente.</li>
+            <li class="mb-2"><strong>Organización Relativa:</strong> Acceso mediante saltos al estar los datos posicionados a X posiciones del inicio (permite saltar de un dato a otro sin leerlos todos).</li>
+            <li><strong>Organización Indexada:</strong> Dispone de un índice que permite saltar directamente a cualquier dato específico de forma instantánea.</li>
           </ul>
         </div>
       </div>
@@ -58,9 +58,9 @@
         <div class="card-body">
           <h5 class="card-title text-primary"><i class="fas fa-briefcase"></i> Según Uso / Utilidad</h5>
           <ul class="list-unstyled">
-            <li class="mb-2"><strong>Maestro:</strong> Contiene la información principal y crítica de la aplicación.</li>
-            <li class="mb-2"><strong>Histórico:</strong> Contiene transacciones pasadas, ya no necesarias en el día a día pero guardadas por seguridad.</li>
-            <li><strong>Temporal:</strong> Usados momentáneamente por los programas y luego descartados.</li>
+            <li class="mb-2"><strong>Fichero Maestro (o principal):</strong> Guarda la información principal, permanente y crítica para que funcione la aplicación.</li>
+            <li class="mb-2"><strong>Fichero Histórico:</strong> Contiene transacciones y registros pasados, no necesarios en el día a día pero guardados por auditoría o seguridad.</li>
+            <li><strong>Fichero Temporal:</strong> Usados momentáneamente en memoria o disco durante procesos efímeros y descartados al finalizar.</li>
           </ul>
         </div>
       </div>
@@ -511,6 +511,10 @@ graph LR
             </div>
           </div>
         </div>
+        <div class="mt-3 p-3 bg-black bg-opacity-50 border border-info rounded small">
+          <p class="mb-1 text-info fw-bold"><i class="fas fa-balance-scale me-2"></i>Premisa fundamental de Richard Stallman: <em>"Free Software != Software Gratis"</em></p>
+          <p class="mb-0 text-light">El software libre es una cuestión de <strong>libertades éticas</strong> sobre el código y su distribución, no una prohibición absoluta del lucro o el cobro por servicios. Las empresas que distribuyen software libre pueden generar negocio lícito vendiendo soporte, mantenimiento, consultoría o servicios asociados; "Free" se refiere a la libertad de expresión, no a "cerveza gratis".</p>
+        </div>
       </div>
     </div>
   </div>
@@ -581,6 +585,39 @@ graph LR
             <li><strong>Seguridad de red:</strong> Los nodos deben intercambiar datos cifrados por internet.</li>
             <li><strong>Velocidad de escritura:</strong> Las transacciones lentifican la red porque deben confirmarse en varios nodos.</li>
           </ul>
+        </div>
+  </div>
+
+  <div class="card bg-black border-info shadow-sm mt-3 mb-5">
+    <div class="card-header bg-dark text-info fw-bold">
+      <i class="fas fa-sitemap me-2"></i> Formas de Distribuir una Base de Datos
+    </div>
+    <div class="card-body">
+      <p class="small text-muted mb-3">En el diseño de arquitecturas en red, existen cuatro modelos fundamentales para la distribución y ubicación de los datos:</p>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="p-3 border border-secondary rounded h-100 bg-dark">
+            <h6 class="text-primary fw-bold"><i class="fas fa-dot-circle me-1"></i> 1. Centralizada</h6>
+            <p class="small text-secondary mb-0">Vista como topología de red simple, un único servidor físico central almacena y gestiona la totalidad de la base de datos.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 border border-secondary rounded h-100 bg-dark">
+            <h6 class="text-success fw-bold"><i class="fas fa-copy me-1"></i> 2. Replicación</h6>
+            <p class="small text-secondary mb-0">Múltiples nodos mantienen copias completas e idénticas de la base de datos para garantizar máxima disponibilidad y repartir lecturas.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 border border-secondary rounded h-100 bg-dark">
+            <h6 class="text-warning fw-bold"><i class="fas fa-puzzle-piece me-1"></i> 3. Particionada</h6>
+            <p class="small text-secondary mb-0">La base de datos se trocea (fragmenta) y se reparte en diferentes ubicaciones geográficas (ej. un trozo en Europa y otro en Asia). Cada nodo solo almacena una fracción de los datos. Sin abstracción, el programador debe conocer en qué nodo está cada parte.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 border border-secondary rounded h-100 bg-dark">
+            <h6 class="text-info fw-bold"><i class="fas fa-layer-group me-1"></i> 4. Híbrida</h6>
+            <p class="small text-secondary mb-0">Combina ambos enfoques: ciertas tablas críticas o catálogos globales se replican en todos los nodos mientras que otras tablas voluminosas se mantienen particionadas localmente.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -785,7 +822,16 @@ graph LR
       <div class="card h-100 border-secondary shadow-sm bg-dark text-light">
         <div class="card-body">
           <h5 class="text-warning"><i class="fas fa-microchip me-2"></i> 1884 - Tarjetas Perforadas</h5>
-          <p class="mb-0"><strong>Herman Hollerith</strong> inventa el tabulador electromagnético, sentando las bases del procesamiento automático de información.</p>
+          <p class="mb-0"><strong>Herman Hollerith</strong> inventa el tabulador electromagnético de tarjetas perforadas, sentando las bases del procesamiento automático de información.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 p-2">
+      <div class="card h-100 border-secondary shadow-sm bg-dark text-light border-start border-4 border-info">
+        <div class="card-body">
+          <h5 class="text-info"><i class="fas fa-calendar-check me-2"></i> 1963 - Nacimiento del Término 'Base de Datos'</h5>
+          <p class="mb-0">En un simposio celebrado en Santa Mónica (California) en <strong>1963</strong> se acuña y utiliza por primera vez el término <strong>"Base de Datos" (Data Base)</strong>, precediendo por una década a la formalización del modelo relacional.</p>
         </div>
       </div>
     </div>
@@ -793,8 +839,8 @@ graph LR
     <div class="col-md-6 p-2">
       <div class="card h-100 border-secondary shadow-sm bg-dark text-light">
         <div class="card-body">
-          <h5 class="text-warning"><i class="fas fa-tape me-2"></i> Años 50 y 60</h5>
-          <p class="mb-0">Aparición de <strong>cintas magnéticas</strong> y <strong>discos duros</strong>. <strong>Charles Bachman</strong> desarrolla el primer SGBD en red (IDS).</p>
+          <h5 class="text-warning"><i class="fas fa-tape me-2"></i> Años 50 y 60 - Red y Jerarquía</h5>
+          <p class="mb-0">Aparición de <strong>cintas magnéticas</strong> y <strong>discos duros</strong>. En los años 60, <strong>Charles Bachman</strong> desarrolla las <em>bases de datos en red</em> (Integrated Data Store - IDS).</p>
         </div>
       </div>
     </div>

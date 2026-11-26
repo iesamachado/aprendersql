@@ -283,4 +283,50 @@ flowchart TD
             </div>
         </div>
 
+        <!-- 5. Herramientas Gráficas y CASE -->
+        <section class="mt-5 mb-4">
+            <h2 class="text-info border-bottom pb-2"><i class="fas fa-drafting-compass me-2"></i>5. Herramientas Gráficas y CASE para Modelado (Criterio 2b)</h2>
+            <p>Para la elaboración profesional de diagramas Entidad-Relación y diagramas de tablas del diseño lógico, se emplean <strong>herramientas CASE</strong> (<em>Computer-Aided Software Engineering</em>) y aplicaciones de diseño gráfico estandarizado.</p>
+            
+            <div class="row g-4 mt-1">
+                <div class="col-md-4">
+                    <div class="card h-100 border-primary bg-dark text-light">
+                        <div class="card-header bg-primary text-white fw-bold"><i class="fas fa-vector-square me-2"></i>Draw.io / diagrams.net</div>
+                        <div class="card-body small">
+                            <p class="mb-2">Herramienta web y de escritorio multiplataforma gratuita. Cuenta con paletas específicas para notación Entidad-Relación (E-R clásico de Chen y Crow's Foot / pata de gallo).</p>
+                            <p class="mb-0 text-muted">Permite exportar diagramas vectoriales en SVG, PDF e imágenes PNG para documentación técnica.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-warning bg-dark text-light">
+                        <div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-database me-2"></i>MySQL Workbench</div>
+                        <div class="card-body small">
+                            <p class="mb-2">Entorno visual integral de ingeniería de datos. Soporta <em>Forward Engineering</em> (generar automáticamente el código SQL DDL a partir del diagrama visual de tablas) y <em>Reverse Engineering</em> (generar el diagrama a partir de una base de datos real).</p>
+                            <p class="mb-0 text-muted">Representa claves primarias con iconos de llaves doradas y atributos obligatorios con rombos rellenos.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-info bg-dark text-light">
+                        <div class="card-header bg-info text-dark fw-bold"><i class="fas fa-shapes me-2"></i>Dia / ERwin / Visual Paradigm</div>
+                        <div class="card-body small">
+                            <p class="mb-2">Herramientas especializadas de modelado UML y E-R. Proporcionan simbología formal para entidades fuertes, débiles, atributos multivaluados y relaciones con cardinalidad (min, max).</p>
+                            <p class="mb-0 text-muted">Facilitan la verificación de coherencia semántica antes de pasar al diseño físico.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-black border-secondary p-3 mt-4">
+                <h6 class="text-warning fw-bold mb-2"><i class="fas fa-sitemap me-2"></i>Simbología Visual en Diagramas de Tablas Lógicos</h6>
+                <ul class="small mb-0 text-secondary">
+                    <li><strong>Estructura de caja:</strong> Cada tabla se dibuja como una caja rectangular con dos secciones principales: <em>Cabecera</em> (nombre de la tabla) y <em>Cuerpo</em> (lista de columnas con su tipo de datos).</li>
+                    <li><strong>Clave Primaria (PK):</strong> Indicada en la parte superior con un icono de llave dorada o la etiqueta <code>PK</code> junto al nombre del campo.</li>
+                    <li><strong>Clave Foránea (FK):</strong> Marcada con la etiqueta <code>FK</code> o un conector de línea que une el campo con la PK de la tabla padre.</li>
+                    <li><strong>Obligatoriedad y Nulos:</strong> Los campos <code>NOT NULL</code> se distinguen habitualmente mediante un punto o rombo relleno, mientras que los campos opcionales (<code>NULL</code>) llevan un círculo vacío.</li>
+                </ul>
+            </div>
+        </section>
+
     </div>

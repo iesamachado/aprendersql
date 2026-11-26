@@ -19,6 +19,7 @@
         <li><a href="#instalacion-docker" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Instalación usando Docker</a></li>
         <li><a href="#instalacion-oracle" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>5. Oracle en Oracle Cloud / Linux</a></li>
         <li><a href="#instalacion-sqlserver" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>6. SQL Server en VirtualBox con Windows</a></li>
+        <li><a href="#config-post-instalacion" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>7. Configuración Post-Instalación, Parámetros del Motor y CHANGELOG</a></li>
       </ul>
     </div>
   </div>
@@ -241,6 +242,114 @@ docker run -d --name mariadb_server \
             </li>
             <li><strong>Firewall:</strong> Desactivar el Firewall de Windows en la máquina virtual, o añadir una regla de entrada para permitir el tráfico en el puerto TCP 1433.</li>
         </ol>
+    </section>
+
+    <!-- 7. Configuración Post-Instalación -->
+    <section id="config-post-instalacion" class="mb-5">
+        <h2><i class="fas fa-sliders-h section-icon text-warning"></i>7. Configuración Post-Instalación, Parámetros del Motor y CHANGELOG</h2>
+        <p class="text-secondary">Una vez instalado el SGBD, es indispensable ajustar su configuración técnica en los ficheros del sistema para optimizar el rendimiento, habilitar el diagnóstico y garantizar la continuidad operativa.</p>
+
+        <!-- 7.1 Archivos de Configuración -->
+        <div class="card border-info bg-dark text-light mb-4 shadow-sm">
+            <div class="card-header bg-info bg-opacity-25 text-info fw-bold">
+                <i class="fas fa-file-code me-2"></i>7.1. Jerarquía de Archivos de Configuración (my.cnf y 50-server.cnf)
+            </div>
+            <div class="card-body small">
+                <p>En MariaDB/MySQL bajo Linux, el motor lee secuencialmente varios ficheros de configuración al arrancar. Para averiguar el orden exacto y los archivos que lee tu servidor en un entorno nativo, se ejecuta:</p>
+                <pre><code class="language-bash bg-black p-2 rounded d-block text-success">mysqld --verbose --help | grep -A 1 'Default options'</code></pre>
+                <p class="mt-2 text-muted">La configuración principal suele ubicarse en <code>/etc/mysql/my.cnf</code> o modularizada en <code>/etc/mysql/mariadb.conf.d/50-server.cnf</code>.</p>
+                
+                <div class="alert alert-warning bg-black border-warning mt-3 mb-2">
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i><strong>Directiva obligatoria [mysqld]:</strong> Los parámetros destinados al motor de bases de datos deben colocarse estrictamente bajo la sección <code>[mysqld]</code>. Si se colocan bajo <code>[client]</code> o <code>[mysql]</code>, el servidor los ignorará.
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-black rounded border border-secondary h-100">
+                            <h6 class="text-warning fw-bold"><i class="fas fa-memory me-1"></i> Cambios en tiempo de ejecución (SET GLOBAL)</h6>
+                            <p class="text-muted mb-1">Comandos como <code>SET GLOBAL max_connections = 200;</code> surten efecto inmediatamente en memoria sin reiniciar el servidor.</p>
+                            <p class="text-danger small mb-0"><strong>Inconveniente:</strong> Es un cambio volátil. Si el servidor se reinicia o sufre un apagón, el cambio se pierde porque el motor volverá a leer el archivo <code>my.cnf</code> del disco.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-black rounded border border-secondary h-100">
+                            <h6 class="text-success fw-bold"><i class="fas fa-save me-1"></i> Cambios permanentes en archivo .cnf</h6>
+                            <p class="text-muted mb-1">Para hacer permanente un ajuste, debe escribirse directamente en <code>50-server.cnf</code> o <code>my.cnf</code>.</p>
+                            <p class="text-success small mb-0"><strong>Aplicar cambios:</strong> Se requiere reiniciar el servicio del sistema: <code>sudo systemctl restart mariadb</code>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7.2 Parámetros Esenciales -->
+        <div class="card border-warning bg-dark text-light mb-4 shadow-sm">
+            <div class="card-header bg-warning bg-opacity-25 text-warning fw-bold">
+                <i class="fas fa-tachometer-alt me-2"></i>7.2. Parámetros Críticos de Memoria, Concurrencia y Red
+            </div>
+            <div class="card-body small">
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm table-bordered align-middle">
+                        <thead class="table-secondary text-dark">
+                            <tr><th>Parámetro</th><th>Ubicación</th><th>Regla de Configuración y Propósito</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>innodb_buffer_pool_size</code></td>
+                                <td><code>[mysqld]</code></td>
+                                <td><strong>Caché principal de InnoDB:</strong> Almacena en RAM páginas de datos e índices. En un servidor dedicado, la regla general es asignarle aproximadamente el <strong>70% u 80% de la memoria RAM disponible</strong> (ej. <code>innodb_buffer_pool_size = 12G</code> en una máquina con 16GB de RAM).</td>
+                            </tr>
+                            <tr>
+                                <td><code>max_connections</code></td>
+                                <td><code>[mysqld]</code></td>
+                                <td><strong>Límite de conexiones simultáneas:</strong> Evita el agotamiento de memoria si hay avalanchas de tráfico. Para consultar las conexiones activas en tiempo real por SQL: <br><code>SHOW STATUS LIKE 'Threads_connected';</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>bind-address</code></td>
+                                <td><code>[mysqld]</code></td>
+                                <td><strong>Dirección de red:</strong> Por defecto <code>127.0.0.1</code> (solo local). Para permitir conexiones remotas desde cualquier IP se comenta o se asigna <code>bind-address = 0.0.0.0</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>query_cache_size</code></td>
+                                <td><code>[mysqld]</code></td>
+                                <td><strong>Caché de consultas obsoleta:</strong> En versiones modernas de MariaDB (10.5+) y MySQL 8 está deprecada y eliminada por problemas graves de bloqueo en procesadores multi-core. La teoría recomienda fijarla en <code>0</code> (<code>query_cache_size = 0</code>).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7.3 Diagnóstico y Slow Query Log -->
+        <div class="card border-danger bg-dark text-light mb-4 shadow-sm">
+            <div class="card-header bg-danger bg-opacity-25 text-danger fw-bold">
+                <i class="fas fa-stopwatch me-2"></i>7.3. Diagnóstico de Rendimiento: Log de Consultas Lentas (Slow Query Log)
+            </div>
+            <div class="card-body small">
+                <p>Para detectar cuellos de botella y consultas ineficientes que ralentizan la aplicación, el SGBD dispone del <strong>Slow Query Log</strong>. Se activa en la sección <code>[mysqld]</code> de <code>my.cnf</code>:</p>
+                <pre><code class="language-ini bg-black p-3 rounded d-block text-success">[mysqld]
+slow_query_log = 1
+long_query_time = 2
+slow_query_log_file = /var/log/mysql/mariadb-slow.log</code></pre>
+                <p class="mb-0 text-muted">Con estos parámetros, cualquier consulta que tarde <strong>más de 2 segundos</strong> en completarse quedará registrada automáticamente en el fichero de log junto con la hora, el usuario y el tiempo de bloqueo.</p>
+            </div>
+        </div>
+
+        <!-- 7.4 Buenas Prácticas y CHANGELOG.md -->
+        <div class="card border-success bg-dark text-light mb-4 shadow-sm">
+            <div class="card-header bg-success bg-opacity-25 text-success fw-bold">
+                <i class="fas fa-clipboard-list me-2"></i>7.4. Buenas Prácticas de Gestión de Cambios: Archivo CHANGELOG.md
+            </div>
+            <div class="card-body small">
+                <p>En entornos profesionales, está terminantemente prohibido alterar la configuración de un SGBD sin documentarlo. Se utiliza un archivo <code>CHANGELOG.md</code> o un sistema de tickets para registrar:</p>
+                <div class="row g-2">
+                    <div class="col-md-3"><div class="p-2 bg-black rounded border border-secondary text-center"><strong>Fecha y Hora:</strong> Momento exacto de la modificación.</div></div>
+                    <div class="col-md-3"><div class="p-2 bg-black rounded border border-secondary text-center"><strong>Autor y Ticket:</strong> Técnico responsable del cambio.</div></div>
+                    <div class="col-md-3"><div class="p-2 bg-black rounded border border-secondary text-center"><strong>Parámetro y Valores:</strong> Valor anterior &rarr; nuevo valor.</div></div>
+                    <div class="col-md-3"><div class="p-2 bg-black rounded border border-success text-center text-success"><strong>Impacto Medido:</strong> Métrica de éxito (ej. 'Consultas lentas bajaron de 300 a 12').</div></div>
+                </div>
+            </div>
+        </div>
     </section>
 
 </div>

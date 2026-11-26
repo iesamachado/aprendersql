@@ -646,4 +646,50 @@ DO
       </div>
     </div>
   </section>
+
+  <!-- Section 8: Diagnosis and Lifecycle -->
+  <section id="diagnostico-automatismos" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2"><i class="fas fa-search-plus text-warning me-2"></i>8. Diagnóstico, Monitorización y Borrado de Automatismos (Criterio 4h)</h2>
+    <p class="mt-3">El mantenimiento del ciclo de vida de los automatismos exige herramientas para inspeccionar su estado, verificar su correcta ejecución y deshabilitarlos o eliminarlos cuando sea necesario.</p>
+
+    <div class="row g-4 mt-1">
+      <!-- Disparadores (Triggers) -->
+      <div class="col-md-6">
+        <div class="card h-100 border-primary bg-dark text-light shadow-sm">
+          <div class="card-header bg-primary text-white fw-bold"><i class="fas fa-bolt me-2"></i>Inspección y Borrado de Triggers</div>
+          <div class="card-body small">
+            <p class="mb-2"><strong>Listar disparadores activos:</strong></p>
+            <pre class="bg-black p-2 rounded text-success"><code>SHOW TRIGGERS FROM arepazo;</code></pre>
+
+            <p class="mt-3 mb-2"><strong>Auditoría avanzada en el diccionario:</strong></p>
+            <pre class="bg-black p-2 rounded text-success"><code>SELECT TRIGGER_NAME, EVENT_MANIPULATION, EVENT_OBJECT_TABLE, ACTION_TIMING
+FROM information_schema.TRIGGERS
+WHERE TRIGGER_SCHEMA = 'arepazo';</code></pre>
+
+            <p class="mt-3 mb-2"><strong>Eliminación segura de un trigger:</strong></p>
+            <pre class="bg-black p-2 rounded text-danger"><code>DROP TRIGGER IF EXISTS trg_descontar_stock_venta;</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eventos (Events) -->
+      <div class="col-md-6">
+        <div class="card h-100 border-success bg-dark text-light shadow-sm">
+          <div class="card-header bg-success text-white fw-bold"><i class="fas fa-calendar-check me-2"></i>Inspección y Borrado de Eventos</div>
+          <div class="card-body small">
+            <p class="mb-2"><strong>Listar eventos programados:</strong></p>
+            <pre class="bg-black p-2 rounded text-success"><code>SHOW EVENTS FROM arepazo;</code></pre>
+
+            <p class="mt-3 mb-2"><strong>Auditoría avanzada en el diccionario:</strong></p>
+            <pre class="bg-black p-2 rounded text-success"><code>SELECT EVENT_NAME, INTERVAL_VALUE, INTERVAL_FIELD, STATUS, LAST_EXECUTED
+FROM information_schema.EVENTS
+WHERE EVENT_SCHEMA = 'arepazo';</code></pre>
+
+            <p class="mt-3 mb-2"><strong>Eliminación segura de un evento:</strong></p>
+            <pre class="bg-black p-2 rounded text-danger"><code>DROP EVENT IF EXISTS depurar_logs_antiguos;</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>

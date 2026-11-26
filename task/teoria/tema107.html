@@ -18,26 +18,27 @@
 
         <div class="row mt-4 g-4">
             <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header fw-bold">Tipos de Claves</div>
-                    <div class="card-body">
+                <div class="card h-100 border-primary bg-dark text-light">
+                    <div class="card-header bg-primary text-white fw-bold"><i class="fas fa-key me-2"></i>Tipos de Claves (Criterio 2f)</div>
+                    <div class="card-body small">
                         <ul class="mb-0">
-                            <li><strong>Superclave:</strong> Posible conjunto de atributos que identifican un elemento.</li>
-                            <li><strong>Clave Candidata:</strong> Mínima superclave posible.</li>
-                            <li><strong>Clave Primaria (PK):</strong> Clave candidata escogida por el diseñador.</li>
-                            <li><strong>Clave Foránea (FK):</strong> Atributo relacionado con otra entidad. Debe existir como PK en la otra.</li>
+                            <li class="mb-2"><strong>Superclave:</strong> Cualquier conjunto de uno o más atributos que permite identificar de forma unívoca a cada tupla (fila) de una entidad.</li>
+                            <li class="mb-2"><strong>Clave Candidata:</strong> Superclave mínima: un conjunto mínimo de atributos que identifica unívocamente a cada tupla sin atributos superfluos. Por ejemplo, en <code>Persona</code>, si el <code>dni</code> identifica la fila, el conjunto <code>{dni, nombre, telefono}</code> es una superclave, pero la clave candidata es solo <code>{dni}</code>.</li>
+                            <li class="mb-2"><strong>Clave Primaria (PK):</strong> La clave candidata elegida por el diseñador como identificador definitivo de la tabla. Sus valores son obligatorios (<code>NOT NULL</code>) y únicos.</li>
+                            <li><strong>Clave Foránea (FK / Ajena):</strong> Atributo o conjunto de atributos en una tabla hija que hace referencia a la clave primaria (PK) de una tabla padre para vincularlas.</li>
                         </ul>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header fw-bold">Otras Restricciones</div>
-                    <div class="card-body">
+                <div class="card h-100 border-warning bg-dark text-light">
+                    <div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-shield-alt me-2"></i>Reglas de Integridad Relacional (Criterio 2g)</div>
+                    <div class="card-body small">
                         <ul class="mb-0">
-                            <li><strong>Valor Único (Unique):</strong> No puede repetirse, pero no es PK.</li>
-                            <li><strong>Nulo (Null / Not Null):</strong> Atributos que pueden dejarse vacíos o no.</li>
-                            <li><strong>Integridad referencial:</strong> Validar que las FK apuntan a PK existentes.</li>
+                            <li class="mb-2"><strong>Regla de Integridad de Entidad:</strong> Ningún componente de la clave primaria (PK) puede aceptar valores nulos (<code>NOT NULL</code>) y cada fila debe ser única y distinguible. Si intentamos insertar un registro con PK nula en la tabla Clientes, el SGBD lo rechazará.</li>
+                            <li class="mb-2"><strong>Regla de Integridad Referencial:</strong> Cualquier valor que tome una clave foránea (FK) debe coincidir con un valor de clave primaria existente en la tabla referenciada, o ser <code>NULL</code> (si la relación es opcional). Por ejemplo, si en la tabla <code>Multa</code> se intenta registrar una multa con <code>DNI_Persona = '99999999Z'</code> y esa persona no existe en <code>Persona</code>, se viola la integridad referencial.</li>
+                            <li class="mb-2"><strong>Restricción UNIQUE (Valor Único):</strong> Garantiza que los valores de una columna no se repitan, aunque no sea la PK principal (permite nulos si la norma no lo prohíbe).</li>
+                            <li><strong>Dominio y Nulabilidad:</strong> Especificar los valores válidos admitidos (tipo de datos, longitud, rango) y si admite o no valores vacíos (<code>NOT NULL</code>).</li>
                         </ul>
                     </div>
                 </div>
@@ -60,7 +61,7 @@
                     </tr>
                     <tr>
                         <td><strong>Relación 1:N</strong></td>
-                        <td>Se crea una <strong>Clave Foránea (FK)</strong> en el lado de la N que apunta al 1.</td>
+                        <td>Se realiza la <strong>propagación de clave</strong>: se crea una <strong>Clave Foránea (FK)</strong> en el lado de la N que apunta a la PK del lado 1.</td>
                     </tr>
                     <tr>
                         <td><strong>Relación N:N</strong></td>
@@ -131,48 +132,127 @@
 
     <!-- Normalización -->
     <section class="mb-5">
-        <h2 class="text-info border-bottom pb-2"><i class="fas fa-filter me-2"></i>Normalización</h2>
-        <p>Es obligar a los atributos a cumplir ciertas formas normales para mejorar la calidad del diseño.</p>
+        <h2 class="text-info border-bottom pb-2"><i class="fas fa-filter me-2"></i>Normalización de Datos (Criterio 2h)</h2>
+        <p>La <strong>normalización</strong> es un proceso sistemático de descomposición de tablas en estructuras más pequeñas y refinadas para eliminar redundancias y evitar <strong>anomalías de actualización</strong>:</p>
 
-        <div class="row mt-4 g-4">
-            <!-- 1FN -->
+        <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="card h-100 border-primary">
+                <div class="p-3 bg-dark rounded border border-danger h-100 small">
+                    <h6 class="text-danger fw-bold"><i class="fas fa-plus-circle me-1"></i> Anomalía de Inserción</h6>
+                    <p class="mb-0 text-secondary">No se puede registrar información de una entidad independiente sin inventar o forzar datos de otra entidad obligatoria no relacionada.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-dark rounded border border-warning h-100 small">
+                    <h6 class="text-warning fw-bold"><i class="fas fa-edit me-1"></i> Anomalía de Modificación</h6>
+                    <p class="mb-0 text-secondary">Si un dato duplicado cambia (ej. el teléfono de una editorial), hay que actualizar cientos de filas; si una falla, los datos quedan inconsistentes.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-dark rounded border border-info h-100 small">
+                    <h6 class="text-info fw-bold"><i class="fas fa-trash me-1"></i> Anomalía de Borrado</h6>
+                    <p class="mb-0 text-secondary">Al eliminar un registro (ej. el último alumno de un curso), se pierde accidentalmente información vital del curso mismo.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-2 g-4">
+            <!-- 1FN -->
+            <div class="col-md-3">
+                <div class="card h-100 border-primary bg-dark text-light">
                     <div class="card-header bg-primary fw-bold">1ª Forma Normal (1FN)</div>
                     <div class="card-body">
-                        <h6 class="text-warning text-center border-bottom border-primary pb-2">No hay grupos repetitivos</h6>
-                        <ol class="small mb-0 mt-2">
-                            <li>No hay orden arriba/abajo ni derecha/izquierda.</li>
-                            <li>No hay filas duplicadas (debe haber PK).</li>
-                            <li>Cada casilla tiene un <strong>solo valor</strong> (atómico).</li>
-                            <li>Columnas regulares (mismo dominio).</li>
+                        <h6 class="text-warning text-center border-bottom border-primary pb-2">Valores Atómicos</h6>
+                        <ol class="small mb-0 mt-2 ps-3">
+                            <li>Cada casilla contiene un <strong>único valor atómico</strong> (no listas separadas por comas ni teléfonos múltiples en una celda).</li>
+                            <li>No hay grupos repetitivos.</li>
+                            <li>Existe una <strong>clave primaria</strong> (no hay filas duplicadas).</li>
+                            <li>El orden de filas y columnas es irrelevante.</li>
                         </ol>
                     </div>
                 </div>
             </div>
             
             <!-- 2FN -->
-            <div class="col-md-4">
-                <div class="card h-100 border-success">
+            <div class="col-md-3">
+                <div class="card h-100 border-success bg-dark text-light">
                     <div class="card-header bg-success fw-bold">2ª Forma Normal (2FN)</div>
                     <div class="card-body">
-                        <h6 class="text-warning text-center border-bottom border-success pb-2">Dependencia completa</h6>
-                        <p class="small mb-0 mt-2">Debe cumplir 1FN. Si hay PK compuesta, <strong>todos</strong> los atributos deben depender de la PK completa, no solo de una parte de ella.</p>
+                        <h6 class="text-warning text-center border-bottom border-success pb-2">Dependencia Completa</h6>
+                        <p class="small mb-2">Debe cumplir 1FN.</p>
+                        <p class="small mb-0">Si la tabla tiene <strong>clave primaria compuesta</strong>, todos los atributos que no son clave deben depender de la clave primaria <strong>completa</strong>, no solo de una parte de ella (sin dependencias parciales).</p>
                     </div>
                 </div>
             </div>
             
             <!-- 3FN -->
-            <div class="col-md-4">
-                <div class="card h-100 border-danger">
+            <div class="col-md-3">
+                <div class="card h-100 border-danger bg-dark text-light">
                     <div class="card-header bg-danger fw-bold">3ª Forma Normal (3FN)</div>
                     <div class="card-body">
-                        <h6 class="text-warning text-center border-bottom border-danger pb-2">Sin dependencias transitivas</h6>
-                        <p class="small mb-0 mt-2">Debe cumplir 2FN. Un atributo no puede deducirse de otro atributo que no sea clave.</p>
+                        <h6 class="text-warning text-center border-bottom border-danger pb-2">Sin Transitividad</h6>
+                        <p class="small mb-2">Debe cumplir 2FN.</p>
+                        <p class="small mb-0">Ningún atributo no clave puede depender de otro atributo no clave (sin <strong>dependencias transitivas</strong>). Si un atributo se deduce de otro que no es PK (ej. nombre de provincia deducido del código postal), debe separarse en su propia tabla.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BCNF -->
+            <div class="col-md-3">
+                <div class="card h-100 border-info bg-dark text-light">
+                    <div class="card-header bg-info text-dark fw-bold">Forma Normal Boyce-Codd (BCNF)</div>
+                    <div class="card-body">
+                        <h6 class="text-info text-center border-bottom border-info pb-2">Determinante es Clave</h6>
+                        <p class="small mb-2">Extensión más rigurosa de la 3FN.</p>
+                        <p class="small mb-0">Exige que todo determinante (cualquier atributo o conjunto de atributos del que dependa funcionalmente otro) sea forzosamente una <strong>clave candidata</strong> de la tabla.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Documentación del Diseño y Restricciones no Plasmables -->
+    <section class="mb-5">
+        <h2 class="text-info border-bottom pb-2"><i class="fas fa-file-alt me-2"></i>Documentación y Restricciones no Plasmables (Criterio 2i)</h2>
+        <p>El diseño lógico no se limita al diagrama visual de tablas; debe ir acompañado de su especificación técnica formal:</p>
+
+        <div class="row g-4 mt-1">
+            <div class="col-md-6">
+                <div class="card h-100 border-secondary bg-dark text-light">
+                    <div class="card-header bg-dark border-bottom border-secondary fw-bold text-warning">
+                        <i class="fas fa-book me-2"></i>Diccionario de Datos del Diseño Lógico
+                    </div>
+                    <div class="card-body small">
+                        <p class="mb-2">Documento formal que describe de forma detallada cada elemento del esquema:</p>
+                        <ul class="mb-0 text-secondary">
+                            <li><strong>Tablas y Entidades:</strong> Nombre, propósito y descripción en el negocio.</li>
+                            <li><strong>Columnas y Atributos:</strong> Tipo de dato conceptual, dominio de valores permitidos, significado y unidades de medida.</li>
+                            <li><strong>Claves y Restricciones:</strong> Identificación explícita de PK, FK (con tabla y campo de destino) y restricciones UNIQUE o NOT NULL.</li>
+                            <li><strong>Reglas de Integridad:</strong> Acciones de propagación (CASCADE, RESTRICT, SET NULL) previstas para el diseño físico.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 border-secondary bg-dark text-light">
+                    <div class="card-header bg-dark border-bottom border-secondary fw-bold text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Restricciones no Plasmables Directamente
+                    </div>
+                    <div class="card-body small">
+                        <p class="mb-2">Son <strong>reglas de negocio complejas</strong> de la organización que no pueden expresarse únicamente con los elementos estándar del modelo relacional (PK, FK, UNIQUE, NOT NULL):</p>
+                        <ul class="mb-3 text-secondary">
+                            <li><em>Netflix:</em> "Un cliente puede tener como máximo 4 perfiles de usuario activos simultáneamente".</li>
+                            <li><em>Centros educativos:</em> "Un profesor no puede impartir clase a dos grupos distintos en el mismo tramo horario".</li>
+                            <li><em>Gestión laboral:</em> "Un empleado no puede ser su propio supervisor directo ni tener un salario superior al del director de su departamento".</li>
+                        </ul>
+                        <div class="p-2 bg-black rounded border border-warning">
+                            <strong class="text-warning">¿Cómo se resuelven?</strong> Deben documentarse rigurosamente en la memoria de diseño lógico y se implementan posteriormente en la fase física mediante <strong>restricciones CHECK complejas, disparadores (TRIGGERS), procedimientos almacenados o código en el backend</strong> de la aplicación.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>

@@ -28,7 +28,8 @@
             <p>El DDL (Data Definition Language) nos permite crear la estructura donde se almacenarán nuestros datos. Antes de empezar a crear tablas, DEBEMOS crear una BBDD.</p>
             
             <div class="code-block-wrapper mb-4">
-                <pre><code class="language-sql">CREATE DATABASE nombreDeLaBBDD;
+                <pre><code class="language-sql">-- Creación segura de base de datos (evita errores si ya existe)
+CREATE DATABASE IF NOT EXISTS nombreDeLaBBDD;
 USE nombreDeLaBBDD; -- Indicamos al cliente SQL que queremos usar esa bbdd</code></pre>
             </div>
 
@@ -38,21 +39,22 @@ USE nombreDeLaBBDD; -- Indicamos al cliente SQL que queremos usar esa bbdd</code
                     <p class="small text-muted mb-2">Tipos de Campo más usados:</p>
                     <ul class="small">
                         <li><code>INT</code>: Para enteros (ej. IDs). Suelen usar <code>AUTO_INCREMENT</code>.</li>
-                        <li><code>BIT</code>: Para booleanos.</li>
-                        <li><code>VARCHAR(n)</code>: Para texto variable. IMPORTANTE: Indicar la N (ej. VARCHAR(50)).</li>
-                        <li><code>DATETIME</code>: Para fechas y horas.</li>
-                        <li><code>DECIMAL(18,2)</code>: Para números decimales (ej. dinero). Máx valor (18,2): 9.999.999.999.999.999,99</li>
+                        <li><code>BIT / BOOLEAN</code>: Para booleanos (0 o 1, TRUE o FALSE).</li>
+                        <li><code>VARCHAR(n)</code>: Para texto variable. IMPORTANTE: Indicar la longitud N (ej. VARCHAR(50)).</li>
+                        <li><code>DATETIME / TIMESTAMP</code>: Para fechas y horas (ej. <code>CURRENT_TIMESTAMP</code>).</li>
+                        <li><code>DECIMAL(10,2)</code>: Para números decimales exactos (ej. dinero, precios). Evita los errores de redondeo de coma flotante de FLOAT/DOUBLE.</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <p class="small text-muted mb-2">Restricciones disponibles:</p>
+                    <p class="small text-muted mb-2">Restricciones y Cláusulas disponibles:</p>
                     <ul class="small">
-                        <li><code>NOT NULL</code>: la columna no puede ser nula.</li>
-                        <li><code>UNIQUE</code>: el valor debe ser único.</li>
-                        <li><code>PRIMARY KEY</code>: Identificador único (implica NOT NULL y UNIQUE).</li>
-                        <li><code>FOREIGN KEY</code>: Referencia a otra tabla. Ambas columnas DEBEN TENER EL MISMO DOMINIO.</li>
-                        <li><code>DEFAULT</code>: valor predeterminado si no se especifica.</li>
-                        <li><code>CHECK</code>: regla de validación lógica de datos (condición booleana).</li>
+                        <li><code>NOT NULL</code>: La columna es obligatoria y no puede quedar vacía.</li>
+                        <li><code>UNIQUE</code>: El valor no puede repetirse en ninguna otra fila.</li>
+                        <li><code>PRIMARY KEY</code>: Identificador único de la tupla (aplica implícitamente NOT NULL y UNIQUE).</li>
+                        <li><code>FOREIGN KEY</code>: Referencia a la PK de otra tabla para garantizar integridad referencial (mismo dominio).</li>
+                        <li><code>DEFAULT</code>: Asigna un valor predeterminado si el usuario no especifica ninguno.</li>
+                        <li><code>CHECK</code>: Regla de validación booleana que los datos deben satisfacer.</li>
+                        <li><code>COMMENT</code>: Documenta el propósito de la columna o tabla directamente en el catálogo del sistema.</li>
                     </ul>
                 </div>
             </div>
@@ -64,9 +66,9 @@ DROP DATABASE IF EXISTS DGT;
 CREATE DATABASE DGT;
 USE DGT;
 
--- Tabla Persona
+-- Tabla Persona (uso de IF NOT EXISTS para evitar errores en scripts de despliegue)
 DROP TABLE IF EXISTS Persona;
-CREATE TABLE Persona (
+CREATE TABLE IF NOT EXISTS Persona (
     dni VARCHAR(9) PRIMARY KEY,
     nombre VARCHAR(250) NOT NULL,
     email VARCHAR(100) UNIQUE,
@@ -104,7 +106,67 @@ CREATE TABLE PersonaCoche (
 );</code></pre>
             </div>
 
-            <!-- Detalle pedagógico: Restricción CHECK -->
+            <!-- Acciones de Integridad Referencial (CASCADE, SET NULL, RESTRICT) -->
+            <div class="card bg-glass border-primary border-opacity-25 shadow-sm p-4 mb-4">
+                <h4 class="text-primary"><i class="fas fa-link me-2"></i>Acciones de Integridad Referencial: ON DELETE y ON UPDATE</h4>
+                <p class="text-secondary">
+                    Cuando una clave foránea (FK) vincula una tabla hija con una tabla padre, debemos definir qué ocurre si alguien <strong>borra</strong> (<code>ON DELETE</code>) o <strong>modifica</strong> la PK (<code>ON UPDATE</code>) en la tabla padre:
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-danger border-opacity-25 h-100 small">
+                            <h6 class="text-danger fw-bold"><i class="fas fa-trash me-1"></i> CASCADE (En Cascada)</h6>
+                            <p class="text-muted mb-2">Si se borra el registro padre, el motor <strong>elimina automáticamente</strong> todos los registros hijos relacionados.</p>
+                            <code>ON DELETE CASCADE</code>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-warning border-opacity-25 h-100 small">
+                            <h6 class="text-warning fw-bold"><i class="fas fa-ban me-1"></i> RESTRICT / NO ACTION (Por Defecto)</h6>
+                            <p class="text-muted mb-2"><strong>Impide terminantemente</strong> borrar o alterar el registro padre mientras existan registros hijos que lo referencien, arrojando un error.</p>
+                            <code>ON DELETE RESTRICT</code>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-info border-opacity-25 h-100 small">
+                            <h6 class="text-info fw-bold"><i class="fas fa-eraser me-1"></i> SET NULL</h6>
+                            <p class="text-muted mb-2">Si el padre se borra, el campo FK en los hijos se pone a <code>NULL</code> (requiere que la columna permita nulos).</p>
+                            <code>ON DELETE SET NULL</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Batería de Pruebas y Diagnóstico de Errores (Criterio 3f) -->
+            <div class="card bg-glass border-success border-opacity-25 shadow-sm p-4 mb-4">
+                <h4 class="text-success"><i class="fas fa-vial me-2"></i>Batería de Pruebas del Diseño Físico y Errores Habituales (Criterio 3f)</h4>
+                <p class="text-secondary">
+                    Tras ejecutar el script DDL, es obligatorio realizar <strong>pruebas de verificación con datos reales</strong>. Estas pruebas deben abarcar tanto <em>casos negativos</em> (confirmar que las restricciones rechazan datos inválidos) como <em>casos positivos</em> (confirmar que se permite la operativa normal y no hay restricciones excesivas):
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100 small">
+                            <div class="fw-bold text-warning mb-1">Clave Duplicada</div>
+                            <p class="text-muted mb-1">Si intentamos insertar dos registros con la misma PK o valor UNIQUE:</p>
+                            <code class="text-danger small">ERROR 1062: Duplicate entry '123' for key 'PRIMARY'</code>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100 small">
+                            <div class="fw-bold text-warning mb-1">Infracción de FK</div>
+                            <p class="text-muted mb-1">Si insertamos un registro hijo con FK inexistente o borramos un padre con RESTRICT:</p>
+                            <code class="text-danger small">ERROR 1452: Cannot add or update a child row: a foreign key constraint fails</code>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100 small">
+                            <div class="fw-bold text-warning mb-1">Infracción de CHECK</div>
+                            <p class="text-muted mb-1">Si insertamos un valor que no satisface la condición booleana (ej. precio negativo):</p>
+                            <code class="text-danger small">ERROR 3819: Check constraint 'chk_precio' is violated.</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="card bg-glass border-info border-opacity-25 shadow-sm p-4 mb-4">
                 <h4 class="text-info"><i class="fas fa-check-double me-2"></i>¿Para qué sirve la restricción CHECK? (Validación de Integridad)</h4>
                 <p class="text-secondary">
@@ -519,6 +581,17 @@ DROP DATABASE nombreBBDD; -- BORRAMOS ABSOLUTAMENTE TODO LO QUE CONTENGA LA BBDD
                     </tbody>
                 </table>
             </div>
+
+            <h5 class="mt-4 mb-3 text-info"><i class="fas fa-comment-alt me-2"></i>Documentación en el propio código DDL: Cláusula COMMENT (Criterio 3i)</h5>
+            <p class="text-secondary">En MariaDB podemos incrustar la documentación directamente en las sentencias de creación mediante la cláusula <code>COMMENT</code>:</p>
+            <pre><code class="language-sql">-- Añadir comentarios explicativos a nivel de columna y a nivel de tabla:
+CREATE TABLE Pedidos (
+    pedido_id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único autogenerado del pedido',
+    cliente_id INT NOT NULL COMMENT 'FK que referencia al cliente comprador',
+    total DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Importe final liquidado en euros',
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(id)
+) COMMENT = 'Registro histórico y operativo de ventas de la tienda';</code></pre>
+            <p class="small text-muted">Estos comentarios se almacenan en el catálogo del sistema en la columna <code>COLUMN_COMMENT</code> de <code>information_schema.COLUMNS</code> y en <code>TABLE_COMMENT</code> de <code>information_schema.TABLES</code>.</p>
 
             <h5 class="mt-4 mb-3">¿Cómo consultar el diccionario en MariaDB?</h5>
             <p class="text-secondary">MariaDB guarda automáticamente la estructura de la BD en la base de datos del sistema <code>information_schema</code>. Podemos consultarla con SQL estándar:</p>

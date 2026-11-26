@@ -1,282 +1,579 @@
 <div class="tema-content p-4">
   <div class="text-center mb-5">
-    <h1 class="display-5 text-primary"><i class="fas fa-database me-3"></i>Tema 2: Configuración y Arquitectura</h1>
-    <p class="lead">Módulo: Administración de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA2</span></p>
-    <p class="text-secondary">Motores InnoDB vs MyISAM · Arranque/Parada · Logs · Conectividad</p>
+    <h1 class="display-5 text-primary"><i class="fas fa-sliders-h me-3"></i>Tema 2: Configuración y Arquitectura del SGBD</h1>
+    <p class="lead">Módulo: Administración de Sistemas Gestores de Bases de Datos (2º ASIR) | <span class="badge bg-danger">RA2</span></p>
+    <p class="text-secondary">Arranque/Parada · Motores (InnoDB, MyISAM, MEMORY) · Cuentas de Administración · Herramientas Cliente · Red · Parámetros por Defecto · Conexiones · Documentación</p>
   </div>
 
-
-  <!-- Índice -->
-  <div class="card border-info mb-5">
+  <!-- Índice del Tema -->
+  <div class="card border-info mb-5 shadow-sm">
     <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
-      <i class="fas fa-list me-2"></i>Índice del Tema
+      <i class="fas fa-list-ul me-2"></i>Índice de Contenidos (Criterios RA2)
     </div>
     <div class="card-body">
       <ul class="list-unstyled mb-0" style="line-height: 2.2;">
-        <li><a href="#motores" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>Selección de Motores: InnoDB vs MyISAM</a></li>
-        <li><a href="#arranque" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>Arranque y Parada del Servicio</a></li>
-        <li><a href="#logs" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>Archivos de Log (Registro)</a></li>
-        <li><a href="#conectividad" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>Parámetros de Conectividad</a></li>
+        <li><a href="#arranque" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>1. Condiciones de Inicio, Parada y Modo Rescate del Servicio (Criterio 2a)</a></li>
+        <li><a href="#motores" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>2. Selección de Motores de Almacenamiento: InnoDB, MyISAM, MEMORY y Especializados (Criterio 2b)</a></li>
+        <li><a href="#cuentas-admin" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>3. Aseguramiento de Cuentas de Administración y Recuperación de Root (Criterio 2c)</a></li>
+        <li><a href="#herramientas-cliente" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>4. Configuración de Herramientas y Software Cliente (DBeaver, Terminal y ~/.my.cnf) (Criterio 2d)</a></li>
+        <li><a href="#conectividad" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>5. Conectividad en Red y Cortafuegos: bind-address, Puertos y TLS (Criterio 2e)</a></li>
+        <li><a href="#parametros-defecto" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>6. Características por Defecto: Charset (utf8mb4), Collation y sql_mode (Criterio 2f)</a></li>
+        <li><a href="#conexiones-rendimiento" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>7. Parámetros de Conexión, Timeouts y Memoria (max_connections, buffer pool) (Criterio 2g)</a></li>
+        <li><a href="#logs" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>8. Registro y Diagnóstico: Error Log, General Log y Slow Query Log</a></li>
+        <li><a href="#documentacion" class="text-decoration-none text-body"><i class="fas fa-angle-right text-info me-2"></i>9. Documentación y Control de Cambios de Configuración (CHANGELOG y Git) (Criterio 2h)</a></li>
       </ul>
     </div>
   </div>
-  
 
-<section id="motores" class="mb-5">
-    <h2><i class="fas fa-database"></i> Selección de Motores: InnoDB vs MyISAM</h2>
-    <p>MariaDB soporta múltiples motores de almacenamiento. Los más comunes son InnoDB y MyISAM.</p>
-    <div class="row">
-      <div class="col-md-6">
-        <div class="card border-primary mb-3">
-          <div class="card-header bg-primary bg-opacity-10 text-primary fw-bold">InnoDB (Predeterminado)</div>
-          <div class="card-body">
-            <ul>
-              <li>Soporta transacciones (ACID).</li>
-              <li>Bloqueo a nivel de fila (Row-level locking).</li>
-              <li>Soporte para claves foráneas (Integridad referencial).</li>
-              <li>Recomendado para la mayoría de las aplicaciones.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card border-info mb-3">
-          <div class="card-header bg-info bg-opacity-10 text-info fw-bold">MyISAM</div>
-          <div class="card-body">
-            <ul>
-              <li>No soporta transacciones.</li>
-              <li>Bloqueo a nivel de tabla (Table-level locking).</li>
-              <li>Rápido para operaciones de lectura intensiva.</li>
-              <li>Útil para tablas de sólo lectura o Data Warehousing.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
+  <!-- Sección 1: Arranque y Parada (Criterio 2a) -->
   <section id="arranque" class="mb-5">
-    <h2><i class="fas fa-power-off"></i> Arranque y Parada del Servicio</h2>
-    <p>Para gestionar el servicio de MariaDB en sistemas Linux basados en systemd (como Ubuntu, Debian, CentOS), se utiliza el comando <code>systemctl</code>.</p>
-    <ul>
-      <li><strong>Iniciar el servicio:</strong> <code>sudo systemctl start mariadb</code></li>
-      <li><strong>Detener el servicio:</strong> <code>sudo systemctl stop mariadb</code></li>
-      <li><strong>Reiniciar el servicio:</strong> <code>sudo systemctl restart mariadb</code></li>
-      <li><strong>Verificar el estado:</strong> <code>sudo systemctl status mariadb</code></li>
-      <li><strong>Habilitar inicio automático:</strong> <code>sudo systemctl enable mariadb</code></li>
-    </ul>
-    <div class="alert alert-warning">
-      <i class="fas fa-exclamation-triangle"></i> Asegúrate de tener privilegios de superusuario (root o sudo) para ejecutar estos comandos.
-    </div>
-  </section>
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-power-off text-warning me-2"></i>1. Condiciones de Inicio, Parada y Modo Rescate del Servicio (Criterio 2a)
+    </h2>
+    <p class="lead mt-3">
+      En servidores Linux modernos (Ubuntu, Debian, RedHat, Rocky), el servicio del gestor MariaDB se administra mediante <strong>systemd</strong> a través del comando <code>systemctl</code>.
+    </p>
 
-  <section id="logs" class="mb-5">
-    <h2><i class="fas fa-file-alt"></i> Archivos de Log (Registro)</h2>
-    <p>MariaDB genera diferentes tipos de logs que son cruciales para el monitoreo, la auditoría y la resolución de problemas.</p>
-    <div class="accordion" id="accordionLogs">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingErrorLog">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErrorLog" aria-expanded="false" aria-controls="collapseErrorLog">
-            Error Log (Registro de Errores)
-          </button>
-        </h2>
-        <div id="collapseErrorLog" class="accordion-collapse collapse" aria-labelledby="headingErrorLog" data-bs-parent="#accordionLogs">
-          <div class="accordion-body">
-            Contiene información sobre cuándo se inició y se detuvo mysqld y también los errores críticos que ocurren mientras el servidor se está ejecutando. 
-            <br><em>Configuración típica en my.cnf:</em> <code>log_error = /var/log/mysql/error.log</code>
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingGeneralLog">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeneralLog" aria-expanded="false" aria-controls="collapseGeneralLog">
-            General Query Log (Registro General de Consultas)
-          </button>
-        </h2>
-        <div id="collapseGeneralLog" class="accordion-collapse collapse" aria-labelledby="headingGeneralLog" data-bs-parent="#accordionLogs">
-          <div class="accordion-body">
-            Registra todas las consultas SQL recibidas del cliente, así como los inicios y cierres de sesión. Muy útil para depuración, pero consume mucho espacio en disco y recursos.
-            <br><em>Configuración típica en my.cnf:</em> <code>general_log = 1</code>, <code>general_log_file = /var/log/mysql/mysql.log</code>
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingSlowLog">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSlowLog" aria-expanded="false" aria-controls="collapseSlowLog">
-            Slow Query Log (Registro de Consultas Lentas)
-          </button>
-        </h2>
-        <div id="collapseSlowLog" class="accordion-collapse collapse" aria-labelledby="headingSlowLog" data-bs-parent="#accordionLogs">
-          <div class="accordion-body">
-            Registra las consultas que tardan más tiempo en ejecutarse de lo definido en el parámetro <code>long_query_time</code>. Esencial para la optimización del rendimiento.
-            <br><em>Configuración típica en my.cnf:</em> <code>slow_query_log = 1</code>, <code>slow_query_log_file = /var/log/mysql/mariadb-slow.log</code>, <code>long_query_time = 2.0</code>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card h-100 border-primary bg-dark">
+          <div class="card-header bg-primary text-white fw-bold"><i class="fas fa-terminal me-2"></i>Comandos de Servicio (systemctl)</div>
+          <div class="card-body">
+            <pre class="mb-0"><code># Iniciar el servicio MariaDB
+sudo systemctl start mariadb
 
-  <section id="conectividad" class="mb-5">
-    <h2><i class="fas fa-network-wired"></i> Parámetros de Conectividad</h2>
-    <p>La configuración de red y conexión en MariaDB (generalmente en <code>/etc/mysql/my.cnf</code> o <code>/etc/mysql/mariadb.conf.d/50-server.cnf</code>) es fundamental para el rendimiento y la seguridad.</p>
-    <table class="table table-dark table-striped">
-      <thead>
-        <tr>
-          <th>Parámetro</th>
-          <th>Descripción</th>
-          <th>Valor de ejemplo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>bind-address</code></td>
-          <td>Dirección IP a la que el servidor escuchará. <code>127.0.0.1</code> solo permite conexiones locales. <code>0.0.0.0</code> permite conexiones desde cualquier interfaz.</td>
-          <td><code>bind-address = 127.0.0.1</code></td>
-        </tr>
-        <tr>
-          <td><code>max_connections</code></td>
-          <td>El número máximo de conexiones simultáneas permitidas. Si se supera, los nuevos clientes recibirán el error "Too many connections".</td>
-          <td><code>max_connections = 150</code></td>
-        </tr>
-        <tr>
-          <td><code>wait_timeout</code></td>
-          <td>El número de segundos que el servidor espera actividad en una conexión no interactiva antes de cerrarla.</td>
-          <td><code>wait_timeout = 28800</code> (8 horas)</td>
-        </tr>
-        <tr>
-          <td><code>interactive_timeout</code></td>
-          <td>El número de segundos que el servidor espera actividad en una conexión interactiva antes de cerrarla.</td>
-          <td><code>interactive_timeout = 28800</code></td>
-        </tr>
-      </tbody>
-    </table>
-  <section id="mycnf" class="mb-5">
-    <h2><i class="fas fa-file-code"></i> Editando <code>my.cnf</code>: La Configuración Real</h2>
-    <p>Saber leer una tabla de parámetros está bien, pero el trabajo real de un administrador es <strong>editar el archivo de configuración</strong> y verificar que los cambios han tenido efecto. Ese archivo es <code>my.cnf</code> (Linux) o <code>my.ini</code> (Windows).</p>
+# Detener el servicio de forma limpia
+sudo systemctl stop mariadb
 
-    <div class="alert alert-warning">
-      <i class="fas fa-map-marker-alt me-2"></i><strong>¿Dónde está mi <code>my.cnf</code>?</strong><br>
-      En Ubuntu/Debian: <code>/etc/mysql/mariadb.conf.d/50-server.cnf</code><br>
-      En Docker (montando volumen): mapear un archivo local como <code>-v ./my.cnf:/etc/mysql/conf.d/custom.cnf</code><br>
-      En el propio MariaDB (para ver cuál usa): <code>SELECT @@datadir;</code> o <code>mysqld --verbose --help | grep -A 1 "Default options"</code>
-    </div>
-
-    <h3 class="mt-4">Estructura del archivo y parámetros clave</h3>
-    <p>El archivo usa grupos de configuración entre corchetes. <strong>Los parámetros del motor van bajo <code>[mysqld]</code></strong>.</p>
-    <pre><code class="language-ini bg-black p-3 rounded d-block text-success"># /etc/mysql/mariadb.conf.d/50-server.cnf
-
-[mysqld]
-# ── RED ──────────────────────────────────────────────────
-bind-address            = 0.0.0.0    # Escuchar en todas las IPs (necesario para acceso remoto)
-port                    = 3306
-
-# ── CONEXIONES ───────────────────────────────────────────
-max_connections         = 150        # Máximo de conexiones simultáneas
-wait_timeout            = 600        # Segundos de espera en conexión inactiva (no interactiva)
-interactive_timeout     = 3600       # Ídem para clientes interactivos (DBeaver, terminal...)
-
-# ── RENDIMIENTO ──────────────────────────────────────────
-innodb_buffer_pool_size = 512M       # La caché principal de InnoDB. Regla general: 70% de la RAM
-innodb_log_file_size    = 128M       # Tamaño de los redo logs: mayor = menos flushes, más rendimiento
-query_cache_size        = 0          # En MariaDB 10.5+ la caché de queries está deprecated, mejor en 0
-tmp_table_size          = 64M        # Tamaño máximo de tablas temporales en memoria
-max_heap_table_size     = 64M        # Debe coincidir con tmp_table_size
-
-# ── LOGS ─────────────────────────────────────────────────
-log_error               = /var/log/mysql/error.log
-slow_query_log          = 1
-slow_query_log_file     = /var/log/mysql/mariadb-slow.log
-long_query_time         = 2          # Registrar consultas que tarden más de 2 segundos
-log_queries_not_using_indexes = 1    # Registrar también consultas sin índice aunque sean rápidas</code></pre>
-
-    <h3 class="mt-4">Flujo de trabajo: cambiar un parámetro y verificarlo</h3>
-    <div class="accordion" id="accordionMyCnf">
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#stepEdit">
-            Paso 1: Editar el archivo y reiniciar el servicio
-          </button>
-        </h2>
-        <div id="stepEdit" class="accordion-collapse collapse" data-bs-parent="#accordionMyCnf">
-          <div class="accordion-body">
-            <pre><code class="language-bash bg-black p-3 rounded d-block text-success"># Editar el archivo (necesita sudo)
-sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
-
-# Aplicar los cambios reiniciando el servicio
+# Reiniciar el servicio (aplica cambios de my.cnf)
 sudo systemctl restart mariadb
 
-# Verificar que arrancó bien (sin errores)
-sudo systemctl status mariadb</code></pre>
+# Comprobar estado operativo y últimos logs
+sudo systemctl status mariadb
+
+# Habilitar inicio automático en el arranque del SO
+sudo systemctl enable mariadb
+
+# Deshabilitar el arranque automático
+sudo systemctl disable mariadb</code></pre>
           </div>
         </div>
       </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#stepVerify">
-            Paso 2: Verificar que el cambio ha tenido efecto
-          </button>
-        </h2>
-        <div id="stepVerify" class="accordion-collapse collapse" data-bs-parent="#accordionMyCnf">
-          <div class="accordion-body">
-            <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Verificar el valor actual de cualquier variable
-SHOW VARIABLES LIKE 'max_connections';
-SHOW VARIABLES LIKE 'slow_query_log%';
-SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
-
--- Ver TODAS las variables que coinciden con un patrón
-SHOW VARIABLES LIKE '%timeout%';
-
--- Ver el estado en tiempo real (variables dinámicas)
-SHOW STATUS LIKE 'Threads_connected';   -- conexiones activas ahora mismo
-SHOW STATUS LIKE 'Slow_queries';        -- número de consultas lentas desde que arrancó</code></pre>
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#stepDynamic">
-            Paso 3 (bonus): Cambiar un parámetro en caliente sin reiniciar
-          </button>
-        </h2>
-        <div id="stepDynamic" class="accordion-collapse collapse" data-bs-parent="#accordionMyCnf">
-          <div class="accordion-body">
-            <p>Algunos parámetros son <strong>dinámicos</strong>: se pueden cambiar en caliente con <code>SET GLOBAL</code> sin necesidad de reiniciar. Esto es crítico en producción (¡no puedes apagar la base de datos!).</p>
-            <pre><code class="language-sql bg-black p-3 rounded d-block text-success">-- Activar el slow query log en caliente
-SET GLOBAL slow_query_log = 1;
-SET GLOBAL long_query_time = 1;
-
--- Cambiar max_connections sin reiniciar
-SET GLOBAL max_connections = 200;
-
--- ⚠️ IMPORTANTE: Los cambios con SET GLOBAL NO son permanentes.
--- Al reiniciar el servidor, MariaDB leerá el my.cnf de nuevo.
--- Debes editar TAMBIÉN el my.cnf para que el cambio persista.</code></pre>
+      <div class="col-md-6">
+        <div class="card h-100 border-warning bg-dark">
+          <div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-wrench me-2"></i>Herramientas de Consola y Parada Segura</div>
+          <div class="card-body">
+            <p class="small text-light">Además de systemctl, existen comandos nativos del propio gestor:</p>
+            <ul class="small text-light">
+              <li><code>mysqladmin -u root -p shutdown</code>: Ordena al gestor vaciar buffers a disco (flush) y realizar una parada limpia y controlada sin dañar tablas InnoDB.</li>
+              <li><code>mariadbd-safe</code> (o <code>mysqld_safe</code>): Script wrapper que monitoriza el demonio <code>mariadbd</code> y lo reinicia automáticamente en caso de fallo o caída imprevista.</li>
+              <li><strong>Señales del SO:</strong> El comando <code>systemctl stop</code> envía una señal <code>SIGTERM</code> (15) para permitir una parada limpia; NUNCA debe usarse <code>SIGKILL</code> (9) ya que aborta el proceso de forma abrupta arriesgando la corrupción de datos.</li>
+              <li><strong>PID del proceso:</strong> El archivo configurado en <code>pid-file = /var/run/mysqld/mysqld.pid</code> almacena el Process ID (PID) del demonio en ejecución.</li>
+            </ul>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="card border-warning mt-4">
-      <div class="card-header bg-warning bg-opacity-10 text-warning fw-bold">
-        <i class="fas fa-book-open me-2"></i>La importancia de documentar los cambios de configuración
+    <div class="card border-danger bg-dark mb-4">
+      <div class="card-header bg-danger text-white fw-bold">
+        <i class="fas fa-ambulance me-2"></i>Modo Rescate: Recuperación ante Desastres y Contraseñas de Root
       </div>
       <div class="card-body">
-        <p>En un entorno de producción, tocar el <code>my.cnf</code> es una intervención crítica. Si algo sale mal después de un cambio, alguien tiene que poder responder estas preguntas en cuestión de minutos:</p>
-        <ul class="mb-3">
-          <li><strong>¿Qué cambiaste exactamente?</strong> — No «ajusté la memoria», sino <em>«cambié <code>innodb_buffer_pool_size</code> de 256M a 512M»</em>.</li>
-          <li><strong>¿Por qué lo cambiaste?</strong> — Qué problema o métrica te llevó a hacerlo.</li>
-          <li><strong>¿Quién lo hizo y cuándo?</strong> — Con fecha y hora exactas, no «la semana pasada».</li>
-          <li><strong>¿Qué impacto tuvo?</strong> — ¿Mejoró la latencia? ¿El servidor aguantó más conexiones? ¿O empeoró algo?</li>
-        </ul>
-        <p>La herramienta más sencilla para esto en un proyecto técnico es un fichero <code>CHANGELOG.md</code> en el repositorio, con una entrada por cada cambio:</p>
-        <pre><code class="language-markdown bg-black p-3 rounded d-block text-success">## 2025-03-15 — bernat@server-prod-01
+        <p class="small text-light">
+          Si el administrador pierde la contraseña de <code>root</code> o una directiva corrupta impide validar permisos, se puede arrancar el demonio omitiendo la comprobación de tablas de privilegios:
+        </p>
+        <pre class="mb-0"><code># 1. Detener el servicio habitual
+sudo systemctl stop mariadb
 
-**Cambio:** innodb_buffer_pool_size: 256M → 512M
-**Motivo:** El slow query log mostraba 300+ consultas lentas/hora.
-            SHOW STATUS indicaba ratio de cache hit del 72% (ideal >95%).
-**Resultado:** Cache hit subió al 94%. Consultas lentas/hora bajaron a 12.
-**Reversión:** Volver a 256M si el servidor baja de 1GB de RAM libre.</code></pre>
-        <p class="mb-0 text-muted small">En empresas más grandes, estos registros se hacen en sistemas de tickets (Jira, Redmine) o en pipelines de IaC (<em>Infrastructure as Code</em>) como Ansible o Terraform, donde el propio historial de git sirve como registro de auditoría.</p>
+# 2. Iniciar el motor en modo rescate sin red para evitar intrusiones
+sudo mysqld_safe --skip-grant-tables --skip-networking &
+
+# 3. Conectarse a la consola sin contraseña
+mariadb -u root
+
+# 4. En la consola MariaDB, recargar permisos y cambiar la clave
+FLUSH PRIVILEGES;
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'NuevaContraseñaSegura2024!';
+FLUSH PRIVILEGES;
+exit;
+
+# 5. Detener el proceso de rescate y arrancar normalmente con systemd
+sudo killall mysqld_safe mariadbd
+sudo systemctl start mariadb</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección 2: Selección de Motores (Criterio 2b) -->
+  <section id="motores" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-cogs text-warning me-2"></i>2. Selección de Motores de Almacenamiento: InnoDB vs MyISAM vs MEMORY (Criterio 2b)
+    </h2>
+    <p class="lead mt-3">
+      La arquitectura modular de MariaDB permite asignar diferentes <strong>motores de almacenamiento (Storage Engines)</strong> a cada tabla según los requisitos de explotación y concurrencia.
+    </p>
+
+    <div class="table-responsive my-4">
+      <table class="table table-bordered table-dark table-hover align-middle">
+        <thead class="table-primary text-dark text-center">
+          <tr>
+            <th>Motor</th>
+            <th>Transacciones (ACID)</th>
+            <th>Nivel de Bloqueo</th>
+            <th>Claves Foráneas (FK)</th>
+            <th>Caso de Uso Recomendado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-bold text-info">InnoDB (Default)</td>
+            <td><span class="badge bg-success">Sí (ACID)</span></td>
+            <td><strong>Fila (Row-level)</strong></td>
+            <td><span class="badge bg-success">Sí</span></td>
+            <td>Aplicaciones transaccionales (OLTP), comercio electrónico, donde la integridad, el soporte de COMMIT / ROLLBACK y la concurrencia masiva de escritura son críticas.</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-warning">MyISAM</td>
+            <td><span class="badge bg-danger">No</span></td>
+            <td><strong>Tabla (Table-level)</strong></td>
+            <td><span class="badge bg-danger">No</span></td>
+            <td>Tablas de solo lectura, catálogos estáticos o históricos antiguos con consultas masivas de lectura y cero transacciones.</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-success">MEMORY (HEAP)</td>
+            <td><span class="badge bg-danger">No</span></td>
+            <td>Tabla</td>
+            <td><span class="badge bg-danger">No</span></td>
+            <td>Tablas temporales en RAM, sesiones o tablas de búsqueda rápida (lookups). <em>Atención:</em> Sus datos desaparecen si se reinicia el servidor.</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-secondary">CSV</td>
+            <td><span class="badge bg-danger">No</span></td>
+            <td>Tabla</td>
+            <td><span class="badge bg-danger">No</span></td>
+            <td>Almacena registros en ficheros de texto plano CSV. Ideal para exportar/importar datos fácilmente con hojas de cálculo.</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-light">ARCHIVE</td>
+            <td><span class="badge bg-danger">No</span></td>
+            <td>Fila</td>
+            <td><span class="badge bg-danger">No</span></td>
+            <td>Logs y auditorías históricas enormes: solo permite <code>INSERT</code> y <code>SELECT</code> con alta compresión gzip integrada (no admite <code>UPDATE</code> ni <code>DELETE</code>).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4><i class="fas fa-terminal text-secondary me-2"></i>Gestión de Motores en SQL y my.cnf</h4>
+    <pre><code>-- Ver todos los motores soportados (el predeterminado muestra 'DEFAULT' en la columna Support)
+SHOW ENGINES;
+
+-- Crear una tabla especificando un motor concreto
+CREATE TABLE pedidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    total DECIMAL(10,2)
+) ENGINE = InnoDB;
+
+-- Cambiar el motor de una tabla existente (convierte datos internamente)
+ALTER TABLE logs_antiguos ENGINE = ARCHIVE;
+
+-- Configurar el motor por defecto en /etc/mysql/my.cnf bajo [mysqld]
+# default_storage_engine = InnoDB</code></pre>
+
+    <div class="alert alert-dark border-secondary">
+      <i class="fas fa-folder text-warning me-2"></i>
+      <strong>Estructura de ficheros en disco:</strong> En MyISAM cada tabla se guardaba en tres ficheros (<code>.frm</code> formato, <code>.MYD</code> datos, <code>.MYI</code> índices). En InnoDB moderno, la estructura y datos se almacenan en ficheros tablespace <code>.ibd</code> por tabla (cuando <code>innodb_file_per_table = 1</code>) y en los archivos del sistema <code>ibdata1</code> y redo logs (<code>ib_logfile0</code>).
+    </div>
+  </section>
+
+  <!-- Sección 3: Aseguramiento de Cuentas de Administración (Criterio 2c) -->
+  <section id="cuentas-admin" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-user-lock text-warning me-2"></i>3. Aseguramiento de Cuentas de Administración y Recuperación de Root (Criterio 2c)
+    </h2>
+    <p class="lead mt-3">
+      La cuenta de superadministrador <code>root</code> posee control absoluto sobre el motor de base de datos. Asegurarla es la primera intervención de seguridad obligatoria tras la instalación.
+    </p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card h-100 border-danger bg-dark">
+          <div class="card-header bg-danger text-white fw-bold"><i class="fas fa-shield-alt me-2"></i>mariadb-secure-installation (o mysql_secure_installation)</div>
+          <div class="card-body">
+            <p class="small text-light">Este asistente de bastionado interactivo (invocado indistintamente como <code>mariadb-secure-installation</code> o <code>mysql_secure_installation</code>) realiza 4 acciones vitales:</p>
+            <ol class="small text-light mb-0">
+              <li>Establecer una contraseña robusta para <code>root</code>.</li>
+              <li>Eliminar usuarios anónimos (cuentas con <code>User = ''</code>).</li>
+              <li>Desactivar el acceso remoto de <code>root</code> (forzar <code>'root'@'localhost'</code>).</li>
+              <li>Eliminar la base de datos de pruebas <code>test</code> y sus permisos abiertos.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-info bg-dark">
+          <div class="card-header bg-info text-dark fw-bold"><i class="fas fa-id-card-alt me-2"></i>Autenticación por Socket UNIX (unix_socket)</div>
+          <div class="card-body">
+            <p class="small text-light">
+              Por defecto en instalaciones de MariaDB en Linux, la cuenta <code>root</code> utiliza el plugin <code>unix_socket</code>. Esto permite que el usuario <code>root</code> del sistema operativo pueda conectarse sin contraseña con <code>sudo mariadb</code>, pero impide completamente que nadie acceda a root mediante contraseña remota desde la red.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4><i class="fas fa-user-shield text-secondary me-2"></i>Buenas Prácticas de Cuentas Administrativas</h4>
+    <pre><code>-- 1. Crear un administrador delegado para tareas cotidianas y no usar root
+CREATE USER 'admin_secundario'@'192.168.1.%' IDENTIFIED BY 'AdminFuerte$2024' REQUIRE SSL;
+GRANT ALL PRIVILEGES ON *.* TO 'admin_secundario'@'192.168.1.%' WITH GRANT OPTION;
+
+-- 2. Asegurar que root NO pueda conectar desde cualquier host (%)
+DROP USER IF EXISTS 'root'@'%';
+DELETE FROM mysql.user WHERE User = 'root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+FLUSH PRIVILEGES;
+
+-- 3. Forzar cambio de clave y bloqueo preventivo
+ALTER USER 'admin_secundario'@'192.168.1.%' PASSWORD EXPIRE;
+ALTER USER 'admin_secundario'@'192.168.1.%' ACCOUNT LOCK;
+ALTER USER 'admin_secundario'@'192.168.1.%' ACCOUNT UNLOCK;
+
+-- 4. Cuenta para copias lógicas con mariadb-dump (mínimo privilegio: lectura y bloqueo, sin ALL PRIVILEGES)
+GRANT SELECT, SHOW VIEW, TRIGGER, LOCK TABLES ON *.* TO 'backup_user'@'localhost';</code></pre>
+  </section>
+
+  <!-- Sección 4: Configuración de Herramientas y Clientes (Criterio 2d) -->
+  <section id="herramientas-cliente" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-desktop text-warning me-2"></i>4. Configuración de Herramientas y Software Cliente (Criterio 2d)
+    </h2>
+    <p class="lead mt-3">
+      El acceso a MariaDB se realiza mediante clientes de consola (CLI) o entornos de desarrollo gráficos (GUI) a través de los puertos de red del gestor.
+    </p>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
+        <div class="card h-100 border-primary bg-dark">
+          <div class="card-header bg-primary text-white fw-bold"><i class="fas fa-laptop-code me-2"></i>Herramientas Gráficas (DBeaver, Workbench)</div>
+          <div class="card-body">
+            <ul class="small text-light">
+              <li><strong>DBeaver:</strong> Cliente universal multiplataforma basado en drivers JDBC. Permite autocompletado, modelado ER y visualización de datos.</li>
+              <li><strong>Túnel SSH:</strong> Para conectar DBeaver a un servidor MariaDB remoto protegido sin exponer el puerto 3306 a internet, se configura una conexión con túnel SSH intermedio.</li>
+              <li><strong>phpMyAdmin:</strong> Interfaz web clásica desarrollada en PHP para administración en servidores web compartidos.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-success bg-dark">
+          <div class="card-header bg-success text-white fw-bold"><i class="fas fa-user-secret me-2"></i>Archivo de Opciones del Cliente (~/.my.cnf)</div>
+          <div class="card-body">
+            <p class="small text-light">
+              Para automatizar scripts y conectar por consola sin teclear contraseñas ni exponerlas en el historial de comandos, se configura el fichero <code>~/.my.cnf</code> en el directorio home del usuario:
+            </p>
+            <pre class="mb-2"><code># ~/.my.cnf (Debe tener permisos chmod 600)
+[client]
+user = admin_secundario
+password = MiContraseñaSecreta
+host = localhost
+port = 3306</code></pre>
+            <p class="small text-warning mb-0"><i class="fas fa-exclamation-triangle me-1"></i> Es obligatorio proteger el archivo con <code>chmod 600 ~/.my.cnf</code> para que otros usuarios del sistema no puedan leer las credenciales.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección 5: Conectividad y Red (Criterio 2e) -->
+  <section id="conectividad" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-network-wired text-warning me-2"></i>5. Conectividad en Red y Cortafuegos: bind-address, Puertos y TLS (Criterio 2e)
+    </h2>
+    <p class="lead mt-3">
+      La configuración de red en el archivo <code>my.cnf</code> define qué interfaces y máquinas remotas pueden comunicarse con el motor de base de datos.
+    </p>
+
+    <div class="table-responsive my-4">
+      <table class="table table-bordered table-dark table-hover align-middle">
+        <thead class="table-primary text-dark text-center">
+          <tr>
+            <th>Directiva</th>
+            <th>Valores Típicos</th>
+            <th>Comportamiento y Seguridad</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>bind-address</code></td>
+            <td><code>127.0.0.1</code></td>
+            <td>Solo acepta conexiones locales (loopback). Inaccesible desde cualquier otra máquina de la red. Máxima seguridad.</td>
+          </tr>
+          <tr>
+            <td><code>bind-address</code></td>
+            <td><code>0.0.0.0</code> (o <code>::</code>)</td>
+            <td>Escucha en <strong>todas las tarjetas de red e interfaces</strong> del servidor. Necesario para permitir accesos remotos.</td>
+          </tr>
+          <tr>
+            <td><code>bind-address</code></td>
+            <td><code>192.168.1.50</code></td>
+            <td>Escucha exclusivamente en la tarjeta de red asociada a esa IP privada (ej. red interna de servidores).</td>
+          </tr>
+          <tr>
+            <td><code>port</code></td>
+            <td><code>3306</code> (predeterminado)</td>
+            <td>Puerto TCP estándar asignado por la IANA a MySQL/MariaDB. Puede cambiarse para reducir escaneos automatizados de bots.</td>
+          </tr>
+          <tr>
+            <td><code>skip-networking</code></td>
+            <td>(activado / sin valor)</td>
+            <td>Desactiva completamente la pila TCP/IP. El motor solo acepta conexiones locales mediante socket UNIX (<code>/var/run/mysqld/mysqld.sock</code>).</td>
+          </tr>
+          <tr>
+            <td><code>skip-name-resolve</code></td>
+            <td>(activado / sin valor)</td>
+            <td>Desactiva la resolución inversa de DNS en cada conexión entrante, acelerando drásticamente el establecimiento de sesiones remotas. <strong>Precaución crítica:</strong> las cuentas de usuario deben crearse siempre con direcciones IP numéricas (ej. <code>'user'@'192.168.1.%'</code>) y nunca con nombres de host o dominios FQDN.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4><i class="fas fa-shield-virus text-secondary me-2"></i>Reglas de Cortafuegos en el Sistema Operativo (UFW / iptables)</h4>
+    <pre><code># En Ubuntu/Debian con UFW:
+# Permitir conexiones al puerto 3306 únicamente desde la subred del servidor web
+sudo ufw allow from 192.168.1.0/24 to any port 3306 proto tcp
+
+# Comprobar qué puertos están escuchando en el servidor
+sudo ss -tulpn | grep 3306
+# o con netstat:
+sudo netstat -tlpn | grep mariadbd</code></pre>
+  </section>
+
+  <!-- Sección 6: Parámetros por Defecto (Criterio 2f) -->
+  <section id="parametros-defecto" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-font text-warning me-2"></i>6. Características por Defecto: Charset (utf8mb4), Collation y sql_mode (Criterio 2f)
+    </h2>
+    <p class="lead mt-3">
+      El juego de caracteres, la colación y el modo SQL determinan cómo se almacena, compara e interpreta el texto y las reglas de validación en las tablas creadas por defecto.
+    </p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card h-100 border-primary bg-dark">
+          <div class="card-header bg-primary text-white fw-bold"><i class="fas fa-globe me-2"></i>utf8mb4 (Estándar Actual)</div>
+          <div class="card-body">
+            <p class="small text-light">
+              En MariaDB/MySQL, el charset clásico <code>utf8</code> era en realidad <code>utf8mb3</code> (máximo 3 bytes por carácter). El estándar moderno obligatorio es <strong><code>utf8mb4</code></strong>, que soporta 4 bytes por carácter, permitiendo almacenar el conjunto Unicode completo, caracteres asiáticos y emojis sin pérdidas.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-info bg-dark">
+          <div class="card-header bg-info text-dark fw-bold"><i class="fas fa-sort-alpha-down me-2"></i>Collation (_ci vs _cs vs _bin)</div>
+          <div class="card-body">
+            <ul class="small text-light mb-0">
+              <li><code>_ci</code> (Case Insensitive): No distingue entre mayúsculas y minúsculas ('Madrid' = 'madrid'). Es la más común (ej. <code>utf8mb4_unicode_ci</code> o <code>utf8mb4_general_ci</code>).</li>
+              <li><code>_cs</code> (Case Sensitive): Distingue mayúsculas y minúsculas.</li>
+              <li><code>_bin</code> (Binary): Comparación binaria exacta por valor de código byte.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-warning bg-dark">
+          <div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-exclamation-circle me-2"></i>sql_mode Estricto</div>
+          <div class="card-body">
+            <p class="small text-light">
+              <code>STRICT_TRANS_TABLES</code> y <code>NO_ENGINE_SUBSTITUTION</code> garantizan que si un usuario intenta insertar un valor inválido (ej. texto en un entero o fecha incorrecta), el motor lance un <strong>error fatal</strong> en lugar de insertar ceros o truncar en silencio. El modo <code>ERROR_FOR_DIVISION_BY_ZERO</code> evita que devuelva <code>NULL</code> sin aviso, y <code>ANSI_QUOTES</code> trata las comillas dobles como identificadores.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4><i class="fas fa-terminal text-secondary me-2"></i>Gestión de Charset, Collation y Modos en SQL</h4>
+    <pre><code>-- 1. Crear una base de datos especificando charset y collation
+CREATE DATABASE arepazo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 2. Consultar colaciones disponibles para utf8mb4
+SHOW COLLATION WHERE Charset = 'utf8mb4';
+
+-- 3. Convertir una tabla existente completa a utf8mb4
+ALTER TABLE platos CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 4. Consultar el sql_mode activo en sesión y global
+SELECT @@SESSION.sql_mode;
+SELECT @@GLOBAL.sql_mode;
+
+# En /etc/mysql/my.cnf bajo [mysqld]:
+[mysqld]
+character-set-server = utf8mb4
+collation-server     = utf8mb4_unicode_ci
+sql_mode             = STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,ANSI_QUOTES</code></pre>
+  </section>
+
+  <!-- Sección 7: Conexiones, Timeouts y Rendimiento (Criterio 2g) -->
+  <section id="conexiones-rendimiento" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-tachometer-alt text-warning me-2"></i>7. Parámetros de Conexión, Timeouts y Memoria (Criterio 2g)
+    </h2>
+    <p class="lead mt-3">
+      Dimensionar correctamente el número de conexiones permitidas y los buffers de memoria es imprescindible para evitar caídas por saturación de RAM o el error <em>"Too many connections"</em>.
+    </p>
+
+    <div class="table-responsive my-4">
+      <table class="table table-bordered table-dark table-hover align-middle">
+        <thead class="table-primary text-dark text-center">
+          <tr>
+            <th>Parámetro</th>
+            <th>Descripción</th>
+            <th>Valor Típico / Recomendado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>max_connections</code></td>
+            <td>Número máximo de conexiones de clientes simultáneas. Cada conexión consume memoria adicional (hilos, buffers).</td>
+            <td><code>150</code> (default) a <code>500+</code> según RAM.</td>
+          </tr>
+          <tr>
+            <td><code>max_user_connections</code></td>
+            <td>Número máximo de conexiones simultáneas permitidas a una misma cuenta de usuario individual (evita monopolios).</td>
+            <td><code>0</code> (ilimitado) o <code>20-50</code> en hosting.</td>
+          </tr>
+          <tr>
+            <td><code>wait_timeout</code></td>
+            <td>Segundos que el servidor espera en una conexión no interactiva inactiva (ej. pool de apps web) antes de cerrarla.</td>
+            <td><code>600</code> (10 min) o <code>300</code> en web (default: 28800s = 8h).</td>
+          </tr>
+          <tr>
+            <td><code>interactive_timeout</code></td>
+            <td>Segundos de espera en conexiones interactivas (consolas CLI, DBeaver) antes de cerrarlas por inactividad.</td>
+            <td><code>3600</code> (1 hora) a <code>28800</code> (8 horas).</td>
+          </tr>
+          <tr>
+            <td><code>connect_timeout</code></td>
+            <td>Segundos que el servidor espera el paquete de saludo (handshake) antes de abortar la conexión con "Bad handshake".</td>
+            <td><code>10</code> segundos.</td>
+          </tr>
+          <tr>
+            <td><code>innodb_buffer_pool_size</code></td>
+            <td>El parámetro de rendimiento más importante: la caché en memoria RAM donde InnoDB guarda datos e índices.</td>
+            <td><strong>50% al 70-80%</strong> de la memoria RAM total en servidores dedicados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4><i class="fas fa-chart-line text-secondary me-2"></i>Inspección en Tiempo Real y Cambios Dinámicos (SET GLOBAL)</h4>
+    <pre><code>-- Comprobar el valor configurado de las variables
+SHOW VARIABLES LIKE 'max_connections';
+SHOW VARIABLES LIKE '%timeout%';
+SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
+
+-- Comprobar el estado real de conexiones en vivo
+SHOW STATUS LIKE 'Threads_connected';     -- Conexiones abiertas en este instante
+SHOW STATUS LIKE 'Max_used_connections';  -- Pico máximo de conexiones alcanzado desde el arranque
+
+-- Modificar parámetros dinámicos en caliente (sin reiniciar el servidor)
+SET GLOBAL max_connections = 250;
+SET GLOBAL wait_timeout = 600;
+
+-- Consultar procesos en ejecución y terminar conexiones bloqueadas si es necesario
+SHOW PROCESSLIST;
+KILL 42; -- Termina el hilo de conexión con ID 42
+
+-- ⚠️ Recordatorio: Los cambios con SET GLOBAL se pierden si el servidor se reinicia;
+-- para hacerlos permanentes deben escribirse en el archivo my.cnf.</code></pre>
+  </section>
+
+  <!-- Sección 8: Logs del Sistema -->
+  <section id="logs" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-file-alt text-warning me-2"></i>8. Registro y Diagnóstico: Error Log, General Log y Slow Query Log
+    </h2>
+    <p class="lead mt-3">
+      MariaDB genera diferentes tipos de archivos de registro que son cruciales para el monitoreo, la auditoría y la detección de cuellos de botella.
+    </p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card h-100 border-danger bg-dark">
+          <div class="card-header bg-danger text-white fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Error Log</div>
+          <div class="card-body">
+            <p class="small text-light">
+              Registra incidencias de inicio, parada y errores críticos del servidor. Es el primer archivo que debe inspeccionarse si MariaDB no arranca.
+              <br><br><code>log_error = /var/log/mysql/error.log</code>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-info bg-dark">
+          <div class="card-header bg-info text-dark fw-bold"><i class="fas fa-history me-2"></i>General Query Log</div>
+          <div class="card-body">
+            <p class="small text-light">
+              Registra absolutamente todas las sentencias SQL recibidas de cualquier cliente y las conexiones. Muy útil en depuración puntual, pero degrada el rendimiento y consume gigabytes de disco rápidamente.
+              <br><br><code>general_log = 0</code> (desactivado en prod)
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-warning bg-dark">
+          <div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-stopwatch me-2"></i>Slow Query Log</div>
+          <div class="card-body">
+            <p class="small text-light">
+              Registra consultas que tardan más del umbral <code>long_query_time</code> (ej. 2 segundos) o que no usan índices (<code>log_queries_not_using_indexes = 1</code>). Fundamental para optimización.
+              <br><br><code>slow_query_log = 1</code>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección 9: Documentación y Control de Cambios (Criterio 2h) -->
+  <section id="documentacion" class="mb-5">
+    <h2 class="text-info border-bottom border-info pb-2">
+      <i class="fas fa-book text-warning me-2"></i>9. Documentación y Control de Cambios de Configuración (Criterio 2h)
+    </h2>
+    <p class="lead mt-3">
+      En infraestructuras profesionales, cualquier intervención sobre el archivo <code>my.cnf</code> es un cambio de producción crítico que debe quedar documentado de forma auditable.
+    </p>
+
+    <div class="card border-warning bg-dark mb-4">
+      <div class="card-body">
+        <h5 class="text-warning"><i class="fas fa-clipboard-check me-2"></i>Requisitos de Documentación de Cambios</h5>
+        <ul class="text-light small mb-3">
+          <li><strong>Parámetro modificado:</strong> Nombre exacto del parámetro y valor anterior vs valor nuevo.</li>
+          <li><strong>Motivo técnico o métrica justificativa:</strong> Por qué se realizó el cambio (ej. "el slow query log registraba 350 consultas lentas/hora y el ratio de cache hit era de solo el 70%").</li>
+          <li><strong>Fecha, hora y responsable:</strong> Identificación del administrador que ejecutó el cambio.</li>
+          <li><strong>Métrica de impacto verificada:</strong> Comprobación posterior de si la intervención resolvió el problema (ej. "el cache hit subió al 95%").</li>
+          <li><strong>Plan de reversión (Rollback):</strong> Procedimiento exacto para deshacer el cambio si surgen efectos secundarios.</li>
+        </ul>
+
+        <h6 class="text-info"><i class="fas fa-file-code me-2"></i>Ejemplo de Registro en CHANGELOG.md</h6>
+        <pre class="mb-0"><code>## [2025-04-10] — bernat@db-server-01
+
+**Cambio:** `innodb_buffer_pool_size`: 256M → 1G, `max_connections`: 150 → 300
+**Motivo:** Errores "Too many connections" detectados en horas pico (13:00 - 15:00) en el restaurante El Arepazo.
+**Impacto:** Cero errores de conexión tras 48h de monitorización con SHOW STATUS LIKE 'Max_used_connections'.
+**Reversión:** Modificar my.cnf a 256M y 150 conexiones, y reiniciar mariadb.</code></pre>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="alert alert-secondary small h-100 mb-0">
+          <i class="fas fa-code-branch me-1"></i> <strong>Control de Versiones e IaC:</strong> Versionar <code>/etc/mysql/</code> con Git y herramientas de automatización (Ansible) permite desplegar configuraciones idénticas y auditar cada cambio con <code>git diff</code>.
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="alert alert-info small h-100 mb-0">
+          <i class="fas fa-shield-alt me-1"></i> <strong>Cumplimiento (ENS / ISO 27001) y Reducción del MTTR:</strong> Una documentación auditable es exigida por normativas como el Esquema Nacional de Seguridad (ENS) e ISO 27001, y reduce drásticamente el Tiempo Medio de Recuperación (MTTR) ante caídas del servicio.
+        </div>
       </div>
     </div>
   </section>
