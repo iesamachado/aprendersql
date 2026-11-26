@@ -131,6 +131,7 @@ async function loadTandas() {
             nombre: bloquesMap[b],
             desc: `Base de datos: <strong>${bd.charAt(0).toUpperCase() + bd.slice(1)}</strong>`,
             temaRef: bloqueRef ? bloqueRef.temaRef : null,
+            modulo: bloqueRef ? bloqueRef.modulo : '0372',
             tipo: 'ejercicios_legacy'
           });
         }
