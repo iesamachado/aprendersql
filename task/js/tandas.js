@@ -160,6 +160,7 @@ window._showMyGrades = async function() {
     const claseSnap = await fb.getDoc(fb.doc(db, 'clases', claseId));
     if (!claseSnap.exists()) throw new Error("Clase no encontrada");
     const claseData = claseSnap.data();
+    const claseModulo = claseData.modulo || '0372';
     
     let curriculum = claseData.curriculum;
     if (!curriculum) {
@@ -216,12 +217,12 @@ window._showMyGrades = async function() {
     }
     
     // Add custom mapped tasks
-    ['0372', '0377'].forEach(mod => {
+      [claseModulo].forEach(mod => {
       if (curriculum[mod] && curriculum[mod].mapeo) {
         for (const ra in curriculum[mod].mapeo) {
           for (const c in curriculum[mod].mapeo[ra]) {
             curriculum[mod].mapeo[ra][c].forEach(taskId => {
-              if ((taskId.startsWith('examen:') || taskId.startsWith('custom_')) && (claseData.examenesActivos || []).includes(taskId)) {
+              if (taskId.startsWith('examen:') || taskId.startsWith('custom_')) {
                 if (!activeTasks.some(t => t.id === taskId)) {
                   activeTasks.push({ id: taskId, mappedId: taskId, type: 'other' });
                 }
@@ -283,7 +284,7 @@ window._showMyGrades = async function() {
 
     // Identify active RAs (like in gradebook)
     const activeRAs = new Set();
-    ['0372', '0377'].forEach(mod => {
+      [claseModulo].forEach(mod => {
       if (curriculum[mod] && curriculum[mod].mapeo) {
         for (const ra in curriculum[mod].mapeo) {
           let hasActiveTaskForRA = false;
@@ -306,7 +307,7 @@ window._showMyGrades = async function() {
        }
     });
 
-    ['0372', '0377'].forEach(mod => {
+      [claseModulo].forEach(mod => {
       if (!curriculum[mod]) return;
       
       const pesosGenerales = curriculum[mod].raPesos || curriculum[mod].pesos || {};
@@ -514,7 +515,7 @@ window._showMyGrades = async function() {
 
       // Comprobar si esta tarea tiene criterios en algún módulo y RA
       let hasCriteria = false;
-      ['0372', '0377'].forEach(mod => {
+        [claseModulo].forEach(mod => {
         if (!curriculum[mod] || !curriculum[mod].mapeo) return;
         for (const ra in curriculum[mod].mapeo) {
           for (const crit in curriculum[mod].mapeo[ra]) {
