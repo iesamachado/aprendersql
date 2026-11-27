@@ -116,8 +116,9 @@ CREATE TABLE PersonaCoche (
                     <div class="col-md-4">
                         <div class="p-3 rounded bg-black bg-opacity-25 border border-danger border-opacity-25 h-100 small">
                             <h6 class="text-danger fw-bold"><i class="fas fa-trash me-1"></i> CASCADE (En Cascada)</h6>
-                            <p class="text-muted mb-2">Si se borra el registro padre, el motor <strong>elimina automáticamente</strong> todos los registros hijos relacionados.</p>
-                            <code>ON DELETE CASCADE</code>
+                            <p class="text-muted mb-2">Si se borra o actualiza el registro padre, el motor <strong>propaga automáticamente</strong> la acción a todos los registros hijos relacionados.</p>
+                            <code>ON DELETE CASCADE</code><br>
+                            <code>ON UPDATE CASCADE</code>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -432,26 +433,53 @@ SELECT AVG(total) FROM VentasMesActual;
 
         <!-- 1.2 Modify Tables -->
         <article class="card bg-glass border-0 shadow-sm p-4 mb-4" id="ddl-modify">
-            <h3 ><i class="fas fa-edit me-2 text-warning"></i>1.2 Modificación de Tablas (ALTER)</h3>
-            <p>Comando <code>ALTER TABLE</code>. Nos permite añadir campos, eliminarlos, añadir claves foráneas, o modificar tipos de datos una vez que la tabla ya está creada.</p>
+            <h3 ><i class="fas fa-edit me-2 text-warning"></i>1.2 Modificación de Tablas (ALTER TABLE y RENAME TABLE)</h3>
+            <p>El comando <code>ALTER TABLE</code> nos permite cambiar la estructura de una tabla existente (añadir, modificar, renombrar o eliminar columnas y restricciones) sin necesidad de borrarla ni perder sus datos. Además, contamos con <code>RENAME TABLE</code> para renombrar tablas completas.</p>
             
             <div class="code-block-wrapper mb-4">
-<pre><code class="language-sql">-- Añadir nueva columna
-ALTER TABLE jugador ADD email VARCHAR(150) NOT NULL DEFAULT 'asd@asd.es';
+<pre><code class="language-sql">-- 1. AÑADIR, MODIFICAR Y BORRAR COLUMNAS
+ALTER TABLE jugador ADD COLUMN email VARCHAR(150) NOT NULL DEFAULT 'contacto@club.com';
+ALTER TABLE jugador MODIFY COLUMN nombre VARCHAR(50) NOT NULL;
+ALTER TABLE jugador DROP COLUMN dorsal;
 
--- Modificar columna existente
-ALTER TABLE jugador MODIFY COLUMN nombre VARCHAR(30);
+-- 2. RENOMBRAR COLUMNAS
+-- Sintaxis SQL estándar y MariaDB moderno (solo cambia el nombre, mantiene tipo):
+ALTER TABLE jugador RENAME COLUMN apellido1 TO primer_apellido;
 
--- Borrar columna
-ALTER TABLE jugador DROP COLUMN apellido;
+-- Sintaxis clásica MySQL/MariaDB CHANGE COLUMN (permite cambiar nombre Y redefinir tipo/restricciones):
+ALTER TABLE Heroes CHANGE COLUMN don kosei VARCHAR(100);
 
--- Añadir y Borrar Constraints (Restricciones)
-ALTER TABLE categoria ADD CONSTRAINT pkcategoria1 PRIMARY KEY (id);
-ALTER TABLE Tarjeta ADD CONSTRAINT fkcategoria FOREIGN KEY (idcategoria) REFERENCES Categorias(id);
-ALTER TABLE categoria DROP CONSTRAINT pkcategoria;</code></pre>
+-- 3. RENOMBRAR TABLAS
+-- Mediante comando directo RENAME TABLE:
+RENAME TABLE Lineas_Pedido TO Detalle_Pedido;
+
+-- O mediante ALTER TABLE:
+ALTER TABLE Lineas_Pedido RENAME TO Detalle_Pedido;
+
+-- 4. GESTIÓN DE CLAVES PRIMARIAS (PRIMARY KEY)
+-- Añadir Primary Key a tabla que carecía de ella:
+ALTER TABLE categoria ADD PRIMARY KEY (id);
+-- O con nombre explícito de restricción:
+ALTER TABLE categoria ADD CONSTRAINT pk_categoria PRIMARY KEY (id);
+
+-- Eliminar la Primary Key:
+ALTER TABLE categoria DROP PRIMARY KEY;
+
+-- 5. GESTIÓN DE CLAVES FORÁNEAS (FOREIGN KEY) Y RESTRICCIONES
+-- Añadir clave foránea referenciando a otra tabla:
+ALTER TABLE Tarjeta ADD CONSTRAINT fk_categoria FOREIGN KEY (idcategoria) REFERENCES Categorias(id);
+
+-- Eliminar la clave foránea:
+ALTER TABLE Tarjeta DROP FOREIGN KEY fk_categoria;
+-- (En SQL estándar o MariaDB moderno también se admite):
+-- ALTER TABLE Tarjeta DROP CONSTRAINT fk_categoria;
+
+-- Añadir restricción UNIQUE o CHECK a posteriori:
+ALTER TABLE Usuarios ADD CONSTRAINT uq_email UNIQUE (email);
+ALTER TABLE Celdas ADD CONSTRAINT chk_seguridad CHECK (nivel_seguridad BETWEEN 1 AND 5);</code></pre>
             </div>
 
-            <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de Modificación (1-5)</h5>
+            <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de Modificación y Renombrado (1-9)</h5>
             <div class="accordion accordion-flush bg-transparent" id="accordionDDL-Mod">
                 <!-- Ej Mod 1 -->
                 <div class="accordion-item bg-transparent">
@@ -519,6 +547,62 @@ ALTER TABLE categoria DROP CONSTRAINT pkcategoria;</code></pre>
                             <details>
                                 <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
                                 <pre class="p-2 rounded text-success">ALTER TABLE Productos DROP FOREIGN KEY fk_categoria;</pre>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ej Mod 6 -->
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m6" data-bs-toggle="collapse" type="button">6. Renombrar Tabla (RENAME TABLE)</button></h2>
+                    <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m6">
+                        <div class="accordion-body text-secondary">
+                            <p><strong>Enunciado:</strong> La tabla <code>Lineas_Pedido</code> va a renombrarse a <code>Detalle_Pedido</code> para seguir el nuevo convenio de nomenclatura. Escribe la instrucción SQL adecuada.<br/>
+                            <span class="badge bg-info text-dark mb-2">Contexto: Arepazo</span></p>
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
+                                <pre class="p-2 rounded text-success">RENAME TABLE Lineas_Pedido TO Detalle_Pedido;</pre>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ej Mod 7 -->
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m7" data-bs-toggle="collapse" type="button">7. Renombrar Columna (RENAME COLUMN)</button></h2>
+                    <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m7">
+                        <div class="accordion-body text-secondary">
+                            <p><strong>Enunciado:</strong> Renombra la columna <code>apellido1</code> de la tabla <code>jugadores</code> a <code>primer_apellido</code>.<br/>
+                            <span class="badge bg-primary mb-2">Contexto: Baloncesto</span></p>
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
+                                <pre class="p-2 rounded text-success">ALTER TABLE jugadores RENAME COLUMN apellido1 TO primer_apellido;</pre>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ej Mod 8 -->
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m8" data-bs-toggle="collapse" type="button">8. Cambiar Columna y Tipo (CHANGE COLUMN)</button></h2>
+                    <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m8">
+                        <div class="accordion-body text-secondary">
+                            <p><strong>Enunciado:</strong> Cambia el nombre de la columna <code>don</code> a <code>kosei</code> en la tabla <code>Heroes</code> manteniendo el tipo <code>VARCHAR(100)</code>.<br/>
+                            <span class="badge bg-warning text-dark mb-2">Contexto: Heroes</span></p>
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
+                                <pre class="p-2 rounded text-success">ALTER TABLE Heroes CHANGE COLUMN don kosei VARCHAR(100);</pre>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ej Mod 9 -->
+                <div class="accordion-item bg-transparent">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed bg-opacity-50" data-bs-target="#ex-ddl-m9" data-bs-toggle="collapse" type="button">9. Eliminar Clave Primaria (DROP PRIMARY KEY)</button></h2>
+                    <div class="accordion-collapse collapse" data-bs-parent="#accordionDDL-Mod" id="ex-ddl-m9">
+                        <div class="accordion-body text-secondary">
+                            <p><strong>Enunciado:</strong> Elimina la clave primaria existente de la tabla <code>Historico</code> para redefinir el modelo.<br/>
+                            <span class="badge mb-2">Contexto: General</span></p>
+                            <details>
+                                <summary class="btn btn-sm btn-outline-light mb-2">Ver Solución SQL</summary>
+                                <pre class="p-2 rounded text-success">ALTER TABLE Historico DROP PRIMARY KEY;</pre>
                             </details>
                         </div>
                     </div>

@@ -4,7 +4,7 @@ import {
   adaptSqlScriptForSqlite, 
   adaptSqlForSqlite, 
   compareResults 
-} from '../../js/sql-engine-utils.js?v=4';
+} from '../../js/sql-engine-utils.js?v=5';
 
 
 const { db, user, userDoc, fb } = await initAdminPage();

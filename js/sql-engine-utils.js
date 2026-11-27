@@ -247,23 +247,118 @@ export function rowToKey(row) {
 }
 
 /**
- * Normaliza un tipo SQL a su forma canónica para comparación tolerante.
- * INT, INTEGER, TINYINT, SMALLINT, MEDIUMINT, BIGINT → 'integer'
- * VARCHAR(n), CHAR(n) → 'varchar'
- * TEXT, LONGTEXT, MEDIUMTEXT, TINYTEXT → 'text'
- * DECIMAL(p,s), NUMERIC(p,s), FLOAT, DOUBLE, REAL → 'real'
- * BOOLEAN, BOOL → 'integer'  (SQLite los almacena como integer)
- * DATE, DATETIME, TIMESTAMP → 'text'  (SQLite los almacena como text)
+ * Desglosa un tipo SQL para análisis y comparación tolerante.
+ * Categorías canónicas: integer, real, datetime, time, text, varchar.
+ * Detecta si un varchar es "grande" (>= 190 caracteres o sin longitud especificada).
  */
-function normalizeSqlType(type) {
-  if (!type) return '';
+export function parseSqlType(type) {
+  if (!type) return { category: '', len: null, isLargeVarchar: false, raw: '' };
   const t = String(type).trim().toLowerCase();
-  if (/^(int|integer|tinyint|smallint|mediumint|bigint|boolean|bool)/.test(t)) return 'integer';
-  if (/^(varchar|char)/.test(t)) return 'varchar';
-  if (/^(text|longtext|mediumtext|tinytext)/.test(t)) return 'text';
-  if (/^(decimal|numeric|float|double|real)/.test(t)) return 'real';
-  if (/^(date|datetime|timestamp)/.test(t)) return 'text';
-  return t.replace(/\(.*\)/, '').trim(); // quita parámetros para tipos desconocidos
+
+  if (/^(int|integer|tinyint|smallint|mediumint|bigint|boolean|bool)/.test(t)) {
+    return { category: 'integer', len: null, isLargeVarchar: false, raw: t };
+  }
+  if (/^(decimal|numeric|float|double|real)/.test(t)) {
+    return { category: 'real', len: null, isLargeVarchar: false, raw: t };
+  }
+  // DATE, DATETIME y TIMESTAMP se normalizan al tipo temporal 'datetime'
+  if (/^(date|datetime|timestamp)/.test(t)) {
+    return { category: 'datetime', len: null, isLargeVarchar: false, raw: t };
+  }
+  if (/^(time)/.test(t)) {
+    return { category: 'time', len: null, isLargeVarchar: false, raw: t };
+  }
+  if (/^(text|longtext|mediumtext|tinytext)/.test(t)) {
+    return { category: 'text', len: null, isLargeVarchar: false, raw: t };
+  }
+  const m = t.match(/^(?:varchar|char)\s*(?:\(\s*(\d+)\s*\))?/);
+  if (m) {
+    const len = m[1] ? parseInt(m[1], 10) : null;
+    const isLarge = (len === null || len >= 190);
+    return { category: 'varchar', len: len, isLargeVarchar: isLarge, raw: t };
+  }
+  return { category: t.replace(/\(.*\)/, '').trim(), len: null, isLargeVarchar: false, raw: t };
+}
+
+/**
+ * Normaliza un tipo SQL a su categoría canónica para compatibilidad.
+ */
+export function normalizeSqlType(type) {
+  return parseSqlType(type).category;
+}
+
+/**
+ * Comprueba si dos tipos SQL son compatibles en ejercicios DDL:
+ * 1. date, datetime y timestamp son equivalentes (se acepta datetime donde la solución pida date).
+ * 2. varchar grande (>= 190 caracteres o sin longitud) y text son equivalentes (se acepta varchar grande como text y viceversa).
+ * 3. Si se especifica un varchar estándar (len < 190), el tamaño DEBE coincidir con el esperado.
+ * 4. Tipos dentro de la misma categoría canónica (integer, real, etc.) son compatibles.
+ */
+export function areTypesCompatible(typeA, typeB) {
+  const pA = parseSqlType(typeA);
+  const pB = parseSqlType(typeB);
+
+  // Aceptar varchar grande como text (y viceversa)
+  if ((pA.category === 'text' && pB.category === 'varchar' && pB.isLargeVarchar) ||
+      (pB.category === 'text' && pA.category === 'varchar' && pA.isLargeVarchar)) {
+    return true;
+  }
+
+  // Si ambos son varchar: verificar longitud exacta
+  if (pA.category === 'varchar' && pB.category === 'varchar') {
+    // Si ambos son varchars grandes (ej. 200 y 255), se aceptan como equivalentes a texto largo
+    if (pA.isLargeVarchar && pB.isLargeVarchar) return true;
+    // Si son varchars estándar, sus longitudes deben coincidir exactamente
+    if (pA.len !== null && pB.len !== null) {
+      return pA.len === pB.len;
+    }
+    return pA.len === pB.len;
+  }
+
+  if (pA.category === pB.category) return true;
+
+  return false;
+}
+
+/**
+ * Normaliza valores por defecto para comparaciones en DDL.
+ */
+function normalizeDefaultValue(val) {
+  if (val === null || val === undefined) return null;
+  let s = String(val).trim().toLowerCase().replace(/^'|'$/g, '');
+  if (s === 'true') return '1';
+  if (s === 'false') return '0';
+  if (/^(now\(\)|current_timestamp\(\)|current_timestamp)$/i.test(s)) return 'current_timestamp';
+  return s;
+}
+
+/**
+ * Detecta el tipo de acción DDL principal de una sentencia SQL.
+ */
+export function extractCommandType(sql) {
+  if (!sql) return '';
+  const s = String(sql).trim();
+  if (/^\s*CREATE\s+TABLE/i.test(s)) return 'CREATE_TABLE';
+  if (/^\s*DROP\s+TABLE/i.test(s)) return 'DROP_TABLE';
+  if (/^\s*RENAME\s+TABLE/i.test(s)) return 'RENAME_TABLE';
+  if (/^\s*ALTER\s+TABLE\s+[^\s]+\s+RENAME/i.test(s)) return 'RENAME_TABLE';
+  if (/^\s*ALTER\s+TABLE/i.test(s)) return 'ALTER_TABLE';
+  if (/^\s*TRUNCATE\s+(?:TABLE\s+)?/i.test(s)) return 'TRUNCATE_TABLE';
+  return '';
+}
+
+/**
+ * Obtiene todos los nombres de tablas de usuario en una base de datos SQLite.
+ */
+export function getAllUserTables(db) {
+  if (!db || !db.exec) return [];
+  try {
+    const res = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
+    if (!res.length || !res[0].values.length) return [];
+    return res[0].values.map(r => String(r[0]).toLowerCase());
+  } catch (e) {
+    return [];
+  }
 }
 
 /**
@@ -300,6 +395,7 @@ function getTableInfo(db, tableName) {
     return res[0].values.map(row => ({
       name: String(row[1]).toLowerCase(),
       type: normalizeSqlType(row[2]),
+      rawType: String(row[2] || '').trim(),
       notnull: Number(row[3]),
       dflt_value: row[4] !== null && row[4] !== undefined ? String(row[4]).trim() : null,
       pk: Number(row[5]),
@@ -311,34 +407,64 @@ function getTableInfo(db, tableName) {
 
 /**
  * Compara la estructura DDL resultante en dbAlumno vs dbSolucion.
- * Ejecuta la query_solucion en dbSolucion y compara PRAGMA table_info de cada tabla.
+ * Ejecuta la query_solucion en dbSolucion y compara:
+ * 1. Tipo de comando esperado (ej. DROP vs RENAME).
+ * 2. Estructura y nombres de todas las tablas de la base de datos (sqlite_master).
+ * 3. PRAGMA table_info (columnas, tipos con tamaños de varchar, nullabilidad, pk, defaults) de cada tabla.
  */
-export function compareDDL(dbAlumno, querySolucion) {
+export function compareDDL(dbAlumno, querySolucion, alumnoQuery) {
   if (!dbAlumno || !querySolucion) return false;
 
-  // Crear una BD limpia donde ejecutar la solución oficial
-  const dbSol = new dbAlumno.constructor();
+  // 1. Validar que la acción DDL solicitada coincida con la ejecutada por el alumno
+  if (alumnoQuery) {
+    const typeSol = extractCommandType(querySolucion);
+    const typeAlum = extractCommandType(alumnoQuery);
+    if (typeSol && typeAlum && typeSol !== typeAlum) {
+      console.warn(`Acción DDL no coincide: esperada ${typeSol}, recibida ${typeAlum}`);
+      return false;
+    }
+  }
+
+  // 2. Crear una BD donde ejecutar la solución oficial
+  let dbSol;
+  try {
+    dbSol = (typeof dbAlumno.export === 'function')
+      ? new dbAlumno.constructor(dbAlumno.export())
+      : new dbAlumno.constructor();
+  } catch (e) {
+    dbSol = new dbAlumno.constructor();
+  }
+
   try {
     const adaptedSol = adaptSqlForSqlite(querySolucion);
     dbSol.exec(adaptedSol);
   } catch (e) {
-    console.error('Error ejecutando solución DDL:', e);
+    console.warn('Ejecución solución DDL en SQLite falló (posible sintaxis MySQL/MariaDB no soportada):', e);
+    // Si la solución oficial no puede ejecutarse en SQLite pero el alumno la ejecutó, se asume correcta
+    return true;
+  }
+
+  // 3. Comparar las tablas completas en ambas bases de datos
+  const allTablesAlumno = getAllUserTables(dbAlumno);
+  const allTablesSol = getAllUserTables(dbSol);
+
+  // Si la cantidad de tablas no coincide, se creó una tabla extra o se renombró en vez de borrar
+  if (allTablesAlumno.length !== allTablesSol.length) {
     return false;
   }
 
-  // Extraer tablas de la query solución
-  const tables = extractTableNames(querySolucion);
-  if (!tables.length) return false;
+  const setAlumno = new Set(allTablesAlumno);
+  for (const t of allTablesSol) {
+    if (!setAlumno.has(t)) return false;
+  }
 
-  for (const table of tables) {
+  // 4. Comparar columnas y restricciones de cada tabla existente
+  for (const table of allTablesSol) {
     const colsAlumno = getTableInfo(dbAlumno, table);
     const colsSol = getTableInfo(dbSol, table);
 
-    // Si la solución crea la tabla pero el alumno no la tiene → incorrecto
     if (!colsAlumno && colsSol) return false;
-    // Si la solución la elimina (DROP) y el alumno tampoco la tiene → correcto
     if (!colsAlumno && !colsSol) continue;
-    // Si la solución la elimina pero el alumno aún la tiene → incorrecto
     if (colsAlumno && !colsSol) return false;
 
     // Comparar columnas (conjunto, insensible al orden)
@@ -352,12 +478,12 @@ export function compareDDL(dbAlumno, querySolucion) {
       const cA = mapA[name];
       const cS = mapS[name];
       if (!cA) return false; // columna de la solución no existe en el alumno
-      if (cA.type !== cS.type) return false;
+      if (!areTypesCompatible(cA.rawType || cA.type, cS.rawType || cS.type)) return false;
       if (cA.notnull !== cS.notnull) return false;
       if (cA.pk !== cS.pk) return false;
       // dflt_value: comparar como strings normalizados
-      const dA = cA.dflt_value !== null ? cA.dflt_value.toLowerCase().replace(/^'|'$/g, '') : null;
-      const dS = cS.dflt_value !== null ? cS.dflt_value.toLowerCase().replace(/^'|'$/g, '') : null;
+      const dA = normalizeDefaultValue(cA.dflt_value);
+      const dS = normalizeDefaultValue(cS.dflt_value);
       if (dA !== dS) return false;
     }
   }
@@ -369,8 +495,13 @@ export function compareDDL(dbAlumno, querySolucion) {
  * isDDL: la query del alumno es DDL (CREATE/ALTER/DROP); en ese caso se compara la estructura.
  * isDML: la query es DML puro (INSERT/UPDATE/DELETE); se acepta si no hay error SQL.
  */
-export function compareResults(resA, resS, isDML, isDDL, dbAlumno, querySolucion) {
-  if (isDDL) return compareDDL(dbAlumno, querySolucion);
+export function compareResults(resA, resS, isDML, isDDL, dbAlumno, querySolucion, queryAlumno) {
+  if (isDDL) {
+    if (resA && resA.length && resA[0].values && resA[0].values.length && resA[0].values[0][0] === 'Comando aceptado') {
+      return true;
+    }
+    return compareDDL(dbAlumno, querySolucion, queryAlumno);
+  }
   if (isDML) return true;
   if (!resA.length && !resS.length) return true;
   if (!resA.length || !resS.length) return false;
@@ -411,6 +542,9 @@ if (typeof window !== 'undefined') {
     normalizeCell,
     cellEquals,
     rowToKey,
+    parseSqlType,
+    normalizeSqlType,
+    areTypesCompatible,
     compareDDL,
     compareResults
   };

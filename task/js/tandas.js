@@ -1,4 +1,5 @@
 import { initTaskPage, showToast } from './auth.js';
+import { query, where, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const { user, userDoc, db, fb } = await initTaskPage();
 window.currentBloquesFull = [];
@@ -642,8 +643,6 @@ window._showMyGrades = async function() {
 };
 
 // Fetch Active Test Exams
-import { query, where, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
 function loadActiveTestExams() {
   const targetClaseId = claseId || userDoc?.claseId;
   if (!targetClaseId) return;
@@ -1086,6 +1085,9 @@ function renderAllTandasUI() {
               <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 py-2 px-3 fw-semibold">
                 <i class="fas fa-check-circle me-1"></i>Examen ya entregado
               </span>
+              <button class="btn btn-sm btn-outline-info text-nowrap" onclick="window.location.href='${linkHref}'" title="Revisar respuestas del examen">
+                <i class="fas fa-eye me-1"></i> Revisar
+              </button>
             ` : `
               <button class="btn btn-sm ${btnClass} text-nowrap" onclick="window.location.href='${linkHref}'">
                 <i class="fas ${bloque.isLegacyTanda && bloque.modo === 'examen' ? 'fa-play' : 'fa-eye'} me-1"></i> ${btnText}

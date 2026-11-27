@@ -5,11 +5,12 @@ import {
   adaptSqlScriptForSqlite, 
   adaptSqlForSqlite, 
   compareResults 
-} from '../../js/sql-engine-utils.js?v=4';
+} from '../../js/sql-engine-utils.js?v=5';
 
 
 let user, userDoc, db, fb;
 let currentClase = null;
+let currentClaseId = null;
 let currentTanda = null;
 let currentModo = 'practica'; // o 'examen'
 let currentEjercicios = [];
@@ -47,6 +48,7 @@ initTaskPage().then(res => {
 async function initEditorPage() {
   const params = new URLSearchParams(window.location.search);
   const claseId = params.get('claseId');
+  currentClaseId = claseId;
   const tandaId = params.get('tandaId');
   const bloqueId = params.get('bloqueId'); // Si viene por bloque (nuevo sistema)
   const testExId = params.get('testExId') || params.get('testId');
@@ -143,7 +145,7 @@ async function initEditorPage() {
       const qEx = fb.query(fb.collection(db, 'usuarios', user.uid, 'examenes'), fb.where('tandaId', '==', currentTanda));
       const snapEx = await fb.getDocs(qEx);
       if (!snapEx.empty) {
-        // Ya lo entregó
+        // Ya lo entregó -> Modo revisión permanente (un examen NUNCA puede repetirse)
         isExamSubmitted = true;
         const lastExam = snapEx.docs.sort((a,b) => b.data().fecha.localeCompare(a.data().fecha))[0].data();
         window.examAnswers = lastExam.respuestas || {};
@@ -157,6 +159,19 @@ async function initEditorPage() {
         setupExamAntiCheat(claseId, currentTanda);
       }
     } catch(e) { console.error('Error cargando examen previo:', e); }
+  }
+
+  // El reinicio SOLO está disponible en modo práctica
+  const btnReiniciar = document.getElementById('btn-reiniciar-tanda');
+  if (btnReiniciar) {
+    if (currentModo === 'practica') {
+      btnReiniciar.style.display = 'inline-block';
+      const btnReiniciarText = document.getElementById('btn-reiniciar-tanda-text');
+      if (btnReiniciarText) btnReiniciarText.textContent = 'Reiniciar Tanda';
+      btnReiniciar.onclick = reiniciarTandaPractica;
+    } else {
+      btnReiniciar.style.display = 'none';
+    }
   }
 
   if (currentModo === 'examen') {
@@ -186,6 +201,125 @@ async function initEditorPage() {
 
   const btnReset = document.getElementById('btn-reset-db');
   if (btnReset) btnReset.onclick = resetCurrentDatabase;
+}
+
+async function reiniciarTandaPractica() {
+  const tieneProgreso = currentEjercicios.some(e => e._superado);
+  const msg = tieneProgreso
+    ? '¿Deseas volver a iniciar esta tanda de práctica desde cero? Tu progreso anterior quedará guardado en tu historial.'
+    : '¿Deseas reiniciar esta tanda de ejercicios de práctica?';
+
+  if (!confirm(msg)) return;
+
+  const btnReiniciar = document.getElementById('btn-reiniciar-tanda');
+  if (btnReiniciar) btnReiniciar.disabled = true;
+
+  try {
+    // 1. Guardar constancia del intento anterior en el historial si es alumno y tenía progreso
+    if (userDoc.rol === 'alumno' && tieneProgreso) {
+      const snapEjercicios = currentEjercicios.map(e => ({
+        id: e.id,
+        titulo: e.titulo,
+        superado: !!e._superado,
+        respuesta_sql: e._respuesta_sql || ''
+      }));
+      const completados = currentEjercicios.filter(e => e._superado).length;
+      const total = currentEjercicios.length;
+      const nowIso = new Date().toISOString();
+
+      const attemptDocId = `practica_${Date.now()}`;
+      const snapshotData = {
+        claseId: currentClaseId || null,
+        tandaId: currentTanda,
+        fecha: nowIso,
+        modo: 'practica',
+        tipoRegistro: 'practica',
+        completados,
+        total,
+        ejercicios: snapEjercicios
+      };
+
+      // Guardar en la subcolección 'examenes' (que tiene 'allow write: if isSelf(uid)' en Firestore Rules garantizado)
+      try {
+        await fb.setDoc(fb.doc(db, 'usuarios', user.uid, 'examenes', attemptDocId), snapshotData);
+      } catch (eExam) {
+        console.warn('No se pudo guardar en usuarios/.../examenes:', eExam);
+      }
+
+      // Intentar también en tandas_historial e intentos_tandas de forma no bloqueante
+      try {
+        await fb.addDoc(fb.collection(db, 'usuarios', user.uid, 'tandas_historial'), snapshotData);
+      } catch (eHist) {
+        console.warn('tandas_historial no disponible en cloud:', eHist?.message);
+      }
+
+      try {
+        await fb.addDoc(fb.collection(db, 'intentos_tandas'), {
+          uid: user.uid,
+          email: user.email,
+          tandaId: currentTanda,
+          claseId: currentClaseId || null,
+          modo: 'practica',
+          fecha: nowIso,
+          completados,
+          total
+        });
+      } catch (eIntentos) {
+        console.warn('intentos_tandas no disponible en cloud:', eIntentos?.message);
+      }
+    }
+
+    // 2. Limpiar superado y respuesta_sql en Firestore para los ejercicios de esta tanda
+    if (userDoc.rol === 'alumno') {
+      for (const ex of currentEjercicios) {
+        try {
+          const exRef = fb.doc(db, 'usuarios', user.uid, 'ejercicios', String(ex.id));
+          await fb.setDoc(exRef, { superado: false, respuesta_sql: '' }, { merge: true });
+        } catch (eEx) {
+          console.warn(`No se pudo resetear el ejercicio ${ex.id} en Firestore:`, eEx?.message);
+        }
+      }
+    }
+
+    // 3. Resetear memoria y estado local
+    currentEjercicios.forEach(e => {
+      e._superado = false;
+      e._respuesta_sql = '';
+    });
+
+    if (sqlEditor) sqlEditor.value = '';
+    await resetCurrentDatabase();
+    await updateProgressUI();
+
+    // Asegurar que la interfaz muestre el reinicio inmediatamente en memoria
+    currentEjercicios.forEach(e => {
+      e._superado = false;
+      e._respuesta_sql = '';
+      const btn = document.getElementById(`btn-ex-${e.id}`);
+      if (btn) {
+        btn.classList.remove('opacity-75');
+        const icon = btn.querySelector('.fa-check-circle');
+        if (icon) {
+          icon.className = 'far fa-circle text-secondary me-2';
+        }
+      }
+    });
+    const counterEl = document.getElementById('tanda-counter');
+    if (counterEl) counterEl.textContent = `0/${currentEjercicios.length}`;
+    const barEl = document.getElementById('tanda-progress-bar');
+    if (barEl) barEl.style.width = '0%';
+
+    if (currentEjercicios.length > 0) {
+      await loadExercise(currentEjercicios[0].id);
+    }
+
+    showToast('🔄', 'Tanda reiniciada. Se ha registrado tu progreso anterior en el historial.', 'success');
+  } catch (err) {
+    console.error('Error al reiniciar tanda:', err);
+    alert('Error al reiniciar la tanda: ' + err.message);
+  } finally {
+    if (btnReiniciar) btnReiniciar.disabled = false;
+  }
 }
 
 async function updateProgressUI() {
@@ -625,7 +759,7 @@ async function runQuery() {
       } catch(e) { console.error('Error en solución oficial:', e); }
     }
 
-    const isCorrect = compareResults(resAlumno, resSolucion, isDML, isDDL, sqlDb, ex.query_solucion);
+    const isCorrect = compareResults(resAlumno, resSolucion, isDML, isDDL, sqlDb, ex.query_solucion, query);
     
     if (currentModo === 'practica') {
       if (isCorrect) {

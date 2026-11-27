@@ -1281,14 +1281,17 @@ async function verResultados(tId) {
       let completados = 0;
       let queries = {};
       
+      let totalIntentos = 0;
       if (modo === 'examen') {
         const qEx = fb.query(fb.collection(db, 'usuarios', uid, 'examenes'), fb.where('tandaId', '==', currentTandaName));
         const snapEx = await fb.getDocs(qEx);
+        totalIntentos = snapEx.docs.length;
         if (!snapEx.empty) {
-          const lastExam = snapEx.docs.sort((a,b) => b.data().fecha.localeCompare(a.data().fecha))[0].data();
+          const sortedExams = snapEx.docs.map(d => d.data()).sort((a,b) => (b.fecha || '').localeCompare(a.fecha || ''));
+          const lastExam = sortedExams[0];
           nota = lastExam.puntuacion || 0;
           Object.keys(lastExam.respuestas || {}).forEach(k => {
-             queries[k] = lastExam.respuestas[k].sql;
+             queries[k] = lastExam.respuestas[k].query || lastExam.respuestas[k].sql;
              if(lastExam.respuestas[k].isCorrect) completados++;
           });
         }
@@ -1311,6 +1314,9 @@ async function verResultados(tId) {
       // Construir listado de SQL (oculto en un modal colapsable o simple string)
       let queriesHtml = '';
       if (completados > 0) {
+        if (totalIntentos > 1) {
+          queriesHtml += `<div class="badge bg-info text-dark mb-2"><i class="fas fa-history me-1"></i>Mostrando último intento (${totalIntentos} intentos registrados)</div>`;
+        }
         ejerciciosTanda.forEach(e => {
           if (queries[e.id]) {
              queriesHtml += `<div class="mb-2 pb-2 border-bottom border-secondary">
@@ -1333,6 +1339,7 @@ async function verResultados(tId) {
             <div class="d-flex align-items-center gap-2 mb-1">
               <span class="badge ${progressColor}">${completados}/${totalEj} ej.</span>
               <span class="badge bg-primary">${nota} pts</span>
+              ${totalIntentos > 1 ? `<span class="badge bg-info text-dark" title="${totalIntentos} intentos realizados">${totalIntentos} intentos</span>` : ''}
             </div>
             <div class="progress" style="height: 4px;">
               <div class="progress-bar ${progressColor}" role="progressbar" style="width: ${progressPct}%"></div>

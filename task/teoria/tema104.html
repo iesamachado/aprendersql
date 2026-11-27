@@ -183,20 +183,33 @@ FROM Platos;</code></pre>
                                 </div>
 
                                 <h5 class="mt-3 text-info">Filtrado Avanzado (WHERE)</h5>
-                                <pre><code class="language-sql">-- Rango de valores (BETWEEN)
+                                <pre><code class="language-sql">-- Rango de valores (BETWEEN y NOT BETWEEN)
 SELECT * FROM Platos WHERE precio_venta BETWEEN 5 AND 10;
+SELECT * FROM Platos WHERE precio_venta NOT BETWEEN 5 AND 10;
 
--- Lista de valores (IN)
+-- Lista de valores (IN y NOT IN)
 SELECT * FROM Platos WHERE categoria IN ('Arepas', 'Bebidas');
+SELECT * FROM Platos WHERE categoria NOT IN ('Arepas', 'Bebidas');
 
--- Patrones de texto (LIKE)
--- % = cualquier cadena, _ = un carácter
+-- Patrones de texto (LIKE y NOT LIKE)
+-- % = cualquier cadena de 0 o más caracteres, _ = exactamente un carácter
 SELECT * FROM Clientes WHERE email LIKE '%@gmail.com';
+SELECT * FROM Clientes WHERE email NOT LIKE '%@spam.com';
 
--- Combinando condiciones (AND / OR / Parentesis)
+-- Valores Nulos (IS NULL e IS NOT NULL)
+-- En SQL NUNCA se usa '= NULL' o '!= NULL' porque NULL representa valor desconocido/ausente
+SELECT * FROM Pedidos WHERE gastos_envio IS NULL;       -- Pedidos sin gastos de envío registrados
+SELECT * FROM Pedidos WHERE total_pedido IS NOT NULL;   -- Pedidos con total confirmado
+
+-- Combinando condiciones (AND / OR / NOT / Paréntesis)
 SELECT * FROM Pedidos 
 WHERE (estado = 'Pagado' AND total_pedido > 20) 
-   OR (tipo_pedido = 'Delivery');</code></pre>
+   OR (tipo_pedido = 'Delivery' AND NOT (gastos_envio IS NULL));</code></pre>
+
+                                <div class="alert alert-info bg-opacity-10 border-info small mb-3">
+                                    <i class="fas fa-info-circle me-2 text-info"></i><strong>¡Regla de oro sobre NULL!</strong>
+                                    En SQL, <code>NULL</code> significa «desconocido». Cualquier comparación como <code>campo = NULL</code> o <code>campo != NULL</code> devuelve siempre <code>UNKNOWN</code> (falso). Por eso es obligatorio utilizar los operadores especiales <code>IS NULL</code> (para valores vacíos/nulos) e <code>IS NOT NULL</code> (para valores que sí están registrados).
+                                </div>
 
 
 
@@ -539,7 +552,24 @@ SELECT nombre_plato, (precio_venta * 1.21) as Precio_con_IVA
 FROM Platos;
 
 -- Redondeo
-SELECT ROUND(precio_kg * 4.567, 2) as Coste_Calc FROM Ingredientes;</code></pre>
+SELECT ROUND(precio_kg * 4.567, 2) as Coste_Calc FROM Ingredientes;
+
+-- Valor Absoluto (ABS) - Elimina el signo negativo, ideal para diferencias y distancias
+SELECT marcadorLocal, marcadorVisitante, ABS(marcadorLocal - marcadorVisitante) AS diferencia_puntos
+FROM partidos;
+
+-- Tratamiento de Nulos con Valor por Defecto (COALESCE)
+-- Devuelve el primer argumento que NO sea NULL (ideal para evitar que los nulos rompan sumas o reportes)
+SELECT nombre, COALESCE(telefono, 'Sin teléfono') AS telefono_contacto FROM Clientes;
+SELECT titulo, COALESCE(SUM(botin_recuperado), 0) AS botin_total FROM Expediciones GROUP BY titulo;</code></pre>
+
+                                <h5 class="mt-4 text-info">Fechas (YEAR, MONTH, DAY)</h5>
+                                <pre><code class="language-sql">-- Extraer partes de una fecha o timestamp
+SELECT fecha, 
+       YEAR(fecha)  AS anio,
+       MONTH(fecha) AS mes,
+       DAY(fecha)   AS dia
+FROM Incidentes;</code></pre>
 
                                 <!-- Simulation: String Machine -->
                                 <div class="card border-info mb-4 overflow-hidden" id="string-sim-container">
@@ -949,8 +979,8 @@ SELECT nombre, precio FROM Productos ORDER BY precio DESC LIMIT 3;</code></pre>
                                 <p>Las funciones de agregado toman <strong>muchas filas</strong> y devuelven <strong>un
                                         solo resultado</strong>. Son esenciales para sacar estadísticas globales.</p>
 
-                                <h5 class="text-info mt-4">Las 5 Fantásticas</h5>
-                                <div class="row row-cols-1 row-cols-md-5 g-2 text-center mb-4">
+                                <h5 class="text-info mt-4">Las Funciones de Agregado Fundamentales</h5>
+                                <div class="row row-cols-1 row-cols-md-5 g-2 text-center mb-3">
                                     <div class="col">
                                         <div class="p-2 border rounded"><strong
                                                 class="text-success d-block">COUNT()</strong>Cuenta filas</div>
@@ -971,6 +1001,23 @@ SELECT nombre, precio FROM Productos ORDER BY precio DESC LIMIT 3;</code></pre>
                                         <div class="p-2 border rounded"><strong
                                                 class="text-danger d-block">MIN()</strong>Mínimo</div>
                                     </div>
+                                </div>
+
+                                <div class="card bg-black bg-opacity-25 border border-info border-opacity-25 p-3 mb-4">
+                                    <h6 class="text-info fw-bold mb-1"><i class="fas fa-layer-group me-2"></i>Agregación de Texto: GROUP_CONCAT()</h6>
+                                    <p class="small text-secondary mb-2">
+                                        Mientras <code>SUM</code> o <code>AVG</code> operan con números, <code>GROUP_CONCAT(columna [SEPARATOR ', '])</code> agrupa y concatena en una sola celda de texto todos los valores de un grupo (separados por comas por defecto):
+                                    </p>
+                                    <pre class="mb-0"><code class="language-sql">-- Listar los platos de cada categoría en un único campo:
+SELECT categoria, GROUP_CONCAT(nombre_plato SEPARATOR ', ') AS platos
+FROM Platos 
+GROUP BY categoria;
+
+-- Listar los alias de villanos alojados en cada bloque de celdas:
+SELECT Celdas.bloque, GROUP_CONCAT(Villanos.alias) 
+FROM Celdas 
+INNER JOIN Villanos ON Celdas.id_celda = Villanos.id_celda 
+GROUP BY Celdas.bloque;</code></pre>
                                 </div>
 
                                 <!-- Animation: SUM vs COUNT (Curry) -->
@@ -1335,42 +1382,67 @@ SELECT Equipo, SUM(Puntos) as Puntos_Totales FROM Jugadores GROUP BY Equipo;</co
 
                                 <!-- Visual Guide -->
                                 <div class="row mb-4">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="p-3 border rounded text-center h-100">
                                             <h5 class="text-success">INNER JOIN</h5>
                                             <div class="d-flex justify-content-center align-items-center mb-2"
                                                 style="height: 100px;">
-                                                <!-- Visual Representation using CSS shapes -->
                                                 <div class="rounded-circle border d-flex align-items-center justify-content-center"
-                                                    style="width: 80px; height: 80px; margin-right: -20px; z-index: 1; background: rgba(255, 255, 255, 0.1);">
+                                                    style="width: 70px; height: 70px; margin-right: -15px; z-index: 1; background: rgba(255, 255, 255, 0.1);">
                                                     Tabla A</div>
-                                                <div class="rounded-circle bg-success d-flex align-items-center justify-content-center fw-bold shadow"
-                                                    style="width: 60px; height: 60px; z-index: 3;">Match</div>
+                                                <div class="rounded-circle bg-success d-flex align-items-center justify-content-center fw-bold shadow text-white"
+                                                    style="width: 50px; height: 50px; z-index: 3; font-size: 0.8rem;">Match</div>
                                                 <div class="rounded-circle border d-flex align-items-center justify-content-center"
-                                                    style="width: 80px; height: 80px; margin-left: -20px; z-index: 1; background: rgba(255, 255, 255, 0.1);">
+                                                    style="width: 70px; height: 70px; margin-left: -15px; z-index: 1; background: rgba(255, 255, 255, 0.1);">
                                                     Tabla B</div>
                                             </div>
-                                            <p class="small text-muted">"Solo muéstrame las parejas perfectas". Si un
-                                                cliente no ha comprado, no sale. Si un pedido no tiene cliente, no sale.
-                                            </p>
+                                            <p class="small text-muted mb-0">"Solo las parejas perfectas". Muestra únicamente las filas que tienen coincidencia en ambas tablas.</p>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="p-3 border rounded text-center h-100">
                                             <h5 class="text-warning">LEFT JOIN</h5>
                                             <div class="d-flex justify-content-center align-items-center mb-2"
                                                 style="height: 100px;">
                                                 <div class="rounded-circle bg-warning border border-warning d-flex align-items-center justify-content-center text-dark fw-bold shadow"
-                                                    style="width: 80px; height: 80px; margin-right: -20px; z-index: 2;">
+                                                    style="width: 70px; height: 70px; margin-right: -15px; z-index: 2;">
                                                     Tabla A</div>
                                                 <div class="rounded-circle border d-flex align-items-center justify-content-center"
-                                                    style="width: 80px; height: 80px; margin-left: -20px; z-index: 1; background: rgba(255, 255, 255, 0.1);">
+                                                    style="width: 70px; height: 70px; margin-left: -15px; z-index: 1; background: rgba(255, 255, 255, 0.1);">
                                                     Tabla B</div>
                                             </div>
-                                            <p class="small text-muted">"Todo lo mí (izquierda) y lo que encuentres de
-                                                ellos". Muestra TODOS los clientes, compren o no.</p>
+                                            <p class="small text-muted mb-0">"Todo lo de la izquierda y lo que coincida de la derecha". Si en B no hay coincidencia, sus columnas se rellenan con NULL.</p>
                                         </div>
                                     </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded text-center h-100">
+                                            <h5 class="text-info">RIGHT JOIN</h5>
+                                            <div class="d-flex justify-content-center align-items-center mb-2"
+                                                style="height: 100px;">
+                                                <div class="rounded-circle border d-flex align-items-center justify-content-center"
+                                                    style="width: 70px; height: 70px; margin-right: -15px; z-index: 1; background: rgba(255, 255, 255, 0.1);">
+                                                    Tabla A</div>
+                                                <div class="rounded-circle bg-info border border-info d-flex align-items-center justify-content-center text-dark fw-bold shadow"
+                                                    style="width: 70px; height: 70px; margin-left: -15px; z-index: 2;">
+                                                    Tabla B</div>
+                                            </div>
+                                            <p class="small text-muted mb-0">"Todo lo de la derecha y lo que coincida de la izquierda". Es la inversa exacta de LEFT JOIN (A RIGHT JOIN B = B LEFT JOIN A).</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="code-block-wrapper mb-4">
+<pre><code class="language-sql">-- INNER JOIN: Solo clientes con pedidos
+SELECT Clientes.nombre, Pedidos.total_pedido 
+FROM Clientes INNER JOIN Pedidos ON Clientes.cliente_id = Pedidos.cliente_id;
+
+-- LEFT JOIN: Todos los clientes (aunque no hayan comprado nunca)
+SELECT Clientes.nombre, Pedidos.total_pedido 
+FROM Clientes LEFT JOIN Pedidos ON Clientes.cliente_id = Pedidos.cliente_id;
+
+-- RIGHT JOIN: Todos los guardias (aunque no hayan intervenido en incidentes)
+SELECT Incidentes.fecha, Guardias.nombre 
+FROM Incidentes RIGHT JOIN Guardias ON Incidentes.id_guardia = Guardias.id_guardia;</code></pre>
                                 </div>
 
                                 <!-- Animation: Inner Join -->
@@ -1882,19 +1954,66 @@ SELECT nombre, 'Empleado' as tipo_persona FROM Empleados;</code></pre>
                             </article>
 
 <article id="dml-subqueries" class="card bg-glass border-0 shadow-sm p-4 mb-4">
-                                <h3 ><i class="fas fa-level-down-alt me-2 text-secondary"></i>2.5
-                                    Subconsultas</h3>
-                                <p>Una subconsulta es una consulta anidada dentro de otra. Se usa cuando necesitas un
-                                    valor que aún no conoces para filtrar tu consulta principal.</p>
+                                <h3 ><i class="fas fa-level-down-alt me-2 text-secondary"></i>2.5 Subconsultas</h3>
+                                <p class="text-secondary">Una subconsulta es una sentencia <code>SELECT</code> anidada dentro de otra consulta principal. Permite resolver problemas en dos o más pasos: calcular un dato desconocido para usarlo como filtro, o generar una tabla intermedia en memoria.</p>
 
-                                <div class="alert alert-secondary bg-opacity-10">
-                                    <strong>Objetivo:</strong> Encontrar jugadores que ganan más que el promedio.
-                                    <br>
-                                    <small>1. Calculo el promedio. 2. Filtro quién gana más que eso.</small>
-                                </div>
-                                <pre><code class="language-sql">SELECT nombre, salario 
-FROM Jugadores
+                                <div class="row g-3 mb-4">
+                                    <!-- 1. Escalar -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100">
+                                            <h6 class="text-info fw-bold"><i class="fas fa-arrow-right me-1"></i> 1. Subconsulta Escalar (en WHERE)</h6>
+                                            <p class="small text-muted mb-2">Devuelve <strong>un único valor</strong> (1 fila, 1 columna). Se compara con <code>=</code>, <code>&gt;</code>, <code>&lt;</code>, etc.</p>
+                                            <pre class="small mb-0"><code>SELECT nombre, salario FROM Jugadores
 WHERE salario > (SELECT AVG(salario) FROM Jugadores);</code></pre>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Lista (IN / NOT IN) -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 h-100">
+                                            <h6 class="text-warning fw-bold"><i class="fas fa-list me-1"></i> 2. Subconsulta en Lista (IN / NOT IN)</h6>
+                                            <p class="small text-muted mb-2">Devuelve <strong>una columna con múltiples valores</strong> para comprobar pertenencia o exclusión.</p>
+                                            <pre class="small mb-0"><code>SELECT nombre_plato FROM Platos
+WHERE plato_id NOT IN (SELECT DISTINCT plato_id FROM Lineas_Pedido);</code></pre>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3. Tablas Derivadas (en FROM) -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded bg-black bg-opacity-25 border border-primary border-opacity-25 h-100">
+                                            <h6 class="text-primary fw-bold"><i class="fas fa-table me-1"></i> 3. Subconsulta en el FROM (Tablas Derivadas)</h6>
+                                            <p class="small text-muted mb-2">Genera una tabla en memoria al vuelo sobre la que consultar. <strong>¡OBLIGATORIO asignar un alias con <code>AS</code>!</strong></p>
+                                            <pre class="small mb-0"><code>-- Calcular la media de totales previamente agrupados:
+SELECT AVG(Gasto_Total)
+FROM (
+    SELECT cliente_id, SUM(total_pedido) AS Gasto_Total
+    FROM Pedidos WHERE total_pedido IS NOT NULL
+    GROUP BY cliente_id
+) AS GastosPorCliente;</code></pre>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. Cuantificadores ALL y ANY -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded bg-black bg-opacity-25 border border-success border-opacity-25 h-100">
+                                            <h6 class="text-success fw-bold"><i class="fas fa-check-double me-1"></i> 4. Cuantificadores ALL y ANY</h6>
+                                            <p class="small text-muted mb-2">Compara un valor contra <strong>todos</strong> (<code>ALL</code>) o <strong>al menos uno</strong> (<code>ANY</code>) de los elementos devueltos:</p>
+                                            <ul class="small text-muted ps-3 mb-2">
+                                                <li><code>&gt; ALL(...)</code>: Mayor que todos los valores (mayor que el MAX).</li>
+                                                <li><code>&gt;= ALL(...)</code>: Mayor o igual a todos (la nota o puntuación máxima).</li>
+                                                <li><code>&gt; ANY(...)</code>: Mayor que al menos uno (mayor que el MIN).</li>
+                                            </ul>
+                                            <pre class="small mb-0"><code>-- Objetos más dañinos que TODOS los comunes:
+SELECT * FROM Objetos 
+WHERE daño > ALL (SELECT daño FROM Objetos WHERE rareza = 'Común');</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-warning bg-opacity-10 border-warning small mb-4">
+                                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i><strong>Error Habitual en Subconsultas en FROM:</strong>
+                                    Si escribes <code>SELECT * FROM (SELECT ...)</code> sin poner un alias al final (ej. <code>AS mi_subtabla</code>), MariaDB/MySQL arrojará el error <code>ERROR 1248: Every derived table must have its own alias</code>. Recuerda siempre bautizar tu subconsulta con un alias al usarla en el FROM.
+                                </div>
 
                                 <!-- Exercises Subqueries -->
                                 <h5 class="mt-4 text-info"><i class="fas fa-dumbbell me-2"></i>Ejercicios de

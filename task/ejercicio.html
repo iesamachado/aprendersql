@@ -50,6 +50,10 @@
     <button class="btn btn-sm btn-success fw-bold" id="btn-submit-tanda" style="display:none">
       <i class="fas fa-check-double me-1"></i> Entregar
     </button>
+    <!-- Reiniciar tanda (modo práctica o nuevo intento examen) -->
+    <button class="btn btn-sm btn-outline-warning fw-bold" id="btn-reiniciar-tanda" style="display:none" title="Volver a iniciar esta tanda desde cero">
+      <i class="fas fa-redo me-1"></i> <span id="btn-reiniciar-tanda-text">Reiniciar Tanda</span>
+    </button>
   </div>
 </nav>
 
@@ -332,7 +336,7 @@
   window.FIREBASE_CONFIG = FIREBASE_CONFIG; 
   window.APP_CONFIG = APP_CONFIG;
 </script>
-<script type="module" src="js/ejercicio.js?v=5"></script>
+<script type="module" src="js/ejercicio.js?v=9"></script>
 <script src="../js/load-footer.js"></script>
 </body>
 </html>

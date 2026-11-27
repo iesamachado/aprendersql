@@ -156,66 +156,158 @@ async function loadAlumno() {
     }
 
     
-    // Cargar Intentos de Tandas
-    const tandasSnap = await getDocs(query(collection(db, 'usuarios', uid, 'examenes')));
+    // Cargar Intentos de Tandas (Exámenes e Historial de Prácticas)
+    const [tandasSnap, historialSnap] = await Promise.all([
+      getDocs(query(collection(db, 'usuarios', uid, 'examenes'))),
+      getDocs(query(collection(db, 'usuarios', uid, 'tandas_historial'))).catch(() => ({ empty: true, forEach: () => {} }))
+    ]);
     const accordionTandas = document.getElementById('accordion-tandas');
     accordionTandas.innerHTML = '';
-    
-    if (tandasSnap.empty) {
+
+    const allAttempts = [];
+
+    // 1. Procesar exámenes y prácticas guardadas en la subcolección 'examenes'
+    const seenIds = new Set();
+    if (!tandasSnap.empty) {
+      const examDocs = [];
+      tandasSnap.forEach(d => {
+        const data = d.data();
+        const isPractica = data.modo === 'practica' || data.tipoRegistro === 'practica' || d.id.startsWith('practica_');
+        seenIds.add(d.id);
+        examDocs.push({
+          id: d.id,
+          ...data,
+          tipoRegistro: isPractica ? 'practica' : 'examen'
+        });
+      });
+      // Ordenar asc para numerar intentos
+      examDocs.sort((a,b) => (a.fecha || '').localeCompare(b.fecha || ''));
+      const counts = {};
+      examDocs.forEach(e => {
+        const key = e.tandaId || 'Tanda';
+        counts[key] = (counts[key] || 0) + 1;
+        e.attemptNum = counts[key];
+      });
+      examDocs.forEach(e => {
+        e.totalAttempts = counts[e.tandaId || 'Tanda'];
+        allAttempts.push(e);
+      });
+    }
+
+    // 2. Procesar historial de prácticas reiniciadas (si tandas_historial fue usado)
+    if (historialSnap && !historialSnap.empty) {
+      const histDocs = [];
+      historialSnap.forEach(d => {
+        if (!seenIds.has(d.id)) {
+          seenIds.add(d.id);
+          histDocs.push({ id: d.id, ...d.data(), tipoRegistro: 'practica' });
+        }
+      });
+      histDocs.sort((a,b) => (a.fecha || '').localeCompare(b.fecha || ''));
+      const counts = {};
+      histDocs.forEach(h => {
+        const key = h.tandaId || 'Tanda';
+        counts[key] = (counts[key] || 0) + 1;
+        h.attemptNum = counts[key];
+      });
+      histDocs.forEach(h => {
+        h.totalAttempts = counts[h.tandaId || 'Tanda'];
+        allAttempts.push(h);
+      });
+    }
+
+    if (allAttempts.length === 0) {
       accordionTandas.innerHTML = '<div class="alert bg-dark text-muted border-secondary text-center">No hay intentos de tandas registrados.</div>';
     } else {
-      let tandasArr = [];
-      tandasSnap.forEach(d => tandasArr.push(d.data()));
-      tandasArr.sort((a,b) => (b.fecha || '').localeCompare(a.fecha || '')); // sort desc
-      
-      tandasArr.forEach((tanda, i) => {
+      allAttempts.sort((a,b) => (b.fecha || '').localeCompare(a.fecha || '')); // sort desc
+
+      allAttempts.forEach((tanda, i) => {
         const idCol = `tanda-col-${i}`;
         const fecha = tanda.fecha ? new Date(tanda.fecha).toLocaleString('es-ES') : 'Desconocida';
-        const notaStr = tanda.puntosMaximos > 0 ? ((tanda.puntuacion / tanda.puntosMaximos) * 10).toFixed(1) : (tanda.puntuacion || 0);
-        const color = notaStr >= 5 ? 'success' : 'danger';
-        
-        let detalleHtml = '';
-        if (tanda.respuestas && Object.keys(tanda.respuestas).length > 0) {
-          detalleHtml = `<table class="table table-dark table-sm mt-3">
-            <thead><tr><th>Ejercicio</th><th>Estado</th><th>Ptos</th><th>Query</th></tr></thead>
-            <tbody>
-              ${Object.keys(tanda.respuestas).map(k => {
-                const r = tanda.respuestas[k];
-                const exData = window.EJERCICIOS ? window.EJERCICIOS.find(e => e.id == k) : null;
-                const questionText = r.enunciado || (exData ? exData.pregunta : null);
-                
-                let idCol = `#${k}`;
-                if (questionText) {
-                  idCol = `<details><summary style="cursor:pointer" class="text-info">Pregunta</summary><div class="small mt-1 text-light bg-secondary p-1 rounded">${questionText}</div><div class="text-muted" style="font-size:0.6rem">ID: ${k}</div></details>`;
-                }
+        const isExam = tanda.tipoRegistro === 'examen';
 
-                return `
-                <tr>
-                  <td style="max-width:200px">${idCol}</td>
-                  <td>${r.isCorrect ? '<span class="text-success"><i class="fas fa-check"></i> Correcto</span>' : '<span class="text-danger"><i class="fas fa-times"></i> Fallo</span>'}</td>
-                  <td>${r.puntos || 0}</td>
-                  <td><code class="text-muted small">${r.query ? r.query.substring(0,80) + (r.query.length>80?'...':'') : ''}</code></td>
-                </tr>
-              `}).join('')}
-            </tbody>
-          </table>`;
+        let badgeTipo = isExam
+          ? '<span class="badge bg-danger me-2">EXAMEN</span>'
+          : '<span class="badge bg-success me-2">PRÁCTICA</span>';
+        let badgeIntento = tanda.totalAttempts > 1
+          ? `<span class="badge bg-secondary me-2">Intento ${tanda.attemptNum}/${tanda.totalAttempts}</span>`
+          : '';
+
+        let badgeNota = '';
+        if (isExam) {
+          const notaStr = tanda.puntosMaximos > 0 ? ((tanda.puntuacion / tanda.puntosMaximos) * 10).toFixed(1) : (tanda.puntuacion || 0);
+          const color = notaStr >= 5 ? 'success' : 'danger';
+          badgeNota = `<span class="badge bg-${color} fs-6">Nota: ${notaStr}</span>`;
         } else {
-          detalleHtml = '<div class="text-muted small mt-2">No hay respuestas registradas (tanda vacía o antigua).</div>';
+          badgeNota = `<span class="badge bg-info text-dark fs-6">${tanda.completados || 0}/${tanda.total || 0} completados</span>`;
         }
-        
+
+        let detalleHtml = '';
+        if (isExam) {
+          if (tanda.respuestas && Object.keys(tanda.respuestas).length > 0) {
+            detalleHtml = `<table class="table table-dark table-sm mt-3">
+              <thead><tr><th>Ejercicio</th><th>Estado</th><th>Ptos</th><th>Query</th></tr></thead>
+              <tbody>
+                ${Object.keys(tanda.respuestas).map(k => {
+                  const r = tanda.respuestas[k];
+                  const exData = window.EJERCICIOS ? window.EJERCICIOS.find(e => e.id == k) : null;
+                  const questionText = r.enunciado || (exData ? exData.pregunta : null);
+                  
+                  let idCol = `#${k}`;
+                  if (questionText) {
+                    idCol = `<details><summary style="cursor:pointer" class="text-info">Pregunta</summary><div class="small mt-1 text-light bg-secondary p-1 rounded">${questionText}</div><div class="text-muted" style="font-size:0.6rem">ID: ${k}</div></details>`;
+                  }
+
+                  return `
+                  <tr>
+                    <td style="max-width:200px">${idCol}</td>
+                    <td>${r.isCorrect ? '<span class="text-success"><i class="fas fa-check"></i> Correcto</span>' : '<span class="text-danger"><i class="fas fa-times"></i> Fallo</span>'}</td>
+                    <td>${r.puntos || 0}</td>
+                    <td><code class="text-muted small">${r.query ? r.query.substring(0,80) + (r.query.length>80?'...':'') : ''}</code></td>
+                  </tr>
+                `}).join('')}
+              </tbody>
+            </table>`;
+          } else {
+            detalleHtml = '<div class="text-muted small mt-2">No hay respuestas registradas (tanda vacía o antigua).</div>';
+          }
+        } else {
+          // Práctica historial
+          if (tanda.ejercicios && tanda.ejercicios.length > 0) {
+            detalleHtml = `<div class="small text-muted mb-2">Instantánea guardada al reiniciar la tanda:</div>
+            <table class="table table-dark table-sm mt-2">
+              <thead><tr><th>Ejercicio</th><th>Estado</th><th>Query Alumno</th></tr></thead>
+              <tbody>
+                ${tanda.ejercicios.map(e => `
+                  <tr>
+                    <td>#${e.id} - ${e.titulo || ''}</td>
+                    <td>${e.superado ? '<span class="text-success"><i class="fas fa-check"></i> Superado</span>' : '<span class="text-secondary"><i class="far fa-circle"></i> Pendiente</span>'}</td>
+                    <td><code class="text-muted small">${e.respuesta_sql ? e.respuesta_sql.substring(0,80) + (e.respuesta_sql.length>80?'...':'') : '—'}</code></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>`;
+          } else {
+            detalleHtml = '<div class="text-muted small mt-2">Intento de práctica guardado.</div>';
+          }
+        }
+
         accordionTandas.innerHTML += `
           <div class="accordion-item bg-dark border-secondary mb-2 rounded">
             <h2 class="accordion-header">
               <button class="accordion-button collapsed bg-dark text-light border-0 rounded shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#${idCol}">
                 <div class="d-flex align-items-center w-100 me-3">
-                  <span class="fw-bold me-auto">${tanda.tandaId || 'Tanda Genérica'}</span>
+                  ${badgeTipo}
+                  ${badgeIntento}
+                  <span class="fw-bold me-auto">${tanda.tandaId || 'Tanda'}</span>
                   <span class="text-muted small me-3">${fecha}</span>
-                  <span class="badge bg-${color} fs-6">Nota: ${notaStr}</span>
+                  ${badgeNota}
                 </div>
               </button>
             </h2>
             <div id="${idCol}" class="accordion-collapse collapse" data-bs-parent="#accordion-tandas">
               <div class="accordion-body p-3 border-top border-secondary">
+                ${tanda.cerradoAutomatico ? `<div class="alert alert-danger py-1 px-2 small mb-2"><i class="fas fa-shield-alt me-1"></i>${tanda.motivoCierre || 'Examen auto-cerrado por cambio de ventana.'}</div>` : ''}
                 ${detalleHtml}
               </div>
             </div>

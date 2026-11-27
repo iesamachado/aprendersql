@@ -67,6 +67,12 @@ service cloud.firestore {
         allow write: if isSelf(uid);
       }
 
+      // ── Subcolección: tandas_historial (historial de tandas de práctica reiniciadas) ──
+      match /tandas_historial/{docId} {
+        allow read: if isSelf(uid) || isDocente();
+        allow write: if isSelf(uid);
+      }
+
       // ── Subcolección: ejercicios (progreso del alumno) ──
       match /ejercicios/{ejercicioId} {
 
